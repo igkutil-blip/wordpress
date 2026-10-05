@@ -79,16 +79,6 @@
 	opacity: 0.55;
 }
 
-/* Oznaka iznad reda gumba ("Vrsta ture", "Mjesec") */
-.paiz .paiz-filter__label {
-	flex: 0 0 100%;
-	margin: 0 0 -4px;
-	color: #888;
-	font-size: 12px;
-	font-weight: 600;
-	line-height: 1.3;
-}
-
 /* Gumbi za mjesece – ispod gumba kategorija, narančasti */
 .paiz .paiz-filter + .paiz-filter--months {
 	margin-top: -12px;
@@ -354,25 +344,22 @@
 		margin-bottom: 18px;
 	}
 
-	.paiz .paiz-filter__label {
-		margin-bottom: 0;
-	}
-
 	.paiz .paiz-filter__btn {
-		min-height: 36px;
-		padding: 6px 14px;
-		font-size: 14px;
+		min-height: 32px;
+		padding: 4px 12px;
+		font-size: 13px;
 	}
 
 	/* JS (fitCategories) po potrebi smanjuje razmak/font da kategorije stanu u dva reda. */
 	.paiz .paiz-filter[data-paiz-group="cat"] .paiz-filter__btn {
-		padding-right: var(--paiz-btn-px, 14px);
-		padding-left: var(--paiz-btn-px, 14px);
-		font-size: var(--paiz-btn-fs, 14px);
+		padding-right: var(--paiz-btn-px, 12px);
+		padding-left: var(--paiz-btn-px, 12px);
+		font-size: var(--paiz-btn-fs, 13px);
 	}
 
+	/* Razmak od oko 12px između bloka kategorija i bloka mjeseci. */
 	.paiz .paiz-filter + .paiz-filter--months {
-		margin-top: -8px;
+		margin-top: -6px;
 	}
 
 	.paiz .paiz-filter--months {
@@ -384,11 +371,7 @@
 		display: none;
 	}
 
-	.paiz .paiz-filter--months .paiz-filter__label,
-	.paiz .paiz-filter--months .paiz-filter__btn--all {
-		grid-column: 1 / -1;
-	}
-
+	/* "Svi" je prva kućica mreže; uski razmak da i "Velj 2027" stane u kućicu. */
 	.paiz .paiz-filter--months .paiz-filter__btn {
 		padding-right: 4px;
 		padding-left: 4px;

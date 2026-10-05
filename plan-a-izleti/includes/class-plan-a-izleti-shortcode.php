@@ -167,7 +167,6 @@ final class Plan_A_Izleti_Shortcode {
 		}
 
 		$html  = '<div class="paiz-filter" role="group" aria-label="' . esc_attr__( 'Filtriraj izlete po kategoriji', 'plan-a-izleti' ) . '" data-paiz-filters data-paiz-group="cat" hidden>';
-		$html .= '<span class="paiz-filter__label" aria-hidden="true">' . esc_html__( 'Vrsta ture', 'plan-a-izleti' ) . '</span>';
 		$html .= '<button type="button" class="paiz-filter__btn is-active" data-paiz-filter="all" aria-pressed="true">' . esc_html__( 'Sve ture', 'plan-a-izleti' ) . '</button>';
 		foreach ( $terms as $term ) {
 			$html .= '<button type="button" class="paiz-filter__btn" data-paiz-filter="' . esc_attr( (string) $term->term_id ) . '" aria-pressed="false">' . esc_html( $term->name ) . '</button>';
@@ -188,8 +187,10 @@ final class Plan_A_Izleti_Shortcode {
 			return '';
 		}
 		$html  = '<div class="paiz-filter paiz-filter--months" role="group" aria-label="' . esc_attr__( 'Filtriraj izlete po mjesecu', 'plan-a-izleti' ) . '" data-paiz-filters data-paiz-group="month" hidden>';
-		$html .= '<span class="paiz-filter__label" aria-hidden="true">' . esc_html__( 'Mjesec', 'plan-a-izleti' ) . '</span>';
-		$html .= '<button type="button" class="paiz-filter__btn paiz-filter__btn--all" data-paiz-filter="all" aria-pressed="true">' . esc_html__( 'Svi mjeseci', 'plan-a-izleti' ) . '</button>';
+		$html .= '<button type="button" class="paiz-filter__btn paiz-filter__btn--all" data-paiz-filter="all" aria-pressed="true" aria-label="' . esc_attr__( 'Svi mjeseci', 'plan-a-izleti' ) . '">'
+			. '<span class="paiz-month-long" aria-hidden="true">' . esc_html__( 'Svi mjeseci', 'plan-a-izleti' ) . '</span>'
+			. '<span class="paiz-month-short" aria-hidden="true">' . esc_html__( 'Svi', 'plan-a-izleti' ) . '</span>'
+			. '</button>';
 		foreach ( $months as $key => $label ) {
 			// Puni naziv na računalu, kratki na mobitelu (CSS); čitač zaslona uvijek čita puni.
 			$html .= '<button type="button" class="paiz-filter__btn" data-paiz-filter="' . esc_attr( $key ) . '" aria-pressed="false" aria-label="' . esc_attr( $label ) . '">'
@@ -204,7 +205,7 @@ final class Plan_A_Izleti_Shortcode {
 	 * Kratki naziv mjeseca za mobitel, npr. '2026-11' => 'Stu 2026'.
 	 */
 	private static function short_month_label( string $key ): string {
-		$short = array( 1 => 'Sij', 'Velj', 'Ožu', 'Tra', 'Svi', 'Lip', 'Srp', 'Kol', 'Ruj', 'Lis', 'Stu', 'Pro' );
+		$short = array( 1 => 'Sij', 'Velj', 'Ožu', 'Tra', 'Svib', 'Lip', 'Srp', 'Kol', 'Ruj', 'Lis', 'Stu', 'Pro' );
 		list( $year, $month ) = array_map( 'intval', explode( '-', $key ) );
 		return ( $short[ $month ] ?? '' ) . ' ' . $year;
 	}
@@ -252,7 +253,7 @@ final class Plan_A_Izleti_Shortcode {
 
 		if ( $tours ) {
 			$html .= '<div class="paiz-debug__scroll"><table><thead><tr>';
-			foreach ( array( 'Izlet (ID)', 'Datum', 'Aktivnosti – taksonomija', 'Aktivnosti – meta polje', 'ttbm_tour_cat', 'Korišteno za filtar' ) as $heading ) {
+			foreach ( array( 'Izlet (ID)', 'Datum', 'Aktivnosti – taksonomija', 'Aktivnosti – meta polje', 'ttbm_tour_cat', 'Korišteno za filtar', 'Država (izvor)' ) as $heading ) {
 				$html .= '<th>' . esc_html( $heading ) . '</th>';
 			}
 			$html .= '</tr></thead><tbody>';
@@ -269,12 +270,26 @@ final class Plan_A_Izleti_Shortcode {
 				$html .= '<td>' . esc_html( self::names_or_dash( $lookup['activities_meta'], Plan_A_Izleti_Categories::ACTIVITY_TAXONOMY ) . ' (sirovo: ' . $raw_meta . ')' ) . '</td>';
 				$html .= '<td>' . esc_html( self::names_or_dash( $lookup['tour_cat'], Plan_A_Izleti_Categories::CATEGORY_TAXONOMY ) ) . '</td>';
 				$html .= '<td>' . esc_html( $used ? implode( ', ', $used ) : '–' ) . '</td>';
+				$html .= '<td>' . esc_html( self::country_debug( $tour['id'] ) ) . '</td>';
 				$html .= '</tr>';
 			}
 			$html .= '</tbody></table></div>';
 		}
 
 		return $html . '</details>';
+	}
+
+	/**
+	 * Država i svi mogući izvori za dijagnostiku.
+	 */
+	private static function country_debug( int $id ): string {
+		$country = self::get_country( $id, Plan_A_Izleti_Data::source_id( $id ) );
+		$text    = '' !== $country['value'] ? $country['value'] . ' ← ' . $country['source'] : ( $country['hidden'] ? 'skriveno (ttbm_display_location = off)' : '–' );
+		$parts   = array();
+		foreach ( $country['raw'] as $key => $value ) {
+			$parts[] = $key . ': ' . ( '' !== $value ? $value : '–' );
+		}
+		return $text . ' (' . implode( '; ', $parts ) . ')';
 	}
 
 	private static function term_names( array $ids, string $taxonomy ): array {
@@ -302,7 +317,7 @@ final class Plan_A_Izleti_Shortcode {
 		$source_id = Plan_A_Izleti_Data::source_id( $id );
 		$title     = get_the_title( $id );
 		$url       = get_permalink( $id );
-		$country   = self::get_country( $id, $source_id );
+		$country   = self::get_country( $id, $source_id )['value'];
 		$duration  = self::get_duration( $id );
 		$price     = self::get_price_html( $id, $source_id );
 		$image     = self::get_image_html( $id, $title );
@@ -347,18 +362,18 @@ final class Plan_A_Izleti_Shortcode {
 							<span><?php echo esc_html( $date_text ); ?></span>
 						<?php endif; ?>
 					</li>
-					<?php if ( '' !== $country ) : ?>
-						<li class="paiz-card__country">
-							<?php echo self::icon( 'pin' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- statički SVG. ?>
-							<span class="paiz-sr"><?php esc_html_e( 'Država:', 'plan-a-izleti' ); ?></span>
-							<span><?php echo esc_html( $country ); ?></span>
-						</li>
-					<?php endif; ?>
 					<?php if ( '' !== $duration ) : ?>
 						<li class="paiz-card__duration">
 							<?php echo self::icon( 'clock' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- statički SVG. ?>
 							<span class="paiz-sr"><?php esc_html_e( 'Trajanje:', 'plan-a-izleti' ); ?></span>
 							<span><?php echo esc_html( $duration ); ?></span>
+						</li>
+					<?php endif; ?>
+					<?php if ( '' !== $country ) : ?>
+						<li class="paiz-card__country">
+							<?php echo self::icon( 'pin' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- statički SVG. ?>
+							<span class="paiz-sr"><?php esc_html_e( 'Država:', 'plan-a-izleti' ); ?></span>
+							<span><?php echo esc_html( $country ); ?></span>
 						</li>
 					<?php endif; ?>
 				</ul>
@@ -399,16 +414,64 @@ final class Plan_A_Izleti_Shortcode {
 		return sprintf( '%d. %s %d.', $day, $months[ $month ], $year );
 	}
 
-	private static function get_country( int $id, int $source_id ): string {
-		$country = '';
-		if ( method_exists( 'TTBM_Function', 'get_country' ) ) {
-			$country = TTBM_Function::get_country( $source_id );
+	/**
+	 * Država izleta, iz istog izvora koji koristi WpTravelly na karticama popisa.
+	 *
+	 * Svi WpTravelly predlošci popisa (templates/list/*.php) uključuju
+	 * templates/layout/location.php, koji ispisuje TTBM_Function::get_full_location():
+	 * meta polje `ttbm_location_name` (naziv termina taksonomije `ttbm_tour_location`)
+	 * + term meta `ttbm_country_location` tog termina ("Grad, Država"), a ne prikazuje
+	 * ništa ako je `ttbm_display_location` = off.
+	 *
+	 * Redoslijed izvora:
+	 * 1. term meta `ttbm_country_location` lokacije (TTBM_Function::get_country()) – prava država,
+	 * 2. TTBM_Function::get_full_location() – točno ono što WpTravelly ispisuje
+	 *    (npr. kad je lokacija upisana kao "Slovenija" bez posebne države),
+	 * 3. post meta `ttbm_country_name` (kopija države koju WpTravelly sprema pri spremanju izleta),
+	 * 4. post meta `ttbm_full_location_name` (rezerva koju koristi WpTravelly predložak travello).
+	 *
+	 * @return array{value: string, source: string, hidden: bool, raw: array<string, string>}
+	 */
+	private static function get_country( int $id, int $source_id ): array {
+		$meta = static function ( $key ) use ( $id, $source_id ) {
+			$value = get_post_meta( $id, $key, true );
+			if ( ( '' === $value || false === $value ) && $source_id !== $id ) {
+				$value = get_post_meta( $source_id, $key, true );
+			}
+			return is_scalar( $value ) ? trim( (string) $value ) : '';
+		};
+
+		$raw = array(
+			'ttbm_location_name'      => $meta( 'ttbm_location_name' ),
+			'ttbm_country_location'   => method_exists( 'TTBM_Function', 'get_country' ) ? trim( (string) TTBM_Function::get_country( $id ) ) : '',
+			'get_full_location()'     => method_exists( 'TTBM_Function', 'get_full_location' ) ? trim( (string) TTBM_Function::get_full_location( $id ) ) : '',
+			'ttbm_country_name'       => $meta( 'ttbm_country_name' ),
+			'ttbm_full_location_name' => $meta( 'ttbm_full_location_name' ),
+			'ttbm_display_location'   => $meta( 'ttbm_display_location' ),
+		);
+
+		$value  = '';
+		$source = '';
+		foreach ( array( 'ttbm_country_location', 'get_full_location()', 'ttbm_country_name', 'ttbm_full_location_name' ) as $key ) {
+			if ( '' !== $raw[ $key ] ) {
+				$value  = $raw[ $key ];
+				$source = $key;
+				break;
+			}
 		}
-		if ( ! $country ) {
-			$country = get_post_meta( $source_id, 'ttbm_country_name', true );
+
+		// Kao WpTravelly: lokacija se ne prikazuje ako je u izletu isključena.
+		$hidden = 'off' === $raw['ttbm_display_location'];
+		if ( $hidden ) {
+			$value = '';
 		}
-		$country = is_string( $country ) ? trim( $country ) : '';
-		return (string) apply_filters( 'plan_a_izleti_country', $country, $id );
+
+		return array(
+			'value'  => (string) apply_filters( 'plan_a_izleti_country', $value, $id ),
+			'source' => $source,
+			'hidden' => $hidden,
+			'raw'    => $raw,
+		);
 	}
 
 	/**

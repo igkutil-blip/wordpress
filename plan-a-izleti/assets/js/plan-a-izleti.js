@@ -164,7 +164,7 @@
 	 * Na mobitelu (do 767px) gumbi kategorija trebaju stati u najviše dva reda:
 	 * po potrebi postupno smanji vodoravni razmak, a zatim i font gumba.
 	 */
-	var FIT_STEPS = [ [ 14, 14 ], [ 12, 14 ], [ 10, 14 ], [ 9, 13.5 ], [ 8, 13 ] ];
+	var FIT_STEPS = [ [ 12, 13 ], [ 10, 13 ], [ 8, 13 ], [ 7, 12.5 ] ];
 
 	function rowCount( group ) {
 		var tops = {};
