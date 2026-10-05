@@ -7,6 +7,9 @@
 .paiz {
 	--paiz-accent: var(--primary-color, #446084);
 	--paiz-month: #e8862a; /* narančasta iz logotipa Plan A */
+	--paiz-month-dark: #c96a12; /* tamnonarančasta za tekst i odabranu opciju */
+	--paiz-accent-soft: #eaf0f7;
+	--paiz-month-soft: #fdf1e4;
 	--paiz-sold: #c0392b;
 	--paiz-text: #333;
 	--paiz-muted: #666;
@@ -28,93 +31,224 @@
 	border: 0;
 }
 
-/* Gumbi za kategorije i mjesece */
-.paiz .paiz-filter {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 10px;
-	margin: 0 0 24px;
+/* Uvod (intro="yes") */
+.paiz .paiz-intro {
+	margin: 0 0 20px;
 }
 
-.paiz .paiz-filter[hidden] {
+.paiz .paiz-intro__kicker {
+	margin: 0 0 6px;
+	color: var(--paiz-month-dark);
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+.paiz .paiz-intro__title {
+	margin: 0 0 6px;
+	font-size: 1.8em;
+	line-height: 1.2;
+}
+
+.paiz .paiz-intro__subtitle {
+	margin: 0;
+	color: var(--paiz-muted);
+}
+
+/* Filteri: dva izbornika i panel s opcijama */
+.paiz .paiz-filters {
+	position: relative;
+	z-index: 20;
+	margin: 0 0 12px;
+}
+
+.paiz .paiz-filters[hidden] {
 	display: none;
 }
 
-.paiz .paiz-filter__btn {
+.paiz .paiz-selects {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12px;
+}
+
+.paiz .paiz-filters--single .paiz-selects {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.paiz .paiz-select {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	min-height: 64px;
 	margin: 0;
-	min-height: 0;
-	padding: 0.55em 1.2em;
-	border: 2px solid var(--paiz-accent);
-	border-radius: 999px;
-	background: transparent;
+	padding: 10px 14px;
+	border: 2px solid transparent;
+	border-radius: 14px;
+	background: var(--paiz-accent-soft);
 	color: var(--paiz-accent);
-	font-size: 0.95em;
+	font: inherit;
+	line-height: 1.2;
+	letter-spacing: normal;
+	text-align: left;
+	text-transform: none;
+	cursor: pointer;
+	transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.paiz .paiz-select--month {
+	background: var(--paiz-month-soft);
+	color: var(--paiz-month-dark);
+}
+
+.paiz .paiz-select:hover {
+	border-color: currentColor;
+}
+
+.paiz .paiz-select.is-open {
+	border-color: currentColor;
+	box-shadow: 0 0 0 1px currentColor;
+}
+
+.paiz .paiz-select:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
+.paiz .paiz-select__icon,
+.paiz .paiz-select__arrow {
+	display: flex;
+	flex: 0 0 auto;
+}
+
+.paiz .paiz-select__arrow {
+	margin-left: auto;
+	transition: transform 0.2s;
+}
+
+.paiz .paiz-select.is-open .paiz-select__arrow {
+	transform: rotate(180deg);
+}
+
+.paiz .paiz-select__text {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	min-width: 0;
+}
+
+.paiz .paiz-select__label {
+	overflow: hidden;
+	font-size: 11px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	opacity: 0.85;
+}
+
+.paiz .paiz-select__value {
+	overflow: hidden;
+	font-size: 16px;
+	font-weight: 700;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.paiz .paiz-panel {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	left: 0;
+	padding: 16px;
+	border: 1px solid var(--paiz-border);
+	border-radius: 14px;
+	background: #fff;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+}
+
+.paiz .paiz-panel[hidden] {
+	display: none;
+}
+
+.paiz .paiz-panel__title {
+	margin: 0 0 12px;
+	color: var(--paiz-text);
+	font-size: 15px;
+	font-weight: 700;
+}
+
+.paiz .paiz-panel__options {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
+}
+
+.paiz .paiz-option {
+	min-height: 44px;
+	margin: 0;
+	padding: 8px 10px;
+	border: 1px solid var(--paiz-accent);
+	border-radius: 10px;
+	background: #fff;
+	color: var(--paiz-accent);
+	font: inherit;
+	font-size: 14px;
 	font-weight: 600;
 	line-height: 1.2;
 	letter-spacing: normal;
+	text-align: center;
 	text-transform: none;
 	cursor: pointer;
-	transition: background-color 0.2s, color 0.2s;
+	transition: background-color 0.15s, color 0.15s;
 }
 
-.paiz .paiz-filter__btn:hover,
-.paiz .paiz-filter__btn.is-active {
+.paiz .paiz-panel--month .paiz-option {
+	border-color: var(--paiz-month);
+	color: var(--paiz-month-dark);
+}
+
+.paiz .paiz-option:hover {
+	background: var(--paiz-accent-soft);
+}
+
+.paiz .paiz-panel--month .paiz-option:hover {
+	background: var(--paiz-month-soft);
+}
+
+.paiz .paiz-option.is-active,
+.paiz .paiz-option.is-active:hover {
 	background: var(--paiz-accent);
 	color: #fff;
 }
 
-.paiz .paiz-filter__btn:focus-visible {
-	outline: 2px solid var(--paiz-accent);
-	outline-offset: 2px;
-}
-
-/* Kombinacija bez izleta: gumb ostaje klikabilan, ali je zasivljen. */
-.paiz .paiz-filter__btn.is-disabled:not(.is-active) {
-	border-color: #ccc;
-	background: transparent;
-	color: #aaa;
-}
-
-.paiz .paiz-filter__btn.is-disabled.is-active {
-	opacity: 0.55;
-}
-
-/* Gumbi za mjesece – ispod gumba kategorija, narančasti */
-.paiz .paiz-filter + .paiz-filter--months {
-	margin-top: -12px;
-}
-
-.paiz .paiz-filter--months .paiz-filter__btn {
-	border-color: var(--paiz-month);
-	color: var(--paiz-month);
-	white-space: nowrap;
-}
-
-.paiz .paiz-filter--months .paiz-filter__btn:hover,
-.paiz .paiz-filter--months .paiz-filter__btn.is-active {
-	background: var(--paiz-month);
+.paiz .paiz-panel--month .paiz-option.is-active,
+.paiz .paiz-panel--month .paiz-option.is-active:hover {
+	border-color: var(--paiz-month-dark);
+	background: var(--paiz-month-dark);
 	color: #fff;
 }
 
-.paiz .paiz-filter--months .paiz-filter__btn:focus-visible {
-	outline-color: var(--paiz-month);
+.paiz .paiz-option:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
 }
 
-/* Zasivljeni gumbi ostaju sivi i kod mjeseci. */
-.paiz .paiz-filter--months .paiz-filter__btn.is-disabled:not(.is-active) {
-	border-color: #ccc;
-	background: transparent;
+/* Opcija bez izleta uz drugi odabrani filtar: zasivljena i neaktivna. */
+.paiz .paiz-option.is-disabled,
+.paiz .paiz-panel--month .paiz-option.is-disabled {
+	border-color: #ddd;
+	background: #f6f6f6;
 	color: #aaa;
+	cursor: not-allowed;
 }
 
-/* Puni nazivi mjeseci na računalu, kratki na mobitelu. */
-.paiz .paiz-month-short {
-	display: none;
-}
-
-/* Brojač ispod filtera */
+/* Brojač ispod izbornika */
 .paiz .paiz-count {
-	margin: -8px 0 16px;
+	margin: 0 0 16px;
 	color: #888;
 	font-size: 13px;
 }
@@ -175,15 +309,36 @@
 	object-fit: cover;
 }
 
-.paiz .paiz-card__badge {
+.paiz .paiz-card__category {
 	position: absolute;
 	top: 12px;
 	left: 12px;
-	padding: 0.35em 0.8em;
+	max-width: calc(100% - 128px);
+	line-height: 1.3;
+	overflow: hidden;
+	padding: 0.4em 0.75em;
+	border-radius: 4px;
+	background: #fff;
+	color: var(--paiz-text);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-overflow: ellipsis;
+	text-transform: uppercase;
+	white-space: nowrap;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.paiz .paiz-card__badge {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	padding: 0.4em 0.75em;
 	border-radius: 4px;
 	background: var(--paiz-sold);
 	color: #fff;
-	font-size: 0.8em;
+	font-size: 11px;
+	line-height: 1.3;
 	font-weight: 700;
 	letter-spacing: 0.03em;
 	text-transform: uppercase;
@@ -287,7 +442,9 @@
 
 @media (prefers-reduced-motion: reduce) {
 	.paiz .paiz-card,
-	.paiz .paiz-filter__btn {
+	.paiz .paiz-select,
+	.paiz .paiz-select__arrow,
+	.paiz .paiz-option {
 		transition: none;
 	}
 
@@ -296,7 +453,7 @@
 	}
 }
 
-/* Privremeni dijagnostički prikaz (samo administrator) */
+/* Dijagnostički prikaz (samo administrator, debug="yes") */
 .paiz .paiz-debug {
 	margin: 0 0 24px;
 	padding: 12px 16px;
@@ -337,55 +494,63 @@
 	vertical-align: top;
 }
 
-/* Mobitel (do 767px): manji gumbi, mjeseci u mreži od 3 stupca, niža slika */
+/* Mobitel (do 767px): opcije u 2 stupca, niža slika */
 @media (max-width: 767px) {
-	.paiz .paiz-filter {
-		gap: 6px;
-		margin-bottom: 18px;
+	.paiz .paiz-selects {
+		gap: 8px;
 	}
 
-	.paiz .paiz-filter__btn {
-		min-height: 32px;
-		padding: 4px 12px;
-		font-size: 13px;
+	.paiz .paiz-select {
+		gap: 8px;
+		min-height: 58px;
+		padding: 8px 10px;
 	}
 
-	/* JS (fitCategories) po potrebi smanjuje razmak/font da kategorije stanu u dva reda. */
-	.paiz .paiz-filter[data-paiz-group="cat"] .paiz-filter__btn {
-		padding-right: var(--paiz-btn-px, 12px);
-		padding-left: var(--paiz-btn-px, 12px);
-		font-size: var(--paiz-btn-fs, 13px);
+	/* Duga vrijednost (npr. "Zimski usponi") prelama se u najviše dva reda. */
+	.paiz .paiz-select__value {
+		display: -webkit-box;
+		font-size: 14px;
+		white-space: normal;
+		overflow-wrap: anywhere;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
 	}
 
-	/* Razmak od oko 12px između bloka kategorija i bloka mjeseci. */
-	.paiz .paiz-filter + .paiz-filter--months {
-		margin-top: -6px;
+	.paiz .paiz-select__label {
+		font-size: 10px;
 	}
 
-	.paiz .paiz-filter--months {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
+	.paiz .paiz-panel {
+		padding: 14px 12px;
 	}
 
-	.paiz .paiz-filter--months[hidden] {
-		display: none;
-	}
-
-	/* "Svi" je prva kućica mreže; uski razmak da i "Velj 2027" stane u kućicu. */
-	.paiz .paiz-filter--months .paiz-filter__btn {
-		padding-right: 4px;
-		padding-left: 4px;
-	}
-
-	.paiz .paiz-month-long {
-		display: none;
-	}
-
-	.paiz .paiz-month-short {
-		display: inline;
+	.paiz .paiz-panel__options {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	.paiz .paiz-card__media {
 		aspect-ratio: 16 / 10;
+	}
+}
+
+/* Vrlo uski ekrani (npr. 360px): zbijeniji izbornici da oznaka i vrijednost stanu u jedan red. */
+@media (max-width: 389px) {
+	.paiz .paiz-select {
+		gap: 6px;
+		padding: 8px;
+	}
+
+	.paiz .paiz-select .paiz-icon {
+		width: 16px;
+		height: 16px;
+	}
+
+	.paiz .paiz-select__label {
+		font-size: 9.5px;
+		letter-spacing: 0.04em;
+	}
+
+	.paiz .paiz-select__value {
+		font-size: 13px;
 	}
 }

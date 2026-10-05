@@ -1,8 +1,9 @@
 /**
- * Plan A izleti – filtriranje po kategoriji i mjesecu bez ponovnog učitavanja stranice.
+ * Plan A izleti – filtriranje po vrsti izleta i terminu bez ponovnog učitavanja stranice.
  *
- * Bez odabranog filtra ("Sve ture" + "Svi mjeseci") vidi se prvih N izleta
- * (atribut show); uz odabranu kategoriju ili mjesec vide se svi odgovarajući izleti.
+ * Dva izbornika ("Vrsta izleta", "Termin") otvaraju panel s opcijama; istovremeno
+ * je otvoren najviše jedan panel. Bez odabranog filtra ("Svi izleti" + "Svi datumi")
+ * vidi se prvih N izleta (atribut show); uz odabir se vide svi odgovarajući izleti.
  */
 ( function () {
 	'use strict';
@@ -17,15 +18,18 @@
 		}
 		root.setAttribute( 'data-paiz-ready', '1' );
 
-		var groups = root.querySelectorAll( '[data-paiz-filters]' );
-		if ( ! groups.length ) {
+		var wrap = root.querySelector( '[data-paiz-filters]' );
+		if ( ! wrap ) {
 			return;
 		}
 
 		var show = parseInt( root.getAttribute( 'data-paiz-show' ), 10 ) || 0;
 		var status = root.querySelector( '[data-paiz-status]' );
 		var empty = root.querySelector( '[data-paiz-empty]' );
+		var toggles = wrap.querySelectorAll( '[data-paiz-toggle]' );
+		var panels = wrap.querySelectorAll( '[data-paiz-panel]' );
 		var state = { cat: 'all', month: 'all' };
+		var open = null;
 
 		var cards = Array.prototype.map.call( root.querySelectorAll( '.paiz-card' ), function ( el, index ) {
 			var time = el.querySelector( '[data-paiz-date]' );
@@ -44,6 +48,14 @@
 				defaultDate: time ? time.getAttribute( 'datetime' ) : '',
 			};
 		} );
+
+		function toggleFor( name ) {
+			return wrap.querySelector( '[data-paiz-toggle="' + name + '"]' );
+		}
+
+		function panelFor( name ) {
+			return wrap.querySelector( '[data-paiz-panel="' + name + '"]' );
+		}
 
 		function matches( card, cat, month ) {
 			var catOk = 'all' === cat || card.cats.indexOf( cat ) !== -1;
@@ -91,20 +103,24 @@
 					} );
 			}
 
-			// Gumbi: odabrani, i zasivljeni ako u kombinaciji s drugim filtrom nema izleta.
-			each( groups, function ( group ) {
-				var name = group.getAttribute( 'data-paiz-group' );
-				each( group.querySelectorAll( '[data-paiz-filter]' ), function ( button ) {
-					var value = button.getAttribute( 'data-paiz-filter' );
+			// Opcije: odabrana, i zasivljene/neaktivne ako uz drugi filtar nema izleta.
+			each( panels, function ( panel ) {
+				var name = panel.getAttribute( 'data-paiz-panel' );
+				var toggle = toggleFor( name );
+				each( panel.querySelectorAll( '[data-paiz-filter]' ), function ( option ) {
+					var value = option.getAttribute( 'data-paiz-filter' );
 					var active = state[ name ] === value;
 					var available = 'all' === value || ( 'cat' === name ? anyMatch( value, state.month ) : anyMatch( state.cat, value ) );
-					button.classList.toggle( 'is-active', active );
-					button.setAttribute( 'aria-pressed', active ? 'true' : 'false' );
-					button.classList.toggle( 'is-disabled', ! available );
+					option.classList.toggle( 'is-active', active );
+					option.setAttribute( 'aria-pressed', active ? 'true' : 'false' );
+					option.classList.toggle( 'is-disabled', ! available );
 					if ( available ) {
-						button.removeAttribute( 'aria-disabled' );
+						option.removeAttribute( 'aria-disabled' );
 					} else {
-						button.setAttribute( 'aria-disabled', 'true' );
+						option.setAttribute( 'aria-disabled', 'true' );
+					}
+					if ( active && toggle ) {
+						toggle.querySelector( '[data-paiz-value]' ).textContent = option.textContent;
 					}
 				} );
 			} );
@@ -121,72 +137,81 @@
 			}
 		}
 
-		each( groups, function ( group ) {
-			var name = group.getAttribute( 'data-paiz-group' ) || 'cat';
-			group.hidden = false;
-			group.addEventListener( 'click', function ( event ) {
-				var button = event.target.closest( '[data-paiz-filter]' );
-				if ( ! button ) {
-					return;
-				}
-				state[ name ] = button.getAttribute( 'data-paiz-filter' );
-				apply();
-				if ( 'month' === name && button.scrollIntoView ) {
-					button.scrollIntoView( { block: 'nearest', inline: 'nearest' } );
-				}
-			} );
-		} );
-
-		apply();
-
-		var cats = root.querySelector( '[data-paiz-group="cat"]' );
-		if ( cats ) {
-			fitCategories( cats );
-			var pending = false;
-			window.addEventListener( 'resize', function () {
-				if ( ! pending ) {
-					pending = true;
-					window.requestAnimationFrame( function () {
-						pending = false;
-						fitCategories( cats );
-					} );
-				}
-			} );
-			if ( document.fonts && document.fonts.ready ) {
-				document.fonts.ready.then( function () {
-					fitCategories( cats );
-				} );
-			}
-		}
-	}
-
-	/**
-	 * Na mobitelu (do 767px) gumbi kategorija trebaju stati u najviše dva reda:
-	 * po potrebi postupno smanji vodoravni razmak, a zatim i font gumba.
-	 */
-	var FIT_STEPS = [ [ 12, 13 ], [ 10, 13 ], [ 8, 13 ], [ 7, 12.5 ] ];
-
-	function rowCount( group ) {
-		var tops = {};
-		each( group.querySelectorAll( '.paiz-filter__btn' ), function ( button ) {
-			tops[ Math.round( button.offsetTop ) ] = true;
-		} );
-		return Object.keys( tops ).length;
-	}
-
-	function fitCategories( group ) {
-		group.style.removeProperty( '--paiz-btn-px' );
-		group.style.removeProperty( '--paiz-btn-fs' );
-		if ( group.hidden || ! window.matchMedia || ! window.matchMedia( '(max-width: 767px)' ).matches ) {
-			return;
-		}
-		for ( var i = 0; i < FIT_STEPS.length; i++ ) {
-			group.style.setProperty( '--paiz-btn-px', FIT_STEPS[ i ][ 0 ] + 'px' );
-			group.style.setProperty( '--paiz-btn-fs', FIT_STEPS[ i ][ 1 ] + 'px' );
-			if ( rowCount( group ) <= 2 ) {
+		function closePanel( returnFocus ) {
+			if ( ! open ) {
 				return;
 			}
+			var toggle = toggleFor( open );
+			panelFor( open ).hidden = true;
+			toggle.setAttribute( 'aria-expanded', 'false' );
+			toggle.classList.remove( 'is-open' );
+			open = null;
+			if ( returnFocus ) {
+				toggle.focus();
+			}
 		}
+
+		function openPanel( name ) {
+			closePanel( false );
+			var toggle = toggleFor( name );
+			var panel = panelFor( name );
+			panel.hidden = false;
+			toggle.setAttribute( 'aria-expanded', 'true' );
+			toggle.classList.add( 'is-open' );
+			open = name;
+			var current = panel.querySelector( '.paiz-option.is-active' ) || panel.querySelector( '.paiz-option' );
+			if ( current ) {
+				current.focus( { preventScroll: true } );
+			}
+		}
+
+		each( toggles, function ( toggle ) {
+			toggle.addEventListener( 'click', function () {
+				var name = toggle.getAttribute( 'data-paiz-toggle' );
+				if ( open === name ) {
+					closePanel( false );
+				} else {
+					openPanel( name );
+				}
+			} );
+		} );
+
+		each( panels, function ( panel ) {
+			var name = panel.getAttribute( 'data-paiz-panel' );
+			panel.addEventListener( 'click', function ( event ) {
+				var option = event.target.closest( '[data-paiz-filter]' );
+				if ( ! option || 'true' === option.getAttribute( 'aria-disabled' ) ) {
+					return;
+				}
+				state[ name ] = option.getAttribute( 'data-paiz-filter' );
+				apply();
+				// Kod odabira tipkovnicom (detail = 0) fokus se vraća na izbornik.
+				closePanel( 0 === event.detail );
+			} );
+		} );
+
+		// Klik izvan izbornika i panela zatvara panel.
+		document.addEventListener( 'click', function ( event ) {
+			if ( open && ! wrap.contains( event.target ) ) {
+				closePanel( false );
+			}
+		} );
+
+		// Escape zatvara panel; fokus koji napusti filtere također ga zatvara.
+		wrap.addEventListener( 'keydown', function ( event ) {
+			if ( open && ( 'Escape' === event.key || 'Esc' === event.key ) ) {
+				event.preventDefault();
+				closePanel( true );
+			}
+		} );
+		wrap.addEventListener( 'focusout', function ( event ) {
+			if ( open && event.relatedTarget && ! wrap.contains( event.relatedTarget ) ) {
+				closePanel( false );
+			}
+		} );
+
+		wrap.hidden = false;
+		apply();
 	}
 
 	function boot() {

@@ -14,11 +14,9 @@ final class Plan_A_Izleti_Shortcode {
 	const MAX_SHOW     = 100;
 
 	/**
-	 * Privremeno: dijagnostika je zadano uključena (vidi je samo administrator)
-	 * dok se ne provjeri izvor kategorija. Nakon provjere promijeniti u 'no';
-	 * do tada se isključuje s [plan-a-izleti debug="no"].
+	 * Dijagnostika (vidi je samo administrator) uključuje se s [plan-a-izleti debug="yes"].
 	 */
-	const DEBUG_DEFAULT = 'yes';
+	const DEBUG_DEFAULT = 'no';
 
 	/** @var int Brojač za jedinstvene ID-eve kad je shortcode više puta na stranici. */
 	private static $instance = 0;
@@ -61,13 +59,15 @@ final class Plan_A_Izleti_Shortcode {
 			array(
 				'show'  => self::DEFAULT_SHOW,
 				'debug' => self::DEBUG_DEFAULT,
+				'intro' => 'no',
 			),
 			$atts,
 			self::TAG
 		);
 		$show  = absint( $atts['show'] );
 		$show  = $show > 0 ? min( $show, self::MAX_SHOW ) : self::DEFAULT_SHOW;
-		$debug = 'no' !== strtolower( trim( (string) $atts['debug'] ) ) && current_user_can( 'manage_options' );
+		$debug = 'yes' === strtolower( trim( (string) $atts['debug'] ) ) && current_user_can( 'manage_options' );
+		$intro = 'yes' === strtolower( trim( (string) $atts['intro'] ) );
 
 		if ( ! Plan_A_Izleti_Data::is_source_available() ) {
 			if ( current_user_can( 'edit_posts' ) ) {
@@ -116,7 +116,7 @@ final class Plan_A_Izleti_Shortcode {
 			foreach ( array_keys( $months ) as $month ) {
 				$month_counts[ $month ]++;
 			}
-			$cards[] = self::render_card( $tour, $cats, $months, $index >= $show );
+			$cards[] = self::render_card( $tour, $cats, $months, $index >= $show, self::first_category_name( $lookups[ $tour['id'] ], $source ) );
 		}
 		$term_ids     = array_values( array_unique( $term_ids ) );
 		$month_counts = array_filter( $month_counts );
@@ -128,8 +128,10 @@ final class Plan_A_Izleti_Shortcode {
 			if ( $debug ) {
 				echo self::render_debug( $tours, $lookups, $source, $term_ids, $show, $month_counts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
 			}
-			echo self::render_filter( $term_ids, $source ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
-			echo self::render_month_filter( array_intersect_key( $window, $month_counts ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
+			if ( $intro ) {
+				echo self::render_intro(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
+			}
+			echo self::render_filters( self::filter_terms( $term_ids, $source ), array_intersect_key( $window, $month_counts ), $root_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
 			?>
 			<p class="paiz-count" role="status" aria-live="polite" data-paiz-status data-paiz-status-text="<?php echo esc_attr__( 'Prikazano izleta: %d', 'plan-a-izleti' ); ?>">
 				<?php echo esc_html( sprintf( __( 'Prikazano izleta: %d', 'plan-a-izleti' ), min( $show, count( $tours ) ) ) ); ?>
@@ -144,14 +146,14 @@ final class Plan_A_Izleti_Shortcode {
 	}
 
 	/**
-	 * Gumbi za kategorije. Prikazuju se samo kategorije koje imaju barem jedan
-	 * prikazani izlet s budućim terminom, tako da nijedan gumb ne vodi na praznu mrežu.
-	 * Skriveni su dok JavaScript ne proradi (bez JS-a se vide svi izleti).
+	 * Kategorije za izbornik "Vrsta izleta": samo one s barem jednim budućim izletom.
+	 *
+	 * @return WP_Term[]
 	 */
-	private static function render_filter( array $term_ids, string $source ): string {
+	private static function filter_terms( array $term_ids, string $source ): array {
 		$sources = Plan_A_Izleti_Categories::sources();
 		if ( empty( $term_ids ) || ! isset( $sources[ $source ] ) ) {
-			return '';
+			return array();
 		}
 		$terms = get_terms(
 			array(
@@ -162,47 +164,110 @@ final class Plan_A_Izleti_Shortcode {
 				'order'      => 'ASC',
 			)
 		);
-		if ( is_wp_error( $terms ) || empty( $terms ) ) {
-			return '';
-		}
-
-		$html  = '<div class="paiz-filter" role="group" aria-label="' . esc_attr__( 'Filtriraj izlete po kategoriji', 'plan-a-izleti' ) . '" data-paiz-filters data-paiz-group="cat" hidden>';
-		$html .= '<button type="button" class="paiz-filter__btn is-active" data-paiz-filter="all" aria-pressed="true">' . esc_html__( 'Sve ture', 'plan-a-izleti' ) . '</button>';
-		foreach ( $terms as $term ) {
-			$html .= '<button type="button" class="paiz-filter__btn" data-paiz-filter="' . esc_attr( (string) $term->term_id ) . '" aria-pressed="false">' . esc_html( $term->name ) . '</button>';
-		}
-		$html .= '</div>';
-
-		return $html;
+		return is_wp_error( $terms ) ? array() : $terms;
 	}
 
 	/**
-	 * Red gumba s mjesecima ("Svi mjeseci" + mjeseci s budućim izletima), kronološki.
-	 * Kao i gumbi kategorija, skriven je dok JavaScript ne proradi.
-	 *
-	 * @param array<string, string> $months 'Y-m' => naziv ("Studeni 2026").
+	 * Naziv prve kategorije izleta (za oznaku na slici kartice).
 	 */
-	private static function render_month_filter( array $months ): string {
-		if ( empty( $months ) ) {
+	private static function first_category_name( array $lookup, string $source ): string {
+		$sources = Plan_A_Izleti_Categories::sources();
+		if ( ! isset( $sources[ $source ] ) ) {
 			return '';
 		}
-		$html  = '<div class="paiz-filter paiz-filter--months" role="group" aria-label="' . esc_attr__( 'Filtriraj izlete po mjesecu', 'plan-a-izleti' ) . '" data-paiz-filters data-paiz-group="month" hidden>';
-		$html .= '<button type="button" class="paiz-filter__btn paiz-filter__btn--all" data-paiz-filter="all" aria-pressed="true" aria-label="' . esc_attr__( 'Svi mjeseci', 'plan-a-izleti' ) . '">'
-			. '<span class="paiz-month-long" aria-hidden="true">' . esc_html__( 'Svi mjeseci', 'plan-a-izleti' ) . '</span>'
-			. '<span class="paiz-month-short" aria-hidden="true">' . esc_html__( 'Svi', 'plan-a-izleti' ) . '</span>'
-			. '</button>';
-		foreach ( $months as $key => $label ) {
-			// Puni naziv na računalu, kratki na mobitelu (CSS); čitač zaslona uvijek čita puni.
-			$html .= '<button type="button" class="paiz-filter__btn" data-paiz-filter="' . esc_attr( $key ) . '" aria-pressed="false" aria-label="' . esc_attr( $label ) . '">'
-				. '<span class="paiz-month-long" aria-hidden="true">' . esc_html( $label ) . '</span>'
-				. '<span class="paiz-month-short" aria-hidden="true">' . esc_html( self::short_month_label( $key ) ) . '</span>'
-				. '</button>';
+		$ids = 'activities' === $source ? array_merge( $lookup['activities_tax'], $lookup['activities_meta'] ) : $lookup['tour_cat'];
+		foreach ( $ids as $id ) {
+			$term = get_term( (int) $id, $sources[ $source ]['taxonomy'] );
+			if ( $term instanceof WP_Term ) {
+				return $term->name;
+			}
 		}
-		return $html . '</div>';
+		return '';
 	}
 
 	/**
-	 * Kratki naziv mjeseca za mobitel, npr. '2026-11' => 'Stu 2026'.
+	 * Uvod iznad izbornika (intro="yes").
+	 */
+	private static function render_intro(): string {
+		return '<div class="paiz-intro">'
+			. '<p class="paiz-intro__kicker">' . esc_html__( 'KRENI S PLANOM A', 'plan-a-izleti' ) . '</p>'
+			. '<h2 class="paiz-intro__title">' . esc_html__( 'Pronađi svoj izlet.', 'plan-a-izleti' ) . '</h2>'
+			. '<p class="paiz-intro__subtitle">' . esc_html__( 'Odaberi aktivnost i termin izleta.', 'plan-a-izleti' ) . '</p>'
+			. '</div>';
+	}
+
+	/**
+	 * Dva izbornika ("Vrsta izleta" i "Termin") i njihovi paneli s opcijama.
+	 * Skriveni su dok JavaScript ne proradi (bez JS-a se vidi prvih N izleta).
+	 *
+	 * @param WP_Term[]             $terms  Kategorije s budućim izletima.
+	 * @param array<string, string> $months 'Y-m' => puni naziv ("Studeni 2026").
+	 */
+	private static function render_filters( array $terms, array $months, string $root_id ): string {
+		$groups = array();
+		if ( $terms ) {
+			$options = array( array( 'all', __( 'Svi izleti', 'plan-a-izleti' ), '' ) );
+			foreach ( $terms as $term ) {
+				$options[] = array( (string) $term->term_id, $term->name, '' );
+			}
+			$groups['cat'] = array(
+				'label'   => __( 'Vrsta izleta', 'plan-a-izleti' ),
+				'title'   => __( 'Što želiš doživjeti?', 'plan-a-izleti' ),
+				'icon'    => 'mountain',
+				'options' => $options,
+			);
+		}
+		if ( $months ) {
+			$options = array( array( 'all', __( 'Svi datumi', 'plan-a-izleti' ), '' ) );
+			foreach ( $months as $key => $label ) {
+				$options[] = array( $key, self::short_month_label( $key ) . '.', $label );
+			}
+			$groups['month'] = array(
+				'label'   => __( 'Termin', 'plan-a-izleti' ),
+				'title'   => __( 'Kada želiš putovati?', 'plan-a-izleti' ),
+				'icon'    => 'calendar',
+				'options' => $options,
+			);
+		}
+		if ( ! $groups ) {
+			return '';
+		}
+
+		$toggles = '';
+		$panels  = '';
+		foreach ( $groups as $name => $group ) {
+			$panel_id = $root_id . '-panel-' . $name;
+			$label_id = $root_id . '-label-' . $name;
+
+			$toggles .= '<button type="button" class="paiz-select paiz-select--' . esc_attr( $name ) . '" data-paiz-toggle="' . esc_attr( $name ) . '" aria-expanded="false" aria-controls="' . esc_attr( $panel_id ) . '">'
+				. '<span class="paiz-select__icon">' . self::icon( $group['icon'], 20 ) . '</span>'
+				. '<span class="paiz-select__text">'
+				. '<span class="paiz-select__label" id="' . esc_attr( $label_id ) . '">' . esc_html( $group['label'] ) . '</span>'
+				. '<span class="paiz-select__value" data-paiz-value>' . esc_html( $group['options'][0][1] ) . '</span>'
+				. '</span>'
+				. '<span class="paiz-select__arrow">' . self::icon( 'chevron', 18 ) . '</span>'
+				. '</button>';
+
+			$panels .= '<div class="paiz-panel paiz-panel--' . esc_attr( $name ) . '" id="' . esc_attr( $panel_id ) . '" data-paiz-panel="' . esc_attr( $name ) . '" role="group" aria-labelledby="' . esc_attr( $label_id ) . '" hidden>'
+				. '<p class="paiz-panel__title">' . esc_html( $group['title'] ) . '</p>'
+				. '<div class="paiz-panel__options">';
+			foreach ( $group['options'] as $i => $option ) {
+				list( $value, $text, $full ) = $option;
+				$panels .= '<button type="button" class="paiz-option' . ( 0 === $i ? ' is-active' : '' ) . '" data-paiz-filter="' . esc_attr( $value ) . '" aria-pressed="' . ( 0 === $i ? 'true' : 'false' ) . '"'
+					. ( '' !== $full ? ' aria-label="' . esc_attr( $full ) . '"' : '' ) . '>'
+					. esc_html( $text ) . '</button>';
+			}
+			$panels .= '</div></div>';
+		}
+
+		return '<div class="paiz-filters' . ( 1 === count( $groups ) ? ' paiz-filters--single' : '' ) . '" data-paiz-filters hidden>'
+			. '<div class="paiz-selects">' . $toggles . '</div>'
+			. $panels
+			. '</div>';
+	}
+
+	/**
+	 * Kratki naziv mjeseca, npr. '2026-11' => 'Stu 2026'.
 	 */
 	private static function short_month_label( string $key ): string {
 		$short = array( 1 => 'Sij', 'Velj', 'Ožu', 'Tra', 'Svib', 'Lip', 'Srp', 'Kol', 'Ruj', 'Lis', 'Stu', 'Pro' );
@@ -312,7 +377,7 @@ final class Plan_A_Izleti_Shortcode {
 	 * @param array $months 'Y-m' => prvi termin u tom mjesecu (samo mjeseci iz filtra).
 	 * @param bool  $hidden Izlet je izvan ograničenja show (vidi se samo uz filtar).
 	 */
-	private static function render_card( array $tour, array $cats, array $months, bool $hidden ): string {
+	private static function render_card( array $tour, array $cats, array $months, bool $hidden, string $category ): string {
 		$id        = (int) $tour['id'];
 		$source_id = Plan_A_Izleti_Data::source_id( $id );
 		$title     = get_the_title( $id );
@@ -346,6 +411,9 @@ final class Plan_A_Izleti_Shortcode {
 		<article class="paiz-card<?php echo $tour['sold_out'] ? ' is-sold-out' : ''; ?>" data-paiz-cats="<?php echo esc_attr( implode( ' ', $cats ) ); ?>" data-paiz-months="<?php echo esc_attr( implode( ' ', array_keys( $months ) ) ); ?>" data-paiz-month-dates="<?php echo esc_attr( (string) wp_json_encode( $month_dates ) ); ?>"<?php echo $hidden ? ' hidden' : ''; ?>>
 			<div class="paiz-card__media">
 				<?php echo $image; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_get_attachment_image() ili statički HTML. ?>
+				<?php if ( '' !== $category ) : ?>
+					<span class="paiz-card__category"><?php echo esc_html( $category ); ?></span>
+				<?php endif; ?>
 				<?php if ( $tour['sold_out'] ) : ?>
 					<span class="paiz-card__badge"><?php esc_html_e( 'Popunjeno', 'plan-a-izleti' ); ?></span>
 				<?php endif; ?>
@@ -604,12 +672,14 @@ final class Plan_A_Izleti_Shortcode {
 		return '<span class="paiz-card__img paiz-card__img--empty" aria-hidden="true"></span>';
 	}
 
-	private static function icon( string $name ): string {
+	private static function icon( string $name, int $size = 16 ): string {
 		$paths = array(
 			'calendar' => '<rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
 			'pin'      => '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
 			'clock'    => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+			'mountain' => '<path d="M2.5 20 9 8.5l4 6.5 2.5-3.5 6 8.5z"/><path d="m7 12 2 1.5 2-1.5"/>',
+			'chevron'  => '<path d="m6 9 6 6 6-6"/>',
 		);
-		return '<svg class="paiz-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $paths[ $name ] . '</svg>';
+		return '<svg class="paiz-icon" viewBox="0 0 24 24" width="' . $size . '" height="' . $size . '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $paths[ $name ] . '</svg>';
 	}
 }
