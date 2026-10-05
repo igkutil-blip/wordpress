@@ -4,7 +4,7 @@
  *
  * Kako WpTravelly sprema podatke (provjereno u izvornom kodu v2.3.4):
  * - izleti su post type `ttbm_tour` (TTBM_Function::get_cpt_name()),
- * - kategorije su taksonomija `ttbm_tour_cat`,
+ * - kategorije: vidi Plan_A_Izleti_Categories (`ttbm_tour_activities` i `ttbm_tour_cat`),
  * - vrsta rasporeda je meta `ttbm_travel_type`: `fixed`, `particular` ili `repeated`,
  *   - fixed:      `ttbm_travel_start_date` (Y-m-d) + `ttbm_travel_start_time`,
  *   - particular: `ttbm_particular_dates` = niz redaka s ključevima
@@ -28,8 +28,8 @@ defined( 'ABSPATH' ) || exit;
 
 final class Plan_A_Izleti_Data {
 
-	const CACHE_KEY = 'plan_a_izleti_cache';
-	const TAXONOMY  = 'ttbm_tour_cat';
+	const CACHE_KEY     = 'plan_a_izleti_cache';
+	const CACHE_VERSION = 2;
 
 	public static function init() {
 		add_action( 'save_post_' . self::post_type(), array( __CLASS__, 'flush_cache' ) );
@@ -72,33 +72,58 @@ final class Plan_A_Izleti_Data {
 	 * @return array[] Retci oblika [ 'id' => int, 'date' => 'Y-m-d'|'', 'more' => bool, 'sold_out' => bool ].
 	 */
 	public static function get_tours(): array {
+		return self::get_set()['tours'];
+	}
+
+	/**
+	 * Brojke za dijagnostički prikaz.
+	 *
+	 * @return array{published: int, upcoming: int, undated: int, past: int, errors: int}
+	 */
+	public static function get_stats(): array {
+		return self::get_set()['stats'];
+	}
+
+	private static function get_set(): array {
+		$empty = array(
+			'tours' => array(),
+			'stats' => array(
+				'published' => 0,
+				'upcoming'  => 0,
+				'undated'   => 0,
+				'past'      => 0,
+				'errors'    => 0,
+			),
+		);
 		if ( ! self::is_source_available() ) {
-			return array();
+			return $empty;
 		}
 
 		$today = current_time( 'Y-m-d' );
 		$lang  = self::language();
 		$cache = get_transient( self::CACHE_KEY );
+		$fresh = is_array( $cache ) && ( $cache['v'] ?? 0 ) === self::CACHE_VERSION && ( $cache['day'] ?? '' ) === $today;
 
-		if ( is_array( $cache ) && ( $cache['day'] ?? '' ) === $today && isset( $cache['sets'][ $lang ] ) ) {
+		if ( $fresh && isset( $cache['sets'][ $lang ] ) ) {
 			return $cache['sets'][ $lang ];
 		}
 
-		$tours = self::build( $today );
+		$set = self::build( $today ) + $empty;
 
 		$ttl = (int) apply_filters( 'plan_a_izleti_cache_ttl', HOUR_IN_SECONDS );
 		if ( $ttl > 0 ) {
-			if ( ! is_array( $cache ) || ( $cache['day'] ?? '' ) !== $today ) {
+			if ( ! $fresh ) {
 				$cache = array(
+					'v'    => self::CACHE_VERSION,
 					'day'  => $today,
 					'sets' => array(),
 				);
 			}
-			$cache['sets'][ $lang ] = $tours;
+			$cache['sets'][ $lang ] = $set;
 			set_transient( self::CACHE_KEY, $cache, $ttl );
 		}
 
-		return $tours;
+		return $set;
 	}
 
 	private static function build( string $today ): array {
@@ -117,7 +142,14 @@ final class Plan_A_Izleti_Data {
 		if ( empty( $ids ) ) {
 			return array();
 		}
-		$ids = array_map( 'intval', $ids );
+		$ids   = array_map( 'intval', $ids );
+		$stats = array(
+			'published' => count( $ids ),
+			'upcoming'  => 0,
+			'undated'   => 0,
+			'past'      => 0,
+			'errors'    => 0,
+		);
 
 		update_meta_cache( 'post', $ids );
 		if ( method_exists( 'TTBM_Function', 'prime_sold_cache' ) ) {
@@ -131,6 +163,7 @@ final class Plan_A_Izleti_Data {
 			try {
 				$dates = self::get_all_dates( $id );
 			} catch ( \Throwable $e ) {
+				$stats['errors']++;
 				continue; // Neispravan izlet ne smije srušiti cijelu stranicu.
 			}
 
@@ -153,6 +186,7 @@ final class Plan_A_Izleti_Data {
 				)
 			);
 			if ( empty( $upcoming ) ) {
+				$stats['past']++;
 				continue; // Svi termini su prošli.
 			}
 
@@ -176,7 +210,13 @@ final class Plan_A_Izleti_Data {
 		}
 		unset( $tour );
 
-		return array_merge( $dated, $undated );
+		$stats['upcoming'] = count( $dated );
+		$stats['undated']  = count( $undated );
+
+		return array(
+			'tours' => array_merge( $dated, $undated ),
+			'stats' => $stats,
+		);
 	}
 
 	/**

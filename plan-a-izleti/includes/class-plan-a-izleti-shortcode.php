@@ -13,6 +13,13 @@ final class Plan_A_Izleti_Shortcode {
 	const DEFAULT_SHOW = 18;
 	const MAX_SHOW     = 100;
 
+	/**
+	 * Privremeno: dijagnostika je zadano uključena (vidi je samo administrator)
+	 * dok se ne provjeri izvor kategorija. Nakon provjere promijeniti u 'no';
+	 * do tada se isključuje s [plan-a-izleti debug="no"].
+	 */
+	const DEBUG_DEFAULT = 'yes';
+
 	/** @var int Brojač za jedinstvene ID-eve kad je shortcode više puta na stranici. */
 	private static $instance = 0;
 
@@ -50,9 +57,17 @@ final class Plan_A_Izleti_Shortcode {
 	 * @param array|string $atts Atributi shortcodea.
 	 */
 	public static function render( $atts ): string {
-		$atts = shortcode_atts( array( 'show' => self::DEFAULT_SHOW ), $atts, self::TAG );
-		$show = absint( $atts['show'] );
-		$show = $show > 0 ? min( $show, self::MAX_SHOW ) : self::DEFAULT_SHOW;
+		$atts  = shortcode_atts(
+			array(
+				'show'  => self::DEFAULT_SHOW,
+				'debug' => self::DEBUG_DEFAULT,
+			),
+			$atts,
+			self::TAG
+		);
+		$show  = absint( $atts['show'] );
+		$show  = $show > 0 ? min( $show, self::MAX_SHOW ) : self::DEFAULT_SHOW;
+		$debug = 'no' !== strtolower( trim( (string) $atts['debug'] ) ) && current_user_can( 'manage_options' );
 
 		if ( ! Plan_A_Izleti_Data::is_source_available() ) {
 			if ( current_user_can( 'edit_posts' ) ) {
@@ -73,21 +88,37 @@ final class Plan_A_Izleti_Shortcode {
 		$root_id = 'plan-a-izleti-' . self::$instance;
 
 		if ( empty( $tours ) ) {
-			return '<div class="paiz" id="' . esc_attr( $root_id ) . '"><p class="paiz-empty">' . esc_html__( 'Trenutno nema najavljenih izleta.', 'plan-a-izleti' ) . '</p></div>';
+			$debug_html = $debug ? self::render_debug( $tours, array(), '', array(), $show ) : '';
+			return '<div class="paiz" id="' . esc_attr( $root_id ) . '">' . $debug_html . '<p class="paiz-empty">' . esc_html__( 'Trenutno nema najavljenih izleta.', 'plan-a-izleti' ) . '</p></div>';
 		}
+
+		$lookups = array();
+		foreach ( $tours as $tour ) {
+			$lookups[ $tour['id'] ] = Plan_A_Izleti_Categories::lookup( $tour['id'], Plan_A_Izleti_Data::source_id( $tour['id'] ) );
+		}
+		$source = Plan_A_Izleti_Categories::choose_source( $tours, $lookups );
 
 		$cards    = array();
 		$term_ids = array();
 		foreach ( $tours as $tour ) {
-			$cats     = self::get_category_ids( $tour['id'] );
-			$term_ids = array_merge( $term_ids, $cats );
-			$cards[]  = self::render_card( $tour, $cats );
+			$cats = Plan_A_Izleti_Categories::ids_for_source( $lookups[ $tour['id'] ], $source );
+			// Gumb dobiva samo kategorija s barem jednim budućim izletom.
+			if ( '' !== $tour['date'] ) {
+				$term_ids = array_merge( $term_ids, $cats );
+			}
+			$cards[] = self::render_card( $tour, $cats );
 		}
+		$term_ids = array_values( array_unique( $term_ids ) );
 
 		ob_start();
 		?>
 		<div class="paiz" id="<?php echo esc_attr( $root_id ); ?>" data-paiz>
-			<?php echo self::render_filter( array_unique( $term_ids ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
+			<?php
+			if ( $debug ) {
+				echo self::render_debug( $tours, $lookups, $source, $term_ids, $show ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
+			}
+			echo self::render_filter( $term_ids, $source ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
+			?>
 			<div class="paiz-grid">
 				<?php echo implode( '', $cards ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
 			</div>
@@ -99,16 +130,17 @@ final class Plan_A_Izleti_Shortcode {
 
 	/**
 	 * Gumbi za kategorije. Prikazuju se samo kategorije koje imaju barem jedan
-	 * prikazani izlet, tako da nijedan gumb ne vodi na praznu mrežu.
+	 * prikazani izlet s budućim terminom, tako da nijedan gumb ne vodi na praznu mrežu.
 	 * Skriveni su dok JavaScript ne proradi (bez JS-a se vide svi izleti).
 	 */
-	private static function render_filter( array $term_ids ): string {
-		if ( empty( $term_ids ) ) {
+	private static function render_filter( array $term_ids, string $source ): string {
+		$sources = Plan_A_Izleti_Categories::sources();
+		if ( empty( $term_ids ) || ! isset( $sources[ $source ] ) ) {
 			return '';
 		}
 		$terms = get_terms(
 			array(
-				'taxonomy'   => Plan_A_Izleti_Data::TAXONOMY,
+				'taxonomy'   => $sources[ $source ]['taxonomy'],
 				'include'    => array_map( 'intval', $term_ids ),
 				'hide_empty' => false,
 				'orderby'    => 'name',
@@ -130,22 +162,63 @@ final class Plan_A_Izleti_Shortcode {
 	}
 
 	/**
-	 * ID-evi kategorija izleta, uključujući nadređene kategorije
-	 * (izlet iz podkategorije vidi se i pod glavnom kategorijom).
+	 * Privremeni dijagnostički prikaz za administratore.
 	 */
-	private static function get_category_ids( int $post_id ): array {
-		$terms = get_the_terms( $post_id, Plan_A_Izleti_Data::TAXONOMY );
-		if ( empty( $terms ) || is_wp_error( $terms ) ) {
-			return array();
+	private static function render_debug( array $tours, array $lookups, string $source, array $button_ids, int $show ): string {
+		$stats   = Plan_A_Izleti_Data::get_stats();
+		$sources = Plan_A_Izleti_Categories::sources();
+
+		$html  = '<details class="paiz-debug" open>';
+		$html .= '<summary>' . esc_html__( 'Plan A izleti – dijagnostika (vidi samo administrator; isključuje se s debug="no")', 'plan-a-izleti' ) . '</summary>';
+		$html .= '<ul>';
+		$html .= '<li>' . esc_html( sprintf( 'Objavljenih izleta (%s): %d', Plan_A_Izleti_Data::post_type(), $stats['published'] ) ) . '</li>';
+		$html .= '<li>' . esc_html( sprintf( 'S budućim terminom: %d · bez datuma: %d · svi termini prošli (skriveni): %d · greške pri čitanju datuma: %d', $stats['upcoming'], $stats['undated'], $stats['past'], $stats['errors'] ) ) . '</li>';
+		$html .= '<li>' . esc_html( sprintf( 'Prikazano u mreži (show=%d): %d', $show, count( $tours ) ) ) . '</li>';
+		$html .= '<li>' . esc_html__( 'Izvor kategorija:', 'plan-a-izleti' ) . ' <strong>' . esc_html( isset( $sources[ $source ] ) ? $sources[ $source ]['label'] : __( 'nijedan izvor nema kategorija za izlete s budućim terminom', 'plan-a-izleti' ) ) . '</strong></li>';
+		$html .= '<li>' . esc_html__( 'Gumbi:', 'plan-a-izleti' ) . ' ' . esc_html( isset( $sources[ $source ] ) && $button_ids ? implode( ', ', self::term_names( $button_ids, $sources[ $source ]['taxonomy'] ) ) : '–' ) . '</li>';
+		$html .= '</ul>';
+
+		if ( $tours ) {
+			$html .= '<div class="paiz-debug__scroll"><table><thead><tr>';
+			foreach ( array( 'Izlet (ID)', 'Datum', 'Aktivnosti – taksonomija', 'Aktivnosti – meta polje', 'ttbm_tour_cat', 'Korišteno za filtar' ) as $heading ) {
+				$html .= '<th>' . esc_html( $heading ) . '</th>';
+			}
+			$html .= '</tr></thead><tbody>';
+			foreach ( $tours as $tour ) {
+				$lookup   = $lookups[ $tour['id'] ];
+				$raw_meta = $lookup['activities_meta_raw'];
+				$raw_meta = ( '' === $raw_meta || array() === $raw_meta || null === $raw_meta ) ? '–' : wp_json_encode( $raw_meta, JSON_UNESCAPED_UNICODE );
+				$used     = isset( $sources[ $source ] ) ? self::term_names( Plan_A_Izleti_Categories::ids_for_source( $lookup, $source ), $sources[ $source ]['taxonomy'] ) : array();
+
+				$html .= '<tr>';
+				$html .= '<td>' . esc_html( get_the_title( $tour['id'] ) . ' (' . $tour['id'] . ')' ) . '</td>';
+				$html .= '<td>' . esc_html( '' !== $tour['date'] ? $tour['date'] : 'bez datuma' ) . '</td>';
+				$html .= '<td>' . esc_html( self::names_or_dash( $lookup['activities_tax'], Plan_A_Izleti_Categories::ACTIVITY_TAXONOMY ) ) . '</td>';
+				$html .= '<td>' . esc_html( self::names_or_dash( $lookup['activities_meta'], Plan_A_Izleti_Categories::ACTIVITY_TAXONOMY ) . ' (sirovo: ' . $raw_meta . ')' ) . '</td>';
+				$html .= '<td>' . esc_html( self::names_or_dash( $lookup['tour_cat'], Plan_A_Izleti_Categories::CATEGORY_TAXONOMY ) ) . '</td>';
+				$html .= '<td>' . esc_html( $used ? implode( ', ', $used ) : '–' ) . '</td>';
+				$html .= '</tr>';
+			}
+			$html .= '</tbody></table></div>';
 		}
-		$ids = array();
-		foreach ( $terms as $term ) {
-			$ids[] = (int) $term->term_id;
-			foreach ( get_ancestors( $term->term_id, Plan_A_Izleti_Data::TAXONOMY, 'taxonomy' ) as $ancestor ) {
-				$ids[] = (int) $ancestor;
+
+		return $html . '</details>';
+	}
+
+	private static function term_names( array $ids, string $taxonomy ): array {
+		$names = array();
+		foreach ( $ids as $id ) {
+			$term = get_term( (int) $id, $taxonomy );
+			if ( $term instanceof WP_Term ) {
+				$names[] = $term->name;
 			}
 		}
-		return array_values( array_unique( $ids ) );
+		return $names;
+	}
+
+	private static function names_or_dash( array $ids, string $taxonomy ): string {
+		$names = self::term_names( $ids, $taxonomy );
+		return $names ? implode( ', ', $names ) : '–';
 	}
 
 	private static function render_card( array $tour, array $cats ): string {

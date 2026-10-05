@@ -17,7 +17,8 @@ Shortcode `[plan-a-izleti]` prikazuje izlete iz dodatka **WpTravelly** (Tour Boo
 
 ### Što trebate znati
 
-- **Kategorije** su kategorije izleta iz WpTravellyja. Prikazuju se samo kategorije koje imaju barem jedan prikazani izlet. Izlet iz podkategorije vidi se i pod nadređenom kategorijom.
+- **Kategorije** su iste one koje WpTravellyjev filtar prikazuje pod naslovom „Category”, a to su **aktivnosti** izleta (WpTravelly → Activities, npr. Alpinizam, Ferrate, Jedrenje). Ako nijedan izlet nema aktivnosti, koriste se kategorije izleta (`ttbm_tour_cat`). Gumb se prikazuje samo za kategoriju koja ima barem jedan prikazani izlet s budućim terminom.
+- **Dijagnostika (privremeno):** prijavljeni administrator iznad mreže vidi žuti okvir s brojem pronađenih izleta, korištenim izvorom kategorija i kategorijama svakog izleta. Posjetitelji i urednici ga ne vide. Isključuje se s `[plan-a-izleti debug="no"]`. Kad provjera završi, dijagnostika će biti zadano isključena.
 - **Datum** je prvi budući termin. Kod izleta s više termina ispod datuma piše „(i drugi termini)”. Izleti kojima su svi termini prošli automatski nestaju, a izleti bez datuma prikazuju se na kraju s natpisom „Termin uskoro”.
 - **Država** je država lokacije izleta (WpTravelly → Lokacija). Ako lokacija nema upisanu državu, red se ne prikazuje.
 - **Popunjeno** se prikazuje kad WpTravelly prema prodanim kartama izračuna da nema slobodnih mjesta ni na jednom terminu. Za izlete bez upisanog broja mjesta ta se oznaka ne prikazuje.
@@ -35,7 +36,8 @@ Provjereno u izvornom kodu WpTravellyja **v2.3.4** (službeni repozitorij [magep
 | Podatak | Gdje |
 |---|---|
 | Izlet | post type `ttbm_tour` |
-| Kategorija | taksonomija `ttbm_tour_cat` |
+| Kategorija u filtru „Category” | taksonomija `ttbm_tour_activities` + meta polje `ttbm_tour_activities` (ID-evi termina; stariji izleti: nazivi) |
+| Kategorija izleta („Tour Type”) | taksonomija `ttbm_tour_cat` (rezervni izvor) |
 | Vrsta rasporeda | meta `ttbm_travel_type`: `fixed`, `particular` (više termina) ili `repeated` |
 | Fiksni datum | `ttbm_travel_start_date` (Y-m-d), `ttbm_travel_start_time` |
 | Više termina | `ttbm_particular_dates`: niz redaka `ttbm_particular_start_date` / `_end_date` / `_start_time` |

@@ -243,3 +243,44 @@
 		transform: none;
 	}
 }
+
+/* Privremeni dijagnostički prikaz (samo administrator) */
+.paiz .paiz-debug {
+	margin: 0 0 24px;
+	padding: 12px 16px;
+	border: 2px dashed #d98c00;
+	border-radius: 6px;
+	background: #fffbea;
+	color: #333;
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+.paiz .paiz-debug summary {
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.paiz .paiz-debug ul {
+	margin: 8px 0;
+	padding-left: 18px;
+}
+
+.paiz .paiz-debug__scroll {
+	overflow-x: auto;
+}
+
+.paiz .paiz-debug table {
+	width: 100%;
+	margin: 0;
+	border-collapse: collapse;
+	font-size: 12px;
+}
+
+.paiz .paiz-debug th,
+.paiz .paiz-debug td {
+	padding: 4px 6px;
+	border: 1px solid #e0d6b0;
+	text-align: left;
+	vertical-align: top;
+}
