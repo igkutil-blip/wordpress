@@ -1,0 +1,245 @@
+/*
+ * Plan A izleti
+ * Prijelomne točke prate Flatsome: mobitel < 550px, tablet 550–849px, računalo ≥ 850px.
+ * Boja naglaska preuzima primarnu boju iz Flatsome postavki (--primary-color).
+ */
+
+.paiz {
+	--paiz-accent: var(--primary-color, #446084);
+	--paiz-sold: #c0392b;
+	--paiz-text: #333;
+	--paiz-muted: #666;
+	--paiz-border: #e5e5e5;
+	--paiz-radius: 8px;
+	--paiz-gap: 30px;
+	margin: 0 0 2em;
+}
+
+.paiz-sr {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* Gumbi za kategorije */
+.paiz .paiz-filter {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin: 0 0 24px;
+}
+
+.paiz .paiz-filter[hidden] {
+	display: none;
+}
+
+.paiz .paiz-filter__btn {
+	margin: 0;
+	min-height: 0;
+	padding: 0.55em 1.2em;
+	border: 2px solid var(--paiz-accent);
+	border-radius: 999px;
+	background: transparent;
+	color: var(--paiz-accent);
+	font-size: 0.95em;
+	font-weight: 600;
+	line-height: 1.2;
+	letter-spacing: normal;
+	text-transform: none;
+	cursor: pointer;
+	transition: background-color 0.2s, color 0.2s;
+}
+
+.paiz .paiz-filter__btn:hover,
+.paiz .paiz-filter__btn.is-active {
+	background: var(--paiz-accent);
+	color: #fff;
+}
+
+.paiz .paiz-filter__btn:focus-visible {
+	outline: 2px solid var(--paiz-accent);
+	outline-offset: 2px;
+}
+
+/* Mreža */
+.paiz .paiz-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: var(--paiz-gap);
+}
+
+@media (max-width: 849px) {
+	.paiz .paiz-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		--paiz-gap: 20px;
+	}
+}
+
+@media (max-width: 549px) {
+	.paiz .paiz-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Kartica */
+.paiz .paiz-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	border: 1px solid var(--paiz-border);
+	border-radius: var(--paiz-radius);
+	background: #fff;
+	color: var(--paiz-text);
+	transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.paiz .paiz-card[hidden] {
+	display: none;
+}
+
+.paiz .paiz-card:hover {
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+	transform: translateY(-2px);
+}
+
+.paiz .paiz-card__media {
+	position: relative;
+	aspect-ratio: 4 / 3;
+	background: #f1f1f1;
+}
+
+.paiz .paiz-card__img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	object-fit: cover;
+}
+
+.paiz .paiz-card__badge {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	padding: 0.35em 0.8em;
+	border-radius: 4px;
+	background: var(--paiz-sold);
+	color: #fff;
+	font-size: 0.8em;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+}
+
+.paiz .paiz-card.is-sold-out .paiz-card__img {
+	filter: grayscale(0.5);
+}
+
+.paiz .paiz-card__body {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	padding: 16px 18px 18px;
+}
+
+.paiz .paiz-card__title {
+	margin: 0 0 12px;
+	font-size: 1.15em;
+	line-height: 1.3;
+}
+
+.paiz .paiz-card__title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+/* Cijela kartica je klikabilna preko poveznice u naslovu. */
+.paiz .paiz-card__title a::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+}
+
+.paiz .paiz-card__title a:focus-visible {
+	outline: none;
+}
+
+.paiz .paiz-card:has(.paiz-card__title a:focus-visible) {
+	outline: 2px solid var(--paiz-accent);
+	outline-offset: 2px;
+}
+
+.paiz .paiz-card__meta {
+	margin: 0 0 14px;
+	padding: 0;
+	list-style: none;
+	color: var(--paiz-muted);
+	font-size: 0.92em;
+}
+
+.paiz .paiz-card__meta li {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 0 0 6px;
+	padding: 0;
+	list-style: none;
+}
+
+.paiz .paiz-card__meta li:last-child {
+	margin-bottom: 0;
+}
+
+.paiz .paiz-icon {
+	flex: 0 0 auto;
+	margin-top: 0.15em;
+	color: var(--paiz-accent);
+}
+
+.paiz .paiz-card__price {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0 6px;
+	margin: auto 0 0;
+	padding-top: 12px;
+	border-top: 1px solid var(--paiz-border);
+}
+
+.paiz .paiz-card__price-label {
+	white-space: nowrap;
+	color: var(--paiz-muted);
+	font-size: 0.9em;
+}
+
+.paiz .paiz-card__price-value {
+	white-space: nowrap;
+	color: var(--paiz-accent);
+	font-size: 1.2em;
+	font-weight: 700;
+}
+
+.paiz-empty,
+.paiz-notice {
+	padding: 1em;
+	border: 1px dashed #ccc;
+	text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.paiz .paiz-card,
+	.paiz .paiz-filter__btn {
+		transition: none;
+	}
+
+	.paiz .paiz-card:hover {
+		transform: none;
+	}
+}
