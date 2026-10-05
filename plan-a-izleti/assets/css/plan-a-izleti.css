@@ -410,6 +410,11 @@
 	color: var(--paiz-accent);
 }
 
+/* Ikone u izbornicima preuzimaju boju svog izbornika (Termin = narančasto). */
+.paiz .paiz-select .paiz-icon {
+	color: inherit;
+}
+
 .paiz .paiz-card__price {
 	display: flex;
 	flex-wrap: wrap;
