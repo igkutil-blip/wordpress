@@ -113,7 +113,11 @@
 				empty.hidden = visible.length > 0;
 			}
 			if ( status ) {
-				status.textContent = ( status.getAttribute( 'data-paiz-status-text' ) || '%d' ).replace( '%d', visible.length );
+				var text = ( status.getAttribute( 'data-paiz-status-text' ) || '%d' ).replace( '%d', visible.length );
+				// Mijenjaj samo kad se broj promijeni, da čitač zaslona ne ponavlja isto.
+				if ( status.textContent.trim() !== text ) {
+					status.textContent = text;
+				}
 			}
 		}
 
@@ -134,8 +138,54 @@
 		} );
 
 		apply();
-		if ( status ) {
-			status.textContent = '';
+
+		var cats = root.querySelector( '[data-paiz-group="cat"]' );
+		if ( cats ) {
+			fitCategories( cats );
+			var pending = false;
+			window.addEventListener( 'resize', function () {
+				if ( ! pending ) {
+					pending = true;
+					window.requestAnimationFrame( function () {
+						pending = false;
+						fitCategories( cats );
+					} );
+				}
+			} );
+			if ( document.fonts && document.fonts.ready ) {
+				document.fonts.ready.then( function () {
+					fitCategories( cats );
+				} );
+			}
+		}
+	}
+
+	/**
+	 * Na mobitelu (do 767px) gumbi kategorija trebaju stati u najviše dva reda:
+	 * po potrebi postupno smanji vodoravni razmak, a zatim i font gumba.
+	 */
+	var FIT_STEPS = [ [ 14, 14 ], [ 12, 14 ], [ 10, 14 ], [ 9, 13.5 ], [ 8, 13 ] ];
+
+	function rowCount( group ) {
+		var tops = {};
+		each( group.querySelectorAll( '.paiz-filter__btn' ), function ( button ) {
+			tops[ Math.round( button.offsetTop ) ] = true;
+		} );
+		return Object.keys( tops ).length;
+	}
+
+	function fitCategories( group ) {
+		group.style.removeProperty( '--paiz-btn-px' );
+		group.style.removeProperty( '--paiz-btn-fs' );
+		if ( group.hidden || ! window.matchMedia || ! window.matchMedia( '(max-width: 767px)' ).matches ) {
+			return;
+		}
+		for ( var i = 0; i < FIT_STEPS.length; i++ ) {
+			group.style.setProperty( '--paiz-btn-px', FIT_STEPS[ i ][ 0 ] + 'px' );
+			group.style.setProperty( '--paiz-btn-fs', FIT_STEPS[ i ][ 1 ] + 'px' );
+			if ( rowCount( group ) <= 2 ) {
+				return;
+			}
 		}
 	}
 

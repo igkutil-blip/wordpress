@@ -131,11 +131,13 @@ final class Plan_A_Izleti_Shortcode {
 			echo self::render_filter( $term_ids, $source ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
 			echo self::render_month_filter( array_intersect_key( $window, $month_counts ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
 			?>
+			<p class="paiz-count" role="status" aria-live="polite" data-paiz-status data-paiz-status-text="<?php echo esc_attr__( 'Prikazano izleta: %d', 'plan-a-izleti' ); ?>">
+				<?php echo esc_html( sprintf( __( 'Prikazano izleta: %d', 'plan-a-izleti' ), min( $show, count( $tours ) ) ) ); ?>
+			</p>
 			<div class="paiz-grid">
 				<?php echo implode( '', $cards ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
 			</div>
 			<p class="paiz-empty" data-paiz-empty hidden><?php esc_html_e( 'Za odabrani mjesec i kategoriju trenutno nema izleta.', 'plan-a-izleti' ); ?></p>
-			<p class="paiz-sr" role="status" aria-live="polite" data-paiz-status data-paiz-status-text="<?php echo esc_attr__( 'Prikazano izleta: %d', 'plan-a-izleti' ); ?>"></p>
 		</div>
 		<?php
 		return (string) ob_get_clean();
@@ -165,6 +167,7 @@ final class Plan_A_Izleti_Shortcode {
 		}
 
 		$html  = '<div class="paiz-filter" role="group" aria-label="' . esc_attr__( 'Filtriraj izlete po kategoriji', 'plan-a-izleti' ) . '" data-paiz-filters data-paiz-group="cat" hidden>';
+		$html .= '<span class="paiz-filter__label" aria-hidden="true">' . esc_html__( 'Vrsta ture', 'plan-a-izleti' ) . '</span>';
 		$html .= '<button type="button" class="paiz-filter__btn is-active" data-paiz-filter="all" aria-pressed="true">' . esc_html__( 'Sve ture', 'plan-a-izleti' ) . '</button>';
 		foreach ( $terms as $term ) {
 			$html .= '<button type="button" class="paiz-filter__btn" data-paiz-filter="' . esc_attr( (string) $term->term_id ) . '" aria-pressed="false">' . esc_html( $term->name ) . '</button>';
@@ -185,11 +188,25 @@ final class Plan_A_Izleti_Shortcode {
 			return '';
 		}
 		$html  = '<div class="paiz-filter paiz-filter--months" role="group" aria-label="' . esc_attr__( 'Filtriraj izlete po mjesecu', 'plan-a-izleti' ) . '" data-paiz-filters data-paiz-group="month" hidden>';
-		$html .= '<button type="button" class="paiz-filter__btn is-active" data-paiz-filter="all" aria-pressed="true">' . esc_html__( 'Svi mjeseci', 'plan-a-izleti' ) . '</button>';
+		$html .= '<span class="paiz-filter__label" aria-hidden="true">' . esc_html__( 'Mjesec', 'plan-a-izleti' ) . '</span>';
+		$html .= '<button type="button" class="paiz-filter__btn paiz-filter__btn--all" data-paiz-filter="all" aria-pressed="true">' . esc_html__( 'Svi mjeseci', 'plan-a-izleti' ) . '</button>';
 		foreach ( $months as $key => $label ) {
-			$html .= '<button type="button" class="paiz-filter__btn" data-paiz-filter="' . esc_attr( $key ) . '" aria-pressed="false">' . esc_html( $label ) . '</button>';
+			// Puni naziv na računalu, kratki na mobitelu (CSS); čitač zaslona uvijek čita puni.
+			$html .= '<button type="button" class="paiz-filter__btn" data-paiz-filter="' . esc_attr( $key ) . '" aria-pressed="false" aria-label="' . esc_attr( $label ) . '">'
+				. '<span class="paiz-month-long" aria-hidden="true">' . esc_html( $label ) . '</span>'
+				. '<span class="paiz-month-short" aria-hidden="true">' . esc_html( self::short_month_label( $key ) ) . '</span>'
+				. '</button>';
 		}
 		return $html . '</div>';
+	}
+
+	/**
+	 * Kratki naziv mjeseca za mobitel, npr. '2026-11' => 'Stu 2026'.
+	 */
+	private static function short_month_label( string $key ): string {
+		$short = array( 1 => 'Sij', 'Velj', 'Ožu', 'Tra', 'Svi', 'Lip', 'Srp', 'Kol', 'Ruj', 'Lis', 'Stu', 'Pro' );
+		list( $year, $month ) = array_map( 'intval', explode( '-', $key ) );
+		return ( $short[ $month ] ?? '' ) . ' ' . $year;
 	}
 
 	/**
