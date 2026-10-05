@@ -27,7 +27,7 @@
 	border: 0;
 }
 
-/* Gumbi za kategorije */
+/* Gumbi za kategorije i mjesece */
 .paiz .paiz-filter {
 	display: flex;
 	flex-wrap: wrap;
@@ -65,6 +65,49 @@
 .paiz .paiz-filter__btn:focus-visible {
 	outline: 2px solid var(--paiz-accent);
 	outline-offset: 2px;
+}
+
+/* Kombinacija bez izleta: gumb ostaje klikabilan, ali je zasivljen. */
+.paiz .paiz-filter__btn.is-disabled:not(.is-active) {
+	border-color: #ccc;
+	background: transparent;
+	color: #aaa;
+}
+
+.paiz .paiz-filter__btn.is-disabled.is-active {
+	opacity: 0.55;
+}
+
+/* Gumbi za mjesece – ispod gumba kategorija */
+.paiz .paiz-filter + .paiz-filter--months {
+	margin-top: -12px;
+}
+
+.paiz .paiz-filter--months .paiz-filter__btn {
+	white-space: nowrap;
+}
+
+@media (max-width: 549px) {
+	/* Na mobitelu jedan red koji se pomiče vodoravno (swipe). */
+	.paiz .paiz-filter--months {
+		flex-wrap: nowrap;
+		margin-right: -16px;
+		padding: 2px 16px 6px 2px;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x proximity;
+		scrollbar-width: none;
+	}
+
+	.paiz .paiz-filter--months::-webkit-scrollbar {
+		display: none;
+	}
+
+	.paiz .paiz-filter--months .paiz-filter__btn {
+		flex: 0 0 auto;
+		scroll-snap-align: start;
+	}
 }
 
 /* Mreža */

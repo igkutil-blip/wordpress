@@ -29,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
 final class Plan_A_Izleti_Data {
 
 	const CACHE_KEY     = 'plan_a_izleti_cache';
-	const CACHE_VERSION = 2;
+	const CACHE_VERSION = 3;
 
 	public static function init() {
 		add_action( 'save_post_' . self::post_type(), array( __CLASS__, 'flush_cache' ) );
@@ -69,7 +69,8 @@ final class Plan_A_Izleti_Data {
 	 * terminu (od najbližeg), zatim izleti bez datuma. Izleti kojima su svi
 	 * termini prošli izostavljeni su.
 	 *
-	 * @return array[] Retci oblika [ 'id' => int, 'date' => 'Y-m-d'|'', 'more' => bool, 'sold_out' => bool ].
+	 * @return array[] Retci oblika [ 'id' => int, 'date' => 'Y-m-d'|'', 'more' => bool, 'sold_out' => bool,
+	 *                 'months' => [ 'Y-m' => prvi termin u tom mjesecu 'Y-m-d', … ] ].
 	 */
 	public static function get_tours(): array {
 		return self::get_set()['tours'];
@@ -172,6 +173,7 @@ final class Plan_A_Izleti_Data {
 					'id'       => $id,
 					'date'     => '',
 					'more'     => false,
+					'months'   => array(),
 					'sold_out' => false,
 				);
 				continue;
@@ -194,6 +196,7 @@ final class Plan_A_Izleti_Data {
 				'id'       => $id,
 				'date'     => $upcoming[0],
 				'more'     => count( $upcoming ) > 1,
+				'months'   => self::first_date_per_month( $upcoming ),
 				'sold_out' => self::is_sold_out( $id ),
 				'pos'      => $position,
 			);
@@ -217,6 +220,22 @@ final class Plan_A_Izleti_Data {
 			'tours' => array_merge( $dated, $undated ),
 			'stats' => $stats,
 		);
+	}
+
+	/**
+	 * Prvi termin u svakom mjesecu, npr. [ '2026-11' => '2026-11-03' ].
+	 *
+	 * @param string[] $dates Sortirani budući termini 'Y-m-d'.
+	 */
+	private static function first_date_per_month( array $dates ): array {
+		$months = array();
+		foreach ( $dates as $date ) {
+			$month = substr( $date, 0, 7 );
+			if ( ! isset( $months[ $month ] ) ) {
+				$months[ $month ] = $date;
+			}
+		}
+		return $months;
 	}
 
 	/**

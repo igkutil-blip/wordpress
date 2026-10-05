@@ -12,13 +12,14 @@ Shortcode `[plan-a-izleti]` prikazuje izlete iz dodatka **WpTravelly** (Tour Boo
    ```
    [plan-a-izleti]
    ```
-   Želite li manje izleta, upišite npr. `[plan-a-izleti show="9"]` (zadano je 18, najviše 100).
+   Želite li manje izleta, upišite npr. `[plan-a-izleti show="9"]` (zadano je 18, najviše 100). Ograničenje vrijedi samo za početni prikaz („Sve ture” + „Svi mjeseci”); uz odabranu kategoriju ili mjesec prikazuju se svi odgovarajući budući izleti.
 5. **Spremite stranicu** i provjerite je na računalu, tabletu i mobitelu.
 
 ### Što trebate znati
 
 - **Kategorije** su iste one koje WpTravellyjev filtar prikazuje pod naslovom „Category”, a to su **aktivnosti** izleta (WpTravelly → Activities, npr. Alpinizam, Ferrate, Jedrenje). Ako nijedan izlet nema aktivnosti, koriste se kategorije izleta (`ttbm_tour_cat`). Gumb se prikazuje samo za kategoriju koja ima barem jedan prikazani izlet s budućim terminom.
-- **Dijagnostika (privremeno):** prijavljeni administrator iznad mreže vidi žuti okvir s brojem pronađenih izleta, korištenim izvorom kategorija i kategorijama svakog izleta. Posjetitelji i urednici ga ne vide. Isključuje se s `[plan-a-izleti debug="no"]`. Kad provjera završi, dijagnostika će biti zadano isključena.
+- **Mjeseci:** ispod gumba kategorija je red s mjesecima („Svi mjeseci”, „Studeni 2026”, …). Prikazuju se samo mjeseci iz sljedećih 12 mjeseci (od tekućeg) u kojima postoji izlet s budućim terminom. Filtri mjeseca i kategorije rade zajedno, a gumbi bez izleta za odabranu kombinaciju su zasivljeni. Izlet s više termina pojavljuje se u svakom svom mjesecu i tada pokazuje datum termina iz tog mjeseca. Na mobitelu se red mjeseci pomiče vodoravno.
+- **Dijagnostika (privremeno):** prijavljeni administrator iznad mreže vidi žuti okvir s brojem pronađenih izleta, korištenim izvorom kategorija, brojem izleta po mjesecu i kategorijama svakog izleta. Posjetitelji i urednici ga ne vide. Isključuje se s `[plan-a-izleti debug="no"]`. Kad provjera završi, dijagnostika će biti zadano isključena.
 - **Datum** je prvi budući termin. Kod izleta s više termina ispod datuma piše „(i drugi termini)”. Izleti kojima su svi termini prošli automatski nestaju, a izleti bez datuma prikazuju se na kraju s natpisom „Termin uskoro”.
 - **Država** je država lokacije izleta (WpTravelly → Lokacija). Ako lokacija nema upisanu državu, red se ne prikazuje.
 - **Popunjeno** se prikazuje kad WpTravelly prema prodanim kartama izračuna da nema slobodnih mjesta ni na jednom terminu. Za izlete bez upisanog broja mjesta ta se oznaka ne prikazuje.
