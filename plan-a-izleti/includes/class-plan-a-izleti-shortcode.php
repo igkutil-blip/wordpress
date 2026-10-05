@@ -48,7 +48,21 @@ final class Plan_A_Izleti_Shortcode {
 		$post = get_post();
 		if ( is_singular() && $post && has_shortcode( $post->post_content, self::TAG ) ) {
 			wp_enqueue_style( 'plan-a-izleti' );
+			self::enqueue_icon_fonts();
 		}
+	}
+
+	/**
+	 * Fontovi ikona aktivnosti iz WpTravellyja (Font Awesome 6 i Mage Icons).
+	 * WpTravelly ih učitava samo na svojim stranicama; ovdje se učitavaju iste
+	 * datoteke pod istim nazivima (handle), pa se nikad ne učitaju dvaput.
+	 */
+	private static function enqueue_icon_fonts() {
+		if ( ! defined( 'TTBM_PLUGIN_URL' ) ) {
+			return;
+		}
+		wp_enqueue_style( 'mp_font_awesome', TTBM_PLUGIN_URL . '/assets/all.min.css', array(), '6.7.2' );
+		wp_enqueue_style( 'mage-icons', TTBM_PLUGIN_URL . '/assets/mage-icon/css/mage-icon.css', array(), defined( 'TTBM_PLUGIN_VERSION' ) ? TTBM_PLUGIN_VERSION : false );
 	}
 
 	/**
@@ -81,6 +95,7 @@ final class Plan_A_Izleti_Shortcode {
 		}
 		wp_enqueue_style( 'plan-a-izleti' );
 		wp_enqueue_script( 'plan-a-izleti' );
+		self::enqueue_icon_fonts();
 
 		// Renderiraju se svi izleti: bez odabranog filtra vidi se prvih $show,
 		// a kod odabira mjeseca ili kategorije svi odgovarajući (vidi assets/js).
@@ -116,7 +131,7 @@ final class Plan_A_Izleti_Shortcode {
 			foreach ( array_keys( $months ) as $month ) {
 				$month_counts[ $month ]++;
 			}
-			$cards[] = self::render_card( $tour, $cats, $months, $index >= $show, self::first_category_name( $lookups[ $tour['id'] ], $source ) );
+			$cards[] = self::render_card( $tour, $cats, $months, $index >= $show, Plan_A_Izleti_Categories::activity_terms( $lookups[ $tour['id'] ] ) );
 		}
 		$term_ids     = array_values( array_unique( $term_ids ) );
 		$month_counts = array_filter( $month_counts );
@@ -165,24 +180,6 @@ final class Plan_A_Izleti_Shortcode {
 			)
 		);
 		return is_wp_error( $terms ) ? array() : $terms;
-	}
-
-	/**
-	 * Naziv prve kategorije izleta (za oznaku na slici kartice).
-	 */
-	private static function first_category_name( array $lookup, string $source ): string {
-		$sources = Plan_A_Izleti_Categories::sources();
-		if ( ! isset( $sources[ $source ] ) ) {
-			return '';
-		}
-		$ids = 'activities' === $source ? array_merge( $lookup['activities_tax'], $lookup['activities_meta'] ) : $lookup['tour_cat'];
-		foreach ( $ids as $id ) {
-			$term = get_term( (int) $id, $sources[ $source ]['taxonomy'] );
-			if ( $term instanceof WP_Term ) {
-				return $term->name;
-			}
-		}
-		return '';
 	}
 
 	/**
@@ -306,6 +303,7 @@ final class Plan_A_Izleti_Shortcode {
 		$html .= '<li>' . esc_html( sprintf( 'Objavljenih izleta (%s): %d', Plan_A_Izleti_Data::post_type(), $stats['published'] ) ) . '</li>';
 		$html .= '<li>' . esc_html( sprintf( 'S budućim terminom: %d · bez datuma: %d · svi termini prošli (skriveni): %d · greške pri čitanju datuma: %d', $stats['upcoming'], $stats['undated'], $stats['past'], $stats['errors'] ) ) . '</li>';
 		$html .= '<li>' . esc_html( sprintf( 'Prikazano u mreži bez filtra (show=%d): %d od %d', $show, min( $show, count( $tours ) ), count( $tours ) ) ) . '</li>';
+		$html .= '<li>' . esc_html__( 'Izvor ikona aktivnosti: term meta ttbm_activities_icon (CSS klasa ikone; fontovi Font Awesome „mp_font_awesome” i Mage Icons „mage-icons” iz WpTravellyja; boja: WpTravelly --color_theme). Bez ikone: prvo slovo naziva.', 'plan-a-izleti' ) . ( defined( 'TTBM_PLUGIN_URL' ) ? '' : ' ' . esc_html__( 'UPOZORENJE: TTBM_PLUGIN_URL nije definiran, fontovi se ne mogu učitati.', 'plan-a-izleti' ) ) . '</li>';
 		$html .= '<li>' . esc_html__( 'Izvor kategorija:', 'plan-a-izleti' ) . ' <strong>' . esc_html( isset( $sources[ $source ] ) ? $sources[ $source ]['label'] : __( 'nijedan izvor nema kategorija za izlete s budućim terminom', 'plan-a-izleti' ) ) . '</strong></li>';
 		$html .= '<li>' . esc_html__( 'Gumbi:', 'plan-a-izleti' ) . ' ' . esc_html( isset( $sources[ $source ] ) && $button_ids ? implode( ', ', self::term_names( $button_ids, $sources[ $source ]['taxonomy'] ) ) : '–' ) . '</li>';
 		$window = self::month_window();
@@ -318,7 +316,7 @@ final class Plan_A_Izleti_Shortcode {
 
 		if ( $tours ) {
 			$html .= '<div class="paiz-debug__scroll"><table><thead><tr>';
-			foreach ( array( 'Izlet (ID)', 'Datum', 'Aktivnosti – taksonomija', 'Aktivnosti – meta polje', 'ttbm_tour_cat', 'Korišteno za filtar', 'Država (izvor)' ) as $heading ) {
+			foreach ( array( 'Izlet (ID)', 'Datum', 'Aktivnosti – taksonomija', 'Aktivnosti – meta polje', 'ttbm_tour_cat', 'Korišteno za filtar', 'Država (izvor)', 'Ikone aktivnosti' ) as $heading ) {
 				$html .= '<th>' . esc_html( $heading ) . '</th>';
 			}
 			$html .= '</tr></thead><tbody>';
@@ -336,6 +334,12 @@ final class Plan_A_Izleti_Shortcode {
 				$html .= '<td>' . esc_html( self::names_or_dash( $lookup['tour_cat'], Plan_A_Izleti_Categories::CATEGORY_TAXONOMY ) ) . '</td>';
 				$html .= '<td>' . esc_html( $used ? implode( ', ', $used ) : '–' ) . '</td>';
 				$html .= '<td>' . esc_html( self::country_debug( $tour['id'] ) ) . '</td>';
+				$icons = array();
+				foreach ( Plan_A_Izleti_Categories::activity_terms( $lookup ) as $term ) {
+					$icon    = Plan_A_Izleti_Categories::activity_icon( $term->term_id );
+					$icons[] = $term->name . ' → ' . ( '' !== $icon ? $icon : 'nema ikone (prvo slovo „' . mb_strtoupper( mb_substr( $term->name, 0, 1 ) ) . '”)' );
+				}
+				$html .= '<td>' . esc_html( $icons ? implode( '; ', $icons ) : '–' ) . '</td>';
 				$html .= '</tr>';
 			}
 			$html .= '</tbody></table></div>';
@@ -376,8 +380,9 @@ final class Plan_A_Izleti_Shortcode {
 	/**
 	 * @param array $months 'Y-m' => prvi termin u tom mjesecu (samo mjeseci iz filtra).
 	 * @param bool  $hidden Izlet je izvan ograničenja show (vidi se samo uz filtar).
+	 * @param WP_Term[] $activities Aktivnosti izleta (ikone na slici).
 	 */
-	private static function render_card( array $tour, array $cats, array $months, bool $hidden, string $category ): string {
+	private static function render_card( array $tour, array $cats, array $months, bool $hidden, array $activities ): string {
 		$id        = (int) $tour['id'];
 		$source_id = Plan_A_Izleti_Data::source_id( $id );
 		$title     = get_the_title( $id );
@@ -411,9 +416,7 @@ final class Plan_A_Izleti_Shortcode {
 		<article class="paiz-card<?php echo $tour['sold_out'] ? ' is-sold-out' : ''; ?>" data-paiz-cats="<?php echo esc_attr( implode( ' ', $cats ) ); ?>" data-paiz-months="<?php echo esc_attr( implode( ' ', array_keys( $months ) ) ); ?>" data-paiz-month-dates="<?php echo esc_attr( (string) wp_json_encode( $month_dates ) ); ?>"<?php echo $hidden ? ' hidden' : ''; ?>>
 			<div class="paiz-card__media">
 				<?php echo $image; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_get_attachment_image() ili statički HTML. ?>
-				<?php if ( '' !== $category ) : ?>
-					<span class="paiz-card__category"><?php echo esc_html( $category ); ?></span>
-				<?php endif; ?>
+				<?php echo self::render_activities( $activities ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
 				<?php if ( $tour['sold_out'] ) : ?>
 					<span class="paiz-card__badge"><?php esc_html_e( 'Popunjeno', 'plan-a-izleti' ); ?></span>
 				<?php endif; ?>
@@ -455,6 +458,36 @@ final class Plan_A_Izleti_Shortcode {
 		</article>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Ikone aktivnosti u donjem lijevom kutu slike: najviše 4, zatim "+N".
+	 * Naziv se prikazuje u oblačiću (vidi assets/js) i u aria-label.
+	 *
+	 * @param WP_Term[] $activities
+	 */
+	private static function render_activities( array $activities ): string {
+		if ( empty( $activities ) ) {
+			return '';
+		}
+		$shown = array_slice( $activities, 0, 4 );
+		$rest  = array_slice( $activities, 4 );
+
+		$html = '<div class="paiz-card__acts">';
+		foreach ( $shown as $term ) {
+			$icon  = Plan_A_Izleti_Categories::activity_icon( $term->term_id );
+			$inner = '' !== $icon
+				? '<i class="' . esc_attr( $icon ) . '" aria-hidden="true"></i>'
+				: '<span class="paiz-act__letter" aria-hidden="true">' . esc_html( mb_strtoupper( mb_substr( $term->name, 0, 1 ) ) ) . '</span>';
+			$html .= '<button type="button" class="paiz-act" aria-label="' . esc_attr( $term->name ) . '" data-paiz-tip="' . esc_attr( $term->name ) . '">' . $inner . '</button>';
+		}
+		if ( $rest ) {
+			$names = implode( ', ', wp_list_pluck( $rest, 'name' ) );
+			/* translators: %1$d: broj ostalih aktivnosti, %2$s: njihovi nazivi */
+			$label = sprintf( __( 'Još %1$d: %2$s', 'plan-a-izleti' ), count( $rest ), $names );
+			$html .= '<button type="button" class="paiz-act paiz-act--more" aria-label="' . esc_attr( $label ) . '" data-paiz-tip="' . esc_attr( $names ) . '">+' . count( $rest ) . '</button>';
+		}
+		return $html . '</div>';
 	}
 
 	/**

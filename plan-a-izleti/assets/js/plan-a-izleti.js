@@ -214,8 +214,111 @@
 		apply();
 	}
 
+	/**
+	 * Oblačić s nazivom aktivnosti: prelazak mišem ili fokus tipkovnicom ga prikaže,
+	 * dodir (klik) ga prikaže na 2 sekunde. Ikona je gumb izvan poveznice kartice,
+	 * pa dodir ikone ne otvara izlet. Oblačić se drži unutar rubova ekrana.
+	 */
+	var tip = null;
+	var tipTimer = null;
+	var tipOwner = null;
+
+	function showTip( button, duration ) {
+		var text = button.getAttribute( 'data-paiz-tip' );
+		if ( ! text ) {
+			return;
+		}
+		if ( ! tip ) {
+			tip = document.createElement( 'div' );
+			tip.className = 'paiz-tip';
+			tip.setAttribute( 'aria-hidden', 'true' ); // naziv je već u aria-label gumba
+			document.body.appendChild( tip );
+		}
+		window.clearTimeout( tipTimer );
+		tipOwner = button;
+		tip.textContent = text;
+		tip.hidden = false;
+
+		var margin = 8;
+		var rect = button.getBoundingClientRect();
+		var width = tip.offsetWidth;
+		var center = rect.left + rect.width / 2;
+		var left = Math.min( Math.max( center - width / 2, margin ), window.innerWidth - width - margin );
+		var top = rect.top - tip.offsetHeight - 8;
+		if ( top < margin ) {
+			top = rect.bottom + 8; // nema mjesta iznad: prikaži ispod ikone
+		}
+		tip.style.left = left + 'px';
+		tip.style.top = top + 'px';
+		tip.style.setProperty( '--paiz-tip-arrow', ( center - left ) + 'px' );
+		tip.classList.toggle( 'is-below', top > rect.top );
+
+		if ( duration ) {
+			tipTimer = window.setTimeout( hideTip, duration );
+		}
+	}
+
+	function hideTip() {
+		window.clearTimeout( tipTimer );
+		tipOwner = null;
+		if ( tip ) {
+			tip.hidden = true;
+		}
+	}
+
+	function initTips() {
+		var actSelector = '.paiz .paiz-act';
+		var lastPointer = '';
+		document.addEventListener( 'pointerdown', function ( event ) {
+			lastPointer = event.pointerType || '';
+		}, { passive: true } );
+		document.addEventListener( 'mouseover', function ( event ) {
+			var button = event.target.closest && event.target.closest( actSelector );
+			if ( button && button !== tipOwner ) {
+				showTip( button, 0 );
+			}
+		} );
+		document.addEventListener( 'mouseout', function ( event ) {
+			var button = event.target.closest && event.target.closest( actSelector );
+			if ( button && ! button.contains( event.relatedTarget ) && document.activeElement !== button ) {
+				hideTip();
+			}
+		} );
+		document.addEventListener( 'focusin', function ( event ) {
+			var button = event.target.closest && event.target.closest( actSelector );
+			if ( button ) {
+				showTip( button, 0 );
+			}
+		} );
+		document.addEventListener( 'focusout', function ( event ) {
+			if ( event.target.closest && event.target.closest( actSelector ) ) {
+				hideTip();
+			}
+		} );
+		document.addEventListener( 'click', function ( event ) {
+			var button = event.target.closest && event.target.closest( actSelector );
+			if ( button ) {
+				event.preventDefault();
+				// Miš: oblačić već prikazuje prelazak mišem. Dodir: prikaži na 2 sekunde.
+				if ( 'mouse' !== lastPointer ) {
+					showTip( button, 2000 );
+				}
+			}
+		} );
+		document.addEventListener( 'keydown', function ( event ) {
+			if ( 'Escape' === event.key || 'Esc' === event.key ) {
+				hideTip();
+			}
+		} );
+		window.addEventListener( 'scroll', hideTip, { passive: true } );
+		window.addEventListener( 'resize', hideTip );
+	}
+
 	function boot() {
 		each( document.querySelectorAll( '[data-paiz]' ), init );
+		if ( document.querySelector( '.paiz .paiz-act' ) ) {
+			initTips();
+		}
 	}
 
 	if ( 'loading' === document.readyState ) {

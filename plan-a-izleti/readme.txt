@@ -1,7 +1,7 @@
 === Plan A izleti ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.5.1
+Stable tag: 1.6.0
 License: GPLv2 or later
 
 Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s filtrom po kategorijama i mjesecima.
@@ -13,7 +13,7 @@ Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (To
   kombiniraju se, filtriranje bez ponovnog učitavanja stranice,
 * izleti složeni po prvom budućem terminu; izleti kojima su svi termini prošli ne prikazuju se,
 * izleti bez datuma prikazuju se na kraju ("Termin uskoro"),
-* kartica: slika, naziv, datum, država, trajanje, početna cijena i oznaka "Popunjeno".
+* kartica: slika s ikonama aktivnosti, naziv, datum, trajanje, država, početna cijena i oznaka "Popunjeno".
 
 Upotreba:
 

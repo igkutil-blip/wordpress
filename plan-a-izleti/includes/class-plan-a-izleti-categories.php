@@ -111,6 +111,34 @@ final class Plan_A_Izleti_Categories {
 		return '';
 	}
 
+	/**
+	 * Aktivnosti dodijeljene izletu (taksonomija + meta polje ttbm_tour_activities),
+	 * bez nadređenih termina, redom kojim su dodijeljene.
+	 *
+	 * @return WP_Term[]
+	 */
+	public static function activity_terms( array $lookup ): array {
+		$terms = array();
+		foreach ( array_unique( array_merge( $lookup['activities_tax'], $lookup['activities_meta'] ) ) as $id ) {
+			$term = get_term( (int) $id, self::ACTIVITY_TAXONOMY );
+			if ( $term instanceof WP_Term ) {
+				$terms[] = $term;
+			}
+		}
+		return $terms;
+	}
+
+	/**
+	 * Ikona aktivnosti kako je sprema WpTravelly: CSS klasa u term meta polju
+	 * `ttbm_activities_icon` (npr. "mi mi-hiking" iz fonta Mage Icons ili
+	 * "fas fa-person-hiking" iz Font Awesomea). Prazno ako ikona nije postavljena.
+	 */
+	public static function activity_icon( int $term_id ): string {
+		$icon = get_term_meta( $term_id, 'ttbm_activities_icon', true );
+		$icon = is_string( $icon ) ? preg_replace( '/[^A-Za-z0-9 _-]/', '', $icon ) : '';
+		return trim( preg_replace( '/\s+/', ' ', $icon ) );
+	}
+
 	private static function taxonomy_ids( int $post_id, string $taxonomy ): array {
 		if ( ! taxonomy_exists( $taxonomy ) ) {
 			return array();
