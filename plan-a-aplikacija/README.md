@@ -11,7 +11,8 @@ WordPress dodatak koji stranicu srd-plan-a.hr pretvara u web aplikaciju (PWA) ko
   - **Nikad se ne spremaju** i uvijek idu na mrežu: košarica, plaćanje, korisnički račun (i njihove stvarne WooCommerce adrese), `/wp-admin/`, `/wp-login.php`, AJAX (`admin-ajax.php`, `?wc-ajax=`), REST (`/wp-json/`), `/wc-api/` te svaka stranica s parametrima u adresi (narudžba, plaćanje i slično).
   - **Bez interneta** stranica koja nije spremljena prikazuje izvanmrežnu stranicu: „Trenutno nema internetske veze. Rezervacije su moguće samo uz vezu.” s gumbom „Pokušaj ponovno”.
 - **Poziv na instalaciju:**
-  - Na mobitelu se od druge posjete na dnu prikazuje traka „Instaliraj aplikaciju Plan A” s gumbima „Instaliraj” i „Ne sada”. „Ne sada” traku skriva na 30 dana.
+  - Na mobitelu se pri svakoj posjeti na dnu prikazuje traka „Instaliraj aplikaciju Plan A” s gumbima „Instaliraj” i „Ne sada”. „Ne sada” traku skriva do sljedeće posjete.
+  - U postavkama se može odabrati i „od druge posjete”, gdje „Ne sada” traku skriva na 30 dana.
   - Na iPhoneu traka umjesto gumba „Instaliraj” daje uputu „Podijeli → Dodaj na početni zaslon”.
   - Traka se ne prikazuje na košarici, plaćanju ni korisničkom računu.
 - **Donja navigacija** (samo kad je stranica otvorena kao instalirana aplikacija): Izleti, Plan izleta, Košarica (s brojem stavki) i Kontakt.
@@ -38,8 +39,8 @@ Stranica mora raditi preko **HTTPS-a**, inače se aplikacija ne može instalirat
 
 ## Što provjeriti na Androidu (Chrome)
 
-1. Otvorite `https://srd-plan-a.hr/izleti/`, zatvorite karticu pa stranicu otvorite ponovno (druga posjeta). Na dnu se pojavljuje traka „Instaliraj aplikaciju Plan A”.
-2. „Ne sada” sakriva traku i ona se ne vraća pri sljedećim posjetama.
+1. Otvorite `https://srd-plan-a.hr/izleti/`. Na dnu se odmah pojavljuje traka „Instaliraj aplikaciju Plan A”.
+2. „Ne sada” sakriva traku do kraja posjete. Kad zatvorite karticu i stranicu otvorite ponovno, traka se opet pojavljuje.
 3. „Instaliraj” otvara Chromeov prozor za instalaciju. Nakon instalacije na početnom zaslonu je ikona Plan A s logotipom, bez bijelog ruba izrezanog na krivom mjestu.
 4. Otvorite aplikaciju s početnog zaslona:
    - otvara se `/izleti/` bez adresne trake,
@@ -55,7 +56,7 @@ Stranica mora raditi preko **HTTPS-a**, inače se aplikacija ne može instalirat
 
 ## Što provjeriti na iPhoneu (Safari)
 
-1. Otvorite stranicu dvaput (u dvije odvojene posjete). Na dnu se pojavljuje uputa „Dodirnite Podijeli, zatim ‚Dodaj na početni zaslon’”.
+1. Otvorite stranicu. Na dnu se pojavljuje uputa „Dodirnite Podijeli, zatim ‚Dodaj na početni zaslon’”.
 2. Podijeli → **Dodaj na početni zaslon**. Naziv mora biti „Plan A”, a ikona logotip na bijeloj podlozi.
 3. Otvorite aplikaciju s početnog zaslona. Nema Safarijeve adresne trake, a na dnu je navigacija s 4 stavke koja ne prekriva sadržaj ni crtu za povratak na početni zaslon.
 4. Kupnja (košarica i plaćanje) radi, a nakon plaćanja aplikacija se vraća na potvrdu narudžbe.

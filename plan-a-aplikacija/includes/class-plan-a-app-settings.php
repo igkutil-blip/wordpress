@@ -34,6 +34,7 @@ final class Plan_A_App_Settings {
 			'nav_cart'       => '/cart/',
 			'nav_contact'    => '/kontakt/',
 			'install_prompt' => 1,
+			'prompt_every'   => 1, // 1 = pri svakoj posjeti, 0 = od druge posjete, "Ne sada" na 30 dana
 		);
 	}
 
@@ -61,6 +62,7 @@ final class Plan_A_App_Settings {
 		$clean    = array(
 			'enabled'        => empty( $input['enabled'] ) ? 0 : 1,
 			'install_prompt' => empty( $input['install_prompt'] ) ? 0 : 1,
+			'prompt_every'   => isset( $input['prompt_every'] ) && '0' === (string) $input['prompt_every'] ? 0 : 1,
 			'logo_id'        => absint( $input['logo_id'] ?? 0 ),
 			'theme_color'    => sanitize_hex_color( (string) ( $input['theme_color'] ?? '' ) ) ?: $defaults['theme_color'],
 		);

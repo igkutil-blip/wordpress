@@ -10,6 +10,7 @@
 	var KEY_VISITS = 'planAApp.visits';
 	var KEY_SESSION = 'planAApp.session';
 	var KEY_DISMISSED = 'planAApp.dismissedAt';
+	var KEY_DISMISSED_VISIT = 'planAApp.dismissedVisit';
 	var DISMISS_DAYS = 30;
 
 	function storage( type ) {
@@ -72,18 +73,28 @@
 	}
 
 	function dismissedRecently() {
+		if ( config.promptEvery ) {
+			// Pri svakoj posjeti: "Ne sada" vrijedi samo do kraja ove posjete.
+			return !! ( session && session.getItem( KEY_DISMISSED_VISIT ) );
+		}
 		var at = local ? parseInt( local.getItem( KEY_DISMISSED ), 10 ) : 0;
 		return !! at && Date.now() - at < DISMISS_DAYS * 24 * 60 * 60 * 1000;
 	}
 
 	function remember() {
+		if ( config.promptEvery ) {
+			if ( session ) {
+				session.setItem( KEY_DISMISSED_VISIT, '1' );
+			}
+			return;
+		}
 		if ( local ) {
 			local.setItem( KEY_DISMISSED, String( Date.now() ) );
 		}
 	}
 
 	function canPrompt() {
-		return config.installPrompt && ! config.noPromptPage && ! isStandalone() && isMobile() && visits >= 2 && ! dismissedRecently();
+		return config.installPrompt && ! config.noPromptPage && ! isStandalone() && isMobile() && visits >= ( config.promptEvery ? 1 : 2 ) && ! dismissedRecently();
 	}
 
 	// --- Traka za instalaciju ------------------------------------------------

@@ -73,6 +73,7 @@ final class Plan_A_App_Frontend {
 				'swUrl'         => Plan_A_App_Settings::endpoint_url( 'sw' ),
 				'scope'         => Plan_A_App_Settings::home_path(),
 				'installPrompt' => (bool) Plan_A_App_Settings::get( 'install_prompt' ),
+				'promptEvery'   => (bool) Plan_A_App_Settings::get( 'prompt_every' ),
 				'noPromptPage'  => self::is_shop_flow_page(),
 				'i18n'          => array(
 					'title'     => __( 'Instaliraj aplikaciju Plan A', 'plan-a-aplikacija' ),
