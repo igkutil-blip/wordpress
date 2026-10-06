@@ -29,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
 final class Plan_A_Izleti_Data {
 
 	const CACHE_KEY     = 'plan_a_izleti_cache';
-	const CACHE_VERSION = 3;
+	const CACHE_VERSION = 4;
 
 	public static function init() {
 		add_action( 'save_post_' . self::post_type(), array( __CLASS__, 'flush_cache' ) );
@@ -66,7 +66,7 @@ final class Plan_A_Izleti_Data {
 
 	/**
 	 * Svi izleti koje treba prikazati, već složeni: prvo po prvom budućem
-	 * terminu (od najbližeg), zatim izleti bez datuma. Izleti kojima su svi
+	 * terminu (od najbližeg), zatim izleti bez datuma, a na kraju popunjeni izleti. Izleti kojima su svi
 	 * termini prošli izostavljeni su.
 	 *
 	 * @return array[] Retci oblika [ 'id' => int, 'date' => 'Y-m-d'|'', 'more' => bool, 'sold_out' => bool,
@@ -216,8 +216,16 @@ final class Plan_A_Izleti_Data {
 		$stats['upcoming'] = count( $dated );
 		$stats['undated']  = count( $undated );
 
+		// Popunjeni izleti idu na sam kraj (iza izleta bez datuma), i dalje po datumu.
+		$available = array_values( array_filter( $dated, static function ( $tour ) {
+			return ! $tour['sold_out'];
+		} ) );
+		$sold_out  = array_values( array_filter( $dated, static function ( $tour ) {
+			return $tour['sold_out'];
+		} ) );
+
 		return array(
-			'tours' => array_merge( $dated, $undated ),
+			'tours' => array_merge( $available, $undated, $sold_out ),
 			'stats' => $stats,
 		);
 	}

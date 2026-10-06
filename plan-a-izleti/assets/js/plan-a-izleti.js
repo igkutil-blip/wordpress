@@ -42,6 +42,7 @@
 				index: index,
 				cats: ( el.getAttribute( 'data-paiz-cats' ) || '' ).split( ' ' ).filter( Boolean ),
 				months: ( el.getAttribute( 'data-paiz-months' ) || '' ).split( ' ' ).filter( Boolean ),
+				soldOut: el.classList.contains( 'is-sold-out' ),
 				dates: Array.isArray( dates ) ? {} : dates,
 				time: time,
 				defaultText: time ? time.textContent : '',
@@ -89,11 +90,14 @@
 				card.el.style.order = '';
 			} );
 
-			// U odabranom mjesecu složi po datumu termina u tom mjesecu.
+			// U odabranom mjesecu složi po datumu termina u tom mjesecu; popunjeni na kraj.
 			if ( 'all' !== state.month ) {
 				visible
 					.slice()
 					.sort( function ( a, b ) {
+						if ( a.soldOut !== b.soldOut ) {
+							return a.soldOut ? 1 : -1;
+						}
 						var da = a.dates[ state.month ] ? a.dates[ state.month ][ 0 ] : '';
 						var db = b.dates[ state.month ] ? b.dates[ state.month ][ 0 ] : '';
 						return da < db ? -1 : da > db ? 1 : a.index - b.index;
