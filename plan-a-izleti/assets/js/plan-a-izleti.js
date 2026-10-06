@@ -2,8 +2,10 @@
  * Plan A izleti – filtriranje po vrsti izleta i terminu bez ponovnog učitavanja stranice.
  *
  * Dva izbornika ("Vrsta izleta", "Termin") otvaraju panel s opcijama; istovremeno
- * je otvoren najviše jedan panel. Bez odabranog filtra ("Svi izleti" + "Svi datumi")
- * vidi se prvih N izleta (atribut show); uz odabir se vide svi odgovarajući izleti.
+ * je otvoren najviše jedan panel. U svakom rezultatu filtra vidi se prvih N izleta
+ * (atribut show); "Prikaži još izleta" dodaje sljedećih step, a promjena filtra vraća
+ * prikaz na N. "Pogledaj sve izlete" vodi na all_url s odabranim filtrima u adresi
+ * (?vrsta=<slug>&termin=GGGG-MM), koje shortcode na toj stranici odmah primijeni.
  */
 ( function () {
 	'use strict';
@@ -18,17 +20,24 @@
 		}
 		root.setAttribute( 'data-paiz-ready', '1' );
 
-		var wrap = root.querySelector( '[data-paiz-filters]' );
-		if ( ! wrap ) {
-			return;
-		}
+		// Bez izbornika (nema kategorija ni mjeseci) radi samo "Prikaži još izleta".
+		var wrap = root.querySelector( '[data-paiz-filters]' ) || document.createElement( 'div' );
 
 		var show = parseInt( root.getAttribute( 'data-paiz-show' ), 10 ) || 0;
+		var step = parseInt( root.getAttribute( 'data-paiz-step' ), 10 ) || show;
+		var limit = show;
 		var status = root.querySelector( '[data-paiz-status]' );
 		var empty = root.querySelector( '[data-paiz-empty]' );
+		var actions = root.querySelector( '[data-paiz-actions]' );
+		var moreBtn = root.querySelector( '[data-paiz-more]' );
+		var allLink = root.querySelector( '[data-paiz-all]' );
+		var allHref = allLink ? allLink.getAttribute( 'href' ) : '';
 		var toggles = wrap.querySelectorAll( '[data-paiz-toggle]' );
 		var panels = wrap.querySelectorAll( '[data-paiz-panel]' );
-		var state = { cat: 'all', month: 'all' };
+		var state = {
+			cat: root.getAttribute( 'data-paiz-initial-cat' ) || 'all',
+			month: root.getAttribute( 'data-paiz-initial-month' ) || 'all',
+		};
 		var open = null;
 
 		var cards = Array.prototype.map.call( root.querySelectorAll( '.paiz-card' ), function ( el, index ) {
@@ -70,15 +79,55 @@
 			} );
 		}
 
-		function apply() {
-			var unfiltered = 'all' === state.cat && 'all' === state.month;
-			var visible = [];
+		// Vrijednost filtra za adresu: slug kategorije ili GGGG-MM.
+		function paramFor( name ) {
+			if ( 'all' === state[ name ] ) {
+				return '';
+			}
+			var option = wrap.querySelector( '[data-paiz-panel="' + name + '"] [data-paiz-filter="' + state[ name ] + '"]' );
+			return option ? option.getAttribute( 'data-paiz-param' ) || '' : '';
+		}
+
+		function updateAllLink() {
+			if ( ! allLink || ! window.URL ) {
+				return;
+			}
+			try {
+				var url = new URL( allHref, window.location.href );
+				var params = { vrsta: paramFor( 'cat' ), termin: paramFor( 'month' ) };
+				Object.keys( params ).forEach( function ( key ) {
+					if ( params[ key ] ) {
+						url.searchParams.set( key, params[ key ] );
+					} else {
+						url.searchParams.delete( key );
+					}
+				} );
+				allLink.setAttribute( 'href', url.href );
+			} catch ( e ) {}
+		}
+
+		// Kartice koje su upravo otkrivene dobivaju blagi prijelaz.
+		function reveal( list ) {
+			if ( ! list.length || ( window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches ) ) {
+				return;
+			}
+			list.forEach( function ( card ) {
+				card.el.classList.add( 'is-entering' );
+			} );
+			void root.offsetHeight; // početno stanje prije prijelaza
+			window.requestAnimationFrame( function () {
+				list.forEach( function ( card ) {
+					card.el.classList.remove( 'is-entering' );
+				} );
+			} );
+		}
+
+		function apply( animate ) {
+			var result = [];
 
 			cards.forEach( function ( card ) {
-				var showCard = unfiltered ? ( ! show || card.index < show ) : matches( card, state.cat, state.month );
-				card.el.hidden = ! showCard;
-				if ( showCard ) {
-					visible.push( card );
+				if ( matches( card, state.cat, state.month ) ) {
+					result.push( card );
 				}
 
 				// Datum termina iz odabranog mjeseca.
@@ -92,20 +141,40 @@
 
 			// U odabranom mjesecu složi po datumu termina u tom mjesecu; popunjeni na kraj.
 			if ( 'all' !== state.month ) {
-				visible
-					.slice()
-					.sort( function ( a, b ) {
-						if ( a.soldOut !== b.soldOut ) {
-							return a.soldOut ? 1 : -1;
-						}
-						var da = a.dates[ state.month ] ? a.dates[ state.month ][ 0 ] : '';
-						var db = b.dates[ state.month ] ? b.dates[ state.month ][ 0 ] : '';
-						return da < db ? -1 : da > db ? 1 : a.index - b.index;
-					} )
-					.forEach( function ( card, order ) {
-						card.el.style.order = String( order );
-					} );
+				result.sort( function ( a, b ) {
+					if ( a.soldOut !== b.soldOut ) {
+						return a.soldOut ? 1 : -1;
+					}
+					var da = a.dates[ state.month ] ? a.dates[ state.month ][ 0 ] : '';
+					var db = b.dates[ state.month ] ? b.dates[ state.month ][ 0 ] : '';
+					return da < db ? -1 : da > db ? 1 : a.index - b.index;
+				} );
+				result.forEach( function ( card, order ) {
+					card.el.style.order = String( order );
+				} );
 			}
+
+			// Ograničenje (show, pa svakim klikom +step) vrijedi za rezultat filtra.
+			var visible = limit ? result.slice( 0, limit ) : result;
+			// Novootkriveni izleti, redom kojim se prikazuju.
+			var revealed = visible.filter( function ( card ) {
+				return card.el.hidden;
+			} );
+			cards.forEach( function ( card ) {
+				card.el.hidden = visible.indexOf( card ) === -1;
+			} );
+			if ( animate ) {
+				reveal( revealed );
+			}
+
+			// Gumbi samo kad rezultat ima više izleta od početnog prikaza.
+			if ( actions ) {
+				actions.hidden = ! show || result.length <= show;
+			}
+			if ( moreBtn ) {
+				moreBtn.hidden = visible.length >= result.length;
+			}
+			updateAllLink();
 
 			// Opcije: odabrana, i zasivljene/neaktivne ako uz drugi filtar nema izleta.
 			each( panels, function ( panel ) {
@@ -133,12 +202,15 @@
 				empty.hidden = visible.length > 0;
 			}
 			if ( status ) {
-				var text = ( status.getAttribute( 'data-paiz-status-text' ) || '%d' ).replace( '%d', visible.length );
+				var text = ( status.getAttribute( 'data-paiz-status-text' ) || '%1$d / %2$d' )
+					.replace( '%1$d', visible.length )
+					.replace( '%2$d', result.length );
 				// Mijenjaj samo kad se broj promijeni, da čitač zaslona ne ponavlja isto.
 				if ( status.textContent.trim() !== text ) {
 					status.textContent = text;
 				}
 			}
+			return revealed;
 		}
 
 		function closePanel( returnFocus ) {
@@ -188,7 +260,8 @@
 					return;
 				}
 				state[ name ] = option.getAttribute( 'data-paiz-filter' );
-				apply();
+				limit = show; // promjena filtra vraća početni broj izleta
+				apply( false );
 				// Kod odabira tipkovnicom (detail = 0) fokus se vraća na izbornik.
 				closePanel( 0 === event.detail );
 			} );
@@ -214,8 +287,22 @@
 			}
 		} );
 
+		if ( moreBtn ) {
+			moreBtn.addEventListener( 'click', function () {
+				limit += step;
+				var revealed = apply( true );
+				// Kad gumb nestane, fokus ide na prvi novi izlet (ne gubi se na stranici).
+				if ( moreBtn.hidden ) {
+					var link = revealed[ 0 ] && revealed[ 0 ].el.querySelector( '.paiz-card__title a' );
+					if ( link ) {
+						link.focus( { preventScroll: true } );
+					}
+				}
+			} );
+		}
+
 		wrap.hidden = false;
-		apply();
+		apply( false );
 	}
 
 	/**

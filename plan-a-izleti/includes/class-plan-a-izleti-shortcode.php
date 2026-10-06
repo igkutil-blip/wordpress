@@ -71,9 +71,12 @@ final class Plan_A_Izleti_Shortcode {
 	public static function render( $atts ): string {
 		$atts  = shortcode_atts(
 			array(
-				'show'  => self::DEFAULT_SHOW,
-				'debug' => self::DEBUG_DEFAULT,
-				'intro' => 'no',
+				'show'    => self::DEFAULT_SHOW,
+				'debug'   => self::DEBUG_DEFAULT,
+				'intro'   => 'no',
+				'more'    => 'yes',
+				'all_url' => '',
+				'step'    => '',
 			),
 			$atts,
 			self::TAG
@@ -82,6 +85,10 @@ final class Plan_A_Izleti_Shortcode {
 		$show  = $show > 0 ? min( $show, self::MAX_SHOW ) : self::DEFAULT_SHOW;
 		$debug = 'yes' === strtolower( trim( (string) $atts['debug'] ) ) && current_user_can( 'manage_options' );
 		$intro = 'yes' === strtolower( trim( (string) $atts['intro'] ) );
+		$more  = 'no' !== strtolower( trim( (string) $atts['more'] ) );
+		$step  = absint( $atts['step'] );
+		$step  = $step > 0 ? min( $step, self::MAX_SHOW ) : $show;
+		$all   = self::all_url( (string) $atts['all_url'] );
 
 		if ( ! Plan_A_Izleti_Data::is_source_available() ) {
 			if ( current_user_can( 'edit_posts' ) ) {
@@ -97,8 +104,8 @@ final class Plan_A_Izleti_Shortcode {
 		wp_enqueue_script( 'plan-a-izleti' );
 		self::enqueue_icon_fonts();
 
-		// Renderiraju se svi izleti: bez odabranog filtra vidi se prvih $show,
-		// a kod odabira mjeseca ili kategorije svi odgovarajući (vidi assets/js).
+		// Renderiraju se svi izleti; u trenutnom rezultatu filtra vidi se prvih $show,
+		// a "Prikaži još izleta" otkriva sljedećih $step (vidi assets/js).
 		$tours = Plan_A_Izleti_Data::get_tours();
 
 		self::$instance++;
@@ -118,7 +125,7 @@ final class Plan_A_Izleti_Shortcode {
 		$window       = self::month_window();
 		$month_counts = array_fill_keys( array_keys( $window ), 0 );
 
-		$cards    = array();
+		$items    = array();
 		$term_ids = array();
 		foreach ( $tours as $index => $tour ) {
 			$cats = Plan_A_Izleti_Categories::ids_for_source( $lookups[ $tour['id'] ], $source );
@@ -131,14 +138,29 @@ final class Plan_A_Izleti_Shortcode {
 			foreach ( array_keys( $months ) as $month ) {
 				$month_counts[ $month ]++;
 			}
-			$cards[] = self::render_card( $tour, $cats, $months, $index >= $show, Plan_A_Izleti_Categories::activity_terms( $lookups[ $tour['id'] ] ) );
+			$items[] = array( $tour, $cats, $months );
 		}
 		$term_ids     = array_values( array_unique( $term_ids ) );
 		$month_counts = array_filter( $month_counts );
+		$terms        = self::filter_terms( $term_ids, $source );
+
+		// Filtri iz adrese (?vrsta=slug&termin=2026-11), npr. s gumba "Pogledaj sve izlete".
+		$initial = self::initial_filters( $terms, $month_counts );
+		$visible = self::visible_indexes( $items, $initial, $show );
+		$total   = $visible['total'];
+
+		$cards = array();
+		foreach ( $items as $index => $item ) {
+			list( $tour, $cats, $months ) = $item;
+			$cards[] = self::render_card( $tour, $cats, $months, ! isset( $visible['shown'][ $index ] ), Plan_A_Izleti_Categories::activity_terms( $lookups[ $tour['id'] ] ) );
+		}
+		$shown_count = count( $visible['shown'] );
+		/* translators: %1$d: prikazano, %2$d: ukupno u rezultatu */
+		$status_text = __( 'Prikazano izleta: %1$d od %2$d', 'plan-a-izleti' );
 
 		ob_start();
 		?>
-		<div class="paiz" id="<?php echo esc_attr( $root_id ); ?>" data-paiz data-paiz-show="<?php echo esc_attr( (string) $show ); ?>">
+		<div class="paiz" id="<?php echo esc_attr( $root_id ); ?>" data-paiz data-paiz-show="<?php echo esc_attr( (string) $show ); ?>" data-paiz-step="<?php echo esc_attr( (string) $step ); ?>" data-paiz-initial-cat="<?php echo esc_attr( $initial['cat'] ); ?>" data-paiz-initial-month="<?php echo esc_attr( $initial['month'] ); ?>">
 			<?php
 			if ( $debug ) {
 				echo self::render_debug( $tours, $lookups, $source, $term_ids, $show, $month_counts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
@@ -146,18 +168,133 @@ final class Plan_A_Izleti_Shortcode {
 			if ( $intro ) {
 				echo self::render_intro(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
 			}
-			echo self::render_filters( self::filter_terms( $term_ids, $source ), array_intersect_key( $window, $month_counts ), $root_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
+			echo self::render_filters( $terms, array_intersect_key( $window, $month_counts ), $root_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
 			?>
-			<p class="paiz-count" role="status" aria-live="polite" data-paiz-status data-paiz-status-text="<?php echo esc_attr__( 'Prikazano izleta: %d', 'plan-a-izleti' ); ?>">
-				<?php echo esc_html( sprintf( __( 'Prikazano izleta: %d', 'plan-a-izleti' ), min( $show, count( $tours ) ) ) ); ?>
+			<p class="paiz-count" role="status" aria-live="polite" data-paiz-status data-paiz-status-text="<?php echo esc_attr( $status_text ); ?>">
+				<?php echo esc_html( sprintf( $status_text, $shown_count, $total ) ); ?>
 			</p>
 			<div class="paiz-grid">
 				<?php echo implode( '', $cards ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
 			</div>
-			<p class="paiz-empty" data-paiz-empty hidden><?php esc_html_e( 'Za odabrani mjesec i kategoriju trenutno nema izleta.', 'plan-a-izleti' ); ?></p>
+			<p class="paiz-empty" data-paiz-empty<?php echo $total > 0 ? ' hidden' : ''; ?>><?php esc_html_e( 'Za odabrani mjesec i kategoriju trenutno nema izleta.', 'plan-a-izleti' ); ?></p>
+			<?php echo self::render_actions( $more, $all, $total > $show ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
 		</div>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Adresa za gumb "Pogledaj sve izlete". Relativna adresa (/izleti/) veže se na
+	 * adresu stranice. Prazno ako nije zadana, nije http(s) ili je to trenutna stranica.
+	 */
+	private static function all_url( string $raw ): string {
+		$raw = trim( $raw );
+		if ( '' === $raw ) {
+			return '';
+		}
+		if ( '/' === $raw[0] && '/' !== ( $raw[1] ?? '' ) ) {
+			$raw = home_url( $raw );
+		}
+		$url = esc_url_raw( $raw, array( 'http', 'https' ) );
+		if ( '' === $url ) {
+			return '';
+		}
+		$target  = wp_parse_url( $url );
+		$request = isset( $_SERVER['REQUEST_URI'] ) ? wp_parse_url( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) : false; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- esc_url_raw.
+		$home    = wp_parse_url( home_url() );
+		if ( is_array( $target ) && is_array( $request ) ) {
+			$same_host = strtolower( $target['host'] ?? '' ) === strtolower( $home['host'] ?? '' );
+			$path_a    = untrailingslashit( rawurldecode( $target['path'] ?? '' ) );
+			$path_b    = untrailingslashit( rawurldecode( $request['path'] ?? '' ) );
+			if ( $same_host && $path_a === $path_b ) {
+				return '';
+			}
+		}
+		return $url;
+	}
+
+	/**
+	 * Početni filtri iz adrese: ?vrsta=<slug kategorije>&termin=<GGGG-MM>.
+	 * Prihvaćaju se samo vrijednosti koje postoje u izbornicima.
+	 *
+	 * @param WP_Term[]          $terms
+	 * @param array<string, int> $month_counts
+	 * @return array{cat: string, month: string}
+	 */
+	private static function initial_filters( array $terms, array $month_counts ): array {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- javni filtar prikaza, ništa se ne sprema.
+		$slug  = isset( $_GET['vrsta'] ) && is_string( $_GET['vrsta'] ) ? sanitize_title( wp_unslash( $_GET['vrsta'] ) ) : '';
+		$month = isset( $_GET['termin'] ) && is_string( $_GET['termin'] ) ? sanitize_text_field( wp_unslash( $_GET['termin'] ) ) : '';
+		// phpcs:enable
+		$out = array(
+			'cat'   => 'all',
+			'month' => 'all',
+		);
+		if ( '' !== $slug ) {
+			foreach ( $terms as $term ) {
+				if ( $term->slug === $slug ) {
+					$out['cat'] = (string) $term->term_id;
+					break;
+				}
+			}
+		}
+		if ( preg_match( '/^\d{4}-\d{2}$/', $month ) && isset( $month_counts[ $month ] ) ) {
+			$out['month'] = $month;
+		}
+		return $out;
+	}
+
+	/**
+	 * Koji su izleti vidljivi u početnom prikazu: prvih $show iz rezultata filtra,
+	 * istim redom kao u assets/js (u odabranom mjesecu po datumu, popunjeni na kraju).
+	 *
+	 * @return array{shown: array<int, true>, total: int}
+	 */
+	private static function visible_indexes( array $items, array $filter, int $show ): array {
+		$matches = array();
+		foreach ( $items as $index => $item ) {
+			list( $tour, $cats, $months ) = $item;
+			$cat_ok   = 'all' === $filter['cat'] || in_array( (int) $filter['cat'], array_map( 'intval', $cats ), true );
+			$month_ok = 'all' === $filter['month'] || isset( $months[ $filter['month'] ] );
+			if ( $cat_ok && $month_ok ) {
+				$matches[] = array( $index, ! empty( $tour['sold_out'] ), 'all' === $filter['month'] ? '' : (string) $months[ $filter['month'] ] );
+			}
+		}
+		if ( 'all' !== $filter['month'] ) {
+			usort(
+				$matches,
+				static function ( $a, $b ) {
+					return array( $a[1], $a[2], $a[0] ) <=> array( $b[1], $b[2], $b[0] );
+				}
+			);
+		}
+		$shown = array();
+		foreach ( array_slice( $matches, 0, $show ) as $match ) {
+			$shown[ $match[0] ] = true;
+		}
+		return array(
+			'shown' => $shown,
+			'total' => count( $matches ),
+		);
+	}
+
+	/**
+	 * Gumbi ispod mreže. "Prikaži još izleta" radi samo s JavaScriptom (dotad skriven),
+	 * "Pogledaj sve izlete" je obična poveznica; JS joj dodaje odabrane filtre.
+	 */
+	private static function render_actions( bool $more, string $all_url, bool $has_more ): string {
+		if ( ! $more && '' === $all_url ) {
+			return '';
+		}
+		$html = '<div class="paiz-actions" data-paiz-actions' . ( $has_more ? '' : ' hidden' ) . '>';
+		if ( $more ) {
+			$html .= '<button type="button" class="paiz-btn paiz-btn--more" data-paiz-more hidden>' . esc_html__( 'Prikaži još izleta', 'plan-a-izleti' ) . '</button>';
+		}
+		if ( '' !== $all_url ) {
+			$html .= '<a class="paiz-btn paiz-btn--all" href="' . esc_url( $all_url ) . '" data-paiz-all>'
+				. '<span>' . esc_html__( 'Pogledaj sve izlete', 'plan-a-izleti' ) . '</span>' . self::icon( 'arrow', 18 ) . '</a>';
+		}
+		return $html . '</div>';
 	}
 
 	/**
@@ -205,7 +342,7 @@ final class Plan_A_Izleti_Shortcode {
 		if ( $terms ) {
 			$options = array( array( 'all', __( 'Svi izleti', 'plan-a-izleti' ), '' ) );
 			foreach ( $terms as $term ) {
-				$options[] = array( (string) $term->term_id, $term->name, '' );
+				$options[] = array( (string) $term->term_id, $term->name, '', $term->slug );
 			}
 			$groups['cat'] = array(
 				'label'   => __( 'Vrsta izleta', 'plan-a-izleti' ),
@@ -250,7 +387,8 @@ final class Plan_A_Izleti_Shortcode {
 				. '<div class="paiz-panel__options">';
 			foreach ( $group['options'] as $i => $option ) {
 				list( $value, $text, $full ) = $option;
-				$panels .= '<button type="button" class="paiz-option' . ( 0 === $i ? ' is-active' : '' ) . '" data-paiz-filter="' . esc_attr( $value ) . '" aria-pressed="' . ( 0 === $i ? 'true' : 'false' ) . '"'
+				$slug    = $option[3] ?? $value;
+				$panels .= '<button type="button" class="paiz-option' . ( 0 === $i ? ' is-active' : '' ) . '" data-paiz-filter="' . esc_attr( $value ) . '" data-paiz-param="' . esc_attr( $slug ) . '" aria-pressed="' . ( 0 === $i ? 'true' : 'false' ) . '"'
 					. ( '' !== $full ? ' aria-label="' . esc_attr( $full ) . '"' : '' ) . '>'
 					. esc_html( $text ) . '</button>';
 			}
@@ -302,7 +440,7 @@ final class Plan_A_Izleti_Shortcode {
 		$html .= '<ul>';
 		$html .= '<li>' . esc_html( sprintf( 'Objavljenih izleta (%s): %d', Plan_A_Izleti_Data::post_type(), $stats['published'] ) ) . '</li>';
 		$html .= '<li>' . esc_html( sprintf( 'S budućim terminom: %d · bez datuma: %d · svi termini prošli (skriveni): %d · greške pri čitanju datuma: %d', $stats['upcoming'], $stats['undated'], $stats['past'], $stats['errors'] ) ) . '</li>';
-		$html .= '<li>' . esc_html( sprintf( 'Prikazano u mreži bez filtra (show=%d): %d od %d', $show, min( $show, count( $tours ) ), count( $tours ) ) ) . '</li>';
+		$html .= '<li>' . esc_html( sprintf( 'Početni prikaz bez filtra (show=%d): %d od %d', $show, min( $show, count( $tours ) ), count( $tours ) ) ) . '</li>';
 		$html .= '<li>' . esc_html__( 'Izvor ikona aktivnosti: term meta ttbm_activities_icon (CSS klasa ikone; fontovi Font Awesome „mp_font_awesome” i Mage Icons „mage-icons” iz WpTravellyja; boja: WpTravelly --color_theme). Bez ikone: prvo slovo naziva.', 'plan-a-izleti' ) . ( defined( 'TTBM_PLUGIN_URL' ) ? '' : ' ' . esc_html__( 'UPOZORENJE: TTBM_PLUGIN_URL nije definiran, fontovi se ne mogu učitati.', 'plan-a-izleti' ) ) . '</li>';
 		$html .= '<li>' . esc_html__( 'Izvor kategorija:', 'plan-a-izleti' ) . ' <strong>' . esc_html( isset( $sources[ $source ] ) ? $sources[ $source ]['label'] : __( 'nijedan izvor nema kategorija za izlete s budućim terminom', 'plan-a-izleti' ) ) . '</strong></li>';
 		$html .= '<li>' . esc_html__( 'Gumbi:', 'plan-a-izleti' ) . ' ' . esc_html( isset( $sources[ $source ] ) && $button_ids ? implode( ', ', self::term_names( $button_ids, $sources[ $source ]['taxonomy'] ) ) : '–' ) . '</li>';
@@ -379,7 +517,7 @@ final class Plan_A_Izleti_Shortcode {
 
 	/**
 	 * @param array $months 'Y-m' => prvi termin u tom mjesecu (samo mjeseci iz filtra).
-	 * @param bool  $hidden Izlet je izvan ograničenja show (vidi se samo uz filtar).
+	 * @param bool  $hidden Izlet nije u početnom prikazu (izvan filtra ili ograničenja show).
 	 * @param WP_Term[] $activities Aktivnosti izleta (ikone na slici).
 	 */
 	private static function render_card( array $tour, array $cats, array $months, bool $hidden, array $activities ): string {
@@ -712,6 +850,7 @@ final class Plan_A_Izleti_Shortcode {
 			'clock'    => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
 			'mountain' => '<path d="M2.5 20 9 8.5l4 6.5 2.5-3.5 6 8.5z"/><path d="m7 12 2 1.5 2-1.5"/>',
 			'chevron'  => '<path d="m6 9 6 6 6-6"/>',
+			'arrow'    => '<path d="M5 12h14M13 6l6 6-6 6"/>',
 		);
 		return '<svg class="paiz-icon" viewBox="0 0 24 24" width="' . $size . '" height="' . $size . '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $paths[ $name ] . '</svg>';
 	}

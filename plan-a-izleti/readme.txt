@@ -1,7 +1,7 @@
 === Plan A izleti ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 License: GPLv2 or later
 
 Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s filtrom po kategorijama i mjesecima.
@@ -17,10 +17,23 @@ Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (To
 
 Upotreba:
 
-    [plan-a-izleti]            – najviše 18 izleta
-    [plan-a-izleti show="9"]   – najviše 9 izleta u početnom prikazu (1–100); uz filtar se vide svi odgovarajući
+    [plan-a-izleti]            – prvih 18 izleta i gumb "Prikaži još izleta"
+    [plan-a-izleti show="9"]   – prvih 9 izleta (1–100); ograničenje vrijedi i za rezultat filtra
+    [plan-a-izleti step="6"]   – "Prikaži još izleta" dodaje 6 izleta (zadano jednako show)
+    [plan-a-izleti more="no"]  – bez gumba "Prikaži još izleta"
+    [plan-a-izleti all_url="/izleti/"] – gumb "Pogledaj sve izlete"; ne prikazuje se na toj istoj stranici
     [plan-a-izleti intro="yes"] – uvod "Pronađi svoj izlet." iznad izbornika
     [plan-a-izleti debug="yes"] – dijagnostika (vidi je samo administrator)
+
+Primjeri:
+
+    Naslovnica:     [plan-a-izleti show="3" all_url="/izleti/"]
+    Stranica Izleti: [plan-a-izleti show="18"]
+
+Gumbi ispod mreže vide se samo kad trenutni rezultat ima više izleta od početnog
+prikaza. Promjena filtra vraća prikaz na show izleta. "Pogledaj sve izlete" prenosi
+odabrane filtre u adresu, npr. /izleti/?vrsta=ferrate&termin=2026-11 (vrsta je slug
+kategorije, termin mjesec GGGG-MM), a shortcode na toj stranici ih odmah primijeni.
 
 Kategorije: aktivnosti (ttbm_tour_activities, kao WpTravelly filtar "Category"),
 a ako ih nema, kategorije izleta (ttbm_tour_cat).
