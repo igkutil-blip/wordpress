@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A aplikacija
  * Description:       Pretvara stranicu u instalabilnu web aplikaciju (PWA): manifest, service worker koji nikad ne sprema košaricu ni plaćanje, izvanmrežna stranica, poziv na instalaciju i donja navigacija u aplikaciji.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Plan A
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_APP_VERSION', '1.1.0' );
+define( 'PLAN_A_APP_VERSION', '1.2.0' );
 define( 'PLAN_A_APP_FILE', __FILE__ );
 define( 'PLAN_A_APP_DIR', __DIR__ );
 define( 'PLAN_A_APP_URL', plugin_dir_url( __FILE__ ) );

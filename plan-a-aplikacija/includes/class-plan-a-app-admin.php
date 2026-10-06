@@ -133,7 +133,7 @@ final class Plan_A_App_Admin {
 						<td>
 							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[install_prompt]" value="1" <?php checked( $s['install_prompt'] ); ?>> <?php esc_html_e( 'Prikaži traku „Instaliraj aplikaciju Plan A” na mobitelu', 'plan-a-aplikacija' ); ?></label>
 							<fieldset style="margin:10px 0 0 24px;">
-								<label><input type="radio" name="<?php echo esc_attr( $name ); ?>[prompt_every]" value="1" <?php checked( (int) $s['prompt_every'], 1 ); ?>> <?php esc_html_e( 'Pri svakoj posjeti („Ne sada” skriva traku do sljedeće posjete)', 'plan-a-aplikacija' ); ?></label><br>
+								<label><input type="radio" name="<?php echo esc_attr( $name ); ?>[prompt_every]" value="1" <?php checked( (int) $s['prompt_every'], 1 ); ?>> <?php esc_html_e( 'Pri svakoj posjeti („Ne sada” skriva traku do sljedeće posjete; na iPhoneu na 30 dana)', 'plan-a-aplikacija' ); ?></label><br>
 								<label><input type="radio" name="<?php echo esc_attr( $name ); ?>[prompt_every]" value="0" <?php checked( (int) $s['prompt_every'], 0 ); ?>> <?php esc_html_e( 'Od druge posjete („Ne sada” skriva traku na 30 dana)', 'plan-a-aplikacija' ); ?></label>
 							</fieldset>
 							<p class="description"><?php esc_html_e( 'Traka se ne prikazuje u već instaliranoj aplikaciji ni na košarici i plaćanju. Na iPhoneu se prikazuje uputa Podijeli > Dodaj na početni zaslon.', 'plan-a-aplikacija' ); ?></p>

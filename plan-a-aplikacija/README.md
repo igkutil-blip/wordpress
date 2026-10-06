@@ -11,7 +11,7 @@ WordPress dodatak koji stranicu srd-plan-a.hr pretvara u web aplikaciju (PWA) ko
   - **Nikad se ne spremaju** i uvijek idu na mrežu: košarica, plaćanje, korisnički račun (i njihove stvarne WooCommerce adrese), `/wp-admin/`, `/wp-login.php`, AJAX (`admin-ajax.php`, `?wc-ajax=`), REST (`/wp-json/`), `/wc-api/` te svaka stranica s parametrima u adresi (narudžba, plaćanje i slično).
   - **Bez interneta** stranica koja nije spremljena prikazuje izvanmrežnu stranicu: „Trenutno nema internetske veze. Rezervacije su moguće samo uz vezu.” s gumbom „Pokušaj ponovno”.
 - **Poziv na instalaciju:**
-  - Na mobitelu se pri svakoj posjeti na dnu prikazuje traka „Instaliraj aplikaciju Plan A” s gumbima „Instaliraj” i „Ne sada”. „Ne sada” traku skriva do sljedeće posjete.
+  - Na mobitelu se pri svakoj posjeti na dnu prikazuje traka „Instaliraj aplikaciju Plan A” s gumbima „Instaliraj” i „Ne sada”. „Ne sada” traku skriva do sljedeće posjete, a na iPhoneu na 30 dana (Safari ne može saznati je li aplikacija već instalirana).
   - U postavkama se može odabrati i „od druge posjete”, gdje „Ne sada” traku skriva na 30 dana.
   - Na iPhoneu traka umjesto gumba „Instaliraj” daje uputu „Podijeli → Dodaj na početni zaslon”.
   - Traka se ne prikazuje na košarici, plaćanju ni korisničkom računu.

@@ -72,8 +72,14 @@
 		}
 	}
 
+	// "Ne sada" vrijedi 30 dana: uz postavku "od druge posjete", a na iPhoneu uvijek,
+	// jer Safari ne može saznati je li aplikacija već dodana na početni zaslon.
+	function longDismiss() {
+		return ! config.promptEvery || isIOS();
+	}
+
 	function dismissedRecently() {
-		if ( config.promptEvery ) {
+		if ( ! longDismiss() ) {
 			// Pri svakoj posjeti: "Ne sada" vrijedi samo do kraja ove posjete.
 			return !! ( session && session.getItem( KEY_DISMISSED_VISIT ) );
 		}
@@ -82,7 +88,7 @@
 	}
 
 	function remember() {
-		if ( config.promptEvery ) {
+		if ( ! longDismiss() ) {
 			if ( session ) {
 				session.setItem( KEY_DISMISSED_VISIT, '1' );
 			}
