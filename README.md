@@ -1,5 +1,7 @@
 # Plan A izleti – WordPress dodatak
 
+> U repozitoriju je i zaseban dodatak **Plan A aplikacija** (PWA) u mapi [`plan-a-aplikacija/`](plan-a-aplikacija/README.md), paket [`plan-a-aplikacija.zip`](plan-a-aplikacija.zip).
+
 Shortcode `[plan-a-izleti]` prikazuje izlete iz dodatka **WpTravelly** (Tour Booking Manager, MagePeople) u mreži s gumbima za kategorije. Kod dodatka nalazi se u mapi [`plan-a-izleti/`](plan-a-izleti/).
 
 ## Upute za instalaciju

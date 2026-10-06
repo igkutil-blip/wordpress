@@ -1,0 +1,201 @@
+/* Plan A aplikacija */
+
+:root {
+	--plan-a-nav-height: 62px;
+	--plan-a-app-color: #1f3a5f;
+}
+
+/* Donja navigacija: samo u instaliranoj aplikaciji. */
+.plan-a-nav {
+	display: none;
+}
+
+@media (display-mode: standalone) {
+	.plan-a-nav {
+		display: flex;
+	}
+
+	body {
+		padding-bottom: calc(var(--plan-a-nav-height) + env(safe-area-inset-bottom, 0px));
+	}
+}
+
+.plan-a-standalone .plan-a-nav {
+	display: flex;
+}
+
+.plan-a-standalone body {
+	padding-bottom: calc(var(--plan-a-nav-height) + env(safe-area-inset-bottom, 0px));
+}
+
+.plan-a-nav {
+	position: fixed;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 9990;
+	justify-content: space-around;
+	align-items: stretch;
+	height: calc(var(--plan-a-nav-height) + env(safe-area-inset-bottom, 0px));
+	padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+	border-top: 1px solid #e3e6ea;
+	background: #fff;
+	box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+	box-sizing: border-box;
+}
+
+.plan-a-nav__item {
+	display: flex;
+	flex: 1 1 0;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 3px;
+	min-width: 0;
+	padding: 6px 2px;
+	color: #6b7280;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.1;
+	text-decoration: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.plan-a-nav__item:hover,
+.plan-a-nav__item:focus,
+.plan-a-nav__item.is-active {
+	color: var(--plan-a-app-color);
+	text-decoration: none;
+}
+
+.plan-a-nav__item:focus-visible {
+	outline: 2px solid var(--plan-a-app-color);
+	outline-offset: -4px;
+}
+
+.plan-a-nav__icon {
+	position: relative;
+	display: flex;
+}
+
+.plan-a-nav__label {
+	overflow: hidden;
+	max-width: 100%;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.plan-a-cart-count {
+	position: absolute;
+	top: -6px;
+	right: -10px;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 5px;
+	border-radius: 9px;
+	background: #e8862a;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 18px;
+	text-align: center;
+	box-sizing: border-box;
+}
+
+.plan-a-cart-count[hidden] {
+	display: none;
+}
+
+/* Gumb "na vrh" teme Flatsome iznad donje navigacije. */
+.plan-a-standalone #top-link {
+	bottom: calc(var(--plan-a-nav-height) + 16px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+@media (display-mode: standalone) {
+	#top-link {
+		bottom: calc(var(--plan-a-nav-height) + 16px + env(safe-area-inset-bottom, 0px)) !important;
+	}
+}
+
+/* Traka za instalaciju (mobitel, nakon druge posjete). */
+.plan-a-install {
+	position: fixed;
+	right: 12px;
+	bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+	left: 12px;
+	z-index: 9991;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px 12px;
+	padding: 12px 14px;
+	border-radius: 14px;
+	background: #fff;
+	color: #222;
+	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+	font-size: 14px;
+	line-height: 1.35;
+	animation: plan-a-slide-up 0.25s ease-out;
+}
+
+.plan-a-install__text {
+	display: flex;
+	flex: 1 1 180px;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.plan-a-install__hint {
+	color: #555;
+	font-size: 13px;
+}
+
+.plan-a-install__actions {
+	display: flex;
+	gap: 8px;
+	margin-left: auto;
+}
+
+.plan-a-install button {
+	min-height: 40px;
+	margin: 0;
+	padding: 8px 14px;
+	border-radius: 999px;
+	font-size: 14px;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: normal;
+	text-transform: none;
+	cursor: pointer;
+}
+
+.plan-a-install__later {
+	border: 1px solid #cfd4da;
+	background: #fff;
+	color: #444;
+}
+
+.plan-a-install__go {
+	border: 1px solid var(--plan-a-app-color);
+	background: var(--plan-a-app-color);
+	color: #fff;
+}
+
+@keyframes plan-a-slide-up {
+	from {
+		opacity: 0;
+		transform: translateY(16px);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.plan-a-install {
+		animation: none;
+	}
+}
