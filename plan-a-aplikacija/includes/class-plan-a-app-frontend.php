@@ -71,6 +71,7 @@ final class Plan_A_App_Frontend {
 			'planAApp',
 			array(
 				'swUrl'         => Plan_A_App_Settings::endpoint_url( 'sw' ),
+				'statUrl'       => Plan_A_App_Settings::get( 'stats' ) ? Plan_A_App_Settings::endpoint_url( 'stat' ) : '',
 				'scope'         => Plan_A_App_Settings::home_path(),
 				'installPrompt' => (bool) Plan_A_App_Settings::get( 'install_prompt' ),
 				'promptEvery'   => (bool) Plan_A_App_Settings::get( 'prompt_every' ),

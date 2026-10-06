@@ -52,6 +52,49 @@
 		}
 	}
 
+	// --- Anonimna statistika (samo u instaliranoj aplikaciji) -----------------
+	// Bez kolačića i identifikatora: uređaj sam pamti je li već javio
+	// prvo otvaranje, današnji dan i ovo pokretanje.
+	function platform() {
+		if ( isIOS() ) {
+			return 'ios';
+		}
+		return /android/i.test( window.navigator.userAgent || '' ) ? 'android' : 'other';
+	}
+
+	function reportUsage() {
+		if ( ! config.statUrl || ! isStandalone() || ! window.navigator.sendBeacon ) {
+			return;
+		}
+		var store = storage( 'localStorage' );
+		var sess = storage( 'sessionStorage' );
+		if ( ! store ) {
+			return;
+		}
+		var d = new Date();
+		var today = d.getFullYear() + '-' + ( d.getMonth() + 1 ) + '-' + d.getDate();
+		var events = [];
+		if ( ! store.getItem( 'planAApp.stats.first' ) ) {
+			events.push( 'first' );
+			store.setItem( 'planAApp.stats.first', '1' );
+		}
+		if ( store.getItem( 'planAApp.stats.day' ) !== today ) {
+			events.push( 'day' );
+			store.setItem( 'planAApp.stats.day', today );
+		}
+		if ( sess && ! sess.getItem( 'planAApp.stats.open' ) ) {
+			events.push( 'open' );
+			sess.setItem( 'planAApp.stats.open', '1' );
+		}
+		if ( events.length ) {
+			var data = new FormData();
+			data.append( 'platform', platform() );
+			data.append( 'events', events.join( ',' ) );
+			window.navigator.sendBeacon( config.statUrl, data );
+		}
+	}
+	reportUsage();
+
 	// --- Service worker ------------------------------------------------------
 	if ( 'serviceWorker' in navigator && config.swUrl && ( 'https:' === location.protocol || 'localhost' === location.hostname ) ) {
 		window.addEventListener( 'load', function () {

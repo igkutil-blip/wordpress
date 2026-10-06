@@ -2,7 +2,7 @@
 /**
  * Brisanje dodatka: uklanja postavke i generirane ikone.
  * Service worker se kod posjetitelja uklanja sam čim primijeti da dodatak
- * više ne radi (vidi assets/sw.js, checkStillActive).
+ * više ne radi (vidi assets/sw.js, checkStillActive). Briše se i tablica statistike.
  *
  * @package Plan_A_Aplikacija
  */
@@ -12,6 +12,9 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 $plan_a_app_cleanup = static function () {
 	delete_option( 'plan_a_app_settings' );
 	delete_option( 'plan_a_app_icons' );
+	delete_option( 'plan_a_app_stats_db' );
+	global $wpdb;
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . 'plan_a_app_stats' ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared -- tablica dodatka.
 	$upload = wp_upload_dir();
 	$dir    = trailingslashit( $upload['basedir'] ) . 'plan-a-aplikacija';
 	if ( is_dir( $dir ) ) {

@@ -36,6 +36,9 @@ final class Plan_A_App_Endpoints {
 			case 'offline':
 				self::send_offline_page();
 				break;
+			case 'stat':
+				Plan_A_App_Stats::record();
+				break;
 			default:
 				return;
 		}

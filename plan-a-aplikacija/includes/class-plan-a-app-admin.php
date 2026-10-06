@@ -67,6 +67,21 @@ final class Plan_A_App_Admin {
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Plan A aplikacija', 'plan-a-aplikacija' ); ?></h1>
+			<?php
+			$tab  = isset( $_GET['tab'] ) && 'stats' === sanitize_key( wp_unslash( $_GET['tab'] ) ) ? 'stats' : 'settings'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- samo izbor kartice.
+			$base = admin_url( 'options-general.php?page=' . self::PAGE );
+			?>
+			<nav class="nav-tab-wrapper" style="margin-bottom:16px;">
+				<a href="<?php echo esc_url( $base ); ?>" class="nav-tab<?php echo 'settings' === $tab ? ' nav-tab-active' : ''; ?>"><?php esc_html_e( 'Postavke', 'plan-a-aplikacija' ); ?></a>
+				<a href="<?php echo esc_url( add_query_arg( 'tab', 'stats', $base ) ); ?>" class="nav-tab<?php echo 'stats' === $tab ? ' nav-tab-active' : ''; ?>"><?php esc_html_e( 'Statistika', 'plan-a-aplikacija' ); ?></a>
+			</nav>
+			<?php
+			if ( 'stats' === $tab ) {
+				self::render_stats();
+				echo '</div>';
+				return;
+			}
+			?>
 			<p><?php esc_html_e( 'Pretvara stranicu u web aplikaciju koju posjetitelji mogu instalirati na mobitel. Košarica, plaćanje i korisnički račun nikad se ne spremaju u predmemoriju.', 'plan-a-aplikacija' ); ?></p>
 
 			<?php self::status_notices( $icons ); ?>
@@ -139,11 +154,138 @@ final class Plan_A_App_Admin {
 							<p class="description"><?php esc_html_e( 'Traka se ne prikazuje u već instaliranoj aplikaciji ni na košarici i plaćanju. Na iPhoneu se prikazuje uputa Podijeli > Dodaj na početni zaslon.', 'plan-a-aplikacija' ); ?></p>
 						</td>
 					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Statistika', 'plan-a-aplikacija' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[stats]" value="1" <?php checked( $s['stats'] ); ?>> <?php esc_html_e( 'Anonimno brojanje instalacija i korištenja aplikacije', 'plan-a-aplikacija' ); ?></label>
+							<p class="description"><?php esc_html_e( 'Bez kolačića, IP adresa i podataka o korisnicima; sprema se samo dnevni zbroj po platformi. Rezultati: kartica Statistika.', 'plan-a-aplikacija' ); ?></p>
+						</td>
+					</tr>
 				</table>
 				<p class="description"><?php esc_html_e( 'Adrese upišite kao putanju na ovoj stranici, npr. /izleti/.', 'plan-a-aplikacija' ); ?></p>
 				<?php submit_button(); ?>
 			</form>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Kartica "Statistika" (samo administrator).
+	 */
+	private static function render_stats() {
+		$days     = Plan_A_App_Stats::by_day( 30 );
+		$all      = Plan_A_App_Stats::all_time();
+		$labels   = array(
+			'android' => 'Android',
+			'ios'     => 'iPhone',
+			'other'   => __( 'Ostalo', 'plan-a-aplikacija' ),
+		);
+		$first_all = array_fill_keys( array_keys( $labels ), 0 );
+		foreach ( $all as $platform => $metrics ) {
+			if ( isset( $first_all[ $platform ] ) ) {
+				$first_all[ $platform ] = (int) ( $metrics['first'] ?? 0 );
+			}
+		}
+		$installs_total = array_sum( $first_all );
+		$day7           = Plan_A_App_Stats::sum( $days, 'day', 7 );
+		$day30          = Plan_A_App_Stats::sum( $days, 'day', 30 );
+		$open7          = Plan_A_App_Stats::sum( $days, 'open', 7 );
+		$open30         = Plan_A_App_Stats::sum( $days, 'open', 30 );
+		$first30        = Plan_A_App_Stats::sum( $days, 'first', 30 );
+		$fmt            = static function ( $number, $decimals = 0 ) {
+			return number_format_i18n( (float) $number, $decimals );
+		};
+		$card = static function ( $title, $value, $note ) {
+			echo '<div style="flex:1 1 200px;background:#fff;border:1px solid #dcdcde;border-radius:6px;padding:14px 16px;">'
+				. '<div style="color:#50575e;font-size:13px;">' . esc_html( $title ) . '</div>'
+				. '<div style="font-size:28px;font-weight:600;line-height:1.3;margin:4px 0;">' . esc_html( $value ) . '</div>'
+				. '<div style="color:#646970;font-size:12px;">' . esc_html( $note ) . '</div></div>';
+		};
+
+		if ( ! Plan_A_App_Settings::get( 'stats' ) ) {
+			echo '<div class="notice notice-warning inline"><p>' . esc_html__( 'Brojanje je isključeno u postavkama, pa se novi podaci ne prikupljaju.', 'plan-a-aplikacija' ) . '</p></div>';
+		}
+		?>
+		<p><?php esc_html_e( 'Brojanje počinje kad je ova verzija dodatka instalirana. Aplikacija javlja samo kad se otvori kao instalirana aplikacija (s početnog zaslona). Administratori se ne broje.', 'plan-a-aplikacija' ); ?></p>
+
+		<div style="display:flex;flex-wrap:wrap;gap:12px;margin:16px 0;">
+			<?php
+			$card(
+				__( 'Instalacije (ukupno)', 'plan-a-aplikacija' ),
+				$fmt( $installs_total ),
+				sprintf( 'Android %s · iPhone %s · %s %s', $fmt( $first_all['android'] ), $fmt( $first_all['ios'] ), $labels['other'], $fmt( $first_all['other'] ) )
+			);
+			$card(
+				__( 'Nove instalacije, 30 dana', 'plan-a-aplikacija' ),
+				$fmt( $first30['all'] ),
+				sprintf( 'Android %s · iPhone %s', $fmt( $first30['android'] ), $fmt( $first30['ios'] ) )
+			);
+			$card(
+				__( 'Aktivnih uređaja dnevno (prosjek 7 dana)', 'plan-a-aplikacija' ),
+				$fmt( $day7['all'] / 7, 1 ),
+				sprintf( __( 'prosjek 30 dana: %s', 'plan-a-aplikacija' ), $fmt( $day30['all'] / 30, 1 ) )
+			);
+			$card(
+				__( 'Otvaranja aplikacije, 7 dana', 'plan-a-aplikacija' ),
+				$fmt( $open7['all'] ),
+				sprintf( __( '30 dana: %s', 'plan-a-aplikacija' ), $fmt( $open30['all'] ) )
+			);
+			$card(
+				__( 'Otvaranja po aktivnom danu', 'plan-a-aplikacija' ),
+				$day30['all'] ? $fmt( $open30['all'] / $day30['all'], 1 ) : '–',
+				__( 'koliko puta uređaj otvori aplikaciju u danu kad je koristi (30 dana)', 'plan-a-aplikacija' )
+			);
+			$card(
+				__( 'Aktivnih dana po instalaciji, 30 dana', 'plan-a-aplikacija' ),
+				$installs_total ? $fmt( $day30['all'] / $installs_total, 1 ) : '–',
+				__( 'koliko dana u zadnjih 30 se aplikacija prosječno koristila', 'plan-a-aplikacija' )
+			);
+			?>
+		</div>
+
+		<h2><?php esc_html_e( 'Zadnjih 30 dana', 'plan-a-aplikacija' ); ?></h2>
+		<table class="widefat striped" style="max-width:900px;">
+			<thead>
+				<tr>
+					<th rowspan="2"><?php esc_html_e( 'Datum', 'plan-a-aplikacija' ); ?></th>
+					<?php foreach ( $labels as $label ) : ?>
+						<th colspan="3" style="text-align:center;"><?php echo esc_html( $label ); ?></th>
+					<?php endforeach; ?>
+				</tr>
+				<tr>
+					<?php foreach ( $labels as $label ) : ?>
+						<th><?php esc_html_e( 'Aktivni', 'plan-a-aplikacija' ); ?></th>
+						<th><?php esc_html_e( 'Otvaranja', 'plan-a-aplikacija' ); ?></th>
+						<th><?php esc_html_e( 'Nove', 'plan-a-aplikacija' ); ?></th>
+					<?php endforeach; ?>
+				</tr>
+			</thead>
+			<tbody>
+				<?php
+				$today = strtotime( current_time( 'Y-m-d' ) );
+				for ( $i = 0; $i < 30; $i++ ) :
+					$day  = gmdate( 'Y-m-d', $today - $i * DAY_IN_SECONDS );
+					$data = $days[ $day ] ?? array();
+					?>
+					<tr>
+						<td><?php echo esc_html( wp_date( 'j. n. Y.', strtotime( $day . ' 12:00:00' ) ) ); ?></td>
+						<?php foreach ( array_keys( $labels ) as $platform ) : ?>
+							<?php foreach ( array( 'day', 'open', 'first' ) as $metric ) : ?>
+								<td><?php echo esc_html( $fmt( $data[ $platform ][ $metric ] ?? 0 ) ); ?></td>
+							<?php endforeach; ?>
+						<?php endforeach; ?>
+					</tr>
+				<?php endfor; ?>
+			</tbody>
+		</table>
+
+		<h2><?php esc_html_e( 'Kako se broji', 'plan-a-aplikacija' ); ?></h2>
+		<ul style="list-style:disc;padding-left:20px;max-width:900px;">
+			<li><?php esc_html_e( 'Instalacija = prvo otvaranje aplikacije na uređaju. Ponovna instalacija na istom uređaju broji se ponovno. Brisanje aplikacije telefoni ne javljaju, pa ukupan broj instalacija nije broj aplikacija koje su danas na mobitelima.', 'plan-a-aplikacija' ); ?></li>
+			<li><?php esc_html_e( 'Aktivni = broj uređaja koji su taj dan barem jednom otvorili aplikaciju. Ovo je najpouzdaniji pokazatelj stvarnog korištenja.', 'plan-a-aplikacija' ); ?></li>
+			<li><?php esc_html_e( 'Otvaranja = koliko je puta aplikacija pokrenuta.', 'plan-a-aplikacija' ); ?></li>
+			<li><?php esc_html_e( 'Ne sprema se ništa po čemu bi se mogla prepoznati osoba ili uređaj: bez kolačića, IP adresa i identifikatora.', 'plan-a-aplikacija' ); ?></li>
+		</ul>
 		<?php
 	}
 
