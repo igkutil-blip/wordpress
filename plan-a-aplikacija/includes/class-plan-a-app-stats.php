@@ -87,21 +87,31 @@ final class Plan_A_App_Stats {
 			return;
 		}
 
+		foreach ( $events as $metric ) {
+			self::increment( $platform, $metric );
+		}
+	}
+
+	/**
+	 * Uveća dnevni zbroj za 1. Metrika "booking" (rezervacija izleta iz aplikacije)
+	 * zapisuje se samo s poslužitelja (Plan_A_App_Orders), nikad iz preglednika.
+	 */
+	public static function increment( string $platform, string $metric ) {
+		if ( ! in_array( $platform, self::PLATFORMS, true ) || ! in_array( $metric, array_merge( self::METRICS, array( 'booking' ) ), true ) ) {
+			return;
+		}
 		self::maybe_install();
 		global $wpdb;
 		$table = self::table();
-		$day   = current_time( 'Y-m-d' );
-		foreach ( $events as $metric ) {
-			// Izravan upit je potreban za atomično brojanje (bez gubitka istovremenih zahtjeva).
-			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-				$wpdb->prepare(
-					"INSERT INTO {$table} (day, platform, metric, total) VALUES (%s, %s, %s, 1) ON DUPLICATE KEY UPDATE total = total + 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- naziv vlastite tablice.
-					$day,
-					$platform,
-					$metric
-				)
-			);
-		}
+		// Izravan upit je potreban za atomično brojanje (bez gubitka istovremenih zahtjeva).
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare(
+				"INSERT INTO {$table} (day, platform, metric, total) VALUES (%s, %s, %s, 1) ON DUPLICATE KEY UPDATE total = total + 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- naziv vlastite tablice.
+				current_time( 'Y-m-d' ),
+				$platform,
+				$metric
+			)
+		);
 	}
 
 	/**

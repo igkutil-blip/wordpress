@@ -62,6 +62,18 @@
 		return /android/i.test( window.navigator.userAgent || '' ) ? 'android' : 'other';
 	}
 
+	// Kolačić sesije po kojem poslužitelj prepoznaje rezervaciju iz aplikacije.
+	// Android aplikacija i Chrome dijele kolačiće, pa se u pregledniku briše.
+	function markSource() {
+		var secure = 'https:' === location.protocol ? '; Secure' : '';
+		if ( config.statUrl && isStandalone() ) {
+			document.cookie = 'plan_a_app_src=' + platform() + '; path=/; SameSite=Lax' + secure;
+		} else if ( document.cookie.indexOf( 'plan_a_app_src=' ) !== -1 ) {
+			document.cookie = 'plan_a_app_src=; path=/; max-age=0; SameSite=Lax' + secure;
+		}
+	}
+	markSource();
+
 	function reportUsage() {
 		if ( ! config.statUrl || ! isStandalone() || ! window.navigator.sendBeacon ) {
 			return;

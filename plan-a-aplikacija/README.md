@@ -24,13 +24,16 @@ WordPress dodatak koji stranicu srd-plan-a.hr pretvara u web aplikaciju (PWA) ko
 - **aktivne uređaje** po danu: koliko je uređaja taj dan barem jednom otvorilo aplikaciju,
 - **otvaranja aplikacije** u zadnjih 7 i 30 dana,
 - **učestalost:** otvaranja po aktivnom danu i aktivne dane po instalaciji,
-- **tablicu za zadnjih 30 dana**.
+- **tablicu za zadnjih 30 dana**,
+- **rezervacije izleta iz aplikacije:** poslane (klik na konačni gumb za plaćanje) i plaćene/potvrđene u zadnjih 30 dana s iznosom, udio aplikacije u svim rezervacijama izleta te popis zadnjih narudžbi iz aplikacije.
 
 Kako se broji:
 - **Instalacija** je prvo otvaranje aplikacije s početnog zaslona na nekom uređaju.
 - **Brisanje se ne vidi:** Android i iPhone ne javljaju stranici ni instalaciju ni brisanje aplikacije, pa je „aktivni uređaji” najbolji pokazatelj stvarnog korištenja.
 - **Što se ne broji:** posjete preko preglednika i administratori.
-- **Privatnost:** ne koriste se kolačići, IP adrese ni identifikatori. Uređaj samo pamti je li već javio prvo otvaranje i današnji dan, a na poslužitelju se sprema samo dnevni zbroj po platformi. Ipak je dobro u politici privatnosti spomenuti anonimnu statistiku korištenja aplikacije.
+- **Rezervacija iz aplikacije:** dok je stranica otvorena kao instalirana aplikacija, postavlja se kolačić sesije `plan_a_app_src` (samo platforma: android/ios/other). U običnom pregledniku se briše. Kad kupac klikne konačni gumb za plaćanje i WooCommerce stvori narudžbu s izletom (WpTravelly), narudžbi se dodaje oznaka izvora. Na stranici narudžbe u administraciji tada piše „Izvor: aplikacija Plan A (Android)”.
+- **„Plaćene / potvrđene”** su narudžbe sa statusom U obradi, Završeno ili Na čekanju. Narudžbe koje čekaju plaćanje, otkazane i neuspjele broje se samo kao poslane.
+- **Privatnost:** osim kolačića sesije za izvor rezervacije ne koriste se kolačići, IP adrese ni identifikatori. Uređaj samo pamti je li već javio prvo otvaranje i današnji dan, a na poslužitelju se sprema samo dnevni zbroj po platformi. Ipak je dobro u politici privatnosti spomenuti anonimnu statistiku korištenja aplikacije.
 - **Isključivanje:** u postavkama odznačite „Statistika”.
 
 ## Upute za instalaciju

@@ -243,6 +243,8 @@ final class Plan_A_App_Admin {
 			?>
 		</div>
 
+		<?php self::render_bookings( $all, $card, $fmt ); ?>
+
 		<h2><?php esc_html_e( 'Zadnjih 30 dana', 'plan-a-aplikacija' ); ?></h2>
 		<table class="widefat striped" style="max-width:900px;">
 			<thead>
@@ -284,8 +286,85 @@ final class Plan_A_App_Admin {
 			<li><?php esc_html_e( 'Instalacija = prvo otvaranje aplikacije na uređaju. Ponovna instalacija na istom uređaju broji se ponovno. Brisanje aplikacije telefoni ne javljaju, pa ukupan broj instalacija nije broj aplikacija koje su danas na mobitelima.', 'plan-a-aplikacija' ); ?></li>
 			<li><?php esc_html_e( 'Aktivni = broj uređaja koji su taj dan barem jednom otvorili aplikaciju. Ovo je najpouzdaniji pokazatelj stvarnog korištenja.', 'plan-a-aplikacija' ); ?></li>
 			<li><?php esc_html_e( 'Otvaranja = koliko je puta aplikacija pokrenuta.', 'plan-a-aplikacija' ); ?></li>
+			<li><?php esc_html_e( 'Rezervacija iz aplikacije = narudžba s izletom koju je kupac poslao klikom na konačni gumb za plaćanje dok je stranica bila otvorena kao instalirana aplikacija. „Plaćene / potvrđene” su narudžbe u statusu U obradi, Završeno ili Na čekanju. Izvor se vidi i na stranici same narudžbe.', 'plan-a-aplikacija' ); ?></li>
 			<li><?php esc_html_e( 'Ne sprema se ništa po čemu bi se mogla prepoznati osoba ili uređaj: bez kolačića, IP adresa i identifikatora.', 'plan-a-aplikacija' ); ?></li>
 		</ul>
+		<?php
+	}
+
+	/**
+	 * Rezervacije izleta iz aplikacije (narudžbe stvorene klikom na konačni gumb za plaćanje).
+	 */
+	private static function render_bookings( array $all, callable $card, callable $fmt ) {
+		$summary = Plan_A_App_Orders::summary( 30 );
+		$labels  = Plan_A_App_Orders::labels();
+		$money   = static function ( $amount, $currency = '' ) {
+			return function_exists( 'wc_price' ) ? wp_strip_all_tags( wc_price( $amount, $currency ? array( 'currency' => $currency ) : array() ) ) : number_format_i18n( $amount, 2 );
+		};
+		$total_all_time = 0;
+		foreach ( $all as $metrics ) {
+			$total_all_time += (int) ( $metrics['booking'] ?? 0 );
+		}
+		?>
+		<h2><?php esc_html_e( 'Rezervacije izleta iz aplikacije', 'plan-a-aplikacija' ); ?></h2>
+		<?php if ( ! $summary['available'] ) : ?>
+			<p><?php esc_html_e( 'WooCommerce nije aktivan.', 'plan-a-aplikacija' ); ?></p>
+			<?php
+			return;
+		endif;
+		?>
+		<div style="display:flex;flex-wrap:wrap;gap:12px;margin:16px 0;">
+			<?php
+			$card(
+				__( 'Poslane rezervacije, 30 dana', 'plan-a-aplikacija' ),
+				$fmt( $summary['app_placed']['all'] ),
+				sprintf( 'Android %s · iPhone %s · %s', $fmt( $summary['app_placed']['android'] ), $fmt( $summary['app_placed']['ios'] ), __( 'klik na konačni gumb za plaćanje', 'plan-a-aplikacija' ) )
+			);
+			$card(
+				__( 'Plaćene / potvrđene, 30 dana', 'plan-a-aplikacija' ),
+				$fmt( $summary['app_confirmed']['all'] ),
+				sprintf( __( 'iznos: %s', 'plan-a-aplikacija' ), $money( $summary['app_revenue']['all'] ) )
+			);
+			$card(
+				__( 'Udio aplikacije u rezervacijama izleta', 'plan-a-aplikacija' ),
+				$summary['site_confirmed'] ? $fmt( 100 * $summary['app_confirmed']['all'] / $summary['site_confirmed'], 0 ) . ' %' : '–',
+				sprintf( __( 'od %s plaćenih/potvrđenih rezervacija izleta na stranici u 30 dana', 'plan-a-aplikacija' ), $fmt( $summary['site_confirmed'] ) )
+			);
+			$card(
+				__( 'Poslane rezervacije, ukupno', 'plan-a-aplikacija' ),
+				$fmt( $total_all_time ),
+				__( 'od instalacije ove verzije dodatka', 'plan-a-aplikacija' )
+			);
+			?>
+		</div>
+		<?php if ( $summary['recent'] ) : ?>
+			<table class="widefat striped" style="max-width:900px;margin-bottom:24px;">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Narudžba', 'plan-a-aplikacija' ); ?></th>
+						<th><?php esc_html_e( 'Datum', 'plan-a-aplikacija' ); ?></th>
+						<th><?php esc_html_e( 'Platforma', 'plan-a-aplikacija' ); ?></th>
+						<th><?php esc_html_e( 'Izlet', 'plan-a-aplikacija' ); ?></th>
+						<th><?php esc_html_e( 'Status', 'plan-a-aplikacija' ); ?></th>
+						<th><?php esc_html_e( 'Iznos', 'plan-a-aplikacija' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $summary['recent'] as $row ) : ?>
+						<tr>
+							<td><a href="<?php echo esc_url( $row['url'] ); ?>">#<?php echo esc_html( (string) $row['number'] ); ?></a></td>
+							<td><?php echo esc_html( $row['date'] ? wp_date( 'j. n. Y. H:i', $row['date'] ) : '–' ); ?></td>
+							<td><?php echo esc_html( $labels[ $row['source'] ] ?? $row['source'] ); ?></td>
+							<td><?php echo esc_html( implode( ', ', $row['tours'] ) ); ?></td>
+							<td><?php echo esc_html( $row['status'] ); ?></td>
+							<td><?php echo esc_html( $money( $row['total'], $row['currency'] ) ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		<?php else : ?>
+			<p><?php esc_html_e( 'U zadnjih 30 dana još nema rezervacija izleta iz aplikacije.', 'plan-a-aplikacija' ); ?></p>
+		<?php endif; ?>
 		<?php
 	}
 
