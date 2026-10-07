@@ -96,24 +96,24 @@
 	// Uklanjanjem zadnje stavke košarica postaje prazna: učitaj stranicu ponovno da se
 	// prikaz prazne košarice (i popis izleta sa svojim stilovima) učita u cijelosti.
 	/**
-	 * Naplata: polje za kod u sažetku. Kod se šalje WooCommerceu (wc-ajax apply_coupon, kao zadani
-	 * obrazac za kupon), a sažetak se zatim osvježi. Poruka se zadržava i nakon osvježavanja.
+	 * Polje za kod u sažetku košarice i naplate. Kod se šalje WooCommerceu (wc-ajax apply_coupon,
+	 * kao zadani obrazac za kupon), a sažetak se zatim osvježi. Poruka se zadržava i nakon
+	 * osvježavanja sažetka.
 	 */
-	function initCheckoutCode() {
+	function initCode() {
 		var $ = window.jQuery;
-		var params = window.wc_checkout_params;
-		if ( ! $ || ! params || ! document.querySelector( '.paka-checkout' ) ) {
+		var checkout = !! document.querySelector( '.paka-checkout' ) && window.wc_checkout_params;
+		var params = checkout ? window.wc_checkout_params : window.wc_cart_params;
+		if ( ! $ || ! params || ! document.querySelector( '[data-paka-code]' ) ) {
 			return;
 		}
 		var last = null; // { text, ok }
 
 		function show() {
-			var box = document.querySelector( '[data-paka-code]' );
 			var msg = document.querySelector( '[data-paka-code-msg]' );
-			if ( ! box || ! msg || ! last ) {
+			if ( ! msg || ! last ) {
 				return;
 			}
-			box.open = true;
 			msg.textContent = last.text;
 			msg.className = 'paka-code__msg ' + ( last.ok ? 'is-ok' : 'is-error' );
 		}
@@ -123,7 +123,9 @@
 			var button = document.querySelector( '[data-paka-apply]' );
 			var code = input ? input.value.trim() : '';
 			if ( ! code ) {
-				input && input.focus();
+				if ( input ) {
+					input.focus();
+				}
 				return;
 			}
 			if ( button ) {
@@ -139,9 +141,14 @@
 				holder.innerHTML = html;
 				var error = holder.querySelector( '.woocommerce-error, .is-error' );
 				last = { text: ( holder.textContent || '' ).replace( /\s+/g, ' ' ).trim(), ok: ! error };
-				$( document.body ).trigger( 'applied_coupon_in_checkout', [ code ] );
-				$( document.body ).trigger( 'update_checkout', { update_shipping_method: false } );
 				show();
+				if ( checkout ) {
+					$( document.body ).trigger( 'applied_coupon_in_checkout', [ code ] );
+					$( document.body ).trigger( 'update_checkout', { update_shipping_method: false } );
+				} else {
+					$( document.body ).trigger( 'applied_coupon', [ code ] );
+					$( document ).trigger( 'wc_update_cart', [ true ] );
+				}
 			} ).always( function () {
 				if ( button ) {
 					button.disabled = false;
@@ -155,16 +162,15 @@
 				apply();
 			}
 		} );
-		// Enter u polju za kod primjenjuje kod (ne šalje narudžbu).
+		// Enter u polju za kod primjenjuje kod (ne šalje narudžbu ni obrazac košarice).
 		document.addEventListener( 'keydown', function ( event ) {
 			if ( 'Enter' === event.key && event.target && 'paka_code' === event.target.id ) {
 				event.preventDefault();
 				apply();
 			}
 		} );
-		$( document.body ).on( 'updated_checkout', function () {
+		$( document.body ).on( 'updated_checkout updated_cart_totals updated_wc_div', function () {
 			show();
-			last = last && last.ok ? null : last; // uspješna poruka prikaže se jednom
 		} );
 	}
 
@@ -178,12 +184,12 @@
 
 	if ( 'loading' === document.readyState ) {
 		document.addEventListener( 'DOMContentLoaded', initEmptied );
-		document.addEventListener( 'DOMContentLoaded', initCheckoutCode );
+		document.addEventListener( 'DOMContentLoaded', initCode );
 		document.addEventListener( 'DOMContentLoaded', init );
 		document.addEventListener( 'DOMContentLoaded', initReceived );
 	} else {
 		initEmptied();
-		initCheckoutCode();
+		initCode();
 		init();
 		initReceived();
 	}

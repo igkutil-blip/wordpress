@@ -55,6 +55,7 @@ class Plan_A_Bon_Redeem {
 			'plan-a-kosarica' => array(
 				'Imaš kod za popust?' => 'Imaš poklon bon ili kod za popust?',
 				'Upiši kod'           => 'Kod s bona',
+				'Upiši kod i iznos za uplatu odmah će se umanjiti.' => 'Upiši kod s poklon bona (npr. PLANA-XXXX-XXXX) i iznos za uplatu odmah će se umanjiti.',
 			),
 			'woocommerce'     => array(
 				'Have a coupon?'                => 'Imaš poklon bon ili kod za popust?',

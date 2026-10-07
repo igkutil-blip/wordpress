@@ -1468,41 +1468,96 @@ body.paka-on.paka-steps-on .checkout-breadcrumbs {
 	margin-top: 12px;
 }
 
-/* Naplata: polje za kod u sažetku "Tvoja rezervacija" */
+/* Polje za kod (poklon bon ili popust) u sažetku košarice i naplate, uz iznos za uplatu */
+.paka table.paka-sum tr.paka-code-row td,
 .paka table.paka-review tr.paka-code-row td {
-	padding-top: 10px;
-	padding-bottom: 10px;
-	border-top: 1px solid var(--paka-line);
+	padding: 12px 0 14px;
+	white-space: normal; /* ostale ćelije sažetka su u jednom redu */
+	font-weight: 400;
+	border: 0;
 	text-align: left;
 }
 
-.paka .paka-code .coupon {
+.paka .paka-gift-code {
+	padding: 14px;
+	border: 2px dashed var(--paka-accent);
+	border-radius: 12px;
+	background: var(--paka-soft);
+	text-align: left;
+}
+
+.paka .paka-gift-code__title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	color: var(--paka-navy);
+	font-size: 17px;
+	font-weight: 800;
+	line-height: 1.25;
+}
+
+.paka .paka-gift-code__title .paka-icon {
+	flex: 0 0 auto;
+	width: 24px;
+	height: 24px;
+	color: var(--paka-accent);
+}
+
+.paka .paka-gift-code__hint {
+	margin: 4px 0 10px;
+	color: var(--paka-muted);
+	font-size: 14px;
+	line-height: 1.4;
+}
+
+.paka .paka-gift-code__row {
 	display: flex;
 	flex-wrap: nowrap;
 	gap: 8px;
-	margin-top: 8px;
+	margin: 0;
+	float: none;
 }
 
-.paka .paka-code #paka_code {
-	flex: 1 1 140px;
-	width: auto;
+.paka .paka-gift-code #paka_code {
+	flex: 1 1 0;
+	width: 0; /* u tablici sažetka polje se ne smije širiti preko ekrana */
 	min-width: 0;
 	min-height: 48px;
 	margin: 0;
 	padding: 10px 14px;
-	border: 1px solid #cfd8e3;
+	border: 1px solid #b9cbdc;
 	border-radius: 10px;
 	background: #fff;
+	color: var(--paka-text);
 	font-size: 16px;
+	letter-spacing: 0.02em;
 	text-transform: uppercase;
 }
 
-.paka .paka-code #paka_code::placeholder {
+.paka .paka-gift-code #paka_code::placeholder {
+	letter-spacing: normal;
 	text-transform: none;
 }
 
-.paka .paka-code .paka-btn {
+.paka .paka-gift-code #paka_code:focus {
+	border-color: var(--paka-accent);
+	outline: 3px solid rgba(26, 154, 214, 0.2);
+	outline-offset: 0;
+}
+
+.paka .paka-gift-code .paka-gift-code__btn {
+	flex: 0 0 auto;
 	min-height: 48px;
+	padding: 10px 18px;
+	border: 0 !important;
+	border-radius: 10px;
+	background-color: var(--paka-accent) !important;
+	color: #fff !important;
+}
+
+.paka .paka-gift-code .paka-gift-code__btn:disabled {
+	opacity: 0.6;
 }
 
 .paka .paka-code__msg {

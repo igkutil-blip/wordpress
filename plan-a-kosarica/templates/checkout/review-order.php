@@ -113,20 +113,10 @@ $paka_adjust = Plan_A_Kosarica::has_adjustments();
 			<?php endif; ?>
 		<?php endif; ?>
 
-		<?php if ( wc_coupons_enabled() ) : ?>
-			<?php // Polje za kod (poklon bon ili popust) uz iznos za uplatu; primjenjuje se bez slanja obrasca (kosarica.js). ?>
+		<?php $paka_code_box = Plan_A_Kosarica::code_box(); ?>
+		<?php if ( '' !== $paka_code_box ) : ?>
 			<tr class="paka-code-row">
-				<td colspan="2">
-					<details class="paka-coupon paka-code" data-paka-code>
-						<summary><?php esc_html_e( 'Imaš kod za popust?', 'plan-a-kosarica' ); ?></summary>
-						<div class="coupon">
-							<label for="paka_code" class="screen-reader-text"><?php esc_html_e( 'Upiši kod', 'plan-a-kosarica' ); ?></label>
-							<input type="text" id="paka_code" class="input-text" value="" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="<?php esc_attr_e( 'Upiši kod', 'plan-a-kosarica' ); ?>">
-							<button type="button" class="button paka-btn paka-btn--ghost" data-paka-apply><?php esc_html_e( 'Iskoristi', 'plan-a-kosarica' ); ?></button>
-						</div>
-						<p class="paka-code__msg" data-paka-code-msg role="status" aria-live="polite"></p>
-					</details>
-				</td>
+				<td colspan="2"><?php echo $paka_code_box; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- izgrađeno i escapano u code_box(). ?></td>
 			</tr>
 		<?php endif; ?>
 

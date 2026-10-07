@@ -196,17 +196,7 @@ $paka_has_qty_input = false;
 					<?php do_action( 'woocommerce_cart_contents' ); ?>
 
 					<div class="paka-actions actions<?php echo $paka_has_qty_input ? '' : ' paka-actions--no-qty'; ?>">
-						<?php if ( wc_coupons_enabled() ) : ?>
-							<details class="paka-coupon">
-								<summary><?php esc_html_e( 'Imaš kod za popust?', 'plan-a-kosarica' ); ?></summary>
-								<div class="coupon">
-									<label for="coupon_code" class="screen-reader-text"><?php esc_html_e( 'Coupon:', 'woocommerce' ); ?></label>
-									<input type="text" name="coupon_code" class="input-text" id="coupon_code" value="" placeholder="<?php esc_attr_e( 'Coupon code', 'woocommerce' ); ?>" />
-									<button type="submit" class="button paka-btn paka-btn--ghost" name="apply_coupon" value="<?php esc_attr_e( 'Apply coupon', 'woocommerce' ); ?>"><?php esc_html_e( 'Apply coupon', 'woocommerce' ); ?></button>
-									<?php do_action( 'woocommerce_cart_coupon' ); ?>
-								</div>
-							</details>
-						<?php endif; ?>
+						<?php // Polje za kod je u sažetku, uz iznos za uplatu (Plan_A_Kosarica::code_box()). ?>
 
 						<button type="submit" class="button paka-btn paka-btn--ghost paka-update" name="update_cart" value="<?php esc_attr_e( 'Update cart', 'woocommerce' ); ?>"><?php esc_html_e( 'Update cart', 'woocommerce' ); ?></button>
 

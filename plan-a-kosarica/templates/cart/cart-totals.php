@@ -109,6 +109,13 @@ $paka_adjust = Plan_A_Kosarica::has_adjustments();
 			}
 			?>
 
+			<?php $paka_code_box = Plan_A_Kosarica::code_box(); ?>
+			<?php if ( '' !== $paka_code_box ) : ?>
+				<tr class="paka-code-row">
+					<td colspan="2"><?php echo $paka_code_box; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- izgrađeno i escapano u code_box(). ?></td>
+				</tr>
+			<?php endif; ?>
+
 			<?php do_action( 'woocommerce_cart_totals_before_order_total' ); ?>
 
 			<tr class="order-total">

@@ -43,6 +43,31 @@ final class Plan_A_Kosarica {
 	}
 
 	/**
+	 * Istaknuti okvir za kod (poklon bon ili popust) uz iznos za uplatu, u sažetku košarice i
+	 * naplate. Kod se primjenjuje bez slanja obrasca (kosarica.js, wc-ajax apply_coupon).
+	 */
+	public static function code_box(): string {
+		if ( ! wc_coupons_enabled() ) {
+			return '';
+		}
+		ob_start();
+		?>
+		<div class="paka-gift-code" data-paka-code>
+			<p class="paka-gift-code__title"><?php echo self::icon( 'gift' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- statički SVG. ?><span><?php esc_html_e( 'Imaš kod za popust?', 'plan-a-kosarica' ); ?></span></p>
+			<p class="paka-gift-code__hint"><?php esc_html_e( 'Upiši kod i iznos za uplatu odmah će se umanjiti.', 'plan-a-kosarica' ); ?></p>
+			<div class="paka-gift-code__row coupon">
+				<label for="paka_code" class="screen-reader-text"><?php esc_html_e( 'Upiši kod', 'plan-a-kosarica' ); ?></label>
+				<input type="text" id="paka_code" class="input-text" value="" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="<?php esc_attr_e( 'Upiši kod', 'plan-a-kosarica' ); ?>">
+				<button type="button" class="button paka-btn paka-gift-code__btn" data-paka-apply><?php esc_html_e( 'Iskoristi', 'plan-a-kosarica' ); ?></button>
+			</div>
+			<p class="paka-code__msg" data-paka-code-msg role="status" aria-live="polite"></p>
+			<?php do_action( 'woocommerce_cart_coupon' ); ?>
+		</div>
+		<?php
+		return (string) ob_get_clean();
+	}
+
+	/**
 	 * Polje za kod na naplati je u sažetku "Tvoja rezervacija" (iznad iznosa za uplatu), pa se
 	 * zadana poveznica "Imate kupon?" na vrhu stranice ne prikazuje.
 	 */
@@ -543,6 +568,7 @@ final class Plan_A_Kosarica {
 			'back'     => '<path d="M19 12H5M11 6l-6 6 6 6"/>',
 			'tag'      => '<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/>',
 			'info'     => '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+			'gift'     => '<path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"/>',
 			'backpack' => '<path d="M9 5V4a3 3 0 0 1 6 0v1"/><path d="M6 21h12a1 1 0 0 0 1-1v-9a6 6 0 0 0-6-6h-2a6 6 0 0 0-6 6v9a1 1 0 0 0 1 1z"/><path d="M8.5 21v-5a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5M8.5 10.5h7"/>',
 		);
 		if ( 'whatsapp' === $name ) {

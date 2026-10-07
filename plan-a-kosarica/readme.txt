@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -24,9 +24,11 @@ Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-ma
   "Javi nam se na WhatsApp" (broj iz postavki, zadano 385959060556); bez koraka; ispod
   "Pogledaj izlete" kuka plan_a_kosarica_empty_actions za dodatne gumbe (1.2.1, npr. "Daruj
   poklon bon" iz dodatka Plan A poklon bon),
-* plaćanje (1.3.0): polje "Imaš kod za popust?" u sažetku "Tvoja rezervacija", iznad
-  "Ukupno za uplatu" (kod se primjenjuje bez slanja obrasca; zadana poveznica "Imate kupon?"
-  na vrhu stranice se ne prikazuje); gumb "Povratak u košaricu", kraći tekst u polju napomena, kartice "Podaci kupca" i "Napomena", "Tvoja rezervacija"
+* polje za kod (1.4.0): istaknuti okvir "Imaš kod za popust?" s uputom, poljem i gumbom
+  "Iskoristi" u sažetku košarice i u "Tvoja rezervacija" na naplati, odmah iznad "Ukupno za
+  uplatu"; kod se primjenjuje bez slanja obrasca, poruka je ispod polja; zadana poveznica
+  "Imate kupon?" na vrhu naplate i staro polje ispod stavki košarice se ne prikazuju,
+* plaćanje: gumb "Povratak u košaricu", kraći tekst u polju napomena, kartice "Podaci kupca" i "Napomena", "Tvoja rezervacija"
   (slika, mjesto, datum, sudionici, retci cijene, ukupno) i "Način plaćanja",
 * na računalu dva stupca (sadržaj i sažetak), na mobitelu jedan; prilagođava se širini
   sadržaja teme.
