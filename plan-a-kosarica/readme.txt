@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.1.2
+Stable tag: 1.2.0
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -18,6 +18,10 @@ Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-ma
   "Nastavi na plaćanje"; "Pogledaj još izleta" i "Trebaš pomoć? Javi nam se" (WhatsApp);
   gumb teme "Nastavite kupnju" postaje sekundarni gumb "Nastavi s odabirom izleta" (vodi na
   adresu "Pogledaj još izleta", zadano /izleti/),
+* prazna košarica (1.2.0): ikona ruksaka, "Tvoja košarica je prazna", gumb "Pogledaj izlete"
+  (adresa "Pogledaj još izleta", zadano /izleti/), "Najbliži izleti" (shortcode
+  [plan-a-izleti show="3" all_url="/izleti/"], samo ako je aktivan Plan A izleti) i poveznica
+  "Javi nam se na WhatsApp" (broj iz postavki, zadano 385959060556); bez koraka,
 * plaćanje: gumb "Povratak u košaricu", kraći tekst u polju napomena, kartice "Podaci kupca" i "Napomena", "Tvoja rezervacija"
   (slika, mjesto, datum, sudionici, retci cijene, ukupno) i "Način plaćanja",
 * na računalu dva stupca (sadržaj i sažetak), na mobitelu jedan; prilagođava se širini
@@ -30,7 +34,7 @@ dodatke (npr. podaci o sudionicima) i dalje se ispisuju. Obični proizvodi (ne i
 polje za količinu i gumb "Ažuriraj košaricu".
 
 Zamijenjeni predlošci WooCommercea (i teme, npr. Flatsome):
-cart/cart.php, cart/cart-totals.php, cart/proceed-to-checkout-button.php,
+cart/cart.php, cart/cart-empty.php, cart/cart-totals.php, cart/proceed-to-checkout-button.php,
 checkout/form-checkout.php, checkout/review-order.php.
 Od verzije 1.1.0 i: checkout/thankyou.php, emails/customer-on-hold-order.php,
 emails/customer-processing-order.php, emails/customer-completed-order.php.

@@ -93,10 +93,22 @@
 		} );
 	}
 
+	// Uklanjanjem zadnje stavke košarica postaje prazna: učitaj stranicu ponovno da se
+	// prikaz prazne košarice (i popis izleta sa svojim stilovima) učita u cijelosti.
+	function initEmptied() {
+		if ( window.jQuery && document.querySelector( '.woocommerce-cart-form' ) ) {
+			window.jQuery( document.body ).on( 'wc_cart_emptied', function () {
+				window.location.reload();
+			} );
+		}
+	}
+
 	if ( 'loading' === document.readyState ) {
+		document.addEventListener( 'DOMContentLoaded', initEmptied );
 		document.addEventListener( 'DOMContentLoaded', init );
 		document.addEventListener( 'DOMContentLoaded', initReceived );
 	} else {
+		initEmptied();
 		init();
 		initReceived();
 	}

@@ -1376,3 +1376,88 @@ body.paka-on.paka-steps-on .checkout-breadcrumbs {
 		max-width: none; /* na mobitelu pune širine */
 	}
 }
+
+/* ------------------------------------------------------------------ */
+/* Prazna košarica                                                      */
+/* ------------------------------------------------------------------ */
+
+.paka.paka-empty {
+	padding: 40px 16px 32px;
+}
+
+.paka .paka-empty__box {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	max-width: 560px;
+	margin: 0 auto 40px;
+	text-align: center;
+}
+
+.paka .paka-empty__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 104px;
+	height: 104px;
+	margin: 0 0 20px;
+	border-radius: 50%;
+	background: var(--paka-soft);
+	color: var(--paka-accent);
+}
+
+.paka .paka-empty__icon .paka-icon {
+	width: 56px;
+	height: 56px;
+	stroke-width: 1.6;
+}
+
+.paka .paka-empty__box .paka-title {
+	margin-bottom: 8px;
+}
+
+.paka .paka-empty__box .paka-subtitle {
+	margin: 0 0 24px;
+}
+
+.paka a.paka-btn--primary {
+	min-height: 48px;
+	padding: 10px 24px;
+	border: 0 !important;
+	border-radius: 10px;
+	background-color: var(--paka-accent) !important;
+	color: #fff !important;
+}
+
+.paka a.paka-btn--primary:hover {
+	filter: brightness(0.95);
+}
+
+.paka .paka-empty__tours {
+	margin: 0 0 32px;
+}
+
+.paka .paka-empty__help {
+	margin: 0;
+	color: var(--paka-muted);
+	font-size: 15px;
+	text-align: center;
+}
+
+.paka .paka-empty__help a {
+	font-weight: 600;
+}
+
+@media (max-width: 599px) {
+	.paka.paka-empty {
+		padding: 24px 16px 24px;
+	}
+
+	.paka .paka-empty__box {
+		margin-bottom: 32px;
+	}
+
+	.paka .paka-empty__box a.paka-btn--primary {
+		width: 100%;
+	}
+}
