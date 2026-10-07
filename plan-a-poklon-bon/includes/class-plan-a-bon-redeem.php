@@ -28,6 +28,33 @@ class Plan_A_Bon_Redeem {
 		add_filter( 'woocommerce_coupon_is_valid', array( __CLASS__, 'throttle' ), 5, 2 );
 		add_filter( 'woocommerce_coupon_error', array( __CLASS__, 'messages' ), 20, 3 );
 		add_filter( 'woocommerce_cart_totals_coupon_label', array( __CLASS__, 'label' ), 20, 2 );
+
+		// Bon se iskorištava kao WooCommerce kupon: bez uključenih kupona nema polja za kod u
+		// košarici ni na naplati, a kod se ne može primijeniti. Zato su kuponi uvijek uključeni.
+		add_filter( 'woocommerce_coupons_enabled', '__return_true', 99 );
+		add_filter( 'gettext', array( __CLASS__, 'field_texts' ), 20, 3 );
+	}
+
+	/**
+	 * Jasniji natpisi polja za kod u košarici (dodatak za košaricu) i na naplati.
+	 */
+	public static function field_texts( $translation, $text, $domain ) {
+		static $map = array(
+			'plan-a-kosarica' => array(
+				'Imaš kod za popust?' => 'Imaš poklon bon ili kod za popust?',
+			),
+			'woocommerce'     => array(
+				'Have a coupon?'                => 'Imaš poklon bon ili kod za popust?',
+				'Click here to enter your code' => 'Upiši kod',
+				'Coupon code'                   => 'Kod s bona',
+				'Apply coupon'                  => 'Iskoristi',
+				'If you have a coupon code, please apply it below.' => 'Upiši kod s poklon bona ili kod za popust.',
+			),
+		);
+		if ( ! isset( $map[ $domain ][ $text ] ) || is_admin() || ! did_action( 'wp' ) || ! function_exists( 'is_cart' ) || ! ( is_cart() || is_checkout() ) ) {
+			return $translation;
+		}
+		return $map[ $domain ][ $text ];
 	}
 
 	/**

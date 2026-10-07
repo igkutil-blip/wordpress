@@ -228,6 +228,9 @@ class Plan_A_Bon_Admin {
 		?>
 		<div class="wrap papb-admin">
 			<h1>Poklon bonovi</h1>
+			<?php if ( 'yes' !== get_option( 'woocommerce_enable_coupons', 'yes' ) ) : ?>
+				<div class="notice notice-info inline"><p>U WooCommerceu je isključeno "Omogući korištenje kodova kupona". Dodatak Poklon bonovi ih ipak uključuje, jer se bon iskorištava kao kod u košarici i na naplati.</p></div>
+			<?php endif; ?>
 			<?php if ( 'postavke' === $tab ) : ?>
 				<?php settings_errors(); ?>
 			<?php endif; ?>
