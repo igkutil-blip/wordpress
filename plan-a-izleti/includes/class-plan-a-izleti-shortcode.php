@@ -43,6 +43,28 @@ final class Plan_A_Izleti_Shortcode {
 				'strategy'  => 'defer',
 			)
 		);
+		// Izbornik "Predloži ekipi" (Pošalji izlet / Napravi dogovor). Bez noncea u HTML-u:
+		// stranice izleta su u predmemoriji, pa se nonce dohvaća svježim REST pozivom.
+		wp_add_inline_script(
+			'plan-a-izleti',
+			'window.planAIzleti = ' . wp_json_encode(
+				array(
+					'rest' => esc_url_raw( rest_url( Plan_A_Izleti_Dogovor::NS . '/' ) ),
+					'i18n' => array(
+						'menu'        => __( 'Predloži ekipi', 'plan-a-izleti' ),
+						'send'        => __( 'Pošalji izlet', 'plan-a-izleti' ),
+						'sendDesc'    => __( 'Pošalji poveznicu prijateljima', 'plan-a-izleti' ),
+						'plan'        => __( 'Napravi dogovor', 'plan-a-izleti' ),
+						'planDesc'    => __( 'Prijatelji označe tko ide', 'plan-a-izleti' ),
+						'creating'    => __( 'Stvaram dogovor…', 'plan-a-izleti' ),
+						'error'       => __( 'Dogovor nije napravljen. Provjeri vezu i pokušaj ponovno.', 'plan-a-izleti' ),
+						'deviceLimit' => __( 'Na ovom uređaju danas je napravljeno već 10 dogovora. Pokušaj ponovno sutra.', 'plan-a-izleti' ),
+						'close'       => __( 'Zatvori', 'plan-a-izleti' ),
+					),
+				)
+			) . ';',
+			'before'
+		);
 
 		// Stilove učitaj u <head> ako je shortcode u sadržaju stranice (izbjegava treptanje).
 		$post = get_post();

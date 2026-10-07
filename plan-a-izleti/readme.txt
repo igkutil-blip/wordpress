@@ -1,7 +1,7 @@
 === Plan A izleti ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.10.1
+Stable tag: 1.11.0
 License: GPLv2 or later
 
 Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s filtrom po kategorijama i mjesecima.
@@ -49,6 +49,49 @@ Predloži ekipi (WhatsApp):
 * na stranici izleta ispisuje Open Graph oznake (og:title, og:description, og:image…)
   samo ako ih već ne ispisuje SEO dodatak (Yoast, Rank Math, AIOSEO, SEOPress,
   The SEO Framework, Slim SEO, Squirrly, Jetpack). Filtar: plan_a_izleti_og_handled.
+
+Dogovor s ekipom:
+
+* klik na "Predloži ekipi" (stranica izleta i kartice) otvara izbornik:
+  "Pošalji izlet" (dijeljenje kao prije) i "Napravi dogovor"; na mobitelu je to panel pri dnu ekrana,
+* "Napravi dogovor" stvara stranicu /dogovor/<token>/ (token: 32 nasumična znaka),
+  nevezanu uz korisnički račun; radi i za odjavljene posjetitelje,
+* na stranici: napomena "Ovo nije rezervacija…", podaci o izletu uživo iz WpTravellyja
+  (slika, naziv, datum, mjesto, cijena, slobodna mjesta), ime ili nadimak (najviše 30 znakova)
+  i gumbi "Ja sam za!", "Možda", "Ne mogu taj datum", popis odgovora po izboru,
+  dijeljenje dogovora u WhatsApp i "Rezerviraj mjesto" (izlet?dogovor=TOKEN);
+  popunjen izlet: "Izlet je popunjen."; završen izlet: "Ovaj izlet je završio." bez obrasca,
+* isti uređaj mijenja svoj odgovor (ključ odgovora pamti se u pregledniku),
+* ograničenja: najviše 20 odgovora po dogovoru; najviše 10 dogovora po uređaju na dan
+  (u pregledniku) i 10 na sat po IP adresi (na poslužitelju); honeypot polje; nonce se
+  dohvaća svježim REST pozivom (stranice izleta smiju biti u predmemoriji),
+* IP adresa se ne sprema: za ograničenje se koristi samo njezin hash u transientu koji istječe za 1 sat,
+* trajno se spremaju samo ime i odabir (i hash ključa za promjenu odgovora), bez e-maila,
+  telefona i IP adrese; dogovori i odgovori brišu se 7 dana nakon termina izleta, a dogovori
+  bez odgovora nakon 3 dana (WP Cron, jednom dnevno),
+* stranice dogovora: noindex, nofollow, nocache zaglavlja i DONOTCACHEPAGE; REST rute
+  /wp-json/plan-a-izleti/v1/ također šalju nocache zaglavlja,
+* administracija: Izleti → Dogovori (stvoreni dogovori, odgovori "Ja sam za!", dogovori s
+  rezervacijom, aktivni dogovori po izletu; bez imena),
+* rezervacija iz dogovora: "Rezerviraj mjesto" sprema token u kolačić plan_a_dogovor (7 dana);
+  narudžba tog izleta iz istog preglednika dobiva oznaku _plan_a_dogovor.
+
+SpeedyCache (izuzeci iz predmemorije):
+
+1. SpeedyCache → Settings → kartica "Exclude" → "Add New Rule".
+2. Type: Page, uvjet "Contains", vrijednost: dogovor/   → Save.
+3. Isto za vrijednost: plan_a_dogovor=   (adrese dogovora bez lijepih poveznica).
+4. Isto za vrijednost: wp-json/plan-a-izleti/   (REST rute dogovora).
+5. SpeedyCache → Delete Cache (obrisati predmemoriju).
+Ako je uključen Cloudflare ili drugi CDN, i ondje izuzmite /dogovor/* i /wp-json/*.
+
+Kako testirati:
+
+1. Odjavljeni (privatni prozor): otvorite izlet, kliknite "Predloži ekipi" → "Napravi dogovor".
+2. Upišite ime i kliknite "Ja sam za!"; promijenite odgovor u "Možda" (isti uređaj, isti red).
+3. Otvorite poveznicu dogovora na drugom mobitelu i odgovorite; oba imena su na popisu.
+4. "Rezerviraj mjesto" → kupnja izleta; u Izleti → Dogovori broj "Dogovori s rezervacijom" raste.
+5. Provjerite izvor stranice dogovora: meta robots "noindex, nofollow"; zaglavlje Cache-Control: no-store.
 
 Kategorije: aktivnosti (ttbm_tour_activities, kao WpTravelly filtar "Category"),
 a ako ih nema, kategorije izleta (ttbm_tour_cat).

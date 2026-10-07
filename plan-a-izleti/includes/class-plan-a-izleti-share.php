@@ -174,7 +174,7 @@ final class Plan_A_Izleti_Share {
 		$label = sprintf( __( 'Predloži ekipi: %s (WhatsApp)', 'plan-a-izleti' ), $data['title'] );
 
 		// esc_url() bi izbacio prijelome reda (%0A); adresa je fiksna + rawurlencode(), pa je esc_attr() dovoljan.
-		$attrs = ' href="' . esc_attr( $wa_url ) . '" target="_blank" rel="noopener noreferrer" data-paiz-share'
+		$attrs = ' href="' . esc_attr( $wa_url ) . '" target="_blank" rel="noopener noreferrer" data-paiz-share data-paiz-tour="' . esc_attr( (string) $id ) . '"'
 			. ' data-paiz-share-title="' . esc_attr( $data['title'] ) . '"'
 			. ' data-paiz-share-text="' . esc_attr( $message ) . '"'
 			. ' data-paiz-share-url="' . esc_url( $data['url'] ) . '"'
@@ -191,7 +191,7 @@ final class Plan_A_Izleti_Share {
 	/**
 	 * Ikona WhatsAppa (SVG, boja iz CSS-a).
 	 */
-	private static function whatsapp_icon( int $size ): string {
+	public static function whatsapp_icon( int $size ): string {
 		return '<svg class="paiz-wa-icon" viewBox="0 0 24 24" width="' . $size . '" height="' . $size . '" fill="currentColor" aria-hidden="true" focusable="false">'
 			. '<path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.47-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.06 2.88 1.21 3.08.15.2 2.1 3.2 5.08 4.48.71.31 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35z"/>'
 			. '<path d="M12.04 2C6.5 2 2 6.48 2 12c0 1.77.46 3.5 1.34 5.02L2 22l5.12-1.34A10.03 10.03 0 0 0 12.04 22C17.56 22 22 17.52 22 12S17.56 2 12.04 2zm0 18.3c-1.5 0-2.97-.4-4.25-1.16l-.3-.18-3.04.8.81-2.96-.2-.31A8.26 8.26 0 0 1 3.77 12c0-4.56 3.71-8.27 8.27-8.27 4.56 0 8.25 3.71 8.25 8.27 0 4.57-3.7 8.3-8.25 8.3z"/>'
