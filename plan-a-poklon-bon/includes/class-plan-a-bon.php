@@ -60,6 +60,8 @@ class Plan_A_Bon {
 		add_filter( 'woocommerce_cart_item_class', array( __CLASS__, 'cart_item_class' ), 20, 2 );
 		add_action( 'woocommerce_after_cart_item_name', array( __CLASS__, 'edit_link' ), 20, 2 );
 		add_action( 'woocommerce_cart_actions', array( __CLASS__, 'cart_gift_link' ), 20 );
+		add_action( 'plan_a_izleti_before_grid', array( __CLASS__, 'list_banner_top' ) );
+		add_action( 'plan_a_izleti_after_list', array( __CLASS__, 'list_banner_bottom' ) );
 		add_action( 'plan_a_kosarica_empty_actions', array( __CLASS__, 'cart_gift_link' ) ); // prazna košarica
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'cart_assets' ) );
 		add_filter( 'woocommerce_get_item_data', array( __CLASS__, 'item_data' ), 20, 2 );
@@ -326,6 +328,59 @@ class Plan_A_Bon {
 		echo '<a class="paka-btn paka-btn--secondary papb-cart-gift" href="' . esc_url( self::shop_url() ) . '">'
 			. '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"/></svg>'
 			. '<span>' . esc_html__( 'Daruj poklon bon', 'plan-a-poklon-bon' ) . '</span></a>';
+	}
+
+	public static function list_banner_top( $atts = array() ) {
+		if ( 'top' === Plan_A_Bon_Settings::get( 'list_banner' ) ) {
+			self::list_banner( (array) $atts, 'top' );
+		}
+	}
+
+	public static function list_banner_bottom( $atts = array() ) {
+		if ( 'bottom' === Plan_A_Bon_Settings::get( 'list_banner' ) ) {
+			self::list_banner( (array) $atts, 'bottom' );
+		}
+	}
+
+	/**
+	 * Traka "Daruj izlet poklon bonom" na popisu izleta (Plan A izleti). Stoji izvan mreže kartica,
+	 * pa ne mijenja redoslijed, filtre ni brojanje izleta. Ne prikazuje se u košarici i na naplati
+	 * (prazna košarica već ima gumb "Daruj poklon bon") ni kad stranica s bonom ne postoji.
+	 */
+	private static function list_banner( array $atts, string $where ) {
+		static $styled = false;
+		$page = (int) get_option( self::PAGE_OPTION, 0 );
+		if ( ! $page || 'publish' !== get_post_status( $page ) || 'no' === ( $atts['bon'] ?? 'yes' ) || ( function_exists( 'is_cart' ) && ( is_cart() || is_checkout() ) ) ) {
+			return;
+		}
+		$months = (int) Plan_A_Bon_Settings::get( 'months' );
+		if ( ! $styled ) {
+			$styled = true;
+			// Mali stil uz traku (popis izleta može biti na bilo kojoj stranici).
+			echo '<style id="papb-strip-css">'
+				. '.papb-strip{display:flex;align-items:center;gap:14px;margin:0 0 20px;padding:12px 14px 12px 12px;border:1px solid #e5e5e5;border-left:4px solid #e8862a;border-radius:8px;background:#fff;color:#333;line-height:1.35;box-sizing:border-box}'
+				. '.papb-strip--bottom{margin:24px 0 0}'
+				. '.papb-strip__icon{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:#fdf1e4;color:#c96a12}'
+				. '.papb-strip__icon svg{width:24px;height:24px}'
+				. '.papb-strip__text{flex:1 1 auto;min-width:0;margin:0}'
+				. '.papb-strip__title{display:block;margin:0;color:#1b2d4a;font-size:16px;font-weight:800}'
+				. '.papb-strip__sub{display:block;margin:2px 0 0;color:#666;font-size:14px}'
+				. '.papb-strip a.papb-strip__btn{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;min-height:44px;margin:0;padding:8px 16px;border:1px solid #e8862a;border-radius:8px;background:#fff;color:#c96a12;font-size:15px;font-weight:700;line-height:1.2;text-decoration:none;text-transform:none;white-space:nowrap}'
+				. '.papb-strip a.papb-strip__btn:hover,.papb-strip a.papb-strip__btn:focus-visible{background:#e8862a;color:#fff}'
+				. '.papb-strip a.papb-strip__btn svg{width:18px;height:18px}'
+				. '@media (max-width:599px){.papb-strip{flex-wrap:wrap;gap:10px 12px}.papb-strip__text{flex:1 1 calc(100% - 60px)}.papb-strip a.papb-strip__btn{flex:1 1 100%;justify-content:center}}'
+				. '</style>';
+		}
+		$gift  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"/></svg>';
+		$arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+		/* translators: %d: broj mjeseci */
+		$sub = sprintf( __( 'Primatelj sam bira izlet i termin, a bon vrijedi %d mjeseci. PDF za ispis ili slika za poruku stižu e-mailom.', 'plan-a-poklon-bon' ), $months );
+		echo '<aside class="papb-strip papb-strip--' . esc_attr( $where ) . '" aria-label="' . esc_attr__( 'Poklon bon', 'plan-a-poklon-bon' ) . '">'
+			. '<span class="papb-strip__icon">' . $gift . '</span>' // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- statički SVG.
+			. '<p class="papb-strip__text"><strong class="papb-strip__title">' . esc_html__( 'Daruj izlet poklon bonom', 'plan-a-poklon-bon' ) . '</strong>'
+			. '<span class="papb-strip__sub">' . esc_html( $sub ) . '</span></p>'
+			. '<a class="papb-strip__btn" href="' . esc_url( self::shop_url() ) . '">' . esc_html__( 'Kupi poklon bon', 'plan-a-poklon-bon' ) . $arrow . '</a>' // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- statički SVG.
+			. '</aside>';
 	}
 
 	public static function cart_assets() {

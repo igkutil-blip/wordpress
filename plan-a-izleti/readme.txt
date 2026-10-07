@@ -1,7 +1,7 @@
 === Plan A izleti ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.15.2
+Stable tag: 1.16.0
 License: GPLv2 or later
 
 Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s filtrom po kategorijama i mjesecima.
@@ -83,3 +83,7 @@ a ako ih nema, kategorije izleta (ttbm_tour_cat).
 Zahtijeva aktivne dodatke WpTravelly (tour-booking-manager) i WooCommerce.
 Ne mijenja WpTravelly, temu ni bazu podataka; sprema samo privremeni cache
 (transient `plan_a_izleti_cache`) koji se briše pri deaktivaciji i brisanju dodatka.
+
+== Promjene ==
+
+* 1.16.0 – kuke plan_a_izleti_before_grid (iznad kartica) i plan_a_izleti_after_list (ispod popisa) za dodatne sadržaje, npr. traku poklon bona; atribut bon="no" isključuje traku poklon bona na tom popisu.

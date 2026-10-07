@@ -18,6 +18,7 @@ class Plan_A_Bon_Settings {
 			'max'           => 1000,
 			'months'        => 12,
 			'remainder'     => 'keep',
+			'list_banner'   => 'top',
 			'photo'         => 0,
 			'logo'          => 0,
 			'issuer'        => 'Izdaje Adventure Donkey j.d.o.o., turistička agencija, Meksička ulica 11, 10000 Zagreb, OIB 78664134608, u suradnji sa S.R.D. Plan A',
@@ -125,6 +126,7 @@ class Plan_A_Bon_Settings {
 			'max'           => $max,
 			'months'        => min( 60, max( 1, absint( $input['months'] ?? $d['months'] ) ) ),
 			'remainder'     => in_array( $input['remainder'] ?? '', array( 'keep', 'new', 'lose' ), true ) ? $input['remainder'] : 'keep',
+			'list_banner'   => in_array( $input['list_banner'] ?? '', array( 'top', 'bottom', 'off' ), true ) ? $input['list_banner'] : 'top',
 			'photo'         => absint( $input['photo'] ?? 0 ),
 			'logo'          => absint( $input['logo'] ?? 0 ),
 			'issuer'        => $text( 'issuer' ),
@@ -174,6 +176,15 @@ class Plan_A_Bon_Settings {
 					<tr>
 						<th scope="row"><label for="papb-months">Rok valjanosti</label></th>
 						<td><input type="number" id="papb-months" min="1" max="60" class="small-text" name="<?php echo esc_attr( $name ); ?>[months]" value="<?php echo esc_attr( (string) $s['months'] ); ?>"> mjeseci od izdavanja</td>
+					</tr>
+					<tr>
+						<th scope="row">Na popisu izleta</th>
+						<td>
+							<label><input type="radio" name="<?php echo esc_attr( $name ); ?>[list_banner]" value="top" <?php checked( 'top', $s['list_banner'] ); ?>> traka "Daruj izlet poklon bonom" iznad izleta (ispod filtara) – preporučeno</label><br>
+							<label><input type="radio" name="<?php echo esc_attr( $name ); ?>[list_banner]" value="bottom" <?php checked( 'bottom', $s['list_banner'] ); ?>> traka ispod izleta (iza gumba "Prikaži još")</label><br>
+							<label><input type="radio" name="<?php echo esc_attr( $name ); ?>[list_banner]" value="off" <?php checked( 'off', $s['list_banner'] ); ?>> ne prikazuj</label>
+							<p class="description">Traka je izvan kartica izleta, pa ne mijenja redoslijed, filtre ni brojanje. Na pojedinom popisu isključuje se atributom <code>bon="no"</code>, npr. <code>[plan-a-izleti bon="no"]</code>. U košarici i na naplati se ne prikazuje.</p>
+						</td>
 					</tr>
 					<tr>
 						<th scope="row">Ostatak bona</th>

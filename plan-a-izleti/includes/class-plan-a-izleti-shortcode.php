@@ -93,6 +93,7 @@ final class Plan_A_Izleti_Shortcode {
 				'more'    => 'yes',
 				'all_url' => '',
 				'step'    => '',
+				'bon'     => 'yes', // "no" = bez trake poklon bona (dodatak Plan A poklon bon) na ovom popisu
 			),
 			$atts,
 			self::TAG
@@ -189,11 +190,27 @@ final class Plan_A_Izleti_Shortcode {
 			<p class="paiz-count" role="status" aria-live="polite" data-paiz-status data-paiz-status-text="<?php echo esc_attr( $status_text ); ?>">
 				<?php echo esc_html( sprintf( $status_text, $shown_count, $total ) ); ?>
 			</p>
+			<?php
+			/**
+			 * Iznad kartica (izvan mreže, ne utječe na filtre ni brojanje), npr. traka poklon bona.
+			 *
+			 * @param array $atts Atributi shortcodea.
+			 */
+			do_action( 'plan_a_izleti_before_grid', $atts );
+			?>
 			<div class="paiz-grid">
 				<?php echo implode( '', $cards ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
 			</div>
 			<p class="paiz-empty" data-paiz-empty<?php echo $total > 0 ? ' hidden' : ''; ?>><?php esc_html_e( 'Za odabrani mjesec i kategoriju trenutno nema izleta.', 'plan-a-izleti' ); ?></p>
 			<?php echo self::render_actions( $more, $all, $total > $show ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
+			<?php
+			/**
+			 * Ispod popisa izleta (iza gumba "Prikaži još" / "Pogledaj sve izlete").
+			 *
+			 * @param array $atts Atributi shortcodea.
+			 */
+			do_action( 'plan_a_izleti_after_list', $atts );
+			?>
 		</div>
 		<?php
 		return (string) ob_get_clean();

@@ -1,7 +1,7 @@
 === Plan A poklon bon ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 
 Prodaja poklon bonova za izlete (WooCommerce): stranica za kupnju, PDF bon s QR kodom
@@ -24,6 +24,12 @@ nakon uplate, korištenje kao kupon u košarici i popis bonova u administraciji.
   novog bona, a nijedan kupon ne umanjuje cijenu bona. Ostatak bona ostaje na istom kodu (postavka).
 * Zaštita: najviše 10 neuspjelih unosa koda u 15 minuta po IP adresi; PDF datoteke u
   zaštićenoj mapi s nasumičnim nazivima, preuzimanje samo uz ključ narudžbe ili za administratora.
+
+== Novo u 1.3.0 ==
+
+* Traka "Daruj izlet poklon bonom" na popisu izleta (Plan A izleti 1.16.0 ili noviji), izvan
+  kartica: ne mijenja redoslijed, filtre ni brojanje. Postavka "Na popisu izleta": iznad izleta
+  (zadano), ispod izleta ili ne prikazuj; na pojedinom popisu isključuje se s bon="no".
 
 == Novo u 1.2.0 ==
 
