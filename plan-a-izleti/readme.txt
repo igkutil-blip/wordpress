@@ -1,7 +1,7 @@
 === Plan A izleti ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.15.0
+Stable tag: 1.15.1
 License: GPLv2 or later
 
 Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s filtrom po kategorijama i mjesecima.
@@ -74,8 +74,8 @@ Pregled prije slanja (od verzije 1.15.0):
 * mobitel: panel s dna ekrana (najviše 85 % visine, gumb uvijek na dnu), zatvara se dodirom
   izvan panela ili povlačenjem prema dolje; računalo: prozor na sredini, zatvara se klikom
   izvan njega i tipkom Esc,
-* Postavke → Plan A izleti → "Pregled prije slanja": prva 3 puta na uređaju (zadano;
-  brojač u localStorageu, bez njega pregled uvijek), uvijek, nikad.
+* Postavke → Plan A izleti → "Pregled prije slanja": uvijek, pri svakom kliku (zadano), ili nikad.
+  (Od 1.15.1 nema ograničenja "prva 3 puta".)
 
 Kategorije: aktivnosti (ttbm_tour_activities, kao WpTravelly filtar "Category"),
 a ako ih nema, kategorije izleta (ttbm_tour_cat).

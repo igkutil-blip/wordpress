@@ -547,14 +547,12 @@
 	 * "WhatsApp oblačiću". Jedini gumb "Pošalji u WhatsApp" pokreće dijeljenje.
 	 * Mobitel: panel s dna ekrana (zatvara se dodirom izvan njega ili povlačenjem
 	 * prema dolje); računalo: prozor na sredini (zatvara se klikom izvan njega i tipkom Esc).
-	 * Postavka "Pregled prije slanja": first3 (prva 3 puta na uređaju), always, never.
+	 * Postavka "Pregled prije slanja": always (pri svakom kliku, zadano) ili never.
 	 */
 	var preview = ( function () {
 		var config = window.planAIzletiShare || {};
 		var text = config.i18n || {};
-		var mode = config.preview || 'first3';
-		var KEY = 'planAIzleti.sharePreviews';
-		var LIMIT = 3;
+		var mode = config.preview || 'always';
 		var root = null;
 		var panel = null;
 		var body = null;
@@ -565,36 +563,9 @@
 		var sendFn = null;
 		var lastFocus = null;
 
-		function store() {
-			try {
-				var s = window.localStorage;
-				s.setItem( KEY + '.probe', '1' );
-				s.removeItem( KEY + '.probe' );
-				return s;
-			} catch ( e ) {
-				return null;
-			}
-		}
-
+		// Pregled se prikazuje pri svakom kliku, osim ako je u postavkama isključen.
 		function wanted() {
-			if ( 'never' === mode ) {
-				return false;
-			}
-			if ( 'always' === mode ) {
-				return true;
-			}
-			var s = store();
-			if ( ! s ) {
-				return true; // bez localStoragea pregled se prikazuje uvijek
-			}
-			return ( parseInt( s.getItem( KEY ), 10 ) || 0 ) < LIMIT;
-		}
-
-		function count() {
-			var s = store();
-			if ( s && 'first3' === mode ) {
-				s.setItem( KEY, String( ( parseInt( s.getItem( KEY ), 10 ) || 0 ) + 1 ) );
-			}
+			return 'never' !== mode;
 		}
 
 		function isSheet() {
@@ -782,7 +753,6 @@
 				root.classList.add( 'is-visible' );
 			} );
 			sendBtn.focus( { preventScroll: true } );
-			count();
 		}
 
 		function close( restoreFocus ) {

@@ -44,10 +44,11 @@ final class Plan_A_Izleti_Settings {
 	}
 
 	/**
-	 * "Pregled prije slanja": first3 (prva 3 puta na uređaju, zadano), always, never.
+	 * "Pregled prije slanja": always (pri svakom kliku, zadano) ili never.
+	 * Ranija vrijednost "first3" (prva 3 puta) vrijedi kao "always".
 	 */
 	public static function preview_mode( string $value ): string {
-		return in_array( $value, array( 'first3', 'always', 'never' ), true ) ? $value : 'first3';
+		return 'never' === $value ? 'never' : 'always';
 	}
 
 	private static function theme_logo_id(): int {
@@ -214,8 +215,7 @@ final class Plan_A_Izleti_Settings {
 								<?php
 								$paiz_preview = self::preview_mode( (string) ( $saved['preview'] ?? '' ) );
 								foreach ( array(
-									'first3' => __( 'prva 3 puta na uređaju (zadano)', 'plan-a-izleti' ),
-									'always' => __( 'uvijek', 'plan-a-izleti' ),
+									'always' => __( 'uvijek, pri svakom kliku (zadano)', 'plan-a-izleti' ),
 									'never'  => __( 'nikad', 'plan-a-izleti' ),
 								) as $paiz_value => $paiz_label ) :
 									?>
