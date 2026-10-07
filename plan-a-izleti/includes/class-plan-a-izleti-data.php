@@ -305,63 +305,6 @@ final class Plan_A_Izleti_Data {
 	}
 
 	/**
-	 * Stanje izleta uživo (bez cachea), npr. za stranicu dogovora:
-	 * sljedeći termin, je li završio, je li popunjen i broj slobodnih mjesta
-	 * (null ako izlet nema zadan kapacitet).
-	 *
-	 * @return array{next: string, more: bool, ended: bool, sold_out: bool, available: int|null}
-	 */
-	public static function live_state( int $id ): array {
-		$state = array(
-			'next'      => '',
-			'more'      => false,
-			'ended'     => false,
-			'sold_out'  => false,
-			'available' => null,
-		);
-		if ( ! self::is_source_available() ) {
-			return $state;
-		}
-		try {
-			$dates = self::get_all_dates( $id );
-		} catch ( \Throwable $e ) {
-			return $state;
-		}
-		if ( empty( $dates ) ) {
-			return $state; // bez datuma: "Termin uskoro"
-		}
-		$today    = current_time( 'Y-m-d' );
-		$upcoming = array_values(
-			array_filter(
-				$dates,
-				static function ( $date ) use ( $today ) {
-					return $date >= $today;
-				}
-			)
-		);
-		if ( empty( $upcoming ) ) {
-			$state['ended'] = true;
-			return $state;
-		}
-		$state['next']     = $upcoming[0];
-		$state['more']     = count( $upcoming ) > 1;
-		$state['sold_out'] = self::is_sold_out( $id );
-		try {
-			$tour_id = self::source_id( $id );
-			if (
-				method_exists( 'TTBM_Function', 'get_tour_type' )
-				&& 'general' === TTBM_Function::get_tour_type( $tour_id )
-				&& (int) TTBM_Function::get_total_seat( $tour_id ) > 0
-			) {
-				$state['available'] = max( 0, (int) TTBM_Function::get_total_available( $tour_id, $state['next'] ) );
-			}
-		} catch ( \Throwable $e ) {
-			$state['available'] = null;
-		}
-		return $state;
-	}
-
-	/**
 	 * ID izleta na glavnom jeziku (WpTravelly tamo drži cijene i karte kod WPML-a/Polylanga).
 	 */
 	public static function source_id( int $id ): int {
