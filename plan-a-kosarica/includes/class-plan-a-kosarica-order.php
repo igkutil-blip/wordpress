@@ -319,6 +319,63 @@ final class Plan_A_Kosarica_Order {
 	}
 
 	/**
+	 * 2D kod dodatka WSB HUB3 (Branko Borilović): <img alt="barcode">; slika uplatnice ima alt "HUB-3A".
+	 */
+	const CODE_IMG = '/<img\b[^>]*\balt\s*=\s*(["\'])barcode\1[^>]*>/i';
+
+	/**
+	 * Izdvaja 2D kod iz izlaza dodatka za uplatnicu da se prikaže na vrhu bloka. Sama slika
+	 * (adresa, cid: za e-mail, dimenzije) ostaje nepromijenjena; uklanja se samo gumb
+	 * "Prikaži veći barkod" jer je kod sada uvijek vidljiv, i omotači koji ostanu prazni.
+	 *
+	 * @return array{0:string,1:string} Kod (ili '') i ostatak izlaza.
+	 */
+	public static function split_code( string $html ): array {
+		if ( ! preg_match( self::CODE_IMG, $html, $m ) ) {
+			return array( '', $html );
+		}
+		$rest = (string) preg_replace( self::CODE_IMG, '', $html, 1 );
+		$rest = (string) preg_replace( '#<p\b[^>]*>\s*<button\b[^>]*\bid=([\'"])barcode_toggler\1.*?</button>\s*</p>#is', '', $rest );
+		$rest = (string) preg_replace( '#\sid=([\'"])barcodediv\1#i', '', $rest ); // skripta dodatka inače skriva tekst uz kod
+		$rest = (string) preg_replace( '#<(div|p)\b[^>]*>\s*</\1>#i', '', $rest );
+		return array( $m[0], $rest );
+	}
+
+	/**
+	 * Podaci za ručnu uplatu kao tekst, kako ih ispisuje sam dodatak WSB HUB3 (kad je u njemu
+	 * odabran prikaz samo uplatnice ili samo barkoda, tekst se inače ne ispisuje).
+	 */
+	public static function supplier_text( WC_Order $order, string $hook ): string {
+		global $wp_filter;
+		if ( empty( $wp_filter[ $hook ] ) ) {
+			return '';
+		}
+		foreach ( $wp_filter[ $hook ]->callbacks as $callbacks ) {
+			foreach ( $callbacks as $callback ) {
+				$fn = $callback['function'];
+				if ( is_array( $fn ) && is_object( $fn[0] ) && is_a( $fn[0], 'Wsb_Hub3_Public' ) && is_callable( array( $fn[0], 'get_data_html' ) ) ) {
+					return (string) $fn[0]->get_data_html( $order->get_id() );
+				}
+			}
+		}
+		return '';
+	}
+
+	/**
+	 * Blok "Podaci za plaćanje": kod na vrh, ostatak izlaza dodatka ispod; ako nema
+	 * tekstualnih podataka, dodaje se tekst dodatka WSB HUB3.
+	 *
+	 * @return array{0:string,1:string}
+	 */
+	public static function payment_parts( WC_Order $order, string $html, string $hook ): array {
+		list( $code, $rest ) = self::split_code( $html );
+		if ( '' !== $code && ! self::has_text_payment_data( $rest ) ) {
+			$rest .= self::supplier_text( $order, $hook );
+		}
+		return array( $code, trim( $rest ) );
+	}
+
+	/**
 	 * Ima li izlaz kuke vidljiv sadržaj (tekst ili sliku); prazni omotači se ne prikazuju.
 	 */
 	public static function has_content( string $html ): bool {

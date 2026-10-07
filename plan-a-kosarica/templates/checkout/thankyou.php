@@ -104,8 +104,15 @@ defined( 'ABSPATH' ) || exit;
 		<section class="paka-card paka-pay" aria-labelledby="paka-pay-h">
 			<h2 class="paka-h2" id="paka-pay-h"><?php esc_html_e( 'Podaci za plaćanje', 'plan-a-kosarica' ); ?></h2>
 			<?php // Izlaz dodatka za uplatnicu: 2D kod i podaci ostaju točno kakvi jesu; JS samo premješta kod na vrh. ?>
+			<?php list( $paka_code, $paka_pay_rest ) = Plan_A_Kosarica_Order::payment_parts( $order, $paka_payment_block, 'woocommerce_thankyou' ); ?>
 			<div class="paka-pay__raw" data-paka-pay data-label="<?php esc_attr_e( 'Skenirajte i platite', 'plan-a-kosarica' ); ?>">
-				<?php echo $paka_payment_block; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- izlaz dodatka za plaćanje, nepromijenjen. ?>
+				<?php if ( '' !== $paka_code ) : ?>
+					<div class="paka-pay__code">
+						<p class="paka-pay__label"><?php esc_html_e( 'Skenirajte i platite', 'plan-a-kosarica' ); ?></p>
+						<?php echo $paka_code; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- slika 2D koda dodatka za uplatnicu, nepromijenjena. ?>
+					</div>
+				<?php endif; ?>
+				<?php echo $paka_pay_rest; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- izlaz dodatka za plaćanje, nepromijenjen. ?>
 			</div>
 			<?php if ( '' !== Plan_A_Kosarica_Settings::get( 'deadline' ) ) : ?>
 				<p class="paka-pay__deadline"><strong><?php esc_html_e( 'Rok plaćanja:', 'plan-a-kosarica' ); ?></strong> <?php echo esc_html( Plan_A_Kosarica_Settings::get( 'deadline' ) ); ?></p>

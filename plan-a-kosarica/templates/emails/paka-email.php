@@ -106,6 +106,8 @@ $paka_rows = static function ( array $rows ) use ( $paka_label, $paka_value ): s
 	img { border: 0; max-width: 100%; height: auto; }
 	.paka-mail-pay img { display: block; margin: 0 auto 12px; max-width: 100% !important; height: auto !important; }
 	.paka-mail-pay table { width: 100% !important; }
+	.paka-mail-pay .hub3-title { display: none !important; } /* naslov dodatka; blok već ima naslov */
+	.paka-mail-pay .hub3-table td { padding: 4px 8px 4px 0; vertical-align: top; text-align: left; }
 	@media only screen and (max-width: 620px) {
 		.paka-mail-wrap { width: 100% !important; }
 		.paka-mail-card { padding: 18px 16px !important; }
@@ -170,10 +172,14 @@ $paka_rows = static function ( array $rows ) use ( $paka_label, $paka_value ): s
 						<?php echo $paka_card_open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							<h2 style="<?php echo esc_attr( $paka_h2 ); ?>"><?php esc_html_e( 'Podaci za plaćanje', 'plan-a-kosarica' ); ?></h2>
 							<p style="<?php echo esc_attr( $paka_p ); ?>text-align:center;font-weight:700;color:<?php echo esc_attr( $paka_navy ); ?>;"><?php esc_html_e( 'Skenirajte i platite', 'plan-a-kosarica' ); ?></p>
+							<?php list( $paka_code, $paka_pay_rest ) = Plan_A_Kosarica_Order::payment_parts( $order, $paka_pay, 'woocommerce_email_after_order_table' ); ?>
 							<div class="paka-mail-pay" style="<?php echo esc_attr( $paka_p ); ?>">
-								<?php echo $paka_pay; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- izlaz dodatka za plaćanje, nepromijenjen. ?>
+								<?php if ( '' !== $paka_code ) : ?>
+									<div style="text-align:center;margin:0 0 16px;"><?php echo $paka_code; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- slika 2D koda dodatka za uplatnicu, nepromijenjena. ?></div>
+								<?php endif; ?>
+								<?php echo $paka_pay_rest; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- izlaz dodatka za plaćanje, nepromijenjen. ?>
 							</div>
-							<?php if ( ! Plan_A_Kosarica_Order::has_text_payment_data( $paka_pay ) ) : ?>
+							<?php if ( ! Plan_A_Kosarica_Order::has_text_payment_data( $paka_pay_rest ) ) : ?>
 								<p style="<?php echo esc_attr( $paka_p ); ?>">
 									<?php esc_html_e( 'Ako se 2D kod ne prikazuje, sve podatke za ručnu uplatu pogledajte na stranici svoje narudžbe:', 'plan-a-kosarica' ); ?>
 									<a href="<?php echo esc_url( $order->get_checkout_order_received_url() ); ?>" style="color:<?php echo esc_attr( $paka_s['accent'] ); ?>;"><?php esc_html_e( 'podaci za plaćanje', 'plan-a-kosarica' ); ?></a>

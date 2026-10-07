@@ -49,6 +49,7 @@
 			return;
 		}
 		var hint = /hub|bar|kod|code|pdf417|2d|uplatnic|qr/i;
+		var slip = /hub-?3a|slip|uplatnic/i; // slika cijele uplatnice nije 2D kod
 		var best = null;
 		var bestScore = 0;
 		Array.prototype.forEach.call( box.querySelectorAll( 'img, canvas, svg' ), function ( el ) {
@@ -58,6 +59,9 @@
 				return; // ikone i sitne slike
 			}
 			var text = [ el.id, el.getAttribute( 'class' ), el.getAttribute( 'alt' ), el.getAttribute( 'src' ), el.getAttribute( 'title' ) ].join( ' ' );
+			if ( slip.test( el.getAttribute( 'alt' ) || '' ) ) {
+				return;
+			}
 			var score = ( hint.test( text ) ? 10 : 1 ) + ( size.width * size.height ) / 100000;
 			if ( score > bestScore ) {
 				best = el;

@@ -1160,6 +1160,25 @@ body.paka-on.paka-steps-on .checkout-breadcrumbs {
 	font-size: 17px;
 }
 
+/* WSB HUB3: blok već ima naslov; uplatnica (slika) pune širine ispod koda */
+.paka .paka-pay__raw .hub3-title {
+	display: none;
+}
+
+.paka .paka-pay__raw .slipdiv img {
+	width: 100% !important;
+	height: auto !important;
+}
+
+.paka .paka-pay__raw .hub3-table {
+	width: 100%;
+	margin: 0 0 12px;
+}
+
+.paka .paka-pay__raw .hub3-table td {
+	padding: 6px 12px 6px 0;
+}
+
 .paka .paka-pay__raw ul,
 .paka .paka-pay__raw .wc-bacs-bank-details {
 	margin: 0 0 8px;

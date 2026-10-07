@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -50,6 +50,12 @@ emails/customer-processing-order.php, emails/customer-completed-order.php.
   "Uplata je zaprimljena, vidimo se na izletu" nakon uplate (bez bloka za plaćanje),
 * gumb "Pošalji probni e-mail" u postavkama šalje oba e-maila za zadnju narudžbu na adresu
   administratora.
+
+Usklađeno s dodatkom WSB HUB3 (Branko Borilović): njegov barkod (slika alt="barcode")
+prikazuje se na vrhu bloka i na stranici i u e-mailu (ugrađene slike cid: ostaju kakve jesu),
+ispod je njegova uplatnica HUB-3A i tekst; gumb "Prikaži veći barkod" se skriva jer je kod
+uvijek vidljiv. Ako je u WSB HUB3 odabran prikaz bez teksta (samo uplatnica ili samo
+barkod), ispod se dodaju podaci za ručnu uplatu koje ispisuje sam WSB HUB3.
 
 Ako dodatak za uplatnicu u e-mail ne ispisuje podatke za ručnu uplatu kao tekst, e-mail
 sadrži poveznicu na stranicu narudžbe s tim podacima.
