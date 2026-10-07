@@ -37,6 +37,7 @@ final class Plan_A_Kosarica {
 		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
 		add_action( 'woocommerce_review_order_before_payment', array( __CLASS__, 'payment_heading' ) );
 		add_filter( 'gettext_woocommerce', array( __CLASS__, 'headings' ), 10, 2 );
+		add_filter( 'woocommerce_checkout_fields', array( __CLASS__, 'order_fields' ), 99 );
 	}
 
 	/**
@@ -140,14 +141,49 @@ final class Plan_A_Kosarica {
 	}
 
 	/**
+	 * Adresa popisa izleta iz postavki (zadano /izleti/).
+	 */
+	public static function more_url(): string {
+		$url = trim( (string) Plan_A_Kosarica_Settings::get( 'more_url' ) );
+		$url = '' !== $url ? $url : '/izleti/';
+		return 0 === strpos( $url, '/' ) && 0 !== strpos( $url, '//' ) ? home_url( $url ) : $url;
+	}
+
+	/**
+	 * Gumb teme "Nastavite kupnju" (Flatsome, klasa button-continue-shopping) u akcijama
+	 * košarice zamjenjuje se sekundarnim gumbom novog izgleda koji vodi na popis izleta.
+	 */
+	public static function cart_actions( string $html ): string {
+		$button = '<a class="button-continue-shopping paka-btn paka-btn--secondary" href="' . esc_url( self::more_url() ) . '">'
+			. self::icon( 'back' ) . '<span>' . esc_html__( 'Nastavi s odabirom izleta', 'plan-a-kosarica' ) . '</span></a>';
+		return (string) preg_replace_callback(
+			'#<a\b[^>]*\bclass=(["\'])[^"\']*\bbutton-continue-shopping\b[^"\']*\1[^>]*>.*?</a>#is',
+			static function () use ( $button ) {
+				return $button;
+			},
+			$html,
+			1
+		);
+	}
+
+	/**
+	 * Kraći tekst u polju "Napomene uz narudžbu".
+	 */
+	public static function order_fields( $fields ) {
+		if ( isset( $fields['order']['order_comments'] ) && self::active_page() ) {
+			$fields['order']['order_comments']['placeholder'] = __( 'Napomene o vašoj narudžbi', 'plan-a-kosarica' );
+		}
+		return $fields;
+	}
+
+	/**
 	 * "Pogledaj još izleta" i "Trebaš pomoć? Javi nam se" (WhatsApp).
 	 */
 	public static function help_links( bool $more ) {
 		$s    = Plan_A_Kosarica_Settings::get();
 		$html = '';
 		if ( $more && '' !== trim( (string) $s['more_url'] ) ) {
-			$url   = trim( (string) $s['more_url'] );
-			$url   = 0 === strpos( $url, '/' ) && 0 !== strpos( $url, '//' ) ? home_url( $url ) : $url;
+			$url   = self::more_url();
 			$html .= '<p class="paka-more"><a href="' . esc_url( $url ) . '">' . self::icon( 'back' ) . '<span>' . esc_html__( 'Pogledaj još izleta', 'plan-a-kosarica' ) . '</span></a></p>';
 		}
 		if ( '' !== $s['whatsapp'] ) {

@@ -155,6 +155,27 @@ body.paka-on.paka-steps-on .checkout-breadcrumbs {
 	margin: 0 0 10px;
 }
 
+/* "Povratak u košaricu": mali sekundarni gumb */
+.paka .paka-back a {
+	padding: 8px 14px;
+	border-radius: 10px;
+	background: #e8f4fb;
+	color: var(--paka-accent);
+	font-size: 15px;
+	line-height: 1.2;
+}
+
+.paka .paka-back a:hover {
+	background: #d6ecf8;
+	color: var(--paka-accent);
+}
+
+.paka .paka-back a svg {
+	flex: 0 0 auto;
+	width: 18px;
+	height: 18px;
+}
+
 .paka .paka-back a,
 .paka .paka-more a {
 	display: inline-flex;
@@ -482,6 +503,47 @@ body.paka-on.paka-steps-on .checkout-breadcrumbs {
 	color: var(--paka-accent) !important;
 }
 
+/* Sekundarni gumb: "Nastavi s odabirom izleta" (zamjenjuje "Nastavite kupnju" teme) */
+.paka .continue-shopping {
+	float: none;
+	margin: 0;
+	padding: 0;
+}
+
+.paka a.button-continue-shopping,
+.paka a.paka-btn--secondary {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 44px;
+	margin: 0;
+	padding: 10px 18px;
+	border: 1px solid var(--paka-accent) !important;
+	border-radius: 10px;
+	background-color: #fff !important;
+	box-shadow: none;
+	color: var(--paka-accent) !important;
+	font-family: inherit;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.2;
+	letter-spacing: normal;
+	text-decoration: none;
+	text-transform: none;
+}
+
+.paka a.button-continue-shopping:hover,
+.paka a.paka-btn--secondary:hover {
+	background-color: #e8f4fb !important;
+}
+
+.paka a.button-continue-shopping svg {
+	flex: 0 0 auto;
+	width: 18px;
+	height: 18px;
+}
+
 .paka .paka-btn--ghost:disabled,
 .paka .paka-btn--ghost[disabled] {
 	opacity: 0.5;
@@ -777,6 +839,26 @@ body.paka-on.paka-steps-on .checkout-breadcrumbs {
 
 .paka form.checkout textarea {
 	min-height: 110px;
+}
+
+/* "Napomene uz narudžbu": najmanje dva reda, placeholder centriran i unutar okvira */
+.paka form.checkout textarea#order_comments {
+	display: block;
+	box-sizing: border-box;
+	height: auto !important;
+	min-height: 110px !important;
+	padding: 14px 16px;
+	overflow-wrap: break-word;
+	white-space: pre-wrap;
+	text-align: left;
+	resize: vertical;
+}
+
+.paka form.checkout textarea#order_comments::placeholder {
+	color: #8a96a3;
+	opacity: 1;
+	text-align: center;
+	white-space: pre-wrap;
 }
 
 .paka form.checkout .select2-container .select2-selection--single {

@@ -210,7 +210,11 @@ $paka_has_qty_input = false;
 
 						<button type="submit" class="button paka-btn paka-btn--ghost paka-update" name="update_cart" value="<?php esc_attr_e( 'Update cart', 'woocommerce' ); ?>"><?php esc_html_e( 'Update cart', 'woocommerce' ); ?></button>
 
-						<?php do_action( 'woocommerce_cart_actions' ); ?>
+						<?php
+						ob_start();
+						do_action( 'woocommerce_cart_actions' );
+						echo Plan_A_Kosarica::cart_actions( (string) ob_get_clean() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- izlaz kuke; zamijenjen je samo gumb "Nastavite kupnju".
+						?>
 
 						<?php wp_nonce_field( 'woocommerce-cart', 'woocommerce-cart-nonce' ); ?>
 					</div>

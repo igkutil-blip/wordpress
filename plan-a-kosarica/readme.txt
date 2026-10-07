@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -15,8 +15,10 @@ Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-ma
   brojem sudionika po vrsti karte, cijenom po osobi, dodatnim uslugama i smještajem;
   ikona za uklanjanje; "Imaš kod za popust?"; sažetak rezervacije s retcima karata i
   usluga, kuponima, naknadama, porezima i iznosom "Ukupno za uplatu"; gumb
-  "Nastavi na plaćanje"; "Pogledaj još izleta" i "Trebaš pomoć? Javi nam se" (WhatsApp),
-* plaćanje: "Povratak u košaricu", kartice "Podaci kupca" i "Napomena", "Tvoja rezervacija"
+  "Nastavi na plaćanje"; "Pogledaj još izleta" i "Trebaš pomoć? Javi nam se" (WhatsApp);
+  gumb teme "Nastavite kupnju" postaje sekundarni gumb "Nastavi s odabirom izleta" (vodi na
+  adresu "Pogledaj još izleta", zadano /izleti/),
+* plaćanje: gumb "Povratak u košaricu", kraći tekst u polju napomena, kartice "Podaci kupca" i "Napomena", "Tvoja rezervacija"
   (slika, mjesto, datum, sudionici, retci cijene, ukupno) i "Način plaćanja",
 * na računalu dva stupca (sadržaj i sažetak), na mobitelu jedan; prilagođava se širini
   sadržaja teme.
