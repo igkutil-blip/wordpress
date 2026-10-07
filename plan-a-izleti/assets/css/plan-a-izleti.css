@@ -782,7 +782,7 @@
 }
 
 .paiz-share-btn:focus-visible,
-.paiz-share-icon:focus-visible {
+.paiz .paiz-share-tag:focus-visible {
 	outline: 3px solid var(--paiz-wa-text, #128c7e);
 	outline-offset: 2px;
 }
@@ -792,30 +792,73 @@
 	color: var(--paiz-wa, #25d366);
 }
 
-.paiz .paiz-share-icon,
-.paiz .paiz-share-icon:visited {
+.paiz .paiz-share-tag,
+.paiz .paiz-share-tag:visited {
 	position: absolute;
 	top: 12px;
 	left: 12px;
-	z-index: 2;
+	z-index: 2; /* iznad poveznice kartice: klik dijeli, ne otvara izlet */
 	display: inline-flex;
 	align-items: center;
-	justify-content: center;
+	gap: 6px;
 	box-sizing: border-box;
-	width: 44px;
-	height: 44px;
-	border: 2px solid #25d366;
-	border-radius: 50%;
+	min-height: 34px;
+	max-width: calc(100% - 24px);
+	margin: 0;
+	padding: 0 12px;
+	border-radius: 999px;
 	background: #fff;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
-	color: #25d366;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+	color: #128c7e;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: normal;
 	text-decoration: none;
-	transition: transform 0.15s;
+	text-transform: none;
+	white-space: nowrap;
+	transition: box-shadow 0.15s;
 }
 
-.paiz .paiz-share-icon:hover {
+.paiz .paiz-share-tag .paiz-wa-icon {
+	flex: none;
+	margin: 0;
 	color: #25d366;
-	transform: scale(1.08);
+}
+
+.paiz .paiz-share-tag:hover {
+	color: #128c7e;
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Natpis ne stane (uska kartica ili oznaka "Popunjeno"): samo ikona. */
+.paiz .paiz-share-tag.is-compact {
+	justify-content: center;
+	width: 34px;
+	padding: 0;
+}
+
+.paiz .paiz-share-tag.is-compact .paiz-share-tag__text {
+	display: none;
+}
+
+@media (max-width: 549px) {
+	.paiz .paiz-share-tag {
+		min-height: 32px;
+		font-size: 12px;
+	}
+
+	.paiz .paiz-share-tag.is-compact {
+		width: 32px;
+	}
+}
+
+/* Na mobitelu gumb u bloku za rezervaciju zauzima punu širinu bloka. */
+@media (max-width: 767px) {
+	.paiz-share-wrap.is-in-booking .paiz-share-btn {
+		width: 100%;
+	}
 }
 
 @media (max-width: 549px) {
@@ -831,11 +874,7 @@
 
 @media (prefers-reduced-motion: reduce) {
 	.paiz-share-btn,
-	.paiz .paiz-share-icon {
+	.paiz .paiz-share-tag {
 		transition: none;
-	}
-
-	.paiz .paiz-share-icon:hover {
-		transform: none;
 	}
 }

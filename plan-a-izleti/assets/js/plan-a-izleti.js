@@ -210,6 +210,7 @@
 					status.textContent = text;
 				}
 			}
+			fitShareTags( root );
 			return revealed;
 		}
 
@@ -503,12 +504,22 @@
 	}
 
 	/**
-	 * Gumb na stranici izleta premješta se odmah iza gumba za rezervaciju
-	 * (predlošci WpTravellyja nemaju kuku na tom mjestu).
+	 * Gumb na stranici izleta. U predlošku "smart" PHP ga ispisuje u kartici za
+	 * rezervaciju; ovdje se stavlja neposredno iznad njezina naslova. U ostalim
+	 * predlošcima premješta se odmah iza gumba za rezervaciju (nemaju kuku na tom mjestu).
 	 */
 	function placeShareButton() {
 		var wrap = document.querySelector( '[data-paiz-share-wrap]' );
 		if ( ! wrap ) {
+			return;
+		}
+		var card = wrap.closest( '.ttbm_smart_booking_card, .ttbm-sidebar-booking' );
+		if ( card ) {
+			var heading = card.querySelector( '.ttbm_smart_booking_title' );
+			if ( heading && heading.parentNode ) {
+				heading.parentNode.insertBefore( wrap, heading );
+			}
+			wrap.hidden = false;
 			return;
 		}
 		var after = document.querySelector( '[data-ttbm-book-now], .ttbm_hero_book_now, .ttbm_go_particular_booking' );
@@ -528,7 +539,44 @@
 		wrap.hidden = false;
 	}
 
+	/**
+	 * Oznaka "Predloži ekipi" na kartici: ako natpis ne stane pokraj oznake
+	 * "Popunjeno" ili u širinu slike, ostaje samo ikona.
+	 */
+	function fitShareTags( scope ) {
+		each( ( scope || document ).querySelectorAll( '.paiz-share-tag' ), function ( tag ) {
+			var media = tag.parentNode;
+			if ( ! media.offsetWidth ) {
+				return; // skrivena kartica: provjera kad se prikaže
+			}
+			tag.classList.remove( 'is-compact' );
+			var rect = tag.getBoundingClientRect();
+			var box = media.getBoundingClientRect();
+			var badge = media.querySelector( '.paiz-card__badge' );
+			var limit = badge ? badge.getBoundingClientRect().left - 8 : box.right - 12;
+			if ( rect.right > limit ) {
+				tag.classList.add( 'is-compact' );
+			}
+		} );
+	}
+
 	function boot() {
+		if ( document.querySelector( '.paiz-share-tag' ) ) {
+			fitShareTags();
+			var fitTimer = null;
+			window.addEventListener( 'resize', function () {
+				window.clearTimeout( fitTimer );
+				fitTimer = window.setTimeout( function () {
+					fitShareTags();
+				}, 150 );
+			} );
+			// Fontovi mogu promijeniti širinu natpisa nakon učitavanja.
+			if ( document.fonts && document.fonts.ready ) {
+				document.fonts.ready.then( function () {
+					fitShareTags();
+				} );
+			}
+		}
 		if ( document.querySelector( '[data-paiz-share]' ) ) {
 			initShare();
 			placeShareButton();

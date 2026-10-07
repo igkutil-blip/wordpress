@@ -3,9 +3,12 @@
  * "Predloži ekipi": dijeljenje izleta preko WhatsAppa (wa.me) ili sustavnog
  * izbornika za dijeljenje na mobitelu (Web Share API, vidi assets/js).
  *
- * Na stranici izleta gumb se ispisuje na kuki WpTravellyja `ttbm_registration_before`
- * (ili na dnu stranice ako predložak tu kuku nema), a JavaScript ga premješta odmah
- * iza gumba za rezervaciju. Na karticama [plan-a-izleti] je mala ikona na slici.
+ * Na stranici izleta gumb se ispisuje u bloku za rezervaciju: u predlošku "smart"
+ * na kuki `ttbm_smart_registration_controls` (unutar kartice za rezervaciju, koju
+ * WpTravelly na mobitelu premješta zajedno s gumbom), a u ostalim predlošcima na
+ * kuki `ttbm_registration_before` (ili na dnu stranice ako je predložak nema).
+ * JavaScript ga zatim stavlja neposredno iznad naslova bloka za rezervaciju.
+ * Na karticama [plan-a-izleti] je mala oznaka "Predloži ekipi" na slici.
  *
  * @package Plan_A_Izleti
  */
@@ -26,6 +29,7 @@ final class Plan_A_Izleti_Share {
 	public static function init() {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue' ), 20 );
 		add_action( 'ttbm_registration_before', array( __CLASS__, 'single_button' ) );
+		add_action( 'ttbm_smart_registration_controls', array( __CLASS__, 'smart_button' ), 5 );
 		add_action( 'wp_footer', array( __CLASS__, 'single_fallback' ), 5 );
 		add_action( 'wp_head', array( __CLASS__, 'open_graph' ), 5 );
 	}
@@ -42,14 +46,38 @@ final class Plan_A_Izleti_Share {
 	}
 
 	/**
-	 * Gumb na stranici izleta (kuka ttbm_registration_before).
+	 * Predložak izleta u WpTravellyju (default.php, smart.php, viator.php…).
+	 */
+	private static function template_name(): string {
+		$tour_id = Plan_A_Izleti_Data::source_id( get_queried_object_id() );
+		if ( class_exists( 'TTBM_Global_Function' ) && method_exists( 'TTBM_Global_Function', 'get_post_info' ) ) {
+			return (string) TTBM_Global_Function::get_post_info( $tour_id, 'ttbm_theme_file', 'default.php' );
+		}
+		return (string) ( get_post_meta( $tour_id, 'ttbm_theme_file', true ) ?: 'default.php' );
+	}
+
+	/**
+	 * Gumb na stranici izleta (kuka ttbm_registration_before). U predlošku "smart"
+	 * ta je kuka u opisu izleta, pa se gumb ispisuje u kartici za rezervaciju.
 	 */
 	public static function single_button() {
-		if ( self::$printed || ! self::is_tour_page() ) {
+		if ( self::$printed || ! self::is_tour_page() || 'smart.php' === self::template_name() ) {
 			return;
 		}
 		self::$printed = true;
 		echo '<div class="paiz-share-wrap" data-paiz-share-wrap>' . self::render_button( get_queried_object_id(), 'button' ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
+	}
+
+	/**
+	 * Predložak "smart": gumb na vrhu kartice za rezervaciju. Na mobitelu WpTravelly
+	 * premješta cijelu karticu (ttbm_script.js), pa je redoslijed isti na svim uređajima.
+	 */
+	public static function smart_button() {
+		if ( self::$printed || ! self::is_tour_page() ) {
+			return;
+		}
+		self::$printed = true;
+		echo '<div class="paiz-share-wrap is-in-booking" data-paiz-share-wrap>' . self::render_button( get_queried_object_id(), 'button' ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
 	}
 
 	/**
@@ -153,7 +181,9 @@ final class Plan_A_Izleti_Share {
 			. ( '' !== $data['image'] ? ' data-paiz-share-image="' . esc_url( $data['image'] ) . '"' : '' );
 
 		if ( 'icon' === $variant ) {
-			return '<a class="paiz-share-icon"' . $attrs . ' aria-label="' . esc_attr( $label ) . '" title="' . esc_attr__( 'Predloži ekipi', 'plan-a-izleti' ) . '">' . self::whatsapp_icon( 22 ) . '</a>';
+			// Oznaka na kartici; ako natpis ne stane, JS ostavlja samo ikonu (is-compact).
+			return '<a class="paiz-share-tag"' . $attrs . ' aria-label="' . esc_attr__( 'Predloži ekipi', 'plan-a-izleti' ) . '">' . self::whatsapp_icon( 16 )
+				. '<span class="paiz-share-tag__text" aria-hidden="true">' . esc_html__( 'Predloži ekipi', 'plan-a-izleti' ) . '</span></a>';
 		}
 		return '<a class="paiz-share-btn"' . $attrs . ' aria-label="' . esc_attr( $label ) . '">' . self::whatsapp_icon( 20 ) . '<span>' . esc_html__( 'Predloži ekipi', 'plan-a-izleti' ) . '</span></a>';
 	}

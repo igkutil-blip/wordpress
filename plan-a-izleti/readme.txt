@@ -1,7 +1,7 @@
 === Plan A izleti ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.9.0
+Stable tag: 1.10.0
 License: GPLv2 or later
 
 Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s filtrom po kategorijama i mjesecima.
@@ -37,8 +37,11 @@ kategorije, termin mjesec GGGG-MM), a shortcode na toj stranici ih odmah primije
 
 Predloži ekipi (WhatsApp):
 
-* gumb "Predloži ekipi" na stranici izleta, odmah iza gumba za rezervaciju,
-  i mala ikona WhatsAppa u gornjem lijevom kutu slike na karticama,
+* gumb "Predloži ekipi" na stranici izleta u bloku za rezervaciju, iznad njegova naslova
+  (predložak "smart": kuka ttbm_smart_registration_controls, isti redoslijed na mobitelu
+  i računalu; ostali predlošci: iza gumba za rezervaciju),
+* na karticama bijela oznaka "Predloži ekipi" u gornjem lijevom kutu slike; ako natpis
+  ne stane (uska kartica ili oznaka "Popunjeno"), prikazuje se samo ikona,
 * otvara WhatsApp (wa.me) s porukom: naziv, datum, mjesto ili država, cijena i poveznica,
 * na mobitelu s Web Share API-jem otvara sustavni izbornik za dijeljenje, uz istaknutu
   sliku izleta ako uređaj podržava dijeljenje datoteka; ako dijeljenje ne uspije, otvara wa.me,
