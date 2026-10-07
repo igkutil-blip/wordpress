@@ -108,7 +108,7 @@ final class Plan_A_Kosarica {
 	 *
 	 * @param int $current 1 = košarica, 2 = podaci (plaćanje), 3 = plaćanje.
 	 */
-	public static function steps( int $current ) {
+	public static function steps( int $current, bool $finished = false ) {
 		if ( ! Plan_A_Kosarica_Settings::get( 'steps' ) ) {
 			return;
 		}
@@ -117,12 +117,24 @@ final class Plan_A_Kosarica {
 			2 => array( __( 'Podaci', 'plan-a-kosarica' ), 1 === $current ? wc_get_checkout_url() : '#customer_details' ),
 			3 => array( __( 'Plaćanje', 'plan-a-kosarica' ), 1 === $current ? wc_get_checkout_url() : '#payment' ),
 		);
+		if ( $finished ) {
+			// Završna stranica narudžbe: Košarica > Podaci > Prijava završena (bez poveznica natrag).
+			$steps[1][1] = '';
+			$steps[2][1] = '';
+			$steps[3]    = array( __( 'Prijava završena', 'plan-a-kosarica' ), '' );
+			$current     = 3;
+		}
 		echo '<ol class="paka-steps" data-paka-steps aria-label="' . esc_attr__( 'Koraci rezervacije', 'plan-a-kosarica' ) . '">';
 		foreach ( $steps as $number => $step ) {
 			$state = $number < $current ? 'is-done' : ( $number === $current ? 'is-current' : '' );
+			if ( $finished ) {
+				$state = 3 === $number ? 'is-current is-finished' : 'is-done';
+			}
+			$tag   = '' !== $step[1] ? 'a href="' . esc_url( $step[1] ) . '"' : 'span class="paka-step__link"';
+			$close = '' !== $step[1] ? 'a' : 'span';
 			echo '<li class="paka-step ' . esc_attr( $state ) . '" data-paka-step="' . esc_attr( (string) $number ) . '"' . ( $number === $current ? ' aria-current="step"' : '' ) . '>'
-				. '<a href="' . esc_url( $step[1] ) . '"><span class="paka-step__num" aria-hidden="true">' . esc_html( (string) $number ) . '</span>'
-				. '<span class="paka-step__label">' . esc_html( $step[0] ) . '</span></a></li>';
+				. '<' . $tag . '><span class="paka-step__num" aria-hidden="true">' . ( $finished && 3 === $number ? '&#10003;' : esc_html( (string) $number ) ) . '</span>' // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above.
+				. '<span class="paka-step__label">' . esc_html( $step[0] ) . '</span></' . $close . '></li>';
 		}
 		echo '</ol>';
 	}

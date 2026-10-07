@@ -1,10 +1,11 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 
-Novi izgled košarice i stranice za plaćanje (WooCommerce) za izlete iz WpTravellyja.
+Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
+(WooCommerce) za izlete iz WpTravellyja.
 
 == Opis ==
 
@@ -29,12 +30,35 @@ polje za količinu i gumb "Ažuriraj košaricu".
 Zamijenjeni predlošci WooCommercea (i teme, npr. Flatsome):
 cart/cart.php, cart/cart-totals.php, cart/proceed-to-checkout-button.php,
 checkout/form-checkout.php, checkout/review-order.php.
-Stranica zahvale, e-poruke i "Moj račun" se ne mijenjaju.
+Od verzije 1.1.0 i: checkout/thankyou.php, emails/customer-on-hold-order.php,
+emails/customer-processing-order.php, emails/customer-completed-order.php.
+"Moj račun", e-mailovi administratoru i e-mailovi u obliku običnog teksta se ne mijenjaju.
+
+== Završna stranica i e-mailovi (1.1.0) ==
+
+* koraci Košarica → Podaci → Prijava završena, zelena kvačica, "Hvala, [ime]! Vaša prijava
+  je zaprimljena." i broj narudžbe,
+* "Što sada?" s tri koraka (uređuju se u postavkama); kod plaćanja karticom prvi korak je
+  "Plaćanje je uspješno" i nema bloka za plaćanje,
+* "Podaci za plaćanje": 2D kod (HUB3) i podatke za uplatu i dalje ispisuje postojeći dodatak
+  za uplatnicu; ovaj dodatak ih ne mijenja, samo kod premješta na vrh bloka (pune širine na
+  mobitelu) s natpisom "Skenirajte i platite". Rok plaćanja ispisuje se samo ako je upisan
+  u postavkama,
+* "Vaš izlet" (izlet, datum, lokacija, broj osoba, cijena, dodatno, ukupno, bilješka),
+  "Vaši podaci" i gumb "Predloži ekipi" (ako je aktivan Plan A izleti),
+* e-mailovi istog sadržaja: tamnoplavo zaglavlje s logotipom, širina do 600 px;
+  "Uplata je zaprimljena, vidimo se na izletu" nakon uplate (bez bloka za plaćanje),
+* gumb "Pošalji probni e-mail" u postavkama šalje oba e-maila za zadnju narudžbu na adresu
+  administratora.
+
+Ako dodatak za uplatnicu u e-mail ne ispisuje podatke za ručnu uplatu kao tekst, e-mail
+sadrži poveznicu na stranicu narudžbe s tim podacima.
 
 == Postavke ==
 
 Postavke → Plan A košarica: uključivanje, koraci (koraci teme Flatsome se tada skrivaju),
-adresa "Pogledaj još izleta", WhatsApp broj za pomoć, tekst pomoći, boje.
+adresa "Pogledaj još izleta", WhatsApp broj za pomoć, tekst pomoći, boje; završna stranica i
+e-mailovi (uključivanje, koraci "Što sada?", rok plaćanja, logotip za e-mail).
 
 Košarica i plaćanje moraju biti klasične stranice sa shortcodeom [woocommerce_cart] i
 [woocommerce_checkout] (tako ih koristi Flatsome). Ako stranica koristi WooCommerce

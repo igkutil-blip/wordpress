@@ -22,6 +22,14 @@ final class Plan_A_Kosarica_Settings {
 			'cta'       => '#e8862a',
 			'accent'    => '#1a9ad6',
 			'navy'      => '#12304b',
+			// Završna stranica narudžbe i e-mailovi.
+			'order'      => 1,
+			'step1'      => 'Platite uplatom: skenirajte 2D kod u aplikaciji svoje banke ili upišite podatke ručno',
+			'step2'      => 'Kad uplata stigne, dobit ćete potvrdu e-mailom',
+			'step3'      => 'Prije izleta poslat ćemo vam upute i popis opreme',
+			'step1_paid' => 'Plaćanje je uspješno',
+			'deadline'   => '',
+			'email_logo' => 0,
 		);
 	}
 
@@ -77,7 +85,19 @@ final class Plan_A_Kosarica_Settings {
 			'cta'       => $color( $input['cta'] ?? '', $defaults['cta'] ),
 			'accent'    => $color( $input['accent'] ?? '', $defaults['accent'] ),
 			'navy'      => $color( $input['navy'] ?? '', $defaults['navy'] ),
+			'order'      => empty( $input['order'] ) ? 0 : 1,
+			'step1'      => self::text( $input['step1'] ?? '', $defaults['step1'] ),
+			'step2'      => self::text( $input['step2'] ?? '', $defaults['step2'] ),
+			'step3'      => self::text( $input['step3'] ?? '', $defaults['step3'] ),
+			'step1_paid' => self::text( $input['step1_paid'] ?? '', $defaults['step1_paid'] ),
+			'deadline'   => sanitize_text_field( (string) ( $input['deadline'] ?? '' ) ),
+			'email_logo' => absint( $input['email_logo'] ?? 0 ),
 		);
+	}
+
+	private static function text( $value, string $fallback ): string {
+		$value = sanitize_text_field( (string) $value );
+		return '' !== $value ? $value : $fallback;
 	}
 
 	/**
@@ -178,7 +198,57 @@ final class Plan_A_Kosarica_Settings {
 						</td>
 					</tr>
 				</table>
+
+				<h2>Završna stranica narudžbe i e-mailovi</h2>
+				<p>Stranica „Narudžba zaprimljena” i e-mailovi kupcu (prijava zaprimljena, uplata zaprimljena) u istom stilu. 2D kod i podatke za plaćanje i dalje ispisuje vaš Hub3 dodatak (ili bankovni prijenos); ovdje se mijenja samo okvir oko njih.</p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row">Novi izgled</th>
+						<td><label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[order]" value="1" <?php checked( $s['order'] ); ?>> Završna stranica i e-mailovi kupcu</label></td>
+					</tr>
+					<?php
+					foreach ( array(
+						'step1'      => '„Što sada?” – 1. korak',
+						'step2'      => '„Što sada?” – 2. korak',
+						'step3'      => '„Što sada?” – 3. korak',
+						'step1_paid' => '1. korak kad je narudžba plaćena (npr. karticom)',
+					) as $key => $label ) :
+						?>
+						<tr>
+							<th scope="row"><label for="paka-<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></label></th>
+							<td><input type="text" id="paka-<?php echo esc_attr( $key ); ?>" class="large-text" name="<?php echo esc_attr( $name . '[' . $key . ']' ); ?>" value="<?php echo esc_attr( $s[ $key ] ); ?>"></td>
+						</tr>
+					<?php endforeach; ?>
+					<tr>
+						<th scope="row"><label for="paka-deadline">Rok plaćanja</label></th>
+						<td><input type="text" id="paka-deadline" class="regular-text" name="<?php echo esc_attr( $name ); ?>[deadline]" value="<?php echo esc_attr( $s['deadline'] ); ?>" placeholder="npr. 3 dana od prijave">
+						<p class="description">Prikazuje se uz podatke za plaćanje. Prazno = rok se ne prikazuje.</p></td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="paka-logo">Logotip u e-mailu (ID slike)</label></th>
+						<td><input type="number" min="0" id="paka-logo" class="small-text" name="<?php echo esc_attr( $name ); ?>[email_logo]" value="<?php echo esc_attr( $s['email_logo'] ? (string) $s['email_logo'] : '' ); ?>">
+						<?php $paka_logo = Plan_A_Kosarica_Order::logo_url(); ?>
+						<?php if ( $paka_logo ) : ?>
+							<span style="display:inline-block;margin-left:10px;padding:6px 10px;background:<?php echo esc_attr( $s['navy'] ); ?>;border-radius:6px;vertical-align:middle;"><img src="<?php echo esc_url( $paka_logo ); ?>" alt="" style="max-height:36px;vertical-align:middle;"></span>
+						<?php endif; ?>
+						<p class="description">Prazno = logotip iz Plan A izleti / teme / postavki e-mailova WooCommercea. ID slike vidi se u Medijima (adresa „post=…”).</p></td>
+					</tr>
+				</table>
 				<?php submit_button( 'Spremi promjene' ); ?>
+			</form>
+
+			<h2>Probni e-mail</h2>
+			<?php if ( isset( $_GET['paka-test'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- samo poruka. ?>
+				<?php $paka_ok = 'ok' === sanitize_key( wp_unslash( $_GET['paka-test'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+				<div class="notice <?php echo $paka_ok ? 'notice-success' : 'notice-error'; ?> inline"><p>
+					<?php echo esc_html( $paka_ok ? 'Probni e-mailovi poslani su na ' . get_option( 'admin_email' ) . '.' : 'Probni e-mail nije poslan: nema nijedne narudžbe ili slanje e-pošte nije uspjelo.' ); ?>
+				</p></div>
+			<?php endif; ?>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="plan_a_kosarica_test_email">
+				<?php wp_nonce_field( 'plan_a_kosarica_test_email' ); ?>
+				<p>Šalje na <strong><?php echo esc_html( get_option( 'admin_email' ) ); ?></strong> oba e-maila (prijava zaprimljena i uplata zaprimljena) za zadnju narudžbu s izletom.</p>
+				<?php submit_button( 'Pošalji probni e-mail', 'secondary', 'submit', false ); ?>
 			</form>
 		</div>
 		<?php

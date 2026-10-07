@@ -38,9 +38,62 @@
 		observer.observe( payment );
 	}
 
+	/**
+	 * Završna stranica: 2D kod iz izlaza dodatka za uplatnicu (Hub3) premješta se na
+	 * vrh bloka "Podaci za plaćanje", ispod natpisa "Skenirajte i platite". Sam kod i
+	 * podaci se ne mijenjaju. Ako se kod ne pronađe, sve ostaje kako ga je ispisao dodatak.
+	 */
+	function placeCode() {
+		var box = document.querySelector( '[data-paka-pay]' );
+		if ( ! box || box.querySelector( '.paka-pay__code' ) ) {
+			return;
+		}
+		var hint = /hub|bar|kod|code|pdf417|2d|uplatnic|qr/i;
+		var best = null;
+		var bestScore = 0;
+		Array.prototype.forEach.call( box.querySelectorAll( 'img, canvas, svg' ), function ( el ) {
+			var size = el.getBoundingClientRect();
+			var w = el.naturalWidth || size.width;
+			if ( w < 60 && size.height < 40 ) {
+				return; // ikone i sitne slike
+			}
+			var text = [ el.id, el.getAttribute( 'class' ), el.getAttribute( 'alt' ), el.getAttribute( 'src' ), el.getAttribute( 'title' ) ].join( ' ' );
+			var score = ( hint.test( text ) ? 10 : 1 ) + ( size.width * size.height ) / 100000;
+			if ( score > bestScore ) {
+				best = el;
+				bestScore = score;
+			}
+		} );
+		if ( ! best ) {
+			return;
+		}
+		var figure = document.createElement( 'div' );
+		figure.className = 'paka-pay__code';
+		var label = document.createElement( 'p' );
+		label.className = 'paka-pay__label';
+		label.textContent = box.getAttribute( 'data-label' ) || '';
+		figure.appendChild( label );
+		figure.appendChild( best );
+		box.insertBefore( figure, box.firstChild );
+	}
+
+	function initReceived() {
+		if ( ! document.querySelector( '[data-paka-pay]' ) ) {
+			return;
+		}
+		placeCode();
+		// Neki dodaci kod iscrtavaju skriptom nakon učitavanja.
+		window.addEventListener( 'load', function () {
+			placeCode();
+			window.setTimeout( placeCode, 1200 );
+		} );
+	}
+
 	if ( 'loading' === document.readyState ) {
 		document.addEventListener( 'DOMContentLoaded', init );
+		document.addEventListener( 'DOMContentLoaded', initReceived );
 	} else {
 		init();
+		initReceived();
 	}
 } )();

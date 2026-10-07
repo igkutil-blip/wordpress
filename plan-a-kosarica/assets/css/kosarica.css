@@ -1013,3 +1013,265 @@ body.paka-on.paka-steps-on .checkout-breadcrumbs {
 		transition: none;
 	}
 }
+
+/* ------------------------------------------------------------------ */
+/* Završna stranica narudžbe                                            */
+/* ------------------------------------------------------------------ */
+
+.paka.paka-received {
+	max-width: 760px;
+}
+
+.paka .paka-step__link {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	color: var(--paka-muted);
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+.paka .paka-step.is-current .paka-step__link {
+	color: var(--paka-navy);
+	font-weight: 700;
+}
+
+.paka .paka-step.is-finished .paka-step__num {
+	background: #1e9e4a;
+}
+
+.paka .paka-done {
+	text-align: center;
+}
+
+.paka .paka-done__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 64px;
+	height: 64px;
+	margin: 0 0 12px;
+	border-radius: 50%;
+	background: #1e9e4a;
+	color: #fff;
+}
+
+.paka .paka-done__icon--error {
+	background: #c0392b;
+	font-size: 34px;
+	font-weight: 800;
+}
+
+.paka .paka-done .paka-title {
+	margin-bottom: 8px;
+	font-size: clamp(24px, 5.5vw, 32px);
+}
+
+.paka .paka-done__meta {
+	margin: 0;
+	color: var(--paka-muted);
+	font-size: 16px;
+}
+
+.paka .paka-done__meta strong {
+	color: var(--paka-navy);
+}
+
+.paka .paka-done__sep {
+	margin: 0 6px;
+}
+
+/* Što sada? */
+.paka .paka-next__list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.paka .paka-next__list li {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	margin: 0 0 12px;
+	padding: 0;
+	font-size: 16px;
+	line-height: 1.45;
+}
+
+.paka .paka-next__list li:last-child {
+	margin-bottom: 0;
+}
+
+.paka .paka-next__num {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	background: var(--paka-accent);
+	color: #fff;
+	font-size: 15px;
+	font-weight: 700;
+}
+
+.paka .paka-next__list li.is-done .paka-next__num {
+	background: #1e9e4a;
+}
+
+/* Podaci za plaćanje (izlaz dodatka Hub3 / bankovni prijenos) */
+.paka .paka-pay__code {
+	margin: 0 0 18px;
+	text-align: center;
+}
+
+.paka .paka-pay__label {
+	margin: 0 0 10px;
+	color: var(--paka-navy);
+	font-size: 18px;
+	font-weight: 800;
+}
+
+.paka .paka-pay__code img,
+.paka .paka-pay__code canvas,
+.paka .paka-pay__code svg {
+	display: block;
+	width: 100% !important;
+	max-width: 460px;
+	height: auto !important;
+	margin: 0 auto;
+	image-rendering: pixelated; /* oštri rubovi koda pri povećanju */
+}
+
+.paka .paka-pay__raw {
+	overflow-wrap: anywhere;
+}
+
+.paka .paka-pay__raw img,
+.paka .paka-pay__raw table {
+	max-width: 100%;
+}
+
+.paka .paka-pay__raw h2,
+.paka .paka-pay__raw h3 {
+	margin: 16px 0 8px;
+	color: var(--paka-navy);
+	font-size: 17px;
+}
+
+.paka .paka-pay__raw ul,
+.paka .paka-pay__raw .wc-bacs-bank-details {
+	margin: 0 0 8px;
+	padding: 0;
+	list-style: none;
+}
+
+.paka .paka-pay__raw ul li {
+	margin: 0 0 4px;
+	padding: 0;
+}
+
+.paka .paka-pay__deadline {
+	margin: 14px 0 0;
+	padding: 10px 14px;
+	border-radius: 10px;
+	background: var(--paka-soft);
+}
+
+/* Vaš izlet */
+.paka .paka-dl {
+	display: grid;
+	grid-template-columns: max-content minmax(0, 1fr);
+	gap: 8px 16px;
+	margin: 0 0 14px;
+	padding: 0 0 14px;
+	border-bottom: 1px solid var(--paka-line);
+}
+
+.paka .paka-dl dt {
+	margin: 0;
+	color: var(--paka-muted);
+	font-weight: 500;
+}
+
+.paka .paka-dl dd {
+	margin: 0;
+	padding: 0;
+	color: var(--paka-text);
+	font-weight: 600;
+	overflow-wrap: anywhere;
+}
+
+.paka .paka-dl .paka-dl__full {
+	grid-column: 1 / -1;
+	font-weight: 400;
+}
+
+.paka .paka-dl--totals {
+	margin-bottom: 0;
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+
+.paka .paka-dl .paka-dl__total {
+	padding-top: 6px;
+	color: var(--paka-navy);
+	font-size: 20px;
+	font-weight: 800;
+}
+
+/* Vaši podaci: običan, ne kosi font */
+.paka .paka-address,
+.paka .paka-customer-data address {
+	margin: 0;
+	font-style: normal;
+	line-height: 1.6;
+}
+
+.paka .paka-h3 {
+	margin: 14px 0 6px;
+	color: var(--paka-navy);
+	font-size: 16px;
+}
+
+/* Predloži ekipi */
+.paka .paka-invite {
+	margin: 8px 0 0;
+	text-align: center;
+}
+
+.paka .paka-invite__text {
+	margin: 0 0 10px;
+	color: var(--paka-navy);
+	font-size: 18px;
+	font-weight: 700;
+}
+
+@media (max-width: 599px) {
+	.paka .paka-dl {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 2px;
+	}
+
+	.paka .paka-dl dd {
+		margin-bottom: 8px;
+	}
+
+	.paka.paka-received .paka-step:last-child {
+		flex: 0 1 auto;
+		min-width: 0;
+	}
+
+	.paka.paka-received .paka-step__link {
+		gap: 6px;
+		white-space: normal;
+		line-height: 1.2;
+	}
+
+	.paka .paka-pay__code img,
+	.paka .paka-pay__code canvas,
+	.paka .paka-pay__code svg {
+		max-width: none; /* na mobitelu pune širine */
+	}
+}

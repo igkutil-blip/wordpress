@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Plan A košarica
- * Description:       Novi izgled košarice i plaćanja (WooCommerce) za izlete iz WpTravellyja: kartice izleta, koraci Košarica → Podaci → Plaćanje, sažetak rezervacije i jasan gumb za nastavak. Svi podaci i kuke WooCommercea ostaju.
- * Version:           1.0.0
+ * Description:       Novi izgled košarice, plaćanja, završne stranice narudžbe i e-mailova kupcu (WooCommerce) za izlete iz WpTravellyja. Svi podaci i kuke WooCommercea ostaju; 2D kod i podatke za plaćanje i dalje ispisuje Hub3 dodatak.
+ * Version:           1.1.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Plan A
@@ -17,13 +17,15 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_KOSARICA_VERSION', '1.0.0' );
+define( 'PLAN_A_KOSARICA_VERSION', '1.1.0' );
 define( 'PLAN_A_KOSARICA_FILE', __FILE__ );
 define( 'PLAN_A_KOSARICA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PLAN_A_KOSARICA_URL', plugin_dir_url( __FILE__ ) );
 
 require_once __DIR__ . '/includes/class-plan-a-kosarica-settings.php';
 require_once __DIR__ . '/includes/class-plan-a-kosarica.php';
+require_once __DIR__ . '/includes/class-plan-a-kosarica-order.php';
 
 Plan_A_Kosarica_Settings::init();
 add_action( 'plugins_loaded', array( 'Plan_A_Kosarica', 'init' ), 20 );
+add_action( 'plugins_loaded', array( 'Plan_A_Kosarica_Order', 'init' ), 20 );
