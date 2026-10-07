@@ -1,0 +1,526 @@
+/*
+ * Plan A poklon bon – stranica za kupnju i preuzimanje bona.
+ * Boje kao u košarici (Plan A košarica): --papb-navy, --papb-accent, --papb-cta.
+ */
+
+.papb,
+.papb-order {
+	--papb-navy: #12304b;
+	--papb-accent: #1a9ad6;
+	--papb-cta: #e8862a;
+	--papb-text: #24323f;
+	--papb-muted: #5f6b77;
+	--papb-line: #e3e8ee;
+	--papb-soft: #e8f4fb;
+	--papb-radius: 16px;
+}
+
+.papb {
+	box-sizing: border-box;
+	container-type: inline-size;
+	width: 100%;
+	max-width: 1120px;
+	margin: 0 auto;
+	padding: 8px 0 32px;
+	color: var(--papb-text);
+	font-size: 16px;
+	line-height: 1.45;
+}
+
+.papb *,
+.papb *::before,
+.papb *::after {
+	box-sizing: border-box;
+}
+
+.papb [hidden] {
+	display: none !important;
+}
+
+/* Naslov */
+.papb .papb-head {
+	margin: 0 0 20px;
+}
+
+.papb .papb-title {
+	margin: 0 0 6px;
+	color: var(--papb-navy);
+	font-size: clamp(28px, 6vw, 40px);
+	font-weight: 800;
+	line-height: 1.15;
+	letter-spacing: -0.01em;
+	text-transform: none;
+}
+
+.papb .papb-lead {
+	max-width: 640px;
+	margin: 0;
+	color: var(--papb-muted);
+	font-size: 17px;
+}
+
+/* Raspored: obrazac lijevo, pregled i gumb desno; na mobitelu jedan stupac */
+.papb .papb-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 20px;
+	margin: 0;
+}
+
+@container (min-width: 820px) {
+	.papb .papb-layout {
+		grid-template-columns: minmax(0, 1fr) 420px;
+		align-items: start;
+		gap: 28px;
+	}
+
+	.papb .papb-side {
+		position: sticky;
+		top: 24px;
+	}
+}
+
+.papb .papb-form {
+	display: grid;
+	gap: 16px;
+	min-width: 0;
+}
+
+.papb .papb-card {
+	min-width: 0;
+	margin: 0;
+	padding: 22px;
+	border: 1px solid #edf1f5;
+	border-radius: var(--papb-radius);
+	background: #fff;
+	box-shadow: 0 2px 10px rgba(18, 48, 75, 0.06);
+}
+
+.papb .papb-h3 {
+	float: none;
+	width: auto;
+	margin: 0 0 14px;
+	padding: 0;
+	color: var(--papb-navy);
+	font-size: 19px;
+	font-weight: 800;
+	line-height: 1.25;
+}
+
+/* Iznosi kao kartice (legend kao obični naslov kartice, ne na rubu okvira) */
+.papb .papb-amounts > legend {
+	float: left;
+	width: 100%;
+}
+
+.papb .papb-amounts__grid {
+	clear: both;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+}
+
+@container (min-width: 520px) {
+	.papb .papb-amounts__grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+.papb .papb-amount {
+	position: relative;
+	display: block;
+	margin: 0;
+	cursor: pointer;
+}
+
+.papb .papb-amount input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.papb .papb-amount__box {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 64px;
+	padding: 10px 8px;
+	border: 2px solid var(--papb-line);
+	border-radius: 12px;
+	background: #fff;
+	color: var(--papb-navy);
+	font-size: 22px;
+	font-weight: 800;
+	line-height: 1.15;
+	text-align: center;
+	transition: border-color 0.15s, background-color 0.15s;
+}
+
+.papb .papb-amount--custom .papb-amount__box {
+	font-size: 16px;
+	font-weight: 700;
+}
+
+.papb .papb-amount:hover .papb-amount__box {
+	border-color: var(--papb-accent);
+}
+
+.papb .papb-amount input:checked + .papb-amount__box {
+	border-color: var(--papb-accent);
+	background: var(--papb-soft);
+	box-shadow: inset 0 0 0 1px var(--papb-accent);
+}
+
+.papb .papb-amount input:focus-visible + .papb-amount__box {
+	outline: 3px solid var(--papb-accent);
+	outline-offset: 2px;
+}
+
+.papb .papb-custom {
+	margin: 14px 0 0;
+}
+
+.papb .papb-custom label,
+.papb .papb-field label {
+	display: block;
+	margin: 0 0 6px;
+	color: var(--papb-navy);
+	font-size: 15px;
+	font-weight: 700;
+}
+
+.papb .papb-custom__input {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	max-width: 220px;
+}
+
+.papb .papb-custom__input span {
+	color: var(--papb-navy);
+	font-size: 20px;
+	font-weight: 700;
+}
+
+/* Polja */
+.papb .papb-fields {
+	display: grid;
+	gap: 16px;
+}
+
+.papb .papb-field {
+	position: relative;
+	margin: 0;
+}
+
+.papb input[type="text"],
+.papb input[type="number"],
+.papb textarea {
+	display: block;
+	width: 100%;
+	min-height: 50px;
+	margin: 0;
+	padding: 12px 14px;
+	border: 1px solid #cfd8e3;
+	border-radius: 10px;
+	background: #fff;
+	box-shadow: none;
+	color: var(--papb-text);
+	font-family: inherit;
+	font-size: 16px; /* bez zumiranja na iPhoneu */
+	line-height: 1.3;
+}
+
+.papb textarea {
+	height: auto;
+	min-height: 96px;
+	resize: vertical;
+}
+
+.papb input:focus,
+.papb textarea:focus {
+	border-color: var(--papb-accent);
+	outline: 3px solid rgba(26, 154, 214, 0.2);
+	outline-offset: 0;
+}
+
+.papb [aria-invalid="true"] {
+	border-color: #c0392b;
+}
+
+.papb .papb-req {
+	color: #c0392b;
+}
+
+.papb .papb-optional,
+.papb .papb-help,
+.papb .papb-count {
+	color: var(--papb-muted);
+	font-size: 14px;
+	font-weight: 400;
+}
+
+.papb .papb-help {
+	margin: 6px 0 0;
+}
+
+.papb .papb-count {
+	display: block;
+	margin-top: 4px;
+	text-align: right;
+}
+
+.papb .papb-error {
+	display: block;
+	margin: 6px 0 0;
+	color: #c0392b;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.papb .papb-error--form {
+	margin: 0 0 16px;
+	padding: 12px 14px;
+	border-radius: 10px;
+	background: #fdecea;
+}
+
+/* Pregled bona (omjer kao bon A5: 2480 × 1748) */
+.papb .papb-side {
+	min-width: 0;
+}
+
+.papb .papb-preview {
+	display: grid;
+	grid-template-columns: 39% minmax(0, 1fr);
+	gap: 5%;
+	aspect-ratio: 2480 / 1748;
+	padding: 5.2%;
+	border: 1px solid #edf1f5;
+	border-radius: 14px;
+	background: #fff;
+	box-shadow: 0 8px 24px rgba(18, 48, 75, 0.12);
+	container-type: inline-size;
+	overflow: hidden;
+}
+
+.papb .papb-preview__photo {
+	position: relative;
+	border-radius: 8px;
+	background: var(--papb-navy) center / cover no-repeat;
+}
+
+.papb .papb-preview__logo {
+	position: absolute;
+	top: 6%;
+	left: 7%;
+	display: inline-flex;
+	align-items: center;
+	max-width: 80%;
+	padding: 3% 5%;
+	border-radius: 6px;
+	background: #fff;
+	color: var(--papb-navy);
+	font-size: 4cqw;
+	font-weight: 900;
+}
+
+.papb .papb-preview__logo img {
+	display: block;
+	width: auto;
+	max-width: 100%;
+	height: 5.5cqw;
+}
+
+.papb .papb-preview__body {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.papb .papb-preview__title {
+	color: var(--papb-navy);
+	font-size: 6.4cqw;
+	font-weight: 900;
+	line-height: 1.05;
+}
+
+.papb .papb-preview__amount {
+	margin: 0.5cqw 0 1.8cqw;
+	color: var(--papb-cta);
+	font-size: 11cqw;
+	font-weight: 900;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.papb .papb-preview__line {
+	max-width: 100%;
+	overflow: hidden;
+	color: var(--papb-muted);
+	font-size: 3cqw;
+	line-height: 1.35;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.papb .papb-preview__line strong {
+	color: var(--papb-navy);
+	font-weight: 700;
+}
+
+.papb .papb-preview__line--from {
+	font-size: 2.6cqw;
+}
+
+.papb .papb-preview__msg {
+	display: -webkit-box;
+	max-width: 100%;
+	margin-top: 0.6cqw;
+	overflow: hidden;
+	color: var(--papb-text);
+	font-size: 2.2cqw;
+	line-height: 1.3;
+	overflow-wrap: anywhere;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+}
+
+.papb .papb-preview__code {
+	display: block;
+	align-self: stretch;
+	margin-top: 2.6cqw;
+	padding: 1.6cqw 2.4cqw;
+	border-radius: 1.2cqw;
+	background: var(--papb-navy);
+	color: #fff;
+	font-size: 3.6cqw;
+	font-weight: 900;
+	letter-spacing: 0.08em;
+	white-space: nowrap;
+}
+
+.papb .papb-preview__code small {
+	display: block;
+	color: #9fd3f0;
+	font-size: 1.5cqw;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+
+.papb .papb-preview__valid {
+	margin-top: 1.2cqw;
+	color: var(--papb-text);
+	font-size: 2.2cqw;
+	font-weight: 700;
+}
+
+.papb .papb-help--preview {
+	margin: 12px 0 16px;
+}
+
+/* Gumbi */
+.papb .papb-btn,
+.papb-order .papb-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	min-height: 44px;
+	margin: 0;
+	padding: 10px 20px;
+	border: 0;
+	border-radius: 10px;
+	font-family: inherit;
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: normal;
+	text-decoration: none;
+	text-transform: none;
+	cursor: pointer;
+}
+
+.papb .papb-btn--cta {
+	width: 100%;
+	min-height: 60px;
+	border-radius: 12px;
+	background-color: var(--papb-cta) !important;
+	box-shadow: 0 6px 16px rgba(232, 134, 42, 0.28);
+	color: #fff !important;
+	font-size: 20px;
+	font-weight: 800;
+}
+
+.papb .papb-btn--cta:hover {
+	filter: brightness(0.95);
+}
+
+.papb .papb-btn:focus-visible,
+.papb-order .papb-btn:focus-visible {
+	outline: 3px solid var(--papb-accent);
+	outline-offset: 3px;
+}
+
+/* Završna stranica i "Moj račun" */
+.papb-order {
+	margin: 0 0 20px;
+	padding: 22px;
+	border: 1px solid #edf1f5;
+	border-radius: var(--papb-radius);
+	background: #fff;
+}
+
+.papb-order .papb-order__title {
+	margin: 0 0 10px;
+	color: var(--papb-navy);
+	font-size: 20px;
+}
+
+.papb-order .papb-order__note,
+.papb-order p {
+	margin: 0 0 8px;
+}
+
+.papb-order .papb-order__item + .papb-order__item {
+	margin-top: 14px;
+	padding-top: 14px;
+	border-top: 1px solid var(--papb-line);
+}
+
+.papb-order .papb-order__name {
+	color: var(--papb-navy);
+	font-weight: 700;
+}
+
+.papb-order .papb-order__links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.papb-order .papb-btn--primary {
+	background-color: var(--papb-accent) !important;
+	color: #fff !important;
+}
+
+.papb-order .papb-btn--secondary {
+	border: 1px solid var(--papb-accent) !important;
+	background-color: #fff !important;
+	color: var(--papb-accent) !important;
+}
+
+@media (max-width: 599px) {
+	.papb .papb-card,
+	.papb-order {
+		padding: 16px;
+		border-radius: 14px;
+	}
+
+	.papb-order .papb-btn {
+		width: 100%;
+	}
+}
