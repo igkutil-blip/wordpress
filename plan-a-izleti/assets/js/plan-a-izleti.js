@@ -559,6 +559,7 @@
 		var img = null;
 		var bubble = null;
 		var sendBtn = null;
+		var closeBtn = null;
 		var owner = null;
 		var sendFn = null;
 		var lastFocus = null;
@@ -612,6 +613,16 @@
 			handle.className = 'paiz-preview__handle';
 			handle.setAttribute( 'aria-hidden', 'true' );
 
+			// Gumb × za zatvaranje (uz dodir izvan panela, povlačenje prema dolje i Esc).
+			closeBtn = document.createElement( 'button' );
+			closeBtn.type = 'button';
+			closeBtn.className = 'paiz-preview__close';
+			closeBtn.setAttribute( 'aria-label', text.close || 'Zatvori' );
+			closeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+			closeBtn.addEventListener( 'click', function () {
+				close( true );
+			} );
+
 			body = document.createElement( 'div' );
 			body.className = 'paiz-preview__body';
 
@@ -644,6 +655,7 @@
 			foot.appendChild( sendBtn );
 
 			panel.appendChild( handle );
+			panel.appendChild( closeBtn );
 			panel.appendChild( body );
 			panel.appendChild( foot );
 			root.appendChild( panel );
@@ -670,10 +682,10 @@
 					event.preventDefault();
 					close( true );
 				}
-				// Fokus ostaje u prozoru (jedini gumb).
+				// Fokus ostaje u prozoru: Tab prelazi između "×" i "Pošalji u WhatsApp".
 				if ( isOpen() && 'Tab' === event.key ) {
 					event.preventDefault();
-					sendBtn.focus();
+					( document.activeElement === sendBtn ? closeBtn : sendBtn ).focus();
 				}
 			} );
 

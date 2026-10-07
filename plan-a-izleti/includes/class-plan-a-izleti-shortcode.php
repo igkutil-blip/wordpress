@@ -53,6 +53,7 @@ final class Plan_A_Izleti_Shortcode {
 						'title' => __( 'Ovo ćeš poslati ekipi:', 'plan-a-izleti' ),
 						'send'  => __( 'Pošalji u WhatsApp', 'plan-a-izleti' ),
 						'image' => __( 'Slika izleta koja se šalje', 'plan-a-izleti' ),
+						'close' => __( 'Zatvori', 'plan-a-izleti' ),
 					),
 				)
 			) . ';',

@@ -940,8 +940,52 @@ html.paiz-preview-open body {
 	transition: transform 0.25s ease;
 }
 
+.paiz-preview__panel {
+	position: relative;
+}
+
 .paiz-preview__handle {
 	display: none;
+}
+
+/* Gumb × u gornjem desnom kutu */
+.paiz-preview .paiz-preview__close {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: 0 !important;
+	border-radius: 50%;
+	background: #f0f2f5 !important;
+	color: #3b4a54 !important;
+	box-shadow: none;
+	cursor: pointer;
+}
+
+.paiz-preview .paiz-preview__close:hover {
+	background: #e2e6ea !important;
+	color: #111b21 !important;
+}
+
+.paiz-preview .paiz-preview__close:focus {
+	outline: none !important;
+}
+
+.paiz-preview .paiz-preview__close:focus-visible {
+	outline: 3px solid #25d366 !important;
+	outline-offset: 2px !important;
+}
+
+.paiz-preview .paiz-preview__title {
+	padding-right: 48px; /* mjesto za × */
 }
 
 .paiz-preview__body {
@@ -1078,6 +1122,11 @@ html.paiz-preview-open body {
 
 .paiz-preview.is-sheet .paiz-preview__body {
 	padding: 12px 16px 8px;
+}
+
+.paiz-preview.is-sheet .paiz-preview__close {
+	top: 14px;
+	right: 12px;
 }
 
 .paiz-preview.is-sheet .paiz-preview__img {
