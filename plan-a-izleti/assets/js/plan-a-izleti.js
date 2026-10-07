@@ -457,19 +457,31 @@
 		window.location.href = link.href;
 	}
 
+	// iPhone/iPad: uz sliku se tekst poruke može izgubiti, pa se dijeli samo tekst.
+	function isIOS() {
+		var ua = window.navigator.userAgent || '';
+		return /iphone|ipad|ipod/i.test( ua ) || ( 'MacIntel' === window.navigator.platform && window.navigator.maxTouchPoints > 1 );
+	}
+
+	/**
+	 * Dijeljenje na mobitelu:
+	 * - uređaj podržava dijeljenje datoteka: slika kartice izleta + tekst poruke s poveznicom,
+	 * - iPhone ili bez podrške za datoteke: samo tekst poruke s poveznicom,
+	 * - neuspjeh (osim kad korisnik odustane): wa.me s tekstom poruke.
+	 */
 	function share( link ) {
 		var title = link.getAttribute( 'data-paiz-share-title' ) || '';
 		var text = link.getAttribute( 'data-paiz-share-text' ) || '';
 		var url = link.getAttribute( 'data-paiz-share-url' ) || '';
-		var pending = prefetchImage( link ) || Promise.resolve( null );
+		var message = text + '\n' + url; // poveznica u tekstu: ne gubi se ni uz sliku
+		var pending = isIOS() ? Promise.resolve( null ) : ( prefetchImage( link ) || Promise.resolve( null ) );
 
 		withTimeout( pending, 2000 )
 			.then( function ( file ) {
-				// S datotekom mnoge aplikacije zanemaruju url, pa je poveznica u tekstu.
 				if ( file && navigator.canShare && navigator.canShare( { files: [ file ] } ) ) {
-					return navigator.share( { title: title, text: text + '\n' + url, files: [ file ] } );
+					return navigator.share( { title: title, text: message, files: [ file ] } );
 				}
-				return navigator.share( { title: title, text: text, url: url } );
+				return navigator.share( { text: message } );
 			} )
 			.catch( function ( error ) {
 				if ( ! error || 'AbortError' !== error.name ) {
@@ -482,7 +494,7 @@
 		var selector = '[data-paiz-share]';
 		var canShare = !! navigator.share && isMobile();
 
-		if ( canShare ) {
+		if ( canShare && ! isIOS() ) {
 			var warm = function ( event ) {
 				var link = event.target.closest && event.target.closest( selector );
 				if ( link ) {

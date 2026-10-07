@@ -1,7 +1,7 @@
 === Plan A izleti ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.12.0
+Stable tag: 1.13.0
 License: GPLv2 or later
 
 Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s filtrom po kategorijama i mjesecima.
@@ -42,13 +42,26 @@ Predloži ekipi (WhatsApp):
   i računalu; ostali predlošci: iza gumba za rezervaciju),
 * na karticama bijela oznaka "Predloži ekipi" u gornjem lijevom kutu slike; ako natpis
   ne stane (uska kartica ili oznaka "Popunjeno"), prikazuje se samo ikona,
-* otvara WhatsApp (wa.me) s porukom: naziv, datum, mjesto ili država, cijena i poveznica,
+* otvara WhatsApp (wa.me) s porukom: naziv, datum, mjesto ili država, trajanje, cijena i poveznica,
 * na mobitelu s Web Share API-jem otvara sustavni izbornik za dijeljenje, uz istaknutu
   sliku izleta ako uređaj podržava dijeljenje datoteka; ako dijeljenje ne uspije, otvara wa.me,
 * poveznica nosi utm_source=whatsapp&utm_medium=share&utm_campaign=predlozi_ekipi,
 * na stranici izleta ispisuje Open Graph oznake (og:title, og:description, og:image…)
   samo ako ih već ne ispisuje SEO dodatak (Yoast, Rank Math, AIOSEO, SEOPress,
   The SEO Framework, Slim SEO, Squirrly, Jetpack). Filtar: plan_a_izleti_og_handled.
+
+Slika kartice za dijeljenje (od verzije 1.13.0):
+
+* uz poruku se dijeli slika kartice izleta (JPG, 1080 × 1350 px): istaknuta slika, oznaka
+  "Idemo zajedno?", naziv, datum, mjesto, trajanje, cijena, ikone aktivnosti, logotip i adresa,
+* izrađuje se na poslužitelju (GD s FreeTypeom), font Lato (assets/fonts, licenca OFL),
+* sprema se u wp-content/uploads/plan-a-izleti/kartice/izlet-<ID>.jpg i sama se ponovno izrađuje
+  kad se promijeni naziv, datum, mjesto, trajanje, cijena, slika ili aktivnosti izleta,
+* ako izrada ne uspije (ili slika još nije izrađena), dijeli se istaknuta slika izleta,
+* Postavke → Plan A izleti: logotip (bez odabira logotip teme), boja donjeg dijela
+  (bez odabira tamna boja zaglavlja teme), pregled i "Ponovno izradi sve slike kartica",
+* dijeljenje: mobitel s podrškom za datoteke = slika + poruka; iPhone ili bez podrške =
+  samo poruka s poveznicom; računalo = wa.me s porukom.
 
 Kategorije: aktivnosti (ttbm_tour_activities, kao WpTravelly filtar "Category"),
 a ako ih nema, kategorije izleta (ttbm_tour_cat).

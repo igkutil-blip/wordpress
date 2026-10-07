@@ -102,9 +102,28 @@ final class Plan_A_Izleti_Share {
 	/**
 	 * Podaci za poruku. $tour je redak iz Plan_A_Izleti_Data::get_tours() (datum).
 	 *
-	 * @return array{title: string, lines: string[], url: string, image: string}
+	 * 'fields' su pojedinačni podaci (datum, mjesto, trajanje, cijena) za poruku i
+	 * sliku kartice; 'lines' su retci za opis Open Graph (bez trajanja, kao do sada).
+	 *
+	 * @return array{title: string, fields: array<string, string>, lines: string[], url: string, image: string}
 	 */
 	public static function data( int $id, ?array $tour = null ): array {
+		$data = self::data_without_card( $id, $tour );
+
+		// Za dijeljenje: slika kartice izleta s podacima; ako još nije izrađena, istaknuta slika.
+		$image = Plan_A_Izleti_Card::url( $id );
+		if ( '' === $image ) {
+			$image_id = Plan_A_Izleti_Shortcode::image_id( $id );
+			$image    = $image_id ? (string) wp_get_attachment_image_url( $image_id, 'large' ) : '';
+		}
+		$data['image'] = $image;
+		return $data;
+	}
+
+	/**
+	 * Podaci bez slike za dijeljenje (koristi ih i izrada slike kartice).
+	 */
+	public static function data_without_card( int $id, ?array $tour = null ): array {
 		$source_id = Plan_A_Izleti_Data::source_id( $id );
 		if ( null === $tour ) {
 			foreach ( Plan_A_Izleti_Data::get_tours() as $row ) {
@@ -115,8 +134,9 @@ final class Plan_A_Izleti_Share {
 			}
 		}
 
-		$title = wp_strip_all_tags( html_entity_decode( get_the_title( $id ), ENT_QUOTES, 'UTF-8' ) );
-		$lines = array();
+		$title  = wp_strip_all_tags( html_entity_decode( get_the_title( $id ), ENT_QUOTES, 'UTF-8' ) );
+		$lines  = array();
+		$fields = array();
 
 		if ( $tour ) {
 			if ( '' !== $tour['date'] ) {
@@ -127,39 +147,61 @@ final class Plan_A_Izleti_Share {
 			} else {
 				$date = __( 'Termin uskoro', 'plan-a-izleti' );
 			}
-			$lines[] = '📅 ' . $date;
+			$lines[]        = '📅 ' . $date;
+			$fields['date'] = $date;
 		}
 
 		$country = Plan_A_Izleti_Shortcode::get_country( $id, $source_id );
 		if ( ! $country['hidden'] ) {
 			$place = '' !== $country['raw']['ttbm_location_name'] ? $country['raw']['ttbm_location_name'] : $country['value'];
 			if ( '' !== $place ) {
-				$lines[] = '📍 ' . $place;
+				$lines[]         = '📍 ' . $place;
+				$fields['place'] = $place;
 			}
+		}
+
+		$duration = Plan_A_Izleti_Shortcode::get_duration( $id );
+		if ( '' !== $duration ) {
+			$fields['duration'] = $duration;
 		}
 
 		$price = Plan_A_Izleti_Shortcode::get_price_html( $id, $source_id );
 		if ( '' !== $price ) {
 			$price   = trim( preg_replace( '/\s+/u', ' ', html_entity_decode( wp_strip_all_tags( $price ), ENT_QUOTES, 'UTF-8' ) ) );
-			$lines[] = '💶 ' . sprintf( /* translators: %s: cijena */ __( 'od %s', 'plan-a-izleti' ), $price );
+			$lines[]         = '💶 ' . sprintf( /* translators: %s: cijena */ __( 'od %s', 'plan-a-izleti' ), $price );
+			$fields['price'] = sprintf( /* translators: %s: cijena */ __( 'od %s', 'plan-a-izleti' ), $price );
 		}
 
-		$image_id = Plan_A_Izleti_Shortcode::image_id( $id );
-		$image    = $image_id ? wp_get_attachment_image_url( $image_id, 'large' ) : '';
-
 		return array(
-			'title' => $title,
-			'lines' => $lines,
-			'url'   => self::share_url( $id ),
-			'image' => $image ? (string) $image : '',
+			'title'  => $title,
+			'fields' => $fields,
+			'lines'  => $lines,
+			'url'    => self::share_url( $id ),
+			'image'  => '',
 		);
 	}
 
 	/**
-	 * Tekst poruke bez poveznice (poveznica se dodaje posebno).
+	 * Tekst poruke bez poveznice (poveznica se dodaje na kraj).
 	 */
 	public static function message( array $data ): string {
-		return implode( "\n", array_merge( array( __( 'Ajmo?', 'plan-a-izleti' ) . ' 🏔️', '*' . $data['title'] . '*' ), $data['lines'] ) );
+		$icons = array(
+			'date'     => '📅',
+			'place'    => '📍',
+			'duration' => '⏱️',
+			'price'    => '💶',
+		);
+		$lines = array(
+			__( 'Hej, predlažem da idemo zajedno na ovaj izlet', 'plan-a-izleti' ) . ' 🏔️',
+			'*' . $data['title'] . '*',
+		);
+		foreach ( $icons as $key => $icon ) {
+			if ( ! empty( $data['fields'][ $key ] ) ) {
+				$lines[] = $icon . ' ' . $data['fields'][ $key ];
+			}
+		}
+		$lines[] = __( 'Ideš i ti? Javi pa se prijavimo zajedno', 'plan-a-izleti' ) . ' 👇';
+		return implode( "\n", $lines );
 	}
 
 	/**
