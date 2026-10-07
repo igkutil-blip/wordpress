@@ -555,6 +555,7 @@ final class Plan_A_Izleti_Shortcode {
 			<div class="paiz-card__media">
 				<?php echo $image; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_get_attachment_image() ili statički HTML. ?>
 				<?php echo self::render_activities( $activities ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
+				<?php echo Plan_A_Izleti_Share::render_button( $id, 'icon', $tour ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
 				<?php if ( $tour['sold_out'] ) : ?>
 					<span class="paiz-card__badge"><?php esc_html_e( 'Popunjeno', 'plan-a-izleti' ); ?></span>
 				<?php endif; ?>
@@ -671,7 +672,7 @@ final class Plan_A_Izleti_Shortcode {
 	 *
 	 * @return array{value: string, source: string, hidden: bool, raw: array<string, string>}
 	 */
-	private static function get_country( int $id, int $source_id ): array {
+	public static function get_country( int $id, int $source_id ): array {
 		$meta = static function ( $key ) use ( $id, $source_id ) {
 			$value = get_post_meta( $id, $key, true );
 			if ( ( '' === $value || false === $value ) && $source_id !== $id ) {
@@ -787,7 +788,7 @@ final class Plan_A_Izleti_Shortcode {
 	 * Početna cijena kako je računa WpTravelly (ručna cijena ili najniža cijena karte).
 	 * Vraća HTML iz wc_price() ili prazan string.
 	 */
-	private static function get_price_html( int $id, int $source_id ): string {
+	public static function get_price_html( int $id, int $source_id ): string {
 		if ( method_exists( 'TTBM_Function', 'show_start_price' ) && ! TTBM_Function::show_start_price( $id ) ) {
 			return '';
 		}
@@ -816,7 +817,10 @@ final class Plan_A_Izleti_Shortcode {
 	/**
 	 * Istaknuta slika, a ako je nema, slike koje WpTravelly koristi kao zamjenu.
 	 */
-	private static function get_image_html( int $id, string $title ): string {
+	/**
+	 * Istaknuta slika izleta (ili slika popisa iz WpTravellyja).
+	 */
+	public static function image_id( int $id ): int {
 		$image_id = (int) get_post_thumbnail_id( $id );
 		if ( ! $image_id ) {
 			$image_id = (int) get_post_meta( $id, 'ttbm_list_thumbnail', true );
@@ -824,6 +828,11 @@ final class Plan_A_Izleti_Shortcode {
 		if ( ! $image_id ) {
 			$image_id = (int) get_post_meta( $id, 'mp_thumbnail', true );
 		}
+		return $image_id;
+	}
+
+	private static function get_image_html( int $id, string $title ): string {
+		$image_id = self::image_id( $id );
 		if ( $image_id ) {
 			$html = wp_get_attachment_image(
 				$image_id,

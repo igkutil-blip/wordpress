@@ -731,3 +731,111 @@
 	border-top-color: transparent;
 	border-bottom-color: rgba(20, 20, 20, 0.92);
 }
+
+/* "Predloži ekipi" (WhatsApp): gumb na stranici izleta i ikona na kartici */
+.paiz-share-wrap {
+	--paiz-wa: #25d366;
+	--paiz-wa-text: #128c7e;
+	margin: 12px 0;
+}
+
+.paiz-share-wrap[hidden] {
+	display: none;
+}
+
+.paiz-share-wrap.is-beside-booking {
+	display: inline-block;
+	margin: 0;
+	vertical-align: middle;
+}
+
+.paiz-share-wrap a.paiz-share-btn.paiz-share-btn,
+.paiz-share-wrap a.paiz-share-btn.paiz-share-btn:visited {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	box-sizing: border-box;
+	min-height: 44px;
+	margin: 0;
+	padding: 10px 20px;
+	border: 2px solid var(--paiz-wa, #25d366);
+	border-radius: 8px;
+	background: #fff;
+	color: var(--paiz-wa-text, #128c7e);
+	font-family: inherit;
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: normal;
+	text-decoration: none;
+	text-transform: none;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: background-color 0.15s, color 0.15s;
+}
+
+.paiz-share-wrap a.paiz-share-btn.paiz-share-btn:hover,
+.paiz-share-wrap a.paiz-share-btn.paiz-share-btn:focus-visible {
+	background: #e9fbf0;
+	color: var(--paiz-wa-text, #128c7e);
+}
+
+.paiz-share-btn:focus-visible,
+.paiz-share-icon:focus-visible {
+	outline: 3px solid var(--paiz-wa-text, #128c7e);
+	outline-offset: 2px;
+}
+
+.paiz-share-wrap .paiz-share-btn .paiz-wa-icon {
+	flex: none;
+	color: var(--paiz-wa, #25d366);
+}
+
+.paiz .paiz-share-icon,
+.paiz .paiz-share-icon:visited {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: 44px;
+	height: 44px;
+	border: 2px solid #25d366;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+	color: #25d366;
+	text-decoration: none;
+	transition: transform 0.15s;
+}
+
+.paiz .paiz-share-icon:hover {
+	color: #25d366;
+	transform: scale(1.08);
+}
+
+@media (max-width: 549px) {
+	.paiz-share-wrap.is-beside-booking {
+		display: block;
+		margin-top: 10px;
+	}
+
+	.paiz-share-wrap .paiz-share-btn {
+		width: 100%;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.paiz-share-btn,
+	.paiz .paiz-share-icon {
+		transition: none;
+	}
+
+	.paiz .paiz-share-icon:hover {
+		transform: none;
+	}
+}

@@ -405,7 +405,134 @@
 		window.addEventListener( 'resize', hideTip );
 	}
 
+	/**
+	 * "Predloži ekipi". Poveznica je wa.me (radi i bez JavaScripta). Na mobitelu s
+	 * Web Share API-jem otvara se sustavni izbornik za dijeljenje, uz istaknutu
+	 * sliku ako uređaj podržava dijeljenje datoteka. Ako dijeljenje ne uspije
+	 * (osim kad ga korisnik sam odustane), otvara se wa.me.
+	 */
+	var shareFiles = {};
+
+	function isMobile() {
+		return !! ( window.matchMedia && window.matchMedia( '(hover: none) and (pointer: coarse)' ).matches );
+	}
+
+	// Slika se počne preuzimati već pri dodiru, da bude spremna u trenutku klika.
+	function prefetchImage( link ) {
+		var src = link.getAttribute( 'data-paiz-share-image' );
+		if ( ! src || shareFiles[ src ] || ! window.fetch || ! window.File ) {
+			return src ? shareFiles[ src ] : null;
+		}
+		shareFiles[ src ] = window.fetch( src, { credentials: 'same-origin' } )
+			.then( function ( response ) {
+				if ( ! response.ok ) {
+					throw new Error( 'image' );
+				}
+				return response.blob();
+			} )
+			.then( function ( blob ) {
+				var type = blob.type || 'image/jpeg';
+				var name = ( src.split( '?' )[ 0 ].split( '/' ).pop() || 'izlet.jpg' ).replace( /[^\w.-]/g, '' ) || 'izlet.jpg';
+				return new window.File( [ blob ], name, { type: type } );
+			} )
+			.catch( function () {
+				return null;
+			} );
+		return shareFiles[ src ];
+	}
+
+	function withTimeout( promise, ms ) {
+		return Promise.race( [
+			promise,
+			new Promise( function ( resolve ) {
+				window.setTimeout( function () {
+					resolve( null );
+				}, ms );
+			} ),
+		] );
+	}
+
+	function openWhatsApp( link ) {
+		window.location.href = link.href;
+	}
+
+	function share( link ) {
+		var title = link.getAttribute( 'data-paiz-share-title' ) || '';
+		var text = link.getAttribute( 'data-paiz-share-text' ) || '';
+		var url = link.getAttribute( 'data-paiz-share-url' ) || '';
+		var pending = prefetchImage( link ) || Promise.resolve( null );
+
+		withTimeout( pending, 2000 )
+			.then( function ( file ) {
+				// S datotekom mnoge aplikacije zanemaruju url, pa je poveznica u tekstu.
+				if ( file && navigator.canShare && navigator.canShare( { files: [ file ] } ) ) {
+					return navigator.share( { title: title, text: text + '\n' + url, files: [ file ] } );
+				}
+				return navigator.share( { title: title, text: text, url: url } );
+			} )
+			.catch( function ( error ) {
+				if ( ! error || 'AbortError' !== error.name ) {
+					openWhatsApp( link );
+				}
+			} );
+	}
+
+	function initShare() {
+		var selector = '[data-paiz-share]';
+		var canShare = !! navigator.share && isMobile();
+
+		if ( canShare ) {
+			var warm = function ( event ) {
+				var link = event.target.closest && event.target.closest( selector );
+				if ( link ) {
+					prefetchImage( link );
+				}
+			};
+			document.addEventListener( 'pointerdown', warm, { passive: true } );
+			document.addEventListener( 'focusin', warm );
+		}
+
+		document.addEventListener( 'click', function ( event ) {
+			var link = event.target.closest && event.target.closest( selector );
+			if ( ! link || ! canShare ) {
+				return; // obična wa.me poveznica u novoj kartici
+			}
+			event.preventDefault();
+			share( link );
+		} );
+	}
+
+	/**
+	 * Gumb na stranici izleta premješta se odmah iza gumba za rezervaciju
+	 * (predlošci WpTravellyja nemaju kuku na tom mjestu).
+	 */
+	function placeShareButton() {
+		var wrap = document.querySelector( '[data-paiz-share-wrap]' );
+		if ( ! wrap ) {
+			return;
+		}
+		var after = document.querySelector( '[data-ttbm-book-now], .ttbm_hero_book_now, .ttbm_go_particular_booking' );
+		var section = document.getElementById( 'ttbm_booking_section' );
+		if ( after && after.parentNode ) {
+			after.parentNode.insertBefore( wrap, after.nextSibling );
+			wrap.classList.add( 'is-beside-booking' );
+		} else if ( section && ! section.contains( wrap ) ) {
+			section.insertBefore( wrap, section.firstChild );
+		} else if ( wrap.hasAttribute( 'data-paiz-share-fallback' ) ) {
+			var content = document.querySelector( '.ttbm_details_page, .ttbm_content__left' );
+			if ( ! content ) {
+				return; // nije pronađeno prikladno mjesto: gumb ostaje skriven
+			}
+			content.insertBefore( wrap, content.firstChild );
+		}
+		wrap.hidden = false;
+	}
+
 	function boot() {
+		if ( document.querySelector( '[data-paiz-share]' ) ) {
+			initShare();
+			placeShareButton();
+		}
 		each( document.querySelectorAll( '[data-paiz]' ), init );
 		if ( document.querySelector( '.paiz .paiz-act' ) ) {
 			initTips();

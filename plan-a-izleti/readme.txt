@@ -1,7 +1,7 @@
 === Plan A izleti ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.8.0
+Stable tag: 1.9.0
 License: GPLv2 or later
 
 Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s filtrom po kategorijama i mjesecima.
@@ -34,6 +34,18 @@ Gumbi ispod mreže vide se samo kad trenutni rezultat ima više izleta od počet
 prikaza. Promjena filtra vraća prikaz na show izleta. "Pogledaj sve izlete" prenosi
 odabrane filtre u adresu, npr. /izleti/?vrsta=ferrate&termin=2026-11 (vrsta je slug
 kategorije, termin mjesec GGGG-MM), a shortcode na toj stranici ih odmah primijeni.
+
+Predloži ekipi (WhatsApp):
+
+* gumb "Predloži ekipi" na stranici izleta, odmah iza gumba za rezervaciju,
+  i mala ikona WhatsAppa u gornjem lijevom kutu slike na karticama,
+* otvara WhatsApp (wa.me) s porukom: naziv, datum, mjesto ili država, cijena i poveznica,
+* na mobitelu s Web Share API-jem otvara sustavni izbornik za dijeljenje, uz istaknutu
+  sliku izleta ako uređaj podržava dijeljenje datoteka; ako dijeljenje ne uspije, otvara wa.me,
+* poveznica nosi utm_source=whatsapp&utm_medium=share&utm_campaign=predlozi_ekipi,
+* na stranici izleta ispisuje Open Graph oznake (og:title, og:description, og:image…)
+  samo ako ih već ne ispisuje SEO dodatak (Yoast, Rank Math, AIOSEO, SEOPress,
+  The SEO Framework, Slim SEO, Squirrly, Jetpack). Filtar: plan_a_izleti_og_handled.
 
 Kategorije: aktivnosti (ttbm_tour_activities, kao WpTravelly filtar "Category"),
 a ako ih nema, kategorije izleta (ttbm_tour_cat).
