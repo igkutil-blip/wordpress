@@ -413,6 +413,10 @@
 	-webkit-line-clamp: 3;
 }
 
+.papb-ticket__msg.is-empty {
+	color: #a9b4c0;
+}
+
 .papb-ticket__valid {
 	margin-top: auto;
 	color: #1b2d4a;

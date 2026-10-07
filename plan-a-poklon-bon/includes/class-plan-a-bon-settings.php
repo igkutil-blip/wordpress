@@ -124,7 +124,7 @@ class Plan_A_Bon_Settings {
 			'min'           => $min,
 			'max'           => $max,
 			'months'        => min( 60, max( 1, absint( $input['months'] ?? $d['months'] ) ) ),
-			'remainder'     => 'lose' === ( $input['remainder'] ?? '' ) ? 'lose' : 'keep',
+			'remainder'     => in_array( $input['remainder'] ?? '', array( 'keep', 'new', 'lose' ), true ) ? $input['remainder'] : 'keep',
 			'photo'         => absint( $input['photo'] ?? 0 ),
 			'logo'          => absint( $input['logo'] ?? 0 ),
 			'issuer'        => $text( 'issuer' ),
@@ -178,9 +178,10 @@ class Plan_A_Bon_Settings {
 					<tr>
 						<th scope="row">Ostatak bona</th>
 						<td>
-							<label><input type="radio" name="<?php echo esc_attr( $name ); ?>[remainder]" value="keep" <?php checked( 'keep', $s['remainder'] ); ?>> ostaje za sljedeći put</label><br>
+							<label><input type="radio" name="<?php echo esc_attr( $name ); ?>[remainder]" value="keep" <?php checked( 'keep', $s['remainder'] ); ?>> ostaje na istom bonu (isti kod vrijedi za preostali iznos) – preporučeno</label><br>
+							<label><input type="radio" name="<?php echo esc_attr( $name ); ?>[remainder]" value="new" <?php checked( 'new', $s['remainder'] ); ?>> prebacuje se na novi bon s novim kodom</label><br>
 							<label><input type="radio" name="<?php echo esc_attr( $name ); ?>[remainder]" value="lose" <?php checked( 'lose', $s['remainder'] ); ?>> propada</label>
-							<p class="description">Ako ostaje: nakon plaćene narudžbe u kojoj je bon djelomično iskorišten izdaje se novi bon s ostatkom i istim rokom, a kupac ga dobiva e-mailom.</p>
+							<p class="description">Npr. bon od 150 € iskorišten na izletu od 100 €: uz prvu mogućnost isti kod i dalje vrijedi za 50 € (do istog datuma), a kupac dobiva e-mail s preostalim iznosom.</p>
 						</td>
 					</tr>
 					<?php

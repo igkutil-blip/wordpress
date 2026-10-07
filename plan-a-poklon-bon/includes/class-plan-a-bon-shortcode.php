@@ -295,7 +295,10 @@ class Plan_A_Bon_Shortcode {
 		$html .= '<span class="papb-ticket__amount" data-papb-out="amount">' . esc_html( $amount > 0 ? Plan_A_Bon_Voucher::money_short( $amount ) : '– €' ) . '</span>';
 		$html .= '<span class="papb-ticket__line"><span class="papb-ticket__lbl">' . esc_html__( 'Za:', 'plan-a-poklon-bon' ) . '</span> <strong class="papb-ticket__val' . $to[1] . '" data-papb-out="to" data-empty="' . esc_attr__( 'Ime primatelja', 'plan-a-poklon-bon' ) . '">' . $to[0] . '</strong></span>';
 		$html .= '<span class="papb-ticket__line papb-ticket__line--from"><span class="papb-ticket__lbl">' . esc_html__( 'Od:', 'plan-a-poklon-bon' ) . '</span> <strong class="papb-ticket__val' . $from[1] . '" data-papb-out="from" data-empty="' . esc_attr__( 'Tvoje ime', 'plan-a-poklon-bon' ) . '">' . $from[0] . '</strong></span>';
-		$html .= '<em class="papb-ticket__msg" data-papb-out="message"' . ( '' === (string) $val['message'] ? ' hidden' : '' ) . '>' . esc_html( '' !== (string) $val['message'] ? '„' . $val['message'] . '“' : '' ) . '</em>';
+		// Poruka: dok je polje prazno, sivi primjer (kupac vidi da će poruka biti na bonu).
+		$sample = __( 'Ovdje će pisati tvoja poruka primatelju', 'plan-a-poklon-bon' );
+		$msg    = (string) $val['message'];
+		$html  .= '<em class="papb-ticket__msg' . ( '' === $msg ? ' is-empty' : '' ) . '" data-papb-out="message" data-empty="' . esc_attr( '„' . $sample . '“' ) . '">' . esc_html( '„' . ( '' !== $msg ? $msg : $sample ) . '“' ) . '</em>';
 		/* translators: %s: datum */
 		$html .= '<span class="papb-ticket__valid">' . esc_html( sprintf( __( 'Vrijedi do: %s', 'plan-a-poklon-bon' ), Plan_A_Bon_Voucher::hr_date( Plan_A_Bon_Voucher::default_expiry() ) ) ) . '</span>';
 		$html .= '</div>';

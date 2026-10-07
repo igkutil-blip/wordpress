@@ -48,8 +48,8 @@
 				out[ name ].classList.toggle( 'is-empty', ! value ); // sivi primjer dok polje nije ispunjeno
 			} );
 			var message = form.querySelector( '[data-papb-input="message"]' ).value.trim();
-			out.message.hidden = ! message;
-			out.message.textContent = message ? '„' + message + '“' : '';
+			out.message.textContent = message ? '„' + message + '“' : out.message.getAttribute( 'data-empty' );
+			out.message.classList.toggle( 'is-empty', ! message ); // sivi primjer dok poruka nije upisana
 			if ( count ) {
 				count.textContent = String( form.querySelector( '[data-papb-input="message"]' ).value.length );
 			}

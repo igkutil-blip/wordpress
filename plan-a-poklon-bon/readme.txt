@@ -1,7 +1,7 @@
 === Plan A poklon bon ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.1.7
+Stable tag: 1.2.0
 License: GPLv2 or later
 
 Prodaja poklon bonova za izlete (WooCommerce): stranica za kupnju, PDF bon s QR kodom
@@ -21,9 +21,17 @@ nakon uplate, korištenje kao kupon u košarici i popis bonova u administraciji.
   ne izdaje dvaput za istu narudžbu.
 * Korištenje: polje za kod u košarici i na naplati; poveznica iz QR koda /izleti/?bon=KOD
   pamti kod i primjenjuje ga kad je izlet u košarici. Bon se ne može iskoristiti za kupnju
-  novog bona, a nijedan kupon ne umanjuje cijenu bona. Ostatak bona (postavka) postaje novi bon.
+  novog bona, a nijedan kupon ne umanjuje cijenu bona. Ostatak bona ostaje na istom kodu (postavka).
 * Zaštita: najviše 10 neuspjelih unosa koda u 15 minuta po IP adresi; PDF datoteke u
   zaštićenoj mapi s nasumičnim nazivima, preuzimanje samo uz ključ narudžbe ili za administratora.
+
+== Novo u 1.2.0 ==
+
+* Ostatak bona ostaje na istom bonu: npr. bon od 150 € iskorišten na izletu od 100 € i dalje
+  vrijedi s istim kodom za 50 € (do istog datuma); kupac dobiva e-mail "Tvoj poklon bon i dalje
+  vrijedi". Postavka "Ostatak bona": ostaje na istom bonu (zadano), novi bon s novim kodom ili propada.
+  Ako se narudžba otkaže ili vrati, iskorišteni iznos vraća se na bon. Sve je u povijesti korištenja.
+* Pregled bona na stranici prikazuje i poruku primatelju (sivi primjer dok poruka nije upisana).
 
 == Novo u 1.1.7 ==
 

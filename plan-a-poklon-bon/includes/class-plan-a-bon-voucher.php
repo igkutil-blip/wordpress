@@ -252,6 +252,19 @@ class Plan_A_Bon_Voucher {
 	}
 
 	/**
+	 * Briše spremljeni PDF i PNG (npr. kad se promijeni iznos bona); izrade se ponovno pri preuzimanju.
+	 */
+	public static function forget_files( int $coupon_id ) {
+		$token = (string) get_post_meta( $coupon_id, '_papb_token', true );
+		if ( '' === $token ) {
+			return;
+		}
+		foreach ( glob( self::dir() . 'bon-*-' . $token . '-v*.*' ) ?: array() as $file ) {
+			wp_delete_file( $file );
+		}
+	}
+
+	/**
 	 * Šalje datoteku pregledniku (nakon provjere prava u pozivatelju).
 	 */
 	public static function stream( int $coupon_id, string $format, bool $inline = false ) {
@@ -294,7 +307,11 @@ class Plan_A_Bon_Voucher {
 			'{stari_kod}'  => (string) ( $extra['old_code'] ?? '' ),
 			'{narudzba}'   => (string) ( $extra['order_number'] ?? '' ),
 		);
-		if ( 'remainder' === $type ) {
+		$replace['{iskoristeno}'] = self::money( (float) ( $extra['used'] ?? 0 ) );
+		if ( 'balance' === $type ) {
+			$subject = 'Tvoj poklon bon i dalje vrijedi: ' . $v['code'];
+			$text    = "Pozdrav {kupac},\n\nu narudžbi #{narudzba} s poklon bonom {kod} iskorišteno je {iskoristeno}. Bon i dalje vrijedi za preostalih {iznos}, do {vrijedi_do}\n\nPri sljedećoj rezervaciji izleta na srd-plan-a.hr u košarici upiši isti kod {kod}.\n\nVidimo se na izletu!\nPlan A";
+		} elseif ( 'remainder' === $type ) {
 			$subject = 'Ostatak tvog poklon bona: ' . $v['code'];
 			$text    = "Pozdrav {kupac},\n\nu narudžbi #{narudzba} iskorišten je dio poklon bona {stari_kod}. Ostatak od {iznos} prebacili smo na novi bon s kodom {kod}, koji vrijedi do {vrijedi_do}.\n\nNovi bon je u privitku. Iskoristi ga na isti način: odaberi izlet na srd-plan-a.hr i u košarici upiši kod.\n\nVidimo se na izletu!\nPlan A";
 		} else {
@@ -313,9 +330,9 @@ class Plan_A_Bon_Voucher {
 			. '<div style="font-size:14px;margin-top:4px;">' . esc_html( self::money( $v['amount'] ) . ' · vrijedi do ' . self::hr_date( $v['expires'] ) ) . '</div>'
 			. '</td></tr></table>';
 
-		$attachments = array_filter( array( self::file( $coupon_id, 'pdf' ), self::file( $coupon_id, 'png' ) ) );
+		$attachments = 'balance' === $type ? array() : array_filter( array( self::file( $coupon_id, 'pdf' ), self::file( $coupon_id, 'png' ) ) );
 		$mailer      = WC()->mailer();
-		$message     = $mailer->wrap_message( 'Poklon bon za izlet', $body );
+		$message     = $mailer->wrap_message( 'balance' === $type ? 'Poklon bon i dalje vrijedi' : 'Poklon bon za izlet', $body );
 		$sent        = (bool) $mailer->send( $to, $subject, $message, "Content-Type: text/html\r\n", $attachments );
 		if ( $sent ) {
 			update_post_meta( $coupon_id, '_papb_sent', time() );

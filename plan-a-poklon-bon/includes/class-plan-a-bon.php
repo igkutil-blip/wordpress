@@ -74,6 +74,9 @@ class Plan_A_Bon {
 		foreach ( self::PAID as $status ) {
 			add_action( 'woocommerce_order_status_' . $status, array( __CLASS__, 'order_paid' ), 5 );
 		}
+		foreach ( array( 'cancelled', 'refunded' ) as $status ) {
+			add_action( 'woocommerce_order_status_' . $status, array( __CLASS__, 'order_undone' ), 20 );
+		}
 		add_action( 'woocommerce_thankyou', array( __CLASS__, 'order_downloads' ), 20 );
 		add_action( 'woocommerce_view_order', array( __CLASS__, 'order_downloads' ), 20 );
 		add_action( 'template_redirect', array( __CLASS__, 'customer_download' ), 1 );
@@ -611,7 +614,35 @@ class Plan_A_Bon {
 				Plan_A_Bon_Voucher::add_history( $coupon_id, $entry );
 				continue;
 			}
-			if ( 'keep' !== Plan_A_Bon_Settings::get( 'remainder' ) ) {
+			$mode = (string) Plan_A_Bon_Settings::get( 'remainder' );
+			if ( 'keep' === $mode ) {
+				// Isti kod ostaje aktivan za preostali iznos: iznos kupona = ostatak, još jedna upotreba.
+				$coupon = new WC_Coupon( $coupon_id );
+				$coupon->set_amount( $rest );
+				// Upotreba u ovoj narudžbi možda još nije zabilježena (WooCommerce je bilježi kasnije u
+				// istoj promjeni statusa); bon mora imati jednu slobodnu upotrebu nakon nje.
+				$recorded = (bool) $order->get_data_store()->get_recorded_coupon_usage_counts( $order );
+				$coupon->set_usage_limit( (int) $coupon->get_usage_count() + ( $recorded ? 1 : 2 ) );
+				$coupon->save();
+				Plan_A_Bon_Voucher::forget_files( $coupon_id ); // PDF i slika se iscrtaju s novim iznosom
+				$entry['same'] = true;
+				Plan_A_Bon_Voucher::add_history( $coupon_id, $entry );
+				$order->update_meta_data( '_papb_same_' . $coupon_id, (string) $used );
+				$order->save();
+				$sent = Plan_A_Bon_Voucher::send(
+					$coupon_id,
+					(string) $order->get_billing_email(),
+					'balance',
+					array(
+						'buyer'        => $order->get_billing_first_name(),
+						'used'         => $used,
+						'order_number' => $order->get_order_number(),
+					)
+				);
+				$order->add_order_note( sprintf( 'Poklon bon %1$s: iskorišteno %2$s, isti kod i dalje vrijedi za %3$s%4$s.', $v['code'], Plan_A_Bon_Voucher::money( $used ), Plan_A_Bon_Voucher::money( $rest ), $sent ? ' (kupac obaviješten e-mailom)' : '' ) );
+				continue;
+			}
+			if ( 'new' !== $mode ) {
 				$entry['lost'] = true;
 				Plan_A_Bon_Voucher::add_history( $coupon_id, $entry );
 				$order->add_order_note( sprintf( 'Poklon bon %1$s djelomično iskorišten; ostatak od %2$s propada (postavka "Ostatak bona").', $v['code'], Plan_A_Bon_Voucher::money( $rest ) ) );
@@ -652,6 +683,46 @@ class Plan_A_Bon {
 				)
 			);
 			$order->add_order_note( sprintf( 'Ostatak poklon bona %1$s (%2$s) prebačen na novi bon %3$s%4$s.', $v['code'], Plan_A_Bon_Voucher::money( $rest ), $nv['code'], $sent ? ' i poslan kupcu' : '; e-mail nije poslan' ) );
+		}
+	}
+
+	/**
+	 * Otkazana ili vraćena narudžba u kojoj je bon djelomično iskorišten (isti kod): iskorišteni
+	 * iznos vraća se na bon. WooCommerce pritom sam smanjuje broj upotreba kupona.
+	 */
+	public static function order_undone( $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return;
+		}
+		foreach ( $order->get_items( 'coupon' ) as $coupon_item ) {
+			$coupon_id = Plan_A_Bon_Voucher::find( (string) $coupon_item->get_code() );
+			$used      = (string) $order->get_meta( '_papb_same_' . $coupon_id );
+			if ( ! $coupon_id || '' === $used ) {
+				continue;
+			}
+			$coupon = new WC_Coupon( $coupon_id );
+			$coupon->set_amount( round( (float) $coupon->get_amount() + (float) $used, 2 ) );
+			// WooCommerce je pri otkazivanju već smanjio broj upotreba; bon s iznosom vrijedi još jednom.
+			$coupon->set_usage_limit( (int) $coupon->get_usage_count() + 1 );
+			$coupon->save();
+			Plan_A_Bon_Voucher::forget_files( $coupon_id );
+			Plan_A_Bon_Voucher::add_history(
+				$coupon_id,
+				array(
+					'date'     => time(),
+					'order'    => $order->get_id(),
+					'used'     => -(float) $used,
+					'rest'     => (float) $coupon->get_amount(),
+					'new'      => 0,
+					'lost'     => false,
+					'restored' => true,
+				)
+			);
+			$order->delete_meta_data( '_papb_same_' . $coupon_id );
+			$order->delete_meta_data( '_papb_rest_' . $coupon_id );
+			$order->save();
+			$order->add_order_note( sprintf( 'Narudžba otkazana: na poklon bon %1$s vraćeno je %2$s.', strtoupper( $coupon->get_code() ), Plan_A_Bon_Voucher::money( (float) $used ) ) );
 		}
 	}
 

@@ -375,6 +375,10 @@ class Plan_A_Bon_Admin {
 				$new   = Plan_A_Bon_Voucher::get( (int) $entry['new'] );
 				$code  = $new ? $new['code'] : '';
 				$line .= $esc( ' · ostatak ' . Plan_A_Bon_Voucher::money( (float) $entry['rest'] ) . ' → novi kod ' ) . ( $html ? '<strong>' . esc_html( $code ) . '</strong>' : $code );
+			} elseif ( ! empty( $entry['restored'] ) ) {
+				$line = $esc( wp_date( 'j.n.Y.', (int) $entry['date'] ) ) . ' · ' . $ref . ' · ' . $esc( 'otkazana, na bon vraćeno ' . Plan_A_Bon_Voucher::money( abs( (float) $entry['used'] ) ) . ' (sada ' . Plan_A_Bon_Voucher::money( (float) $entry['rest'] ) . ')' );
+			} elseif ( ! empty( $entry['same'] ) ) {
+				$line .= $esc( ' · ostatak ' . Plan_A_Bon_Voucher::money( (float) $entry['rest'] ) . ' ostaje na istom bonu' );
 			} elseif ( ! empty( $entry['lost'] ) ) {
 				$line .= $esc( ' · ostatak ' . Plan_A_Bon_Voucher::money( (float) $entry['rest'] ) . ' propao' );
 			}
@@ -456,7 +460,7 @@ class Plan_A_Bon_Admin {
 					<td><code class="papb-code"><?php echo esc_html( $v['code'] ); ?></code>
 						<br><small>izdan <?php echo esc_html( $v['issued'] ? wp_date( 'j.n.Y.', $v['issued'] ) : '' ); ?><?php echo $v['parent'] ? ' · ostatak bona' : ''; ?></small>
 					</td>
-					<td><?php echo esc_html( Plan_A_Bon_Voucher::money( $v['amount'] ) ); ?></td>
+					<td><?php echo esc_html( Plan_A_Bon_Voucher::money( $v['initial'] > 0 ? $v['initial'] : $v['amount'] ) ); ?></td>
 					<td><?php echo esc_html( self::rest_text( $v ) ); ?></td>
 					<td><?php echo esc_html( $v['to'] ); ?></td>
 					<td><?php echo esc_html( $v['from'] ); ?></td>
@@ -577,7 +581,7 @@ class Plan_A_Bon_Admin {
 			$order = $v['order'] ? wc_get_order( $v['order'] ) : false;
 			$row   = array(
 				$v['code'],
-				number_format( $v['amount'], 2, ',', '' ),
+				number_format( $v['initial'] > 0 ? $v['initial'] : $v['amount'], 2, ',', '' ),
 				self::rest_text( $v ),
 				$v['to'],
 				$v['from'],
