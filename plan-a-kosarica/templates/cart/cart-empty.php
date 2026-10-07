@@ -26,6 +26,12 @@ $paka_wa = '' !== $paka_wa ? $paka_wa : '385959060556';
 		<h1 class="paka-title"><?php esc_html_e( 'Tvoja košarica je prazna', 'plan-a-kosarica' ); ?></h1>
 		<p class="paka-subtitle"><?php esc_html_e( 'Odaberi izlet i rezerviraj mjesto u nekoliko koraka.', 'plan-a-kosarica' ); ?></p>
 		<a class="paka-btn paka-btn--primary" href="<?php echo esc_url( Plan_A_Kosarica::more_url() ); ?>"><span><?php esc_html_e( 'Pogledaj izlete', 'plan-a-kosarica' ); ?></span><?php echo Plan_A_Kosarica::icon( 'arrow' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- statički SVG. ?></a>
+		<?php
+		/**
+		 * Dodatni gumbi ispod "Pogledaj izlete" (npr. "Daruj poklon bon" iz dodatka Plan A poklon bon).
+		 */
+		do_action( 'plan_a_kosarica_empty_actions' );
+		?>
 	</section>
 
 	<?php if ( shortcode_exists( 'plan-a-izleti' ) ) : ?>

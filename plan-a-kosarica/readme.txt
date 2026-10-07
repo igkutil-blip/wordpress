@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -21,7 +21,9 @@ Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-ma
 * prazna košarica (1.2.0): ikona ruksaka, "Tvoja košarica je prazna", gumb "Pogledaj izlete"
   (adresa "Pogledaj još izleta", zadano /izleti/), "Najbliži izleti" (shortcode
   [plan-a-izleti show="3" all_url="/izleti/"], samo ako je aktivan Plan A izleti) i poveznica
-  "Javi nam se na WhatsApp" (broj iz postavki, zadano 385959060556); bez koraka,
+  "Javi nam se na WhatsApp" (broj iz postavki, zadano 385959060556); bez koraka; ispod
+  "Pogledaj izlete" kuka plan_a_kosarica_empty_actions za dodatne gumbe (1.2.1, npr. "Daruj
+  poklon bon" iz dodatka Plan A poklon bon),
 * plaćanje: gumb "Povratak u košaricu", kraći tekst u polju napomena, kartice "Podaci kupca" i "Napomena", "Tvoja rezervacija"
   (slika, mjesto, datum, sudionici, retci cijene, ukupno) i "Način plaćanja",
 * na računalu dva stupca (sadržaj i sažetak), na mobitelu jedan; prilagođava se širini

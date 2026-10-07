@@ -60,6 +60,7 @@ class Plan_A_Bon {
 		add_filter( 'woocommerce_cart_item_class', array( __CLASS__, 'cart_item_class' ), 20, 2 );
 		add_action( 'woocommerce_after_cart_item_name', array( __CLASS__, 'edit_link' ), 20, 2 );
 		add_action( 'woocommerce_cart_actions', array( __CLASS__, 'cart_gift_link' ), 20 );
+		add_action( 'plan_a_kosarica_empty_actions', array( __CLASS__, 'cart_gift_link' ) ); // prazna košarica
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'cart_assets' ) );
 		add_filter( 'woocommerce_get_item_data', array( __CLASS__, 'item_data' ), 20, 2 );
 		add_filter( 'woocommerce_coupon_is_valid_for_product', array( __CLASS__, 'coupon_product' ), 20, 2 );

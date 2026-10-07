@@ -1457,7 +1457,13 @@ body.paka-on.paka-steps-on .checkout-breadcrumbs {
 		margin-bottom: 32px;
 	}
 
-	.paka .paka-empty__box a.paka-btn--primary {
+	.paka .paka-empty__box a.paka-btn--primary,
+	.paka .paka-empty__box a.paka-btn--secondary {
 		width: 100%;
 	}
+}
+
+/* Dodatni gumbi ispod "Pogledaj izlete" (kuka plan_a_kosarica_empty_actions) */
+.paka .paka-empty__box a.paka-btn--secondary {
+	margin-top: 12px;
 }
