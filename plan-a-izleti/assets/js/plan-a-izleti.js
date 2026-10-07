@@ -505,15 +505,304 @@
 			document.addEventListener( 'focusin', warm );
 		}
 
+		// Dijeljenje kao i prije: mobitel = sustavni izbornik (slika + tekst, iPhone samo
+		// tekst), računalo = wa.me u novoj kartici. Poziva se izravno iz klika.
+		function send( link ) {
+			if ( canShare ) {
+				share( link );
+				return;
+			}
+			// Bez "noopener" u trećem argumentu: tada window.open uvijek vraća null.
+			var win = window.open( link.href, '_blank' );
+			if ( win ) {
+				win.opener = null;
+			} else {
+				openWhatsApp( link ); // skočni prozor blokiran
+			}
+		}
+
 		document.addEventListener( 'click', function ( event ) {
 			var link = event.target.closest && event.target.closest( selector );
-			if ( ! link || ! canShare ) {
+			if ( ! link ) {
+				return;
+			}
+			if ( preview.wanted() ) {
+				event.preventDefault();
+				if ( canShare && ! isIOS() ) {
+					prefetchImage( link ); // slika spremna dok korisnik čita pregled
+				}
+				preview.open( link, send );
+				return;
+			}
+			if ( ! canShare ) {
 				return; // obična wa.me poveznica u novoj kartici
 			}
 			event.preventDefault();
 			share( link );
 		} );
 	}
+
+	/**
+	 * Pregled poruke prije dijeljenja: slika kartice izleta i tekst poruke u
+	 * "WhatsApp oblačiću". Jedini gumb "Pošalji u WhatsApp" pokreće dijeljenje.
+	 * Mobitel: panel s dna ekrana (zatvara se dodirom izvan njega ili povlačenjem
+	 * prema dolje); računalo: prozor na sredini (zatvara se klikom izvan njega i tipkom Esc).
+	 * Postavka "Pregled prije slanja": first3 (prva 3 puta na uređaju), always, never.
+	 */
+	var preview = ( function () {
+		var config = window.planAIzletiShare || {};
+		var text = config.i18n || {};
+		var mode = config.preview || 'first3';
+		var KEY = 'planAIzleti.sharePreviews';
+		var LIMIT = 3;
+		var root = null;
+		var panel = null;
+		var body = null;
+		var img = null;
+		var bubble = null;
+		var sendBtn = null;
+		var owner = null;
+		var sendFn = null;
+		var lastFocus = null;
+
+		function store() {
+			try {
+				var s = window.localStorage;
+				s.setItem( KEY + '.probe', '1' );
+				s.removeItem( KEY + '.probe' );
+				return s;
+			} catch ( e ) {
+				return null;
+			}
+		}
+
+		function wanted() {
+			if ( 'never' === mode ) {
+				return false;
+			}
+			if ( 'always' === mode ) {
+				return true;
+			}
+			var s = store();
+			if ( ! s ) {
+				return true; // bez localStoragea pregled se prikazuje uvijek
+			}
+			return ( parseInt( s.getItem( KEY ), 10 ) || 0 ) < LIMIT;
+		}
+
+		function count() {
+			var s = store();
+			if ( s && 'first3' === mode ) {
+				s.setItem( KEY, String( ( parseInt( s.getItem( KEY ), 10 ) || 0 ) + 1 ) );
+			}
+		}
+
+		function isSheet() {
+			return !! ( window.matchMedia && window.matchMedia( '(max-width: 767px), (hover: none) and (pointer: coarse)' ).matches );
+		}
+
+		// Tekst kao u WhatsAppu: *podebljano*, prijelomi reda, poveznica kao tekst.
+		function renderMessage( target, message ) {
+			target.textContent = '';
+			message.split( '\n' ).forEach( function ( line, index ) {
+				if ( index ) {
+					target.appendChild( document.createElement( 'br' ) );
+				}
+				var parts = line.split( /(\*[^*\n]+\*)/ );
+				parts.forEach( function ( part ) {
+					if ( /^\*[^*\n]+\*$/.test( part ) ) {
+						var strong = document.createElement( 'strong' );
+						strong.textContent = part.slice( 1, -1 );
+						target.appendChild( strong );
+					} else if ( /^https?:\/\//.test( part ) ) {
+						var url = document.createElement( 'span' );
+						url.className = 'paiz-preview__url';
+						url.textContent = part;
+						target.appendChild( url );
+					} else if ( part ) {
+						target.appendChild( document.createTextNode( part ) );
+					}
+				} );
+			} );
+		}
+
+		function build() {
+			root = document.createElement( 'div' );
+			root.className = 'paiz-preview';
+			root.hidden = true;
+
+			panel = document.createElement( 'div' );
+			panel.className = 'paiz-preview__panel';
+			panel.setAttribute( 'role', 'dialog' );
+			panel.setAttribute( 'aria-modal', 'true' );
+			panel.setAttribute( 'aria-labelledby', 'paiz-preview-title' );
+
+			var handle = document.createElement( 'div' );
+			handle.className = 'paiz-preview__handle';
+			handle.setAttribute( 'aria-hidden', 'true' );
+
+			body = document.createElement( 'div' );
+			body.className = 'paiz-preview__body';
+
+			var title = document.createElement( 'p' );
+			title.className = 'paiz-preview__title';
+			title.id = 'paiz-preview-title';
+			title.textContent = text.title || '';
+
+			img = document.createElement( 'img' );
+			img.className = 'paiz-preview__img';
+			img.alt = text.image || '';
+			img.decoding = 'async';
+
+			bubble = document.createElement( 'div' );
+			bubble.className = 'paiz-preview__bubble';
+
+			body.appendChild( title );
+			body.appendChild( img );
+			body.appendChild( bubble );
+
+			var foot = document.createElement( 'div' );
+			foot.className = 'paiz-preview__foot';
+			sendBtn = document.createElement( 'button' );
+			sendBtn.type = 'button';
+			sendBtn.className = 'paiz-preview__send';
+			sendBtn.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.47-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.06 2.88 1.21 3.08.15.2 2.1 3.2 5.08 4.48.71.31 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35z"/><path d="M12.04 2C6.5 2 2 6.48 2 12c0 1.77.46 3.5 1.34 5.02L2 22l5.12-1.34A10.03 10.03 0 0 0 12.04 22C17.56 22 22 17.52 22 12S17.56 2 12.04 2zm0 18.3c-1.5 0-2.97-.4-4.25-1.16l-.3-.18-3.04.8.81-2.96-.2-.31A8.26 8.26 0 0 1 3.77 12c0-4.56 3.71-8.27 8.27-8.27 4.56 0 8.25 3.71 8.25 8.27 0 4.57-3.7 8.3-8.25 8.3z"/></svg>';
+			var label = document.createElement( 'span' );
+			label.textContent = text.send || '';
+			sendBtn.appendChild( label );
+			foot.appendChild( sendBtn );
+
+			panel.appendChild( handle );
+			panel.appendChild( body );
+			panel.appendChild( foot );
+			root.appendChild( panel );
+			document.body.appendChild( root );
+
+			// Slanje izravno iz ovog klika (potrebno za sustavni izbornik i nove kartice).
+			sendBtn.addEventListener( 'click', function () {
+				var link = owner;
+				close( false );
+				if ( link && sendFn ) {
+					sendFn( link );
+				}
+			} );
+
+			// Dodir/klik izvan panela zatvara.
+			root.addEventListener( 'click', function ( event ) {
+				if ( ! panel.contains( event.target ) ) {
+					close( true );
+				}
+			} );
+
+			document.addEventListener( 'keydown', function ( event ) {
+				if ( isOpen() && ( 'Escape' === event.key || 'Esc' === event.key ) ) {
+					event.preventDefault();
+					close( true );
+				}
+				// Fokus ostaje u prozoru (jedini gumb).
+				if ( isOpen() && 'Tab' === event.key ) {
+					event.preventDefault();
+					sendBtn.focus();
+				}
+			} );
+
+			initDrag();
+		}
+
+		// Mobitel: povlačenje panela prema dolje zatvara ga (kad je sadržaj na vrhu).
+		function initDrag() {
+			var startY = null;
+			var delta = 0;
+			panel.addEventListener( 'touchstart', function ( event ) {
+				if ( ! root.classList.contains( 'is-sheet' ) || event.touches.length !== 1 ) {
+					return;
+				}
+				var fromBody = body.contains( event.target );
+				if ( fromBody && body.scrollTop > 0 ) {
+					startY = null;
+					return;
+				}
+				startY = event.touches[ 0 ].clientY;
+				delta = 0;
+			}, { passive: true } );
+			panel.addEventListener( 'touchmove', function ( event ) {
+				if ( null === startY ) {
+					return;
+				}
+				delta = event.touches[ 0 ].clientY - startY;
+				if ( delta > 0 ) {
+					panel.style.transform = 'translateY(' + delta + 'px)';
+					panel.style.transition = 'none';
+					if ( event.cancelable ) {
+						event.preventDefault();
+					}
+				}
+			}, { passive: false } );
+			function end() {
+				if ( null === startY ) {
+					return;
+				}
+				panel.style.transition = '';
+				if ( delta > Math.min( 120, panel.offsetHeight * 0.25 ) ) {
+					close( true );
+				} else {
+					panel.style.transform = '';
+				}
+				startY = null;
+				delta = 0;
+			}
+			panel.addEventListener( 'touchend', end );
+			panel.addEventListener( 'touchcancel', end );
+		}
+
+		function isOpen() {
+			return !! root && ! root.hidden;
+		}
+
+		function open( link, send ) {
+			if ( ! root ) {
+				build();
+			}
+			owner = link;
+			sendFn = send;
+			lastFocus = document.activeElement;
+			var message = ( link.getAttribute( 'data-paiz-share-text' ) || '' ) + '\n' + ( link.getAttribute( 'data-paiz-share-url' ) || '' );
+			renderMessage( bubble, message );
+			var src = link.getAttribute( 'data-paiz-share-image' );
+			img.hidden = ! src;
+			if ( src ) {
+				img.src = src;
+			}
+			root.classList.toggle( 'is-sheet', isSheet() );
+			panel.style.transform = '';
+			body.scrollTop = 0;
+			root.hidden = false;
+			document.documentElement.classList.add( 'paiz-preview-open' );
+			window.requestAnimationFrame( function () {
+				root.classList.add( 'is-visible' );
+			} );
+			sendBtn.focus( { preventScroll: true } );
+			count();
+		}
+
+		function close( restoreFocus ) {
+			if ( ! isOpen() ) {
+				return;
+			}
+			root.classList.remove( 'is-visible' );
+			root.hidden = true;
+			panel.style.transform = '';
+			document.documentElement.classList.remove( 'paiz-preview-open' );
+			if ( restoreFocus && lastFocus && lastFocus.focus ) {
+				lastFocus.focus( { preventScroll: true } );
+			}
+		}
+
+		return {
+			wanted: wanted,
+			open: open,
+		};
+	} )();
 
 	/**
 	 * Gumb na stranici izleta. U predlošku "smart" PHP ga ispisuje u kartici za

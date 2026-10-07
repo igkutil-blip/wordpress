@@ -43,6 +43,21 @@ final class Plan_A_Izleti_Shortcode {
 				'strategy'  => 'defer',
 			)
 		);
+		// Pregled poruke prije dijeljenja ("Predloži ekipi").
+		wp_add_inline_script(
+			'plan-a-izleti',
+			'window.planAIzletiShare = ' . wp_json_encode(
+				array(
+					'preview' => Plan_A_Izleti_Settings::get()['preview'],
+					'i18n'    => array(
+						'title' => __( 'Ovo ćeš poslati ekipi:', 'plan-a-izleti' ),
+						'send'  => __( 'Pošalji u WhatsApp', 'plan-a-izleti' ),
+						'image' => __( 'Slika izleta koja se šalje', 'plan-a-izleti' ),
+					),
+				)
+			) . ';',
+			'before'
+		);
 
 		// Stilove učitaj u <head> ako je shortcode u sadržaju stranice (izbjegava treptanje).
 		$post = get_post();

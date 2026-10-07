@@ -39,7 +39,15 @@ final class Plan_A_Izleti_Settings {
 		return array(
 			'logo_id' => $logo,
 			'color'   => (string) ( sanitize_hex_color( (string) ( $saved['color'] ?? '' ) ) ?: '' ),
+			'preview' => self::preview_mode( (string) ( $saved['preview'] ?? '' ) ),
 		);
+	}
+
+	/**
+	 * "Pregled prije slanja": first3 (prva 3 puta na uređaju, zadano), always, never.
+	 */
+	public static function preview_mode( string $value ): string {
+		return in_array( $value, array( 'first3', 'always', 'never' ), true ) ? $value : 'first3';
 	}
 
 	private static function theme_logo_id(): int {
@@ -121,6 +129,7 @@ final class Plan_A_Izleti_Settings {
 		return array(
 			'logo_id' => $logo,
 			'color'   => (string) ( sanitize_hex_color( $color ) ?: '' ),
+			'preview' => self::preview_mode( (string) ( $input['preview'] ?? '' ) ),
 		);
 	}
 
@@ -196,6 +205,24 @@ final class Plan_A_Izleti_Settings {
 							<input type="text" id="paiz-color" name="<?php echo esc_attr( self::OPTION ); ?>[color]" value="<?php echo esc_attr( $color ); ?>" placeholder="<?php echo esc_attr( self::default_color() ); ?>" pattern="#?[0-9a-fA-F]{3,6}" class="regular-text" style="max-width:120px;">
 							<span style="display:inline-block;width:28px;height:28px;vertical-align:middle;border-radius:4px;background:<?php echo esc_attr( self::card_color() ); ?>;"></span>
 							<p class="description"><?php echo esc_html( sprintf( /* translators: %s: boja */ __( 'Prazno = boja zaglavlja teme (sada %s). Tekst je bijel, pa boja mora biti tamna.', 'plan-a-izleti' ), self::default_color() ) ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Pregled prije slanja', 'plan-a-izleti' ); ?></th>
+						<td>
+							<fieldset>
+								<?php
+								$paiz_preview = self::preview_mode( (string) ( $saved['preview'] ?? '' ) );
+								foreach ( array(
+									'first3' => __( 'prva 3 puta na uređaju (zadano)', 'plan-a-izleti' ),
+									'always' => __( 'uvijek', 'plan-a-izleti' ),
+									'never'  => __( 'nikad', 'plan-a-izleti' ),
+								) as $paiz_value => $paiz_label ) :
+									?>
+									<label style="display:block;margin:0 0 6px;"><input type="radio" name="<?php echo esc_attr( self::OPTION ); ?>[preview]" value="<?php echo esc_attr( $paiz_value ); ?>" <?php checked( $paiz_preview, $paiz_value ); ?>> <?php echo esc_html( $paiz_label ); ?></label>
+								<?php endforeach; ?>
+							</fieldset>
+							<p class="description"><?php esc_html_e( 'Klik na „Predloži ekipi” najprije prikaže sliku i tekst poruke, a slanje se pokreće gumbom „Pošalji u WhatsApp”.', 'plan-a-izleti' ); ?></p>
 						</td>
 					</tr>
 				</table>

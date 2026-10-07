@@ -894,3 +894,205 @@
 		height: 18px;
 	}
 }
+
+/* Pregled poruke prije dijeljenja ("Predloži ekipi") */
+html.paiz-preview-open,
+html.paiz-preview-open body {
+	overflow: hidden;
+}
+
+.paiz-preview {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	background: rgba(17, 27, 33, 0.5);
+	opacity: 0;
+	transition: opacity 0.2s ease;
+}
+
+.paiz-preview[hidden] {
+	display: none;
+}
+
+.paiz-preview.is-visible {
+	opacity: 1;
+}
+
+.paiz-preview__panel {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	width: min(440px, 100%);
+	max-height: 90vh;
+	max-height: 90dvh;
+	overflow: hidden;
+	border-radius: 16px;
+	background: #fff;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+	color: #111b21;
+	font-size: 16px;
+	line-height: 1.4;
+	text-align: left;
+	transition: transform 0.25s ease;
+}
+
+.paiz-preview__handle {
+	display: none;
+}
+
+.paiz-preview__body {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: 20px 20px 12px;
+}
+
+.paiz-preview__title {
+	margin: 0 0 12px;
+	color: #111b21;
+	font-size: 18px;
+	font-weight: 700;
+}
+
+/* Slika kartice: cijela vidljiva, bez rezanja */
+.paiz-preview__img {
+	display: block;
+	width: auto;
+	max-width: 100%;
+	height: auto;
+	max-height: 42vh;
+	margin: 0 auto 12px;
+	border-radius: 10px;
+	object-fit: contain;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.paiz-preview__img[hidden] {
+	display: none;
+}
+
+/* Tekst kao poslana WhatsApp poruka */
+.paiz-preview__bubble {
+	position: relative;
+	margin: 0 0 4px 8px;
+	padding: 10px 12px;
+	border-radius: 12px 12px 12px 4px;
+	background: #dcf8c6;
+	color: #111b21;
+	font-size: 15px;
+	line-height: 1.45;
+	overflow-wrap: anywhere;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
+}
+
+.paiz-preview__bubble strong {
+	font-weight: 700;
+}
+
+.paiz-preview__url {
+	color: #027eb5;
+	text-decoration: underline;
+}
+
+.paiz-preview__foot {
+	flex: none;
+	padding: 12px 20px 20px;
+	padding-bottom: max(20px, env(safe-area-inset-bottom));
+	border-top: 1px solid #eef0f2;
+	background: #fff;
+}
+
+.paiz-preview .paiz-preview__send {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	box-sizing: border-box;
+	width: 100%;
+	min-height: 56px;
+	margin: 0;
+	padding: 12px 20px;
+	border: 0 !important;
+	border-radius: 12px;
+	background: #168f43 !important; /* teme često jako stiliziraju sve gumbe */
+	color: #fff !important;
+	font-family: inherit;
+	font-size: 18px;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: normal;
+	text-transform: none;
+	cursor: pointer;
+}
+
+.paiz-preview .paiz-preview__send:hover {
+	background: #127a39 !important;
+	color: #fff !important;
+}
+
+.paiz-preview .paiz-preview__send:focus {
+	outline: none !important;
+}
+
+.paiz-preview .paiz-preview__send:focus-visible {
+	outline: 3px solid #25d366 !important;
+	outline-offset: 3px !important;
+}
+
+.paiz-preview__send svg {
+	flex: none;
+}
+
+/* Mobitel: panel s dna ekrana, najviše 85 % visine; gumb uvijek vidljiv na dnu */
+.paiz-preview.is-sheet {
+	align-items: flex-end;
+	padding: 0;
+}
+
+.paiz-preview.is-sheet .paiz-preview__panel {
+	width: 100%;
+	max-height: 85vh;
+	max-height: 85dvh;
+	border-radius: 18px 18px 0 0;
+	transform: translateY(100%);
+}
+
+.paiz-preview.is-sheet.is-visible .paiz-preview__panel {
+	transform: translateY(0);
+}
+
+.paiz-preview.is-sheet .paiz-preview__handle {
+	display: block;
+	flex: none;
+	width: 40px;
+	height: 5px;
+	margin: 10px auto 0;
+	border-radius: 3px;
+	background: #cfd5da;
+}
+
+.paiz-preview.is-sheet .paiz-preview__body {
+	padding: 12px 16px 8px;
+}
+
+.paiz-preview.is-sheet .paiz-preview__img {
+	max-height: 38vh;
+	max-height: 38dvh;
+}
+
+.paiz-preview.is-sheet .paiz-preview__foot {
+	padding: 10px 16px 16px;
+	padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.paiz-preview,
+	.paiz-preview__panel {
+		transition: none;
+	}
+}
