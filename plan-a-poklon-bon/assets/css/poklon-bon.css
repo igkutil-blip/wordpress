@@ -496,6 +496,21 @@
 	display: block;
 }
 
+/* Košarica: "Nastavi s odabirom izleta" i "Daruj poklon bon" zajedno, polje za kod u svom redu */
+.paka .paka-actions:has(.papb-cart-gift) {
+	justify-content: flex-start;
+}
+
+.paka .paka-actions:has(.papb-cart-gift) .paka-coupon {
+	flex: 1 1 100%;
+}
+
+.paka .paka-actions a.papb-cart-gift svg {
+	flex: 0 0 auto;
+	width: 18px;
+	height: 18px;
+}
+
 .paka .papb-edit {
 	display: inline-flex;
 	align-items: center;

@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A poklon bon
  * Description:       Prodaja poklon bonova za izlete: stranica za kupnju (shortcode [plan-a-poklon-bon]), izdavanje bona s PDF-om i QR kodom nakon uplate, korištenje kao kupon u košarici i popis bonova u administraciji.
- * Version:           1.1.1
+ * Version:           1.1.2
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Plan A
@@ -19,7 +19,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_BON_VERSION', '1.1.1' );
+define( 'PLAN_A_BON_VERSION', '1.1.2' );
 define( 'PLAN_A_BON_FILE', __FILE__ );
 define( 'PLAN_A_BON_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PLAN_A_BON_URL', plugin_dir_url( __FILE__ ) );

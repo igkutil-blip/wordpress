@@ -59,6 +59,7 @@ class Plan_A_Bon {
 		add_filter( 'woocommerce_product_get_image', array( __CLASS__, 'product_image' ), 20, 2 );
 		add_filter( 'woocommerce_cart_item_class', array( __CLASS__, 'cart_item_class' ), 20, 2 );
 		add_action( 'woocommerce_after_cart_item_name', array( __CLASS__, 'edit_link' ), 20, 2 );
+		add_action( 'woocommerce_cart_actions', array( __CLASS__, 'cart_gift_link' ), 20 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'cart_assets' ) );
 		add_filter( 'woocommerce_get_item_data', array( __CLASS__, 'item_data' ), 20, 2 );
 		add_filter( 'woocommerce_coupon_is_valid_for_product', array( __CLASS__, 'coupon_product' ), 20, 2 );
@@ -309,7 +310,25 @@ class Plan_A_Bon {
 			. esc_html__( 'Uredi bon', 'plan-a-poklon-bon' ) . '</a>';
 	}
 
+	/**
+	 * U košarici uz "Nastavi s odabirom izleta": gumb na stranicu poklon bona (isti sekundarni
+	 * stil dodatka za košaricu). Prikazuje se samo kad stranica s bonom postoji.
+	 */
+	public static function cart_gift_link() {
+		$page = (int) get_option( self::PAGE_OPTION, 0 );
+		if ( ! $page || 'publish' !== get_post_status( $page ) ) {
+			return;
+		}
+		echo '<a class="paka-btn paka-btn--secondary papb-cart-gift" href="' . esc_url( self::shop_url() ) . '">'
+			. '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"/></svg>'
+			. '<span>' . esc_html__( 'Daruj poklon bon', 'plan-a-poklon-bon' ) . '</span></a>';
+	}
+
 	public static function cart_assets() {
+		if ( function_exists( 'is_cart' ) && is_cart() && (int) get_option( self::PAGE_OPTION, 0 ) ) {
+			wp_enqueue_style( 'plan-a-poklon-bon', PLAN_A_BON_URL . 'assets/css/poklon-bon.css', array(), PLAN_A_BON_VERSION ); // gumb "Daruj poklon bon"
+			return;
+		}
 		if ( function_exists( 'is_cart' ) && ( is_cart() || is_checkout() ) && WC()->cart && ! WC()->cart->is_empty() ) {
 			foreach ( WC()->cart->get_cart() as $item ) {
 				if ( ! empty( $item['papb'] ) ) {
