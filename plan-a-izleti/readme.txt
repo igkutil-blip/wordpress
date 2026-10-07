@@ -1,7 +1,7 @@
 === Plan A izleti ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.13.0
+Stable tag: 1.14.0
 License: GPLv2 or later
 
 Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s filtrom po kategorijama i mjesecima.
@@ -55,9 +55,12 @@ Slika kartice za dijeljenje (od verzije 1.13.0):
 * uz poruku se dijeli slika kartice izleta (JPG, 1080 × 1350 px): istaknuta slika, oznaka
   "Idemo zajedno?", naziv, datum, mjesto, trajanje, cijena, ikone aktivnosti, logotip i adresa,
 * izrađuje se na poslužitelju (GD s FreeTypeom), font Lato (assets/fonts, licenca OFL),
-* sprema se u wp-content/uploads/plan-a-izleti/kartice/izlet-<ID>.jpg i sama se ponovno izrađuje
+* sprema se u wp-content/uploads/plan-a-izleti/kartice/izlet-<ID>-v<verzija>.jpg i sama se ponovno izrađuje
   kad se promijeni naziv, datum, mjesto, trajanje, cijena, slika ili aktivnosti izleta,
 * ako izrada ne uspije (ili slika još nije izrađena), dijeli se istaknuta slika izleta,
+* raspored (1.14.0): sigurna margina 80 px lijevo, desno i dolje, oznaka 60 px od vrha i lijevo;
+  naziv ~64 px (dva reda, po potrebi manji font), podaci ~36 px u dva stupca, aktivnosti 72 px,
+  logotip ~70 px; pri ažuriranju na novu verziju sve se slike izrađuju ponovno pod novim nazivom,
 * Postavke → Plan A izleti: logotip (bez odabira logotip teme), boja donjeg dijela
   (bez odabira tamna boja zaglavlja teme), pregled i "Ponovno izradi sve slike kartica",
 * dijeljenje: mobitel s podrškom za datoteke = slika + poruka; iPhone ili bez podrške =

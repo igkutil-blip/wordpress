@@ -144,6 +144,7 @@ final class Plan_A_Izleti_Settings {
 		}
 		check_admin_referer( 'plan_a_izleti_cards' );
 		Plan_A_Izleti_Card::delete_all();
+		Plan_A_Izleti_Card::schedule_all();
 		wp_safe_redirect( add_query_arg( 'paiz-cards', 'obrisano', admin_url( 'options-general.php?page=' . self::PAGE ) ) );
 		exit;
 	}
@@ -161,7 +162,7 @@ final class Plan_A_Izleti_Settings {
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Plan A izleti', 'plan-a-izleti' ); ?></h1>
 			<?php if ( isset( $_GET['paiz-cards'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- samo poruka. ?>
-				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Slike kartica su obrisane i izradit će se ponovno pri sljedećem prikazu izleta.', 'plan-a-izleti' ); ?></p></div>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Slike kartica su obrisane i ponovno se izrađuju u pozadini (za sve objavljene izlete).', 'plan-a-izleti' ); ?></p></div>
 			<?php endif; ?>
 
 			<h2><?php esc_html_e( 'Slika kartice za „Predloži ekipi”', 'plan-a-izleti' ); ?></h2>
@@ -212,7 +213,7 @@ final class Plan_A_Izleti_Settings {
 				<?php wp_nonce_field( 'plan_a_izleti_cards' ); ?>
 				<?php submit_button( __( 'Ponovno izradi sve slike kartica', 'plan-a-izleti' ), 'secondary', 'submit', false ); ?>
 			</form>
-			<p class="description"><?php esc_html_e( 'Slike se spremaju u wp-content/uploads/plan-a-izleti/kartice/ i same se ponovno izrađuju kad se promijeni naziv, datum, cijena, slika ili aktivnosti izleta.', 'plan-a-izleti' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Slike se spremaju u wp-content/uploads/plan-a-izleti/kartice/ (izlet-ID-v3.jpg) i same se ponovno izrađuju kad se promijeni naziv, datum, cijena, slika ili aktivnosti izleta.', 'plan-a-izleti' ); ?></p>
 		</div>
 		<?php
 	}

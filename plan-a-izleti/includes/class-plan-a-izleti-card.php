@@ -11,7 +11,7 @@
  * Font: Lato (zadani font teme Flatsome, OFL), ugrađen u assets/fonts.
  * Ikone aktivnosti iscrtavaju se iz fontova WpTravellyja (Font Awesome 6, Mage Icons).
  *
- * Slika se sprema u uploads/plan-a-izleti/kartice/izlet-<ID>.jpg. Potpis podataka
+ * Slika se sprema u uploads/plan-a-izleti/kartice/izlet-<ID>-v<verzija>.jpg. Potpis podataka
  * (naziv, datum, mjesto, trajanje, cijena, slika, aktivnosti, logotip, boja) čuva se u
  * opciji plan_a_izleti_cards; kad se bilo što promijeni, slika se izrađuje ponovno.
  *
@@ -22,14 +22,15 @@ defined( 'ABSPATH' ) || exit;
 
 final class Plan_A_Izleti_Card {
 
-	const LAYOUT  = '2';
+	const LAYOUT  = '3'; // dio naziva datoteke: nova verzija rasporeda = nova adresa slike
 	const GLYPHS  = '2'; // verzija mape ikona (iz CSS-a WpTravellyja)
 	const OPTION  = 'plan_a_izleti_cards';
 	const CRON    = 'plan_a_izleti_make_card';
 	const DIR     = 'plan-a-izleti/kartice';
 	const W       = 1080;
 	const H       = 1350;
-	const PHOTO_H = 760; // oko 56 % visine
+	const MARGIN  = 80;  // sigurna margina lijevo, desno i dolje (px)
+	const BATCH   = 'plan_a_izleti_make_cards';
 	const S       = 2; // dvostruka veličina za glatke rubove
 
 	/** @var array|null Mape klasa ikona → znak (iz CSS-a WpTravellyja). */
@@ -37,6 +38,8 @@ final class Plan_A_Izleti_Card {
 
 	public static function init() {
 		add_action( self::CRON, array( __CLASS__, 'generate' ) );
+		add_action( self::BATCH, array( __CLASS__, 'generate_batch' ) );
+		add_action( 'init', array( __CLASS__, 'maybe_upgrade' ), 20 );
 		// Nakon spremanja izleta (i meta podataka WpTravellyja) izradi sliku odmah.
 		add_action( 'wp_after_insert_post', array( __CLASS__, 'after_save' ), 20, 2 );
 		add_action( 'before_delete_post', array( __CLASS__, 'delete' ) );
@@ -60,8 +63,16 @@ final class Plan_A_Izleti_Card {
 		);
 	}
 
+	/**
+	 * Naziv datoteke sadrži verziju rasporeda (izlet-<ID>-v3.jpg): nova verzija slike
+	 * dobiva novu adresu, pa WhatsApp i preglednici ne prikazuju staru iz predmemorije.
+	 */
+	private static function basename( int $id ): string {
+		return 'izlet-' . $id . '-v' . self::LAYOUT . '.jpg';
+	}
+
 	private static function file( int $id ): string {
-		return self::dir()['path'] . '/izlet-' . $id . '.jpg';
+		return self::dir()['path'] . '/' . self::basename( $id );
 	}
 
 	/**
@@ -75,7 +86,7 @@ final class Plan_A_Izleti_Card {
 		$signature = self::signature( $id );
 		$map       = (array) get_option( self::OPTION, array() );
 		if ( ( $map[ $id ] ?? '' ) === $signature && file_exists( self::file( $id ) ) ) {
-			return self::dir()['url'] . '/izlet-' . $id . '.jpg?v=' . substr( $signature, 0, 10 );
+			return self::dir()['url'] . '/' . self::basename( $id ) . '?v=' . substr( $signature, 0, 10 );
 		}
 		if ( ! wp_next_scheduled( self::CRON, array( $id ) ) ) {
 			wp_schedule_single_event( time(), self::CRON, array( $id ) );
@@ -102,14 +113,85 @@ final class Plan_A_Izleti_Card {
 	}
 
 	public static function delete( $post_id ) {
-		$file = self::file( (int) $post_id );
-		if ( file_exists( $file ) ) {
-			wp_delete_file( $file );
-		}
+		self::delete_files( (int) $post_id );
 		$map = (array) get_option( self::OPTION, array() );
 		if ( isset( $map[ $post_id ] ) ) {
 			unset( $map[ $post_id ] );
 			update_option( self::OPTION, $map, false );
+		}
+	}
+
+	/**
+	 * Sve slike jednog izleta (i starih verzija: izlet-<ID>.jpg, izlet-<ID>-v2.jpg …),
+	 * osim trenutne ako je $keep zadan.
+	 */
+	private static function delete_files( int $id, string $keep = '' ) {
+		$dir = self::dir()['path'];
+		if ( ! is_dir( $dir ) ) {
+			return;
+		}
+		$files = array_merge( (array) glob( $dir . '/izlet-' . $id . '.jpg' ), (array) glob( $dir . '/izlet-' . $id . '-v*.jpg' ) );
+		foreach ( $files as $file ) {
+			if ( $file && $file !== $keep ) {
+				wp_delete_file( $file );
+			}
+		}
+	}
+
+	/**
+	 * Nova verzija rasporeda: obriši stare slike i ponovno izradi slike svih
+	 * objavljenih izleta u pozadini (u serijama, da zahtjev ne traje predugo).
+	 */
+	public static function maybe_upgrade() {
+		if ( get_option( 'plan_a_izleti_cards_layout' ) === self::LAYOUT || ! self::supported() ) {
+			return;
+		}
+		self::delete_all();
+		update_option( 'plan_a_izleti_cards_layout', self::LAYOUT, true );
+		self::schedule_all();
+	}
+
+	public static function schedule_all() {
+		if ( ! wp_next_scheduled( self::BATCH ) ) {
+			wp_schedule_single_event( time(), self::BATCH );
+		}
+	}
+
+	/**
+	 * Izradi slike za objavljene izlete koji je još nemaju (najviše 15 po pokretanju).
+	 */
+	public static function generate_batch() {
+		if ( ! Plan_A_Izleti_Data::is_source_available() ) {
+			return;
+		}
+		$ids  = get_posts(
+			array(
+				'post_type'        => Plan_A_Izleti_Data::post_type(),
+				'post_status'      => 'publish',
+				'posts_per_page'   => 500,
+				'fields'           => 'ids',
+				'no_found_rows'    => true,
+				'suppress_filters' => true,
+			)
+		);
+		$map  = (array) get_option( self::OPTION, array() );
+		$done = 0;
+		$left = 0;
+		foreach ( $ids as $id ) {
+			$id = (int) $id;
+			if ( isset( $map[ $id ] ) && file_exists( self::file( $id ) ) ) {
+				continue;
+			}
+			if ( $done >= 15 ) {
+				$left++;
+				continue;
+			}
+			self::generate( $id );
+			$map = (array) get_option( self::OPTION, array() );
+			$done++;
+		}
+		if ( $left > 0 ) {
+			wp_schedule_single_event( time() + 30, self::BATCH );
 		}
 	}
 
@@ -223,6 +305,8 @@ final class Plan_A_Izleti_Card {
 			return false;
 		}
 
+		self::delete_files( $id, $file ); // stare verzije (npr. izlet-<ID>.jpg)
+
 		$map        = (array) get_option( self::OPTION, array() );
 		$map[ $id ] = md5( (string) wp_json_encode( $data ) );
 		update_option( self::OPTION, $map, false );
@@ -243,77 +327,51 @@ final class Plan_A_Izleti_Card {
 	}
 
 	/**
+	 * Raspored (u px na slici 1080 × 1350):
+	 * - sigurna margina 80 px lijevo, desno i dolje; oznaka "Idemo zajedno?" 60 px od vrha i lijevo,
+	 * - naziv ~64 px podebljano (najviše dva reda; ako ne stane, font se smanjuje do 48 px),
+	 * - podaci u dva stupca: font ~36 px, ikone ~40 px, razmak među redovima ~24 px,
+	 * - aktivnosti: bijeli krugovi ~72 px s ikonom ~40 px,
+	 * - dno: logotip ~70 px lijevo i adresa desno, poravnati po sredini,
+	 * - blokovi su ravnomjerno raspoređeni po visini donjeg dijela; fotografija zauzima
+	 *   ostatak (oko 52–64 % visine), pa nema praznog prostora; dno je na donjoj margini.
+	 *
 	 * @return \GdImage|resource|false
 	 */
 	private static function draw( array $data ) {
-		$s  = self::S;
-		$w  = self::W * $s;
-		$h  = self::H * $s;
-		$ph = self::PHOTO_H * $s;
-		$im = imagecreatetruecolor( $w, $h );
-		if ( ! $im ) {
-			return false;
-		}
-		imagealphablending( $im, true );
-
-		list( $r, $g, $b ) = self::rgb( $data['color'] );
-		$bg    = imagecolorallocate( $im, $r, $g, $b );
-		$white = imagecolorallocate( $im, 255, 255, 255 );
-		$soft  = imagecolorallocatealpha( $im, 255, 255, 255, 30 ); // bijela, malo prozirna
-		imagefilledrectangle( $im, 0, 0, $w, $h, $bg );
-
-		// Fotografija (cover) ili mekša pozadina ako je nema.
-		$photo = self::load_image( (int) $data['image'] );
-		if ( $photo ) {
-			// Svijetla podloga za slike s prozirnošću (PNG).
-			imagefilledrectangle( $im, 0, 0, $w, $ph, imagecolorallocate( $im, 241, 241, 241 ) );
-			self::cover( $im, $photo, 0, 0, $w, $ph );
-			imagedestroy( $photo );
-		} else {
-			$light = imagecolorallocate( $im, min( 255, $r + 40 ), min( 255, $g + 40 ), min( 255, $b + 40 ) );
-			imagefilledrectangle( $im, 0, 0, $w, $ph, $light );
-		}
+		$s   = self::S;
+		$px  = static function ( $v ) use ( $s ): int {
+			return (int) round( $v * $s );
+		};
+		$pt  = static function ( $v ) use ( $s ): float {
+			return $v * 0.75 * $s; // GD: 96 dpi, 1 pt = 4/3 px
+		};
+		$w   = self::W * $s;
+		$h   = self::H * $s;
+		$m   = $px( self::MARGIN );
+		$cw  = $w - 2 * $m; // širina sadržaja (920 px)
+		$bot = $h - $m - 1; // zadnji red sadržaja (GD crta i krajnji piksel)
 
 		$bold    = self::font( 'bold' );
 		$regular = self::font( 'regular' );
-		$pad     = 64 * $s;
 
-		// Oznaka "Idemo zajedno?" u gornjem lijevom kutu.
-		$label = __( 'Idemo zajedno?', 'plan-a-izleti' );
-		$size  = 27 * $s;
-		$box   = self::text_box( $size, $bold, $label );
-		$pill  = array( 48 * $s, 48 * $s, 48 * $s + $box['w'] + 2 * 28 * $s, 48 * $s + 76 * $s );
-		self::rounded( $im, $pill[0], $pill[1], $pill[2], $pill[3], 38 * $s, $white );
-		self::text( $im, $size, $pill[0] + 28 * $s, $pill[1] + 38 * $s, $bg, $bold, $label, 'middle' );
-
-		// Naziv: najviše dva reda, font se po potrebi smanji.
-		$y      = $ph + 54 * $s;
-		$max_w  = $w - 2 * $pad;
-		$title  = self::fit_title( $data['title'], $bold, $max_w );
-		$line_h = (int) round( $title['size'] * 1.3 );
-		foreach ( $title['lines'] as $line ) {
-			self::text( $im, $title['size'], $pad, $y, $white, $bold, $line, 'top' );
-			$y += $line_h;
-		}
-		$y += 18 * $s;
-
-		// Podaci u dva stupca: datum, mjesto, trajanje, cijena.
+		// --- Izmjere blokova -------------------------------------------------
+		// Podaci: redovi s dva stupca; podatak koji ne stane u pola širine dobiva cijeli red.
 		$fields = array();
 		foreach ( array( 'date', 'place', 'duration', 'price' ) as $key ) {
 			if ( ! empty( $data['fields'][ $key ] ) ) {
 				$fields[ $key ] = $data['fields'][ $key ];
 			}
 		}
-		$col_w = (int) floor( ( $max_w - 32 * $s ) / 2 );
-		$size  = 21 * $s;
-		$icon  = 50 * $s; // ikona + razmak do teksta
-
-		// Redovi: dva podatka jedan do drugog; podatak koji ne stane u pola širine
-		// (npr. "20. listopada 2026. (i drugi termini)") dobiva cijeli red.
-		$rows    = array();
-		$pending = null;
+		$info_size = $pt( 36 );
+		$icon_px   = $px( 40 );
+		$icon_gap  = $px( 16 );
+		$col_gap   = $px( 40 );
+		$col_w     = (int) floor( ( $cw - $col_gap ) / 2 );
+		$rows      = array();
+		$pending   = null;
 		foreach ( $fields as $key => $value ) {
-			$fits = self::text_box( $size, $regular, $value )['w'] <= $col_w - $icon;
+			$fits = self::text_box( $info_size, $regular, $value )['w'] <= $col_w - $icon_px - $icon_gap;
 			if ( ! $fits ) {
 				if ( $pending ) {
 					$rows[]  = array( $pending );
@@ -330,56 +388,151 @@ final class Plan_A_Izleti_Card {
 		if ( $pending ) {
 			$rows[] = array( $pending );
 		}
-		$row_h = ( count( $rows ) > 2 ? 48 : 54 ) * $s;
-		foreach ( $rows as $r_index => $row ) {
-			$cy = $y + $r_index * $row_h + (int) ( $row_h / 2 );
-			foreach ( $row as $c_index => $item ) {
-				$x     = $pad + $c_index * ( $col_w + 32 * $s );
-				$width = 1 === count( $row ) ? $max_w : $col_w;
-				self::icon( $im, $item[0], $x, $cy, 34 * $s, $white, $bg );
-				self::text( $im, $size, $x + $icon, $cy, $white, $regular, self::ellipsis( $item[1], $size, $regular, $width - $icon ), 'middle' );
+		$row_h    = $px( 44 );
+		$row_gap  = $px( 24 );
+		$info_h   = $rows ? count( $rows ) * $row_h + ( count( $rows ) - 1 ) * $row_gap : 0;
+		$act_d    = $px( 72 );
+		$act_gap  = $px( 16 );
+		$acts_h   = $data['acts'] ? $act_d : 0;
+		$foot_h   = $px( 70 );
+
+		// Razmaci: iznad naziva i između blokova; dno (logotip, adresa) je točno na donjoj margini.
+		// Naziv i fotografija: fotografija preuzima višak, ali ostaje između 700 i 860 px;
+		// ako sadržaja ima previše, naziv se smanjuje (64 → 48 px).
+		$blocks_without_title = $info_h + $acts_h + $foot_h;
+		$count                = 2 + ( $rows ? 1 : 0 ) + ( $acts_h ? 1 : 0 ); // naziv, (podaci), (aktivnosti), dno
+		$target_gap           = $px( 36 );
+		$min_gap              = $px( 20 );
+		foreach ( array( 64, 60, 56, 52, 48 ) as $title_px ) {
+			$title   = self::fit_title( $data['title'], $bold, $cw, $pt( $title_px ) );
+			$title_h = (int) round( count( $title['lines'] ) * $title_px * 1.2 * $s );
+			$content = $title_h + $blocks_without_title;
+			$photo   = $bot - $content - $count * $target_gap;
+			$photo   = max( $px( 700 ), min( $px( 860 ), $photo ) );
+			$gap     = ( $bot - $photo - $content ) / $count;
+			if ( ( $title['fits'] && $gap >= $min_gap ) || 48 === $title_px ) {
+				break;
 			}
 		}
-		$y += count( $rows ) * $row_h + 18 * $s;
+		if ( $gap < $min_gap ) {
+			// Krajnji slučaj (vrlo dug naziv i puno podataka): manja fotografija.
+			$photo = max( $px( 620 ), $bot - $content - $count * $min_gap );
+			$gap   = ( $bot - $photo - $content ) / $count;
+		}
+		$gap = (int) floor( $gap );
 
-		// Ikone aktivnosti u bijelim krugovima.
-		if ( $data['acts'] ) {
-			$d     = 66 * $s;
-			$gap   = 16 * $s;
-			$shown = array_slice( $data['acts'], 0, 6 );
-			$rest  = count( $data['acts'] ) - count( $shown );
-			$x     = $pad;
+		// --- Crtanje ---------------------------------------------------------
+		$im = imagecreatetruecolor( $w, $h );
+		if ( ! $im ) {
+			return false;
+		}
+		imagealphablending( $im, true );
+
+		list( $r, $g, $b ) = self::rgb( $data['color'] );
+		$bg    = imagecolorallocate( $im, $r, $g, $b );
+		$white = imagecolorallocate( $im, 255, 255, 255 );
+		$soft  = imagecolorallocatealpha( $im, 255, 255, 255, 25 );
+		imagefilledrectangle( $im, 0, 0, $w, $h, $bg );
+
+		// Fotografija (cover) ili mekša pozadina ako je nema.
+		$image = self::load_image( (int) $data['image'] );
+		if ( $image ) {
+			imagefilledrectangle( $im, 0, 0, $w, $photo, imagecolorallocate( $im, 241, 241, 241 ) ); // podloga za prozirni PNG
+			self::cover( $im, $image, 0, 0, $w, $photo );
+			imagedestroy( $image );
+		} else {
+			imagefilledrectangle( $im, 0, 0, $w, $photo, imagecolorallocate( $im, min( 255, $r + 40 ), min( 255, $g + 40 ), min( 255, $b + 40 ) ) );
+		}
+
+		// Oznaka "Idemo zajedno?": 60 px od vrha i lijevo, font ~36 px, padding 14 × 28 px.
+		$label   = __( 'Idemo zajedno?', 'plan-a-izleti' );
+		$l_size  = $pt( 36 );
+		$l_box   = self::text_box( $l_size, $bold, $label );
+		$l_text  = self::text_box( $l_size, $bold, 'Idemo zajedno?ĐŽj' ); // visina s kvačicama i silaznim slovima
+		$l_h     = ( $l_text['bottom'] - $l_text['top'] ) + 2 * $px( 14 );
+		$l_x     = $px( 60 );
+		$l_y     = $px( 60 );
+		$l_w     = $l_box['w'] + 2 * $px( 28 );
+		self::rounded( $im, $l_x, $l_y, $l_x + $l_w, $l_y + $l_h, (int) ( $l_h / 2 ), $white );
+		self::text_center( $im, $l_size, $l_x + $l_w / 2, $l_y + $l_h / 2, $bg, $bold, $label );
+
+		$y = $photo + $gap;
+
+		// Naziv.
+		$line_h = (int) round( $title_px * 1.2 * $s );
+		foreach ( $title['lines'] as $i => $line ) {
+			self::text( $im, $title['size'], $m, $y + $i * $line_h + (int) ( $line_h / 2 ), $white, $bold, $line, 'middle' );
+		}
+		$y += $title_h + $gap;
+
+		// Podaci.
+		if ( $rows ) {
+			foreach ( $rows as $r_index => $row ) {
+				$cy = $y + $r_index * ( $row_h + $row_gap ) + (int) ( $row_h / 2 );
+				foreach ( $row as $c_index => $item ) {
+					$x     = $m + $c_index * ( $col_w + $col_gap );
+					$width = 1 === count( $row ) ? $cw : $col_w;
+					self::icon( $im, $item[0], $x, $cy, $icon_px, $white, $bg );
+					$text = self::ellipsis( $item[1], $info_size, $regular, $width - $icon_px - $icon_gap );
+					self::text( $im, $info_size, $x + $icon_px + $icon_gap, $cy, $white, $regular, $text, 'middle' );
+				}
+			}
+			$y += $info_h + $gap;
+		}
+
+		// Ikone aktivnosti u bijelim krugovima (koliko stane u širinu sadržaja).
+		if ( $acts_h ) {
+			$fit   = (int) floor( ( $cw + $act_gap ) / ( $act_d + $act_gap ) );
+			$total = count( $data['acts'] );
+			$shown = $total > $fit ? array_slice( $data['acts'], 0, $fit - 1 ) : $data['acts'];
+			$rest  = $total - count( $shown );
+			$x     = $m;
 			foreach ( $shown as $act ) {
-				self::circle( $im, $x + $d / 2, $y + $d / 2, $d, $white );
-				self::activity( $im, $act, $x + $d / 2, $y + $d / 2, $d, $bg, $bold );
-				$x += $d + $gap;
+				self::circle( $im, $x + $act_d / 2, $y + $act_d / 2, $act_d, $white );
+				self::activity( $im, $act, $x + $act_d / 2, $y + $act_d / 2, $pt( 40 ), $pt( 30 ), $bg, $bold );
+				$x += $act_d + $act_gap;
 			}
 			if ( $rest > 0 ) {
-				self::circle( $im, $x + $d / 2, $y + $d / 2, $d, $white );
-				self::text_center( $im, 20 * $s, $x + $d / 2, $y + $d / 2, $bg, $bold, '+' . $rest );
+				self::circle( $im, $x + $act_d / 2, $y + $act_d / 2, $act_d, $white );
+				self::text_center( $im, $pt( 28 ), $x + $act_d / 2, $y + $act_d / 2, $bg, $bold, '+' . $rest );
 			}
+			$y += $acts_h + $gap;
 		}
 
-		// Dno: logotip (na bijeloj podlozi, da je vidljiv na tamnoj boji) i adresa stranice.
-		$foot_h = 84 * $s;
-		$foot_y = $h - 44 * $s - $foot_h;
-		imageline( $im, $pad, $foot_y - 22 * $s, $w - $pad, $foot_y - 22 * $s, imagecolorallocatealpha( $im, 255, 255, 255, 90 ) );
-		$logo = self::load_image( (int) $data['logo'] );
+		// Dno: crta, logotip (~70 px, na bijeloj podlozi) lijevo i adresa desno, unutar margine.
+		$foot_y = $bot - $foot_h;
+		$line_y = $foot_y - (int) ( $gap / 2 );
+		imagefilledrectangle( $im, $m, $line_y, $w - $m - 1, $line_y + $s - 1, imagecolorallocatealpha( $im, 255, 255, 255, 95 ) );
+		$foot_cy = $foot_y + (int) ( $foot_h / 2 );
+
+		$domain = $data['domain'];
+		$d_size = $pt( 30 );
+		$d_w    = self::text_box( $d_size, $bold, $domain )['w'];
+		while ( $d_w > (int) ( $cw * 0.6 ) && $d_size > $pt( 20 ) ) {
+			$d_size -= $pt( 2 );
+			$d_w     = self::text_box( $d_size, $bold, $domain )['w'];
+		}
+		$domain = self::ellipsis( $domain, $d_size, $bold, (int) ( $cw * 0.6 ) );
+		$d_w    = self::text_box( $d_size, $bold, $domain )['w'];
+		self::text( $im, $d_size, $w - $m - $d_w, $foot_cy, $soft, $bold, $domain, 'middle' );
+
+		$logo_max_w = $cw - $d_w - $px( 40 );
+		$logo       = self::load_image( (int) $data['logo'] );
 		if ( $logo ) {
-			$lh    = 56 * $s;
+			$pad_x = $px( 14 );
+			$pad_y = $px( 9 );
+			$lh    = $foot_h - 2 * $pad_y;
 			$lw    = (int) round( imagesx( $logo ) * $lh / max( 1, imagesy( $logo ) ) );
-			$lw    = min( $lw, 340 * $s );
-			$lh    = (int) round( imagesy( $logo ) * $lw / max( 1, imagesx( $logo ) ) );
-			$inner = 14 * $s;
-			self::rounded( $im, $pad, $foot_y, $pad + $lw + 2 * $inner, $foot_y + $foot_h, 16 * $s, $white );
-			imagecopyresampled( $im, $logo, $pad + $inner, $foot_y + (int) ( ( $foot_h - $lh ) / 2 ), 0, 0, $lw, $lh, imagesx( $logo ), imagesy( $logo ) );
+			if ( $lw + 2 * $pad_x > $logo_max_w ) {
+				$lw = $logo_max_w - 2 * $pad_x;
+				$lh = (int) round( imagesy( $logo ) * $lw / max( 1, imagesx( $logo ) ) );
+			}
+			self::rounded( $im, $m, $foot_y, $m + $lw + 2 * $pad_x, $foot_y + $foot_h, $px( 14 ), $white );
+			imagecopyresampled( $im, $logo, $m + $pad_x, $foot_cy - (int) ( $lh / 2 ), 0, 0, $lw, $lh, imagesx( $logo ), imagesy( $logo ) );
 			imagedestroy( $logo );
 		} else {
-			self::text( $im, 26 * $s, $pad, $foot_y + (int) ( $foot_h / 2 ), $white, $bold, 'Plan A', 'middle' );
+			self::text( $im, $pt( 34 ), $m, $foot_cy, $white, $bold, 'Plan A', 'middle' );
 		}
-		$domain = $data['domain'];
-		$dbox   = self::text_box( 21 * $s, $bold, $domain );
-		self::text( $im, 21 * $s, $w - $pad - $dbox['w'], $foot_y + (int) ( $foot_h / 2 ), $soft, $bold, $domain, 'middle' );
 
 		// Smanjenje na 1080 × 1350 (glatki rubovi).
 		$out = imagecreatetruecolor( self::W, self::H );
@@ -462,6 +615,8 @@ final class Plan_A_Izleti_Card {
 
 	/**
 	 * Tekst s poravnanjem po visini: 'top' (gornji rub velikih slova) ili 'middle'.
+	 * Vodoravno se poravnava po rubu tinte (bez bočnog razmaka prvog znaka), pa tekst
+	 * zauzima točno od $x do $x + širina iz text_box() i ne prelazi marginu.
 	 */
 	private static function text( $im, float $size, int $x, int $y, int $color, string $font, string $text, string $valign ) {
 		$cap = self::text_box( $size, $font, 'HŽ' ); // visina velikih slova (s kvačicom)
@@ -471,7 +626,8 @@ final class Plan_A_Izleti_Card {
 		} else {
 			$base = (int) round( $y - $ref['top'] / 2 );
 		}
-		imagettftext( $im, $size, 0, $x, $base, $color, $font, $text );
+		$left = self::text_box( $size, $font, $text )['left'];
+		imagettftext( $im, $size, 0, $x - $left, $base, $color, $font, $text );
 	}
 
 	private static function text_center( $im, float $size, $cx, $cy, int $color, string $font, string $text ) {
@@ -492,28 +648,27 @@ final class Plan_A_Izleti_Card {
 	}
 
 	/**
-	 * Naziv u najviše dva reda; font se smanjuje od 46 do 34 točke, a ako ni tada
-	 * ne stane, drugi red završava s "…".
+	 * Naziv u najviše dva reda pri zadanoj veličini fonta; što ne stane ni u dva
+	 * reda, završava s "…". Sve se mjeri stvarnom širinom teksta (imagettfbbox).
+	 *
+	 * @return array{size: float, lines: string[], fits: bool}
 	 */
-	private static function fit_title( string $title, string $font, int $max ): array {
+	private static function fit_title( string $title, string $font, int $max, float $size ): array {
 		$words = preg_split( '/\s+/u', trim( $title ) ) ?: array( $title );
-		for ( $pt = 46; $pt >= 34; $pt -= 2 ) {
-			$size  = $pt * self::S;
-			$lines = self::wrap( $words, $size, $font, $max );
-			if ( count( $lines ) <= 2 && self::lines_fit( $lines, $size, $font, $max ) ) {
-				return array(
-					'size'  => $size,
-					'lines' => $lines,
-				);
-			}
-		}
-		$size  = 34 * self::S;
 		$lines = self::wrap( $words, $size, $font, $max );
-		$first = array_shift( $lines );
+		if ( count( $lines ) <= 2 && self::lines_fit( $lines, $size, $font, $max ) ) {
+			return array(
+				'size'  => $size,
+				'lines' => $lines,
+				'fits'  => true,
+			);
+		}
+		$first = (string) array_shift( $lines );
 		$rest  = implode( ' ', $lines );
 		return array(
 			'size'  => $size,
-			'lines' => array_values( array_filter( array( self::ellipsis( (string) $first, $size, $font, $max ), '' !== $rest ? self::ellipsis( $rest, $size, $font, $max ) : '' ) ) ),
+			'lines' => array_values( array_filter( array( self::ellipsis( $first, $size, $font, $max ), '' !== $rest ? self::ellipsis( $rest, $size, $font, $max ) : '' ) ) ),
+			'fits'  => false,
 		);
 	}
 
@@ -550,17 +705,18 @@ final class Plan_A_Izleti_Card {
 	 */
 	private static function icon( $im, string $type, int $x, int $cy, int $size, int $white, int $bg ) {
 		$s  = self::S;
-		$t  = 3 * $s; // debljina crte
+		$t  = max( 2 * $s, (int) round( $size * 0.09 ) ); // debljina crte
 		$ht = intdiv( $t, 2 );
 		$cx = $x + intdiv( $size, 2 );
+		$tk = (int) round( $size * 0.14 ); // kvačice kalendara
 		switch ( $type ) {
 			case 'date':
 				$top = $cy - (int) ( $size * 0.42 );
 				$bot = $cy + (int) ( $size * 0.45 );
-				self::rounded( $im, $x + 2 * $s, $top, $x + $size - 2 * $s, $bot, 5 * $s, $white );
-				self::rounded( $im, $x + 2 * $s + $t, $top + (int) ( $size * 0.30 ), $x + $size - 2 * $s - $t, $bot - $t, 3 * $s, $bg );
-				imagefilledrectangle( $im, $x + (int) ( $size * 0.28 ) - $ht, $top - 5 * $s, $x + (int) ( $size * 0.28 ) + $ht, $top + 5 * $s, $white );
-				imagefilledrectangle( $im, $x + (int) ( $size * 0.72 ) - $ht, $top - 5 * $s, $x + (int) ( $size * 0.72 ) + $ht, $top + 5 * $s, $white );
+				self::rounded( $im, $x + 2 * $s, $top, $x + $size - 2 * $s, $bot, (int) round( $size * 0.15 ), $white );
+				self::rounded( $im, $x + 2 * $s + $t, $top + (int) ( $size * 0.30 ), $x + $size - 2 * $s - $t, $bot - $t, (int) round( $size * 0.08 ), $bg );
+				imagefilledrectangle( $im, $x + (int) ( $size * 0.28 ) - $ht, $top - $tk, $x + (int) ( $size * 0.28 ) + $ht, $top + $tk, $white );
+				imagefilledrectangle( $im, $x + (int) ( $size * 0.72 ) - $ht, $top - $tk, $x + (int) ( $size * 0.72 ) + $ht, $top + $tk, $white );
 				break;
 			case 'place':
 				$r  = (int) ( $size * 0.34 );
@@ -585,7 +741,7 @@ final class Plan_A_Izleti_Card {
 				$d = (int) ( $size * 0.92 );
 				self::circle( $im, $cx, $cy, $d, $white );
 				self::circle( $im, $cx, $cy, $d - 2 * $t, $bg );
-				self::text_center( $im, 13 * $s, $cx, $cy, $white, self::font( 'bold' ), '€' );
+				self::text_center( $im, $size * 0.42, $cx, $cy, $white, self::font( 'bold' ), '€' );
 				break;
 		}
 	}
@@ -593,14 +749,14 @@ final class Plan_A_Izleti_Card {
 	/**
 	 * Ikona aktivnosti iz fonta WpTravellyja; ako je nema, prvo slovo naziva.
 	 */
-	private static function activity( $im, array $act, $cx, $cy, $d, int $color, string $bold ) {
+	private static function activity( $im, array $act, $cx, $cy, float $icon_size, float $letter_size, int $color, string $bold ) {
 		$glyph = self::glyph( (string) $act['icon'] );
 		if ( $glyph ) {
-			self::text_center( $im, $d * 0.30, $cx, $cy, $color, $glyph['font'], $glyph['char'] );
+			self::text_center( $im, $icon_size, $cx, $cy, $color, $glyph['font'], $glyph['char'] );
 			return;
 		}
 		$letter = mb_strtoupper( mb_substr( (string) $act['name'], 0, 1 ) );
-		self::text_center( $im, $d * 0.30, $cx, $cy, $color, $bold, $letter );
+		self::text_center( $im, $letter_size, $cx, $cy, $color, $bold, $letter );
 	}
 
 	/**

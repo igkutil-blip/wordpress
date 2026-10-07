@@ -19,6 +19,8 @@ $plan_a_izleti_cleanup = static function () {
 	// Postavke i slike kartica za "Predloži ekipi".
 	delete_option( 'plan_a_izleti_settings' );
 	delete_option( 'plan_a_izleti_cards' );
+	delete_option( 'plan_a_izleti_cards_layout' );
+	wp_clear_scheduled_hook( 'plan_a_izleti_make_cards' );
 	delete_transient( 'plan_a_izleti_glyphs' );
 	wp_clear_scheduled_hook( 'plan_a_izleti_make_card' );
 	$upload = wp_upload_dir( null, false );
