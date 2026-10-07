@@ -1467,3 +1467,58 @@ body.paka-on.paka-steps-on .checkout-breadcrumbs {
 .paka .paka-empty__box a.paka-btn--secondary {
 	margin-top: 12px;
 }
+
+/* Naplata: polje za kod u sažetku "Tvoja rezervacija" */
+.paka table.paka-review tr.paka-code-row td {
+	padding-top: 10px;
+	padding-bottom: 10px;
+	border-top: 1px solid var(--paka-line);
+	text-align: left;
+}
+
+.paka .paka-code .coupon {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.paka .paka-code #paka_code {
+	flex: 1 1 140px;
+	width: auto;
+	min-width: 0;
+	min-height: 48px;
+	margin: 0;
+	padding: 10px 14px;
+	border: 1px solid #cfd8e3;
+	border-radius: 10px;
+	background: #fff;
+	font-size: 16px;
+	text-transform: uppercase;
+}
+
+.paka .paka-code #paka_code::placeholder {
+	text-transform: none;
+}
+
+.paka .paka-code .paka-btn {
+	min-height: 48px;
+}
+
+.paka .paka-code__msg {
+	margin: 8px 0 0;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.paka .paka-code__msg:empty {
+	display: none;
+}
+
+.paka .paka-code__msg.is-ok {
+	color: #1e7e34;
+}
+
+.paka .paka-code__msg.is-error {
+	color: #c0392b;
+}

@@ -28,11 +28,23 @@ class Plan_A_Bon_Redeem {
 		add_filter( 'woocommerce_coupon_is_valid', array( __CLASS__, 'throttle' ), 5, 2 );
 		add_filter( 'woocommerce_coupon_error', array( __CLASS__, 'messages' ), 20, 3 );
 		add_filter( 'woocommerce_cart_totals_coupon_label', array( __CLASS__, 'label' ), 20, 2 );
+		add_filter( 'woocommerce_coupon_message', array( __CLASS__, 'success' ), 20, 3 );
 
 		// Bon se iskorištava kao WooCommerce kupon: bez uključenih kupona nema polja za kod u
 		// košarici ni na naplati, a kod se ne može primijeniti. Zato su kuponi uvijek uključeni.
 		add_filter( 'woocommerce_coupons_enabled', '__return_true', 99 );
 		add_filter( 'gettext', array( __CLASS__, 'field_texts' ), 20, 3 );
+	}
+
+	/**
+	 * Poruka nakon primjene bona: "Poklon bon PLANA-… je primijenjen."
+	 */
+	public static function success( $msg, $msg_code, $coupon ) {
+		if ( WC_Coupon::WC_COUPON_SUCCESS === (int) $msg_code && $coupon instanceof WC_Coupon && Plan_A_Bon_Voucher::is_voucher( (int) $coupon->get_id() ) ) {
+			/* translators: %s: kod bona */
+			return sprintf( __( 'Poklon bon %s je primijenjen i iznos je umanjen.', 'plan-a-poklon-bon' ), strtoupper( $coupon->get_code() ) );
+		}
+		return $msg;
 	}
 
 	/**
@@ -42,6 +54,7 @@ class Plan_A_Bon_Redeem {
 		static $map = array(
 			'plan-a-kosarica' => array(
 				'Imaš kod za popust?' => 'Imaš poklon bon ili kod za popust?',
+				'Upiši kod'           => 'Kod s bona',
 			),
 			'woocommerce'     => array(
 				'Have a coupon?'                => 'Imaš poklon bon ili kod za popust?',

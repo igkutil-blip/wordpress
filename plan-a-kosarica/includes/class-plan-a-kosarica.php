@@ -39,6 +39,17 @@ final class Plan_A_Kosarica {
 		add_action( 'woocommerce_review_order_before_payment', array( __CLASS__, 'payment_heading' ) );
 		add_filter( 'gettext_woocommerce', array( __CLASS__, 'headings' ), 10, 2 );
 		add_filter( 'woocommerce_checkout_fields', array( __CLASS__, 'order_fields' ), 99 );
+		add_action( 'woocommerce_before_checkout_form', array( __CLASS__, 'coupon_toggle' ), 1 );
+	}
+
+	/**
+	 * Polje za kod na naplati je u sažetku "Tvoja rezervacija" (iznad iznosa za uplatu), pa se
+	 * zadana poveznica "Imate kupon?" na vrhu stranice ne prikazuje.
+	 */
+	public static function coupon_toggle() {
+		if ( self::active_page() ) {
+			remove_action( 'woocommerce_before_checkout_form', 'woocommerce_checkout_coupon_form', 10 );
+		}
 	}
 
 	/**

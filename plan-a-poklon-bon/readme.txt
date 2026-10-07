@@ -1,7 +1,7 @@
 === Plan A poklon bon ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 License: GPLv2 or later
 
 Prodaja poklon bonova za izlete (WooCommerce): stranica za kupnju, PDF bon s QR kodom
@@ -24,6 +24,11 @@ nakon uplate, korištenje kao kupon u košarici i popis bonova u administraciji.
   novog bona, a nijedan kupon ne umanjuje cijenu bona. Ostatak bona (postavka) postaje novi bon.
 * Zaštita: najviše 10 neuspjelih unosa koda u 15 minuta po IP adresi; PDF datoteke u
   zaštićenoj mapi s nasumičnim nazivima, preuzimanje samo uz ključ narudžbe ili za administratora.
+
+== Novo u 1.1.5 ==
+
+* Natpis "Kod s bona" i za novo polje na naplati (Plan A košarica 1.3.0) te poruka
+  "Poklon bon PLANA-… je primijenjen i iznos je umanjen."
 
 == Novo u 1.1.4 ==
 
