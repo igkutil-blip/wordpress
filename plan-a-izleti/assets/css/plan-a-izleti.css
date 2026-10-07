@@ -854,12 +854,6 @@
 	}
 }
 
-/* Na mobitelu gumb u bloku za rezervaciju zauzima punu širinu bloka. */
-@media (max-width: 767px) {
-	.paiz-share-wrap.is-in-booking .paiz-share-btn {
-		width: 100%;
-	}
-}
 
 @media (max-width: 549px) {
 	.paiz-share-wrap.is-beside-booking {
@@ -876,5 +870,27 @@
 	.paiz-share-btn,
 	.paiz .paiz-share-tag {
 		transition: none;
+	}
+}
+
+/* Mobitel (do 767px): gumb u bloku za rezervaciju izgleda kao na računalu, samo manji.
+   Širina prema sadržaju, poravnat lijevo, tanji obrub, 16px do naslova bloka. */
+@media (max-width: 767px) {
+	.paiz-share-wrap.is-in-booking {
+		margin: 0 0 16px;
+		text-align: left;
+	}
+
+	.paiz-share-wrap.is-in-booking a.paiz-share-btn.paiz-share-btn {
+		width: auto;
+		min-height: 40px;
+		padding: 8px 16px;
+		border-width: 1px;
+		font-size: 14px;
+	}
+
+	.paiz-share-wrap.is-in-booking .paiz-share-btn .paiz-wa-icon {
+		width: 18px;
+		height: 18px;
 	}
 }
