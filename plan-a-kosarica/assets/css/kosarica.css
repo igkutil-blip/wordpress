@@ -1,0 +1,1015 @@
+/*
+ * Plan A košarica – izgled košarice i plaćanja.
+ * Boje se mogu promijeniti u Postavke → Plan A košarica (--paka-cta, --paka-accent, --paka-navy).
+ */
+
+:root {
+	--paka-cta: #e8862a;
+	--paka-accent: #1a9ad6;
+	--paka-navy: #12304b;
+}
+
+body.paka-on {
+	background-color: #f3f6f9;
+}
+
+body.paka-on #main,
+body.paka-on #content,
+body.paka-on .site-content {
+	background-color: transparent;
+}
+
+/* Naslovi teme i koraci Flatsomea (koraci su u ovom dodatku). */
+body.paka-on .entry-header > .entry-title,
+body.paka-on.paka-steps-on .checkout-page-title,
+body.paka-on.paka-steps-on .checkout-breadcrumbs {
+	display: none;
+}
+
+.paka {
+	--paka-text: #24323f;
+	--paka-muted: #5f6b77;
+	--paka-line: #e3e8ee;
+	--paka-soft: #e8f4fb;
+	--paka-radius: 16px;
+	box-sizing: border-box;
+	container-type: inline-size; /* raspored prema širini sadržaja, ne ekrana */
+	width: 100%;
+	max-width: 1120px;
+	margin: 0 auto;
+	padding: 8px 0 32px;
+	color: var(--paka-text);
+	font-size: 16px;
+	line-height: 1.45;
+}
+
+.paka *,
+.paka *::before,
+.paka *::after {
+	box-sizing: border-box;
+}
+
+.paka .paka-hidden {
+	display: none !important;
+}
+
+.paka a {
+	color: var(--paka-accent);
+}
+
+.paka .paka-icon {
+	flex: none;
+	vertical-align: middle;
+}
+
+/* Koraci */
+.paka .paka-steps {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0 0 24px;
+	padding: 0;
+	list-style: none;
+	counter-reset: none;
+}
+
+.paka .paka-step {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+}
+
+.paka .paka-step:not(:last-child)::after {
+	content: "";
+	flex: 1 1 auto;
+	min-width: 12px;
+	height: 2px;
+	background: var(--paka-line);
+}
+
+.paka .paka-step:last-child {
+	flex: 0 0 auto;
+}
+
+.paka .paka-step a {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	color: var(--paka-muted);
+	font-weight: 500;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.paka .paka-step__num {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: #c7cfd8;
+	color: #fff;
+	font-weight: 700;
+}
+
+.paka .paka-step.is-current a {
+	color: var(--paka-navy);
+	font-weight: 700;
+}
+
+.paka .paka-step.is-current .paka-step__num {
+	background: var(--paka-accent);
+}
+
+.paka .paka-step.is-done .paka-step__num {
+	background: #fff;
+	box-shadow: inset 0 0 0 2px var(--paka-accent);
+	color: var(--paka-accent);
+}
+
+/* Naslov stranice */
+.paka .paka-head {
+	margin: 0 0 20px;
+}
+
+.paka .paka-title {
+	margin: 0 0 6px;
+	color: var(--paka-navy);
+	font-size: clamp(28px, 6vw, 40px);
+	font-weight: 800;
+	line-height: 1.15;
+	letter-spacing: -0.01em;
+}
+
+.paka .paka-subtitle {
+	margin: 0;
+	color: var(--paka-muted);
+	font-size: 17px;
+}
+
+.paka .paka-back {
+	margin: 0 0 10px;
+}
+
+.paka .paka-back a,
+.paka .paka-more a {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+/* Raspored: na računalu sadržaj lijevo, sažetak desno */
+.paka .paka-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 20px;
+}
+
+@container (min-width: 860px) {
+	.paka .paka-layout {
+		grid-template-columns: minmax(0, 1fr) 380px;
+		align-items: start;
+		gap: 28px;
+	}
+
+	.paka .paka-side {
+		position: sticky;
+		top: 24px;
+	}
+}
+
+/* WooCommerce (woocommerce-layout.css) i teme pomiču ove dijelove float/width pravilima. */
+.paka .cart-collaterals,
+.paka .cart-collaterals .cart_totals,
+.paka .cart-collaterals .cross-sells,
+.paka #order_review,
+.paka #order_review_heading,
+.paka .woocommerce-checkout-review-order {
+	float: none;
+	width: 100%;
+	max-width: none;
+	margin-left: 0;
+	margin-right: 0;
+}
+
+/* Kartice */
+.paka .paka-card {
+	margin: 0 0 20px;
+	padding: 24px;
+	border: 1px solid #edf1f5;
+	border-radius: var(--paka-radius);
+	background: #fff;
+	box-shadow: 0 4px 18px rgba(18, 48, 75, 0.06);
+}
+
+.paka .paka-h2,
+.paka .paka-card h3,
+.paka .woocommerce-billing-fields > h3,
+.paka .woocommerce-additional-fields > h3,
+.paka .woocommerce-shipping-fields h3 {
+	margin: 0 0 16px;
+	padding: 0;
+	color: var(--paka-navy);
+	font-size: 22px;
+	font-weight: 800;
+	line-height: 1.25;
+	text-transform: none;
+	letter-spacing: normal;
+}
+
+/* Stavka košarice */
+.paka .paka-item {
+	padding: 20px;
+}
+
+.paka .paka-item__top {
+	display: grid;
+	grid-template-columns: minmax(96px, 40%) minmax(0, 1fr) auto;
+	gap: 16px;
+	align-items: start;
+}
+
+.paka .paka-item__media img,
+.paka .paka-item__media .paka-item__img {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 1 / 0.93;
+	object-fit: cover;
+	border-radius: 12px;
+}
+
+.paka .paka-item__media .bg_image_area,
+.paka .paka-item__media [data-bg-image] {
+	width: 100%;
+	min-height: 96px;
+	border-radius: 12px;
+	background-size: cover;
+	background-position: center;
+}
+
+.paka .paka-item__title {
+	margin: 0 0 10px;
+	color: var(--paka-navy);
+	font-size: 22px;
+	font-weight: 800;
+	line-height: 1.2;
+	overflow-wrap: anywhere;
+}
+
+.paka .paka-item__title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.paka .paka-meta {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.paka .paka-meta li {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0 0 8px;
+	padding: 0;
+	color: var(--paka-text);
+	font-size: 16px;
+}
+
+.paka .paka-meta li .paka-icon {
+	color: var(--paka-muted);
+}
+
+.paka .paka-item__remove a.remove {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	margin: -10px -10px 0 0;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--paka-muted) !important;
+	font-size: inherit;
+	text-decoration: none;
+}
+
+.paka .paka-item__remove a.remove:hover,
+.paka .paka-item__remove a.remove:focus-visible {
+	background: #fdecea;
+	color: #c0392b !important;
+}
+
+.paka .paka-item__remove a.remove .paka-icon {
+	width: 26px;
+	height: 26px;
+}
+
+.paka .paka-item__rows {
+	margin-top: 18px;
+	border-top: 1px solid var(--paka-line);
+}
+
+.paka .paka-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	min-height: 52px;
+	padding: 8px 0;
+}
+
+.paka .paka-row__label {
+	color: var(--paka-text);
+	font-size: 17px;
+}
+
+.paka .paka-row__label small {
+	color: var(--paka-muted);
+	font-size: 14px;
+}
+
+.paka .paka-row__value {
+	color: var(--paka-navy);
+	font-size: 19px;
+	font-weight: 800;
+	white-space: nowrap;
+}
+
+.paka .paka-row--total {
+	border-top: 1px solid var(--paka-line);
+}
+
+.paka .paka-rows-title {
+	margin: 14px 0 0;
+	color: var(--paka-muted);
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.paka .paka-pill {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 72px;
+	height: 40px;
+	padding: 0 16px;
+	border-radius: 999px;
+	background: var(--paka-soft);
+	color: var(--paka-navy);
+	font-size: 18px;
+	font-weight: 800;
+}
+
+.paka .paka-item__data,
+.paka .paka-addons {
+	margin: 8px 0 0;
+	color: var(--paka-muted);
+	font-size: 15px;
+}
+
+.paka .paka-item__data dl.variation {
+	margin: 0;
+}
+
+.paka .paka-item__data dl.variation dt,
+.paka .paka-item__data dl.variation dd {
+	float: none;
+	display: inline;
+	margin: 0;
+	padding: 0;
+}
+
+.paka .paka-item__data dl.variation dd p {
+	display: inline;
+	margin: 0;
+}
+
+.paka .product-quantity .quantity .qty {
+	width: 84px;
+	min-height: 44px;
+	border: 1px solid #cfd8e3;
+	border-radius: 999px;
+	background: var(--paka-soft);
+	text-align: center;
+	font-weight: 700;
+}
+
+/* Kupon i "Ažuriraj košaricu" */
+.paka .paka-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+	margin: 0 0 20px;
+	padding: 0;
+	border: 0;
+	background: none;
+}
+
+.paka .paka-actions--no-qty .paka-update {
+	display: none;
+}
+
+.paka .paka-coupon {
+	flex: 1 1 280px;
+}
+
+.paka .paka-coupon summary {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	color: var(--paka-accent);
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.paka .paka-coupon .coupon {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 8px;
+	float: none;
+}
+
+.paka .paka-coupon #coupon_code {
+	flex: 1 1 160px;
+	width: auto;
+	min-height: 48px;
+	margin: 0;
+	padding: 10px 14px;
+	border: 1px solid #cfd8e3;
+	border-radius: 10px;
+	background: #fff;
+	font-size: 16px;
+}
+
+.paka .paka-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	min-height: 48px;
+	margin: 0;
+	padding: 10px 20px;
+	border: 2px solid transparent;
+	border-radius: 10px;
+	font-family: inherit;
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: normal;
+	text-decoration: none;
+	text-transform: none;
+	cursor: pointer;
+}
+
+.paka .paka-btn--ghost,
+.paka button.paka-btn--ghost {
+	border-color: var(--paka-accent) !important;
+	background-color: #fff !important;
+	color: var(--paka-accent) !important;
+}
+
+.paka .paka-btn--ghost:disabled,
+.paka .paka-btn--ghost[disabled] {
+	opacity: 0.5;
+	cursor: default;
+}
+
+/* Glavni gumb (!important za boje: teme često jako stiliziraju .button i .alt) */
+.paka a.checkout-button.paka-btn--cta,
+.paka .wc-proceed-to-checkout a.checkout-button,
+.paka #place_order {
+	border-color: var(--paka-cta) !important;
+	background-color: var(--paka-cta) !important;
+	color: #fff !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	width: 100%;
+	min-height: 60px;
+	margin: 0;
+	padding: 14px 20px;
+	border-width: 0;
+	border-radius: 12px;
+	box-shadow: 0 6px 16px rgba(232, 134, 42, 0.28);
+	font-family: inherit;
+	font-size: 20px;
+	font-weight: 800;
+	line-height: 1.2;
+	letter-spacing: normal;
+	text-decoration: none;
+	text-transform: none;
+	cursor: pointer;
+	transition: filter 0.15s, transform 0.15s;
+}
+
+.paka a.checkout-button.paka-btn--cta:hover,
+.paka #place_order:hover {
+	color: #fff;
+	filter: brightness(0.95);
+}
+
+.paka a.checkout-button:focus-visible,
+.paka #place_order:focus-visible,
+.paka .paka-btn:focus-visible,
+.paka a:focus-visible,
+.paka summary:focus-visible {
+	outline: 3px solid var(--paka-accent);
+	outline-offset: 3px;
+}
+
+.paka .wc-proceed-to-checkout {
+	margin: 20px 0 0;
+	padding: 0;
+}
+
+/* Sažetak (košarica) i pregled (plaćanje) */
+.paka table.paka-sum,
+.paka table.paka-review {
+	width: 100%;
+	margin: 0;
+	border: 0;
+	border-collapse: collapse;
+}
+
+.paka table.paka-review {
+	display: table;
+	border: 1px solid #edf1f5;
+	border-collapse: separate;
+	border-spacing: 0;
+	overflow: hidden;
+}
+
+.paka table.paka-sum th,
+.paka table.paka-sum td,
+.paka table.paka-review th,
+.paka table.paka-review td {
+	padding: 8px 0;
+	border: 0;
+	background: none;
+	color: var(--paka-text);
+	font-size: 16px;
+	font-weight: 400;
+	text-align: left;
+	vertical-align: middle;
+}
+
+.paka table.paka-sum td,
+.paka table.paka-review tfoot td,
+.paka table.paka-review .paka-sum-line td {
+	text-align: right;
+	white-space: nowrap;
+}
+
+.paka table.paka-review {
+	padding: 20px 24px;
+}
+
+.paka table.paka-review .paka-review-item td {
+	padding: 0 0 12px;
+}
+
+.paka table.paka-review .paka-item__top {
+	grid-template-columns: 120px minmax(0, 1fr);
+	gap: 16px;
+}
+
+.paka table.paka-review .paka-item__title {
+	font-size: 20px;
+}
+
+.paka table.paka-review .paka-meta li {
+	font-size: 15px;
+	margin-bottom: 6px;
+}
+
+.paka table.paka-review tbody tr.paka-sum-line:first-of-type th,
+.paka table.paka-review tbody tr.paka-review-item + tr.paka-sum-line th,
+.paka table.paka-review tbody tr.paka-review-item + tr.paka-sum-line td {
+	padding-top: 14px;
+	border-top: 1px solid var(--paka-line);
+}
+
+.paka table.paka-sum .paka-sum-item th {
+	padding-top: 12px;
+	color: var(--paka-navy);
+	font-weight: 700;
+}
+
+.paka table.paka-sum tr.order-total th,
+.paka table.paka-sum tr.order-total td,
+.paka table.paka-review tr.order-total th,
+.paka table.paka-review tr.order-total td {
+	padding-top: 16px;
+	border-top: 2px solid var(--paka-line);
+	color: var(--paka-navy);
+	font-size: 20px;
+	font-weight: 800;
+}
+
+.paka table.paka-sum tr.order-total td,
+.paka table.paka-review tr.order-total td {
+	font-size: 26px;
+}
+
+.paka table.paka-review tr.order-total th,
+.paka table.paka-review tr.order-total td {
+	padding: 16px 12px;
+	border-top: 0;
+	background: var(--paka-soft);
+}
+
+.paka table.paka-review tr.order-total th {
+	border-radius: 10px 0 0 10px;
+}
+
+.paka table.paka-review tr.order-total td {
+	border-radius: 0 10px 10px 0;
+}
+
+.paka tr.order-total small.includes_tax {
+	display: block;
+	color: var(--paka-muted);
+	font-size: 13px;
+	font-weight: 400;
+}
+
+.paka .woocommerce-remove-coupon {
+	margin-left: 6px;
+	font-size: 14px;
+}
+
+/* Poveznice ispod sažetka */
+.paka .paka-links {
+	margin: 4px 0 0;
+	text-align: center;
+}
+
+.paka .paka-more {
+	margin: 0 0 18px;
+	font-size: 18px;
+}
+
+.paka .paka-help {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	color: var(--paka-muted);
+}
+
+.paka .paka-help a {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	color: #1e9e4a;
+	font-size: 18px;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.paka .paka-help .paka-icon--wa {
+	width: 30px;
+	height: 30px;
+	color: #25d366;
+}
+
+/* Plaćanje: polja */
+.paka .paka-customer {
+	display: block;
+	width: auto;
+	margin: 0;
+}
+
+.paka .paka-customer .col-1,
+.paka .paka-customer .col-2 {
+	float: none;
+	width: auto;
+	max-width: none;
+}
+
+.paka .paka-card--more:not(:has(.form-row)):not(:has(input)) {
+	display: none;
+}
+
+.paka form.checkout .form-row {
+	display: block;
+	width: 100%;
+	margin: 0 0 14px;
+	padding: 0;
+	float: none;
+}
+
+@media (min-width: 600px) {
+	.paka form.checkout .woocommerce-billing-fields__field-wrapper,
+	.paka form.checkout .woocommerce-shipping-fields__field-wrapper {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		column-gap: 16px;
+	}
+
+	.paka form.checkout .form-row-wide,
+	.paka form.checkout .form-row.notes,
+	.paka form.checkout .form-row:not(.form-row-first):not(.form-row-last) {
+		grid-column: 1 / -1;
+	}
+}
+
+.paka form.checkout .form-row label {
+	display: block;
+	margin: 0 0 6px;
+	color: var(--paka-navy);
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1.3;
+}
+
+.paka form.checkout .form-row label.checkbox,
+.paka form.checkout .form-row label.woocommerce-form__label-for-checkbox {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	font-weight: 500;
+}
+
+.paka form.checkout .form-row .required {
+	color: #c0392b;
+	text-decoration: none;
+}
+
+.paka form.checkout .form-row .optional {
+	color: var(--paka-muted);
+	font-weight: 400;
+}
+
+.paka form.checkout .input-text,
+.paka form.checkout select,
+.paka form.checkout textarea,
+.paka form.checkout .select2-container .select2-selection--single {
+	width: 100%;
+	min-height: 50px;
+	margin: 0;
+	padding: 12px 14px;
+	border: 1px solid #cfd8e3;
+	border-radius: 10px;
+	background: #fff;
+	box-shadow: none;
+	color: var(--paka-text);
+	font-size: 16px; /* bez zumiranja na iPhoneu */
+	line-height: 1.3;
+}
+
+.paka form.checkout textarea {
+	min-height: 110px;
+}
+
+.paka form.checkout .select2-container .select2-selection--single {
+	display: flex;
+	align-items: center;
+	height: 50px;
+	padding: 0 8px;
+}
+
+.paka form.checkout .select2-container .select2-selection--single .select2-selection__arrow {
+	top: 12px;
+	right: 8px;
+}
+
+.paka form.checkout .input-text:focus,
+.paka form.checkout select:focus,
+.paka form.checkout textarea:focus {
+	border-color: var(--paka-accent);
+	outline: 3px solid rgba(26, 154, 214, 0.2);
+	outline-offset: 0;
+}
+
+.paka form.checkout .woocommerce-invalid .input-text,
+.paka form.checkout .woocommerce-invalid select {
+	border-color: #c0392b;
+}
+
+/* Plaćanje: "Tvoja rezervacija" i "Način plaćanja" – naslov je vrh kartice */
+.paka .paka-review-heading {
+	margin: 0;
+	padding: 24px 24px 4px;
+	border: 1px solid #edf1f5;
+	border-bottom: 0;
+	border-radius: var(--paka-radius) var(--paka-radius) 0 0;
+	background: #fff;
+}
+
+.paka .paka-review-heading + table.paka-review,
+.paka #order_review > table.paka-review {
+	border-top: 0;
+	border-radius: 0 0 var(--paka-radius) var(--paka-radius);
+}
+
+.paka .paka-pay-heading {
+	margin: 0;
+	padding: 24px 24px 0;
+	border: 1px solid #edf1f5;
+	border-bottom: 0;
+	border-radius: var(--paka-radius) var(--paka-radius) 0 0;
+	background: #fff;
+}
+
+.paka #payment {
+	margin: 0 0 20px;
+	padding: 16px 24px 24px;
+	border: 1px solid #edf1f5;
+	border-top: 0;
+	border-radius: 0 0 var(--paka-radius) var(--paka-radius);
+	background: #fff;
+	box-shadow: 0 4px 18px rgba(18, 48, 75, 0.06);
+}
+
+.paka #payment ul.payment_methods {
+	margin: 0 0 16px;
+	padding: 0;
+	border: 0;
+	list-style: none;
+}
+
+.paka #payment ul.payment_methods li {
+	margin: 0 0 10px;
+	padding: 12px 14px;
+	border: 1px solid var(--paka-line);
+	border-radius: 12px;
+	background: #fff;
+	line-height: 1.4;
+}
+
+.paka #payment ul.payment_methods li:has(input:checked) {
+	border-color: var(--paka-accent);
+	box-shadow: inset 0 0 0 1px var(--paka-accent);
+}
+
+.paka #payment ul.payment_methods li > label {
+	display: inline;
+	color: var(--paka-navy);
+	font-size: 18px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.paka #payment ul.payment_methods li input[type="radio"] {
+	width: 20px;
+	height: 20px;
+	margin: 0 10px 0 0;
+	vertical-align: -3px;
+	accent-color: var(--paka-accent);
+}
+
+.paka #payment div.payment_box {
+	margin: 12px 0 0;
+	padding: 14px 16px;
+	border-radius: 10px;
+	background: var(--paka-soft);
+	color: var(--paka-text);
+	font-size: 15px;
+}
+
+.paka #payment div.payment_box::before {
+	display: none;
+}
+
+.paka #payment div.payment_box p:last-child {
+	margin-bottom: 0;
+}
+
+.paka #payment .place-order {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+}
+
+.paka #payment .woocommerce-privacy-policy-text,
+.paka #payment .woocommerce-terms-and-conditions-wrapper {
+	margin: 0 0 14px;
+	color: var(--paka-muted);
+	font-size: 14px;
+}
+
+.paka #payment .woocommerce-privacy-policy-text p {
+	margin: 0;
+}
+
+/* Obavijesti i kupon na plaćanju */
+.paka .woocommerce-form-coupon-toggle .woocommerce-info,
+.paka .woocommerce-notices-wrapper .woocommerce-message,
+.paka .woocommerce-notices-wrapper .woocommerce-info,
+.paka .woocommerce-NoticeGroup .woocommerce-error {
+	border-radius: 12px;
+}
+
+.paka form.checkout_coupon {
+	margin: 0 0 20px;
+	padding: 16px 20px;
+	border: 1px solid #edf1f5;
+	border-radius: var(--paka-radius);
+	background: #fff;
+}
+
+/* Mobitel */
+@media (max-width: 599px) {
+	.paka {
+		padding-top: 4px;
+	}
+
+	.paka .paka-steps {
+		gap: 6px;
+	}
+
+	.paka .paka-step,
+	.paka .paka-step a {
+		gap: 6px;
+	}
+
+	.paka .paka-step__num {
+		width: 32px;
+		height: 32px;
+	}
+
+	.paka .paka-step__label {
+		font-size: 15px;
+	}
+
+	.paka .paka-card,
+	.paka .paka-item {
+		padding: 16px;
+		border-radius: 14px;
+	}
+
+	.paka .paka-item__top {
+		grid-template-columns: 40% minmax(0, 1fr) auto;
+		gap: 12px;
+	}
+
+	.paka .paka-item__title {
+		font-size: 19px;
+	}
+
+	.paka .paka-meta li {
+		font-size: 15px;
+	}
+
+	.paka .paka-row__label {
+		font-size: 16px;
+	}
+
+	.paka table.paka-review {
+		padding: 16px;
+	}
+
+	.paka table.paka-review .paka-item__top {
+		grid-template-columns: 96px minmax(0, 1fr);
+	}
+
+	.paka .paka-pay-heading {
+		padding: 16px 16px 0;
+	}
+
+	.paka #payment {
+		padding: 12px 16px 16px;
+	}
+}
+
+/* Vrlo uski ekrani: oznake koraka ispod brojeva */
+@media (max-width: 380px) {
+	.paka .paka-step a {
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.paka .paka-step__label {
+		font-size: 13px;
+	}
+
+	.paka .paka-item__top {
+		grid-template-columns: 34% minmax(0, 1fr) auto;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.paka a.checkout-button,
+	.paka #place_order {
+		transition: none;
+	}
+}
