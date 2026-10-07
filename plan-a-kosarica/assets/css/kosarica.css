@@ -1512,19 +1512,26 @@ body.paka-on.paka-steps-on .checkout-breadcrumbs {
 }
 
 .paka .paka-gift-code__row {
-	display: flex;
-	flex-wrap: nowrap;
+	display: grid !important;
+	grid-template-columns: minmax(0, 1fr) auto;
 	gap: 8px;
+	align-items: stretch;
+	width: 100%;
 	margin: 0;
+	padding: 0;
 	float: none;
 }
 
+/* !important: tema (npr. Flatsome) gumbima i poljima u sažetku košarice zadaje punu širinu */
 .paka .paka-gift-code #paka_code {
-	flex: 1 1 0;
-	width: 0; /* u tablici sažetka polje se ne smije širiti preko ekrana */
-	min-width: 0;
+	display: block !important;
+	box-sizing: border-box;
+	width: 100% !important;
+	min-width: 0 !important;
+	max-width: none !important;
+	height: auto;
 	min-height: 48px;
-	margin: 0;
+	margin: 0 !important;
 	padding: 10px 14px;
 	border: 1px solid #b9cbdc;
 	border-radius: 10px;
@@ -1547,13 +1554,26 @@ body.paka-on.paka-steps-on .checkout-breadcrumbs {
 }
 
 .paka .paka-gift-code .paka-gift-code__btn {
-	flex: 0 0 auto;
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: auto !important;
+	min-width: 0 !important;
+	max-width: none !important;
 	min-height: 48px;
-	padding: 10px 18px;
+	margin: 0 !important;
+	padding: 10px 18px !important;
 	border: 0 !important;
 	border-radius: 10px;
 	background-color: var(--paka-accent) !important;
 	color: #fff !important;
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: normal;
+	text-transform: none;
+	white-space: nowrap;
 }
 
 .paka .paka-gift-code .paka-gift-code__btn:disabled {

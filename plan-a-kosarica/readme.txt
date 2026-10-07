@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -27,7 +27,8 @@ Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-ma
 * polje za kod (1.4.0): istaknuti okvir "Imaš kod za popust?" s uputom, poljem i gumbom
   "Iskoristi" u sažetku košarice i u "Tvoja rezervacija" na naplati, odmah iznad "Ukupno za
   uplatu"; kod se primjenjuje bez slanja obrasca, poruka je ispod polja; zadana poveznica
-  "Imate kupon?" na vrhu naplate i staro polje ispod stavki košarice se ne prikazuju,
+  "Imate kupon?" na vrhu naplate i staro polje ispod stavki košarice se ne prikazuju;
+  polje i gumb uvijek u istom redu unutar okvira i uz stilove teme (1.4.1),
 * plaćanje: gumb "Povratak u košaricu", kraći tekst u polju napomena, kartice "Podaci kupca" i "Napomena", "Tvoja rezervacija"
   (slika, mjesto, datum, sudionici, retci cijene, ukupno) i "Način plaćanja",
 * na računalu dva stupca (sadržaj i sažetak), na mobitelu jedan; prilagođava se širini
