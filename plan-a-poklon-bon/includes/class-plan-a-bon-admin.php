@@ -62,7 +62,8 @@ class Plan_A_Bon_Admin {
 			. '.papb-admin td small,.papb-box small{color:#646970}.papb-admin .papb-search{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}'
 			. '.papb-admin .button.papb-paid,.papb-box .button.papb-paid{display:inline-flex;align-items:center;min-height:40px;padding:4px 16px;font-size:14px;font-weight:600;background:#1e7e34;border-color:#1e7e34;color:#fff}'
 			. '.papb-admin .button.papb-paid:hover,.papb-box .button.papb-paid:hover{background:#176a2b;border-color:#176a2b;color:#fff}'
-			. '.papb-admin .papb-actions{display:flex;flex-wrap:wrap;gap:4px 10px}.papb-admin .papb-history{margin:4px 0 0;padding-left:16px;list-style:disc}'
+			. '.papb-admin .papb-actions{display:flex;flex-wrap:wrap;gap:4px 10px}.papb-admin .papb-history{margin:4px 0 0;padding-left:18px;list-style:disc}.papb-admin .papb-history li{margin:2px 0}'
+			. '.papb-admin .papb-issued tr.papb-row td{border-top:1px solid #dcdcde}.papb-admin .papb-issued tr.papb-history-row td{padding-top:0;color:#50575e}'
 			. '.papb-box .papb-box__item{margin:0 0 10px;padding:0 0 10px;border-bottom:1px solid #f0f0f1}.papb-box .papb-box__item:last-child{border:0;margin:0;padding:0}'
 		);
 	}
@@ -352,25 +353,58 @@ class Plan_A_Bon_Admin {
 	}
 
 	/**
-	 * Povijest korištenja kao redovi teksta.
+	 * Povijest korištenja: datum, narudžba, iskorišteni iznos i novi kod s ostatkom.
+	 * S $html = true broj narudžbe je poveznica (escapano ovdje), inače običan tekst (CSV).
 	 *
 	 * @return string[]
 	 */
-	private static function history_lines( array $v ): array {
+	private static function history_lines( array $v, bool $html = false ): array {
+		$esc   = static function ( $text ) use ( $html ) {
+			return $html ? esc_html( $text ) : $text;
+		};
 		$lines = array();
 		foreach ( Plan_A_Bon_Voucher::history( $v['id'] ) as $entry ) {
-			$order = wc_get_order( (int) ( $entry['order'] ?? 0 ) );
-			$line  = wp_date( 'j.n.Y.', (int) $entry['date'] ) . ' · narudžba #' . ( $order ? $order->get_order_number() : (int) $entry['order'] ) . ' · iskorišteno ' . Plan_A_Bon_Voucher::money( (float) $entry['used'] );
+			$order  = wc_get_order( (int) ( $entry['order'] ?? 0 ) );
+			$number = '#' . ( $order ? $order->get_order_number() : (int) $entry['order'] );
+			$ref    = $html && $order ? '<a href="' . esc_url( $order->get_edit_order_url() ) . '">narudžba ' . esc_html( $number ) . '</a>' : $esc( 'narudžba ' . $number );
+			$line   = $esc( wp_date( 'j.n.Y.', (int) $entry['date'] ) ) . ' · ' . $ref . ' · ' . $esc( 'iskorišteno ' . Plan_A_Bon_Voucher::money( (float) $entry['used'] ) );
 			if ( ! empty( $entry['new'] ) ) {
 				$new   = Plan_A_Bon_Voucher::get( (int) $entry['new'] );
-				$line .= ' · ostatak ' . Plan_A_Bon_Voucher::money( (float) $entry['rest'] ) . ' → ' . ( $new ? $new['code'] : '' );
+				$code  = $new ? $new['code'] : '';
+				$line .= $esc( ' · ostatak ' . Plan_A_Bon_Voucher::money( (float) $entry['rest'] ) . ' → novi kod ' ) . ( $html ? '<strong>' . esc_html( $code ) . '</strong>' : $code );
 			} elseif ( ! empty( $entry['lost'] ) ) {
-				$line .= ' · ostatak ' . Plan_A_Bon_Voucher::money( (float) $entry['rest'] ) . ' propao';
+				$line .= $esc( ' · ostatak ' . Plan_A_Bon_Voucher::money( (float) $entry['rest'] ) . ' propao' );
 			}
 			$lines[] = $line;
 		}
 		if ( ! $lines && 'iskoristen' === $v['status'] ) {
-			$lines[] = 'Primijenjen u narudžbi koja još čeka uplatu.';
+			// Bonovi iskorišteni prije inačice 1.1.0: narudžba je zapisana kao "_papb_rest_{ID bona}".
+			$orders = wc_get_orders(
+				array(
+					'limit'      => 1,
+					'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						array(
+							'key'     => '_papb_rest_' . $v['id'],
+							'compare' => 'EXISTS',
+						),
+					),
+				)
+			);
+			$order = $orders ? $orders[0] : null;
+			if ( $order instanceof WC_Order ) {
+				$rest    = (float) $order->get_meta( '_papb_rest_' . $v['id'] );
+				$date    = $order->get_date_paid() ? $order->get_date_paid() : $order->get_date_created();
+				$number  = '#' . $order->get_order_number();
+				$ref     = $html ? '<a href="' . esc_url( $order->get_edit_order_url() ) . '">narudžba ' . esc_html( $number ) . '</a>' : 'narudžba ' . $number;
+				$line    = $esc( $date ? wp_date( 'j.n.Y.', $date->getTimestamp() ) : '' ) . ' · ' . $ref . ' · ' . $esc( 'iskorišteno ' . Plan_A_Bon_Voucher::money( max( 0, $v['amount'] - $rest ) ) );
+				$child   = $v['child'] ? Plan_A_Bon_Voucher::get( $v['child'] ) : array();
+				if ( $child ) {
+					$line .= $esc( ' · ostatak ' . Plan_A_Bon_Voucher::money( $rest ) . ' → novi kod ' ) . ( $html ? '<strong>' . esc_html( $child['code'] ) . '</strong>' : $child['code'] );
+				}
+				$lines[] = $line;
+			} else {
+				$lines[] = $esc( 'primijenjen u narudžbi koja još čeka uplatu' );
+			}
 		}
 		return $lines;
 	}
@@ -398,7 +432,7 @@ class Plan_A_Bon_Admin {
 			<span class="description" style="align-self:center;"><?php echo esc_html( $total . ' ' . ( 1 === $total % 10 && 11 !== $total % 100 ? 'bon' : 'bonova' ) ); ?></span>
 		</form>
 
-		<table class="widefat striped">
+		<table class="widefat papb-issued">
 			<thead>
 				<tr><th>Kod</th><th>Iznos</th><th>Ostatak</th><th>Za koga</th><th>Od koga</th><th>Kupac</th><th>Status</th><th>Vrijedi do</th><th>Radnje</th></tr>
 			</thead>
@@ -413,9 +447,9 @@ class Plan_A_Bon_Admin {
 					continue;
 				}
 				$order   = $v['order'] ? wc_get_order( $v['order'] ) : false;
-				$history = self::history_lines( $v );
+				$history = self::history_lines( $v, true );
 				?>
-				<tr>
+				<tr class="papb-row">
 					<td><code class="papb-code"><?php echo esc_html( $v['code'] ); ?></code>
 						<br><small>izdan <?php echo esc_html( $v['issued'] ? wp_date( 'j.n.Y.', $v['issued'] ) : '' ); ?><?php echo $v['parent'] ? ' · ostatak bona' : ''; ?></small>
 					</td>
@@ -451,18 +485,21 @@ class Plan_A_Bon_Admin {
 								<button type="submit" class="button button-small">Pošalji</button>
 							</form>
 						</details>
-						<details>
-							<summary>Povijest korištenja<?php echo $history ? ' (' . esc_html( (string) count( $history ) ) . ')' : ''; ?></summary>
-							<?php if ( $history ) : ?>
-								<ul class="papb-history">
-									<?php foreach ( $history as $line ) : ?>
-										<li><?php echo esc_html( $line ); ?></li>
-									<?php endforeach; ?>
-								</ul>
-							<?php else : ?>
-								<p><small>Bon još nije korišten.</small></p>
-							<?php endif; ?>
-						</details>
+					</td>
+				</tr>
+				<tr class="papb-history-row">
+					<td></td>
+					<td colspan="8">
+						<strong>Povijest korištenja:</strong>
+						<?php if ( $history ) : ?>
+							<ul class="papb-history">
+								<?php foreach ( $history as $entry ) : ?>
+									<li><?php echo wp_kses( $entry, array( 'a' => array( 'href' => array() ), 'strong' => array() ) ); ?></li>
+								<?php endforeach; ?>
+							</ul>
+						<?php else : ?>
+							<small>bon još nije korišten.</small>
+						<?php endif; ?>
 					</td>
 				</tr>
 			<?php endforeach; ?>
