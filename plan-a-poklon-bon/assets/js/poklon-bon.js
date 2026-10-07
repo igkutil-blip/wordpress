@@ -45,6 +45,7 @@
 				var input = form.querySelector( '[data-papb-input="' + name + '"]' );
 				var value = input.value.trim();
 				out[ name ].textContent = value || out[ name ].getAttribute( 'data-empty' );
+				out[ name ].classList.toggle( 'is-empty', ! value ); // sivi primjer dok polje nije ispunjeno
 			} );
 			var message = form.querySelector( '[data-papb-input="message"]' ).value.trim();
 			out.message.hidden = ! message;

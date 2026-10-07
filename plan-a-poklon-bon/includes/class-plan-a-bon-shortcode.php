@@ -50,6 +50,7 @@ class Plan_A_Bon_Shortcode {
 		$msg    = self::clean_text( wp_unslash( $_POST['papb_message'] ?? '' ) );
 
 		self::$values = array(
+			'replace' => sanitize_key( wp_unslash( $_POST['papb_replace'] ?? '' ) ),
 			'amount'  => $choice,
 			'custom'  => $custom,
 			'to'      => $to,
@@ -87,6 +88,13 @@ class Plan_A_Bon_Shortcode {
 			return;
 		}
 
+		// "Uredi bon": nova stavka zamjenjuje postojeću (samo stavku bona iz ove košarice).
+		$replace = sanitize_key( wp_unslash( $_POST['papb_replace'] ?? '' ) );
+		$editing = '' !== $replace && ! empty( WC()->cart->get_cart_item( $replace )['papb'] );
+		if ( $editing ) {
+			WC()->cart->remove_cart_item( $replace );
+		}
+
 		$key = Plan_A_Bon::add_to_cart(
 			array(
 				'amount'  => $amount,
@@ -99,7 +107,7 @@ class Plan_A_Bon_Shortcode {
 			self::$errors['form'] = __( 'Bon nije dodan u košaricu. Pokušaj ponovno.', 'plan-a-poklon-bon' );
 			return;
 		}
-		wc_add_notice( __( 'Poklon bon je dodan u košaricu.', 'plan-a-poklon-bon' ) );
+		wc_add_notice( $editing ? __( 'Poklon bon je ažuriran.', 'plan-a-poklon-bon' ) : __( 'Poklon bon je dodan u košaricu.', 'plan-a-poklon-bon' ) );
 		wp_safe_redirect( wc_get_cart_url() );
 		exit;
 	}
@@ -138,9 +146,27 @@ class Plan_A_Bon_Shortcode {
 				'message' => '',
 			)
 		);
+		// "Uredi bon" iz košarice: podaci postojeće stavke.
+		$edit = sanitize_key( wp_unslash( $_GET['papb_uredi'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- samo čitanje vlastite košarice.
+		if ( ! self::$values && '' !== $edit && WC()->cart ) {
+			$item = WC()->cart->get_cart_item( $edit );
+			if ( ! empty( $item['papb'] ) ) {
+				$amount = round( (float) $item['papb']['amount'], 2 );
+				$listed = in_array( $amount, $amounts, true );
+				$val    = array(
+					'replace' => $edit,
+					'amount'  => $listed ? (string) $amount : 'custom',
+					'custom'  => $listed ? '' : Plan_A_Bon_Settings::number( $amount ),
+					'to'      => (string) $item['papb']['to'],
+					'from'    => (string) $item['papb']['from'],
+					'message' => (string) $item['papb']['message'],
+				);
+			}
+		}
+		$replace = (string) ( $val['replace'] ?? '' );
 		$err     = self::$errors;
 		$photo   = (int) Plan_A_Bon_Settings::get( 'photo' );
-		$photo   = $photo ? (string) wp_get_attachment_image_url( $photo, 'medium_large' ) : '';
+		$photo   = $photo ? (string) wp_get_attachment_image_url( $photo, 'large' ) : '';
 		$logo    = self::logo_url();
 		$colors  = self::colors();
 		$preview = (float) ( 'custom' === $val['amount'] ? str_replace( ',', '.', $val['custom'] ) : $val['amount'] );
@@ -211,35 +237,14 @@ class Plan_A_Bon_Shortcode {
 
 				<aside class="papb-side">
 					<p class="papb-h3"><?php esc_html_e( 'Ovako će bon izgledati', 'plan-a-poklon-bon' ); ?></p>
-					<div class="papb-preview" aria-hidden="true">
-						<div class="papb-preview__photo"<?php echo $photo ? ' style="background-image:url(' . esc_url( $photo ) . ')"' : ''; ?>>
-							<span class="papb-preview__logo">
-								<?php if ( $logo ) : ?>
-									<img src="<?php echo esc_url( $logo ); ?>" alt="">
-								<?php else : ?>
-									Plan A
-								<?php endif; ?>
-							</span>
-						</div>
-						<div class="papb-preview__body">
-							<span class="papb-preview__title"><?php esc_html_e( 'Poklon bon', 'plan-a-poklon-bon' ); ?></span>
-							<span class="papb-preview__amount" data-papb-out="amount"><?php echo esc_html( $preview > 0 ? Plan_A_Bon_Voucher::money_short( $preview ) : '– €' ); ?></span>
-							<span class="papb-preview__line"><span class="papb-preview__label"><?php esc_html_e( 'Za:', 'plan-a-poklon-bon' ); ?></span> <strong data-papb-out="to" data-empty="…"><?php echo esc_html( '' !== $val['to'] ? $val['to'] : '…' ); ?></strong></span>
-							<span class="papb-preview__line papb-preview__line--from"><span class="papb-preview__label"><?php esc_html_e( 'Od:', 'plan-a-poklon-bon' ); ?></span> <strong data-papb-out="from" data-empty="…"><?php echo esc_html( '' !== $val['from'] ? $val['from'] : '…' ); ?></strong></span>
-							<em class="papb-preview__msg" data-papb-out="message"<?php echo '' === $val['message'] ? ' hidden' : ''; ?>><?php echo esc_html( '' !== $val['message'] ? '„' . $val['message'] . '“' : '' ); ?></em>
-							<span class="papb-preview__code"><small><?php esc_html_e( 'Kod bona', 'plan-a-poklon-bon' ); ?></small>PLANA-••••-••••</span>
-							<span class="papb-preview__valid">
-								<?php
-								/* translators: %s: datum */
-								echo esc_html( sprintf( __( 'Vrijedi do: %s', 'plan-a-poklon-bon' ), Plan_A_Bon_Voucher::hr_date( Plan_A_Bon_Voucher::default_expiry() ) ) );
-								?>
-							</span>
-						</div>
-					</div>
+					<?php echo self::ticket( $val, $preview, $photo, $logo ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapano u ticket(). ?>
 					<p class="papb-help papb-help--preview"><?php esc_html_e( 'Nakon uplate bon stiže e-mailom kao PDF za ispis i slika za slanje porukom.', 'plan-a-poklon-bon' ); ?></p>
 
 					<?php wp_nonce_field( 'papb_add', 'papb_nonce' ); ?>
-					<button type="submit" name="papb_add" value="1" class="papb-btn papb-btn--cta"><?php esc_html_e( 'Dodaj u košaricu', 'plan-a-poklon-bon' ); ?>
+					<?php if ( '' !== $replace ) : ?>
+						<input type="hidden" name="papb_replace" value="<?php echo esc_attr( $replace ); ?>">
+					<?php endif; ?>
+					<button type="submit" name="papb_add" value="1" class="papb-btn papb-btn--cta"><?php echo esc_html( '' !== $replace ? __( 'Spremi promjene', 'plan-a-poklon-bon' ) : __( 'Dodaj u košaricu', 'plan-a-poklon-bon' ) ); ?>
 						<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
 					</button>
 				</aside>
@@ -247,6 +252,57 @@ class Plan_A_Bon_Shortcode {
 		</div>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Pregled bona kao ulaznica (isti raspored kao PDF/PNG); kod se prije izdavanja ne zna.
+	 */
+	private static function ticket( array $val, float $amount, string $photo, string $logo ): string {
+		$empty = static function ( $value, $sample ) {
+			return '' !== $value
+				? array( esc_html( $value ), '' )
+				: array( esc_html( $sample ), ' is-empty' );
+		};
+		$to   = $empty( (string) $val['to'], __( 'Ime primatelja', 'plan-a-poklon-bon' ) );
+		$from = $empty( (string) $val['from'], __( 'Tvoje ime', 'plan-a-poklon-bon' ) );
+
+		$art = '';
+		if ( '' === $photo ) {
+			// Ilustracija grebena (iste oblike crta i PDF).
+			$colors = array(
+				'blue'   => Plan_A_Bon_Render::BLUE,
+				'navy'   => Plan_A_Bon_Render::NAVY,
+				'orange' => Plan_A_Bon_Render::ORANGE,
+				'red'    => Plan_A_Bon_Render::RED,
+				'white'  => '#ffffff',
+			);
+			$art = '<svg class="papb-ticket__art" viewBox="0 0 880 1100" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><rect width="880" height="1100" fill="#dcecfa"/><circle cx="581" cy="297" r="88" fill="#f3b064"/>';
+			foreach ( Plan_A_Bon_Render::ridge_shapes() as $shape ) {
+				$points = array();
+				foreach ( array_chunk( $shape[1], 2 ) as $pt ) {
+					$points[] = round( $pt[0] * 880, 1 ) . ',' . round( $pt[1] * 1100, 1 );
+				}
+				$art .= '<polygon points="' . esc_attr( implode( ' ', $points ) ) . '" fill="' . esc_attr( $colors[ $shape[0] ] ) . '"/>';
+			}
+			$art .= '</svg>';
+		}
+
+		$html  = '<div class="papb-ticket-wrap" aria-hidden="true"><div class="papb-ticket">';
+		$html .= '<div class="papb-ticket__photo"' . ( '' !== $photo ? ' style="background-image:url(' . esc_url( $photo ) . ')"' : '' ) . '>' . $art;
+		$html .= '<span class="papb-ticket__logo">' . ( '' !== $logo ? '<img src="' . esc_url( $logo ) . '" alt="">' : 'Plan A' ) . '</span></div>';
+		$html .= '<div class="papb-ticket__main">';
+		$html .= '<span class="papb-ticket__label">' . esc_html__( 'Poklon bon za izlet', 'plan-a-poklon-bon' ) . '</span>';
+		$html .= '<span class="papb-ticket__amount" data-papb-out="amount">' . esc_html( $amount > 0 ? Plan_A_Bon_Voucher::money_short( $amount ) : '– €' ) . '</span>';
+		$html .= '<span class="papb-ticket__line"><span class="papb-ticket__lbl">' . esc_html__( 'Za:', 'plan-a-poklon-bon' ) . '</span> <strong class="papb-ticket__val' . $to[1] . '" data-papb-out="to" data-empty="' . esc_attr__( 'Ime primatelja', 'plan-a-poklon-bon' ) . '">' . $to[0] . '</strong></span>';
+		$html .= '<span class="papb-ticket__line papb-ticket__line--from"><span class="papb-ticket__lbl">' . esc_html__( 'Od:', 'plan-a-poklon-bon' ) . '</span> <strong class="papb-ticket__val' . $from[1] . '" data-papb-out="from" data-empty="' . esc_attr__( 'Tvoje ime', 'plan-a-poklon-bon' ) . '">' . $from[0] . '</strong></span>';
+		$html .= '<em class="papb-ticket__msg" data-papb-out="message"' . ( '' === (string) $val['message'] ? ' hidden' : '' ) . '>' . esc_html( '' !== (string) $val['message'] ? '„' . $val['message'] . '“' : '' ) . '</em>';
+		/* translators: %s: datum */
+		$html .= '<span class="papb-ticket__valid">' . esc_html( sprintf( __( 'Vrijedi do: %s', 'plan-a-poklon-bon' ), Plan_A_Bon_Voucher::hr_date( Plan_A_Bon_Voucher::default_expiry() ) ) ) . '</span>';
+		$html .= '</div>';
+		$html .= '<div class="papb-ticket__stub"><span class="papb-ticket__qr">' . Plan_A_Bon_Render::qr_svg( home_url( '/izleti/' ), '#c9d3de' ) . '</span>';
+		$html .= '<span class="papb-ticket__code">PLANA<br>••••-••••</span><span class="papb-ticket__site">' . esc_html( Plan_A_Bon_Render::host() ) . '</span></div>';
+		$html .= '</div></div>';
+		return $html;
 	}
 
 	private static function error( array $errors, string $field ) {

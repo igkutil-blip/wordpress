@@ -18,6 +18,11 @@ class Plan_A_Bon {
 	/** @var bool Bon se u košaricu dodaje samo preko stranice za kupnju. */
 	private static $adding = false;
 
+	/** @var array Podaci bona po objektu proizvoda u košarici (za sliku na naplati). */
+	private static $objects = array();
+
+	const THUMB_DIR = 'plan-a-poklon-bon-slike';
+
 	public static function activate() {
 		if ( class_exists( 'WooCommerce' ) ) {
 			self::product_id( true );
@@ -51,11 +56,19 @@ class Plan_A_Bon {
 		add_filter( 'woocommerce_cart_item_name', array( __CLASS__, 'cart_item_name' ), 20, 2 );
 		add_filter( 'woocommerce_cart_item_permalink', array( __CLASS__, 'cart_item_permalink' ), 20, 2 );
 		add_filter( 'woocommerce_cart_item_thumbnail', array( __CLASS__, 'cart_item_thumbnail' ), 20, 2 );
+		add_filter( 'woocommerce_product_get_image', array( __CLASS__, 'product_image' ), 20, 2 );
+		add_filter( 'woocommerce_cart_item_class', array( __CLASS__, 'cart_item_class' ), 20, 2 );
+		add_action( 'woocommerce_after_cart_item_name', array( __CLASS__, 'edit_link' ), 20, 2 );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'cart_assets' ) );
 		add_filter( 'woocommerce_get_item_data', array( __CLASS__, 'item_data' ), 20, 2 );
 		add_filter( 'woocommerce_coupon_is_valid_for_product', array( __CLASS__, 'coupon_product' ), 20, 2 );
 
 		// Narudžba.
 		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'order_item' ), 20, 3 );
+		add_action( 'woocommerce_checkout_order_created', array( __CLASS__, 'flag_order' ) );
+		add_action( 'woocommerce_order_item_meta_start', array( __CLASS__, 'order_item_image' ), 20, 4 );
+		add_filter( 'woocommerce_display_item_meta', array( __CLASS__, 'item_meta_lines' ), 20, 3 );
+		add_action( 'woocommerce_order_status_on-hold', array( __CLASS__, 'notify_admin' ), 20 );
 		foreach ( self::PAID as $status ) {
 			add_action( 'woocommerce_order_status_' . $status, array( __CLASS__, 'order_paid' ), 5 );
 		}
@@ -205,6 +218,7 @@ class Plan_A_Bon {
 		foreach ( $cart->get_cart() as $key => $item ) {
 			if ( ! empty( $item['papb']['amount'] ) && self::is_voucher_product( $item['data'] ) ) {
 				$cart->cart_contents[ $key ]['data']->set_price( (float) $item['papb']['amount'] );
+				self::$objects[ spl_object_id( $item['data'] ) ] = $item['papb'];
 			}
 		}
 	}
@@ -226,11 +240,84 @@ class Plan_A_Bon {
 	}
 
 	public static function cart_item_thumbnail( $html, $item ) {
-		if ( empty( $item['papb'] ) ) {
-			return $html;
+		return ! empty( $item['papb'] ) ? self::thumb_img( $item['papb'] ) : $html;
+	}
+
+	/**
+	 * Slika proizvoda na naplati (dodatak za košaricu koristi sliku proizvoda): slika bona.
+	 */
+	public static function product_image( $html, $product ) {
+		if ( $product instanceof WC_Product && isset( self::$objects[ spl_object_id( $product ) ] ) && self::is_voucher_product( $product ) ) {
+			return self::thumb_img( self::$objects[ spl_object_id( $product ) ] );
 		}
-		$photo = (int) Plan_A_Bon_Settings::get( 'photo' );
-		return $photo ? wp_get_attachment_image( $photo, 'medium_large', false, array( 'alt' => '' ) ) : $html;
+		return $html;
+	}
+
+	public static function cart_item_class( $class, $item ) {
+		return ! empty( $item['papb'] ) ? $class . ' papb-cart-item' : $class;
+	}
+
+	/**
+	 * Smanjena slika bona (iznos, za koga, od koga; bez koda). Javna datoteka s nepogodivim
+	 * nazivom (HMAC), pa radi i u e-mailu.
+	 */
+	public static function thumb_url( array $d ): string {
+		$amount = round( (float) ( $d['amount'] ?? 0 ), 2 );
+		$to     = (string) ( $d['to'] ?? '' );
+		$from   = (string) ( $d['from'] ?? '' );
+		$key    = hash_hmac( 'sha256', implode( '|', array( $amount, $to, $from, Plan_A_Bon_Render::VERSION, (int) Plan_A_Bon_Settings::get( 'photo' ), Plan_A_Bon_Render::logo_id() ) ), wp_salt( 'auth' ) );
+		$name   = substr( $key, 0, 40 ) . '.png';
+		$up     = wp_upload_dir( null, false );
+		$dir    = trailingslashit( $up['basedir'] ) . self::THUMB_DIR . '/';
+		if ( ! file_exists( $dir . $name ) ) {
+			if ( ! is_dir( $dir ) ) {
+				wp_mkdir_p( $dir );
+				file_put_contents( $dir . 'index.php', "<?php\n// Silence is golden.\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+			}
+			if ( ! Plan_A_Bon_Render::thumb(
+				array(
+					'amount'  => $amount,
+					'to'      => $to,
+					'from'    => $from,
+					'message' => '',
+				),
+				$dir . $name
+			) ) {
+				return '';
+			}
+		}
+		return trailingslashit( $up['baseurl'] ) . self::THUMB_DIR . '/' . $name;
+	}
+
+	public static function thumb_img( array $d, string $style = '' ): string {
+		$url = self::thumb_url( $d );
+		if ( '' === $url ) {
+			return '';
+		}
+		return '<img class="papb-thumb paka-item__img" src="' . esc_url( $url ) . '" width="600" height="300" alt="' . esc_attr( self::item_title( (float) $d['amount'], (string) $d['to'] ) ) . '"' . ( '' !== $style ? ' style="' . esc_attr( $style ) . '"' : '' ) . '>';
+	}
+
+	/**
+	 * "Uredi bon" ispod stavke u košarici.
+	 */
+	public static function edit_link( $item, $key ) {
+		if ( empty( $item['papb'] ) ) {
+			return;
+		}
+		echo '<a class="papb-edit" href="' . esc_url( add_query_arg( 'papb_uredi', rawurlencode( (string) $key ), self::shop_url() ) ) . '">'
+			. '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg>'
+			. esc_html__( 'Uredi bon', 'plan-a-poklon-bon' ) . '</a>';
+	}
+
+	public static function cart_assets() {
+		if ( function_exists( 'is_cart' ) && ( is_cart() || is_checkout() ) && WC()->cart && ! WC()->cart->is_empty() ) {
+			foreach ( WC()->cart->get_cart() as $item ) {
+				if ( ! empty( $item['papb'] ) ) {
+					wp_enqueue_style( 'plan-a-poklon-bon', PLAN_A_BON_URL . 'assets/css/poklon-bon.css', array(), PLAN_A_BON_VERSION );
+					return;
+				}
+			}
+		}
 	}
 
 	public static function item_data( $data, $item ) {
@@ -275,6 +362,134 @@ class Plan_A_Bon {
 		if ( '' !== (string) $v['message'] ) {
 			$item->add_meta_data( __( 'Poruka', 'plan-a-poklon-bon' ), (string) $v['message'], true );
 		}
+	}
+
+	/**
+	 * Oznaka narudžbe s poklon bonom (popis "Čekaju uplatu" i broj u izborniku).
+	 */
+	public static function flag_order( $order ) {
+		if ( $order instanceof WC_Order && self::has_voucher_items( $order ) ) {
+			$order->update_meta_data( '_papb_has_voucher', 1 );
+			$order->save();
+		}
+	}
+
+	/**
+	 * Slika bona uz stavku na završnoj stranici, u "Moj račun" i u e-mailovima.
+	 */
+	public static function order_item_image( $item_id, $item, $order, $plain_text = false ) {
+		if ( $plain_text || ! $item instanceof WC_Order_Item_Product || '' === (string) $item->get_meta( '_papb_amount' ) ) {
+			return;
+		}
+		$img = self::thumb_img(
+			array(
+				'amount' => (float) $item->get_meta( '_papb_amount' ),
+				'to'     => (string) $item->get_meta( '_papb_to' ),
+				'from'   => (string) $item->get_meta( '_papb_from' ),
+			),
+			'display:block;width:100%;max-width:320px;height:auto;margin:8px 0 6px;border:0;border-radius:8px;'
+		);
+		self::mute_tour_meta();
+		// Iz baze: e-mail o uplati koristi kopiju stavke učitanu prije izdavanja bona.
+		$issued = (bool) array_filter( (array) wc_get_order_item_meta( (int) $item_id, '_papb_coupons', true ) );
+		echo '<div class="papb-item-image">' . $img // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- izgrađeno i escapano u thumb_img().
+			. '<span style="display:block;color:#6b7785;font-size:13px;">' . esc_html( $issued ? __( 'Bon je poslan e-mailom kupcu.', 'plan-a-poklon-bon' ) : __( 'Bon šaljemo e-mailom čim stigne uplata.', 'plan-a-poklon-bon' ) ) . '</span></div>';
+	}
+
+	/**
+	 * WpTravelly ispisuje uz svaku stavku prazan naslov "Order Details"; za stavku bona se
+	 * njegova kuka privremeno uklanja i odmah nakon stavke vraća.
+	 */
+	private static function mute_tour_meta() {
+		global $wp_filter;
+		if ( empty( $wp_filter['woocommerce_order_item_meta_end'] ) ) {
+			return;
+		}
+		$removed = array();
+		foreach ( $wp_filter['woocommerce_order_item_meta_end']->callbacks as $priority => $callbacks ) {
+			foreach ( $callbacks as $callback ) {
+				$fn = $callback['function'];
+				if ( is_array( $fn ) && is_object( $fn[0] ) && 'display_order_meta' === $fn[1] && 0 === strpos( get_class( $fn[0] ), 'TTBM' ) ) {
+					remove_action( 'woocommerce_order_item_meta_end', $fn, $priority );
+					$removed[] = array( $fn, $priority, $callback['accepted_args'] );
+				}
+			}
+		}
+		if ( $removed ) {
+			$restore = static function () use ( $removed, &$restore ) {
+				remove_action( 'woocommerce_order_item_meta_end', $restore, PHP_INT_MAX );
+				foreach ( $removed as $r ) {
+					add_action( 'woocommerce_order_item_meta_end', $r[0], $r[1], $r[2] );
+				}
+			};
+			add_action( 'woocommerce_order_item_meta_end', $restore, PHP_INT_MAX );
+		}
+	}
+
+	/**
+	 * Podaci stavke bona ("Od", "Poruka", "Kod bona") svaki u svom redu i kad ih drugi
+	 * predložak ispisuje odvojene zarezom.
+	 */
+	public static function item_meta_lines( $html, $item, $args ) {
+		if ( ! $item instanceof WC_Order_Item_Product || '' === (string) $item->get_meta( '_papb_amount' ) || ', ' !== ( $args['separator'] ?? '' ) ) {
+			return $html;
+		}
+		$lines = array();
+		foreach ( $item->get_formatted_meta_data() as $meta ) {
+			$lines[] = $args['label_before'] . wp_kses_post( $meta->display_key ) . $args['label_after'] . wp_strip_all_tags( (string) $meta->display_value );
+		}
+		return $lines ? $args['before'] . implode( '<br>', $lines ) . $args['after'] : '';
+	}
+
+	/**
+	 * Nova narudžba bona plaćena uplatnicom: e-mail administratoru "Novi poklon bon čeka uplatu".
+	 */
+	public static function notify_admin( $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order || ! self::has_voucher_items( $order ) || '' !== (string) $order->get_meta( '_papb_admin_notified' ) ) {
+			return;
+		}
+		$order->update_meta_data( '_papb_admin_notified', time() );
+		$order->update_meta_data( '_papb_has_voucher', 1 );
+		$order->save();
+
+		$bons = array();
+		foreach ( $order->get_items() as $item ) {
+			if ( '' !== (string) $item->get_meta( '_papb_amount' ) ) {
+				$bons[] = self::item_title( (float) $item->get_meta( '_papb_amount' ), (string) $item->get_meta( '_papb_to' ) );
+			}
+		}
+		$link  = admin_url( 'admin.php?page=' . Plan_A_Bon_Admin::PAGE . '&tab=cekaju' );
+		$buyer = trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
+		$body  = '<p>' . esc_html( sprintf( 'Narudžba #%1$s (%2$s) s poklon bonom čeka uplatu.', $order->get_order_number(), $order->get_payment_method_title() ) ) . '</p>'
+			. '<p><strong>Kupac:</strong> ' . esc_html( $buyer ) . ' (' . esc_html( $order->get_billing_email() ) . ')<br>'
+			. '<strong>Iznos za uplatu:</strong> ' . esc_html( Plan_A_Bon_Voucher::money( (float) $order->get_total() ) ) . '<br>'
+			. '<strong>Bon:</strong> ' . esc_html( implode( ', ', $bons ) ) . '</p>'
+			. '<p>Kad uplata stigne, otvorite karticu "Čekaju uplatu" i kliknite "Uplata je stigla, pošalji bon":</p>'
+			. '<p><a href="' . esc_url( $link ) . '" style="display:inline-block;padding:12px 20px;border-radius:8px;background:#1b2d4a;color:#ffffff;text-decoration:none;font-weight:bold;">Čekaju uplatu</a></p>';
+		$mailer = WC()->mailer();
+		$mailer->send( get_option( 'admin_email' ), 'Novi poklon bon čeka uplatu', $mailer->wrap_message( 'Novi poklon bon čeka uplatu', $body ), "Content-Type: text/html\r\n" );
+	}
+
+	/**
+	 * "Uplata je stigla, pošalji bon": narudžba postaje plaćena (U obradi), a bon se izdaje i šalje
+	 * kroz kuku statusa (order_paid). Vraća izdane ID-eve bonova.
+	 *
+	 * @return int[]
+	 */
+	public static function mark_paid( WC_Order $order ): array {
+		if ( $order->has_status( array( 'on-hold', 'pending' ) ) ) {
+			$user = wp_get_current_user();
+			$order->add_order_note( sprintf( 'Uplata potvrđena u izborniku Poklon bonovi (%s).', $user->display_name ) );
+			if ( ! $order->payment_complete() ) {
+				$order->update_status( 'processing' );
+			}
+			$order = wc_get_order( $order->get_id() );
+		}
+		if ( $order->has_status( self::PAID ) ) {
+			self::order_paid( $order->get_id() ); // ako je izdavanje propalo ranije, pokušaj ponovno
+		}
+		return self::order_vouchers( wc_get_order( $order->get_id() ) );
 	}
 
 	/**
@@ -360,14 +575,25 @@ class Plan_A_Bon {
 				continue;
 			}
 			$v    = Plan_A_Bon_Voucher::get( $coupon_id );
-			$used = (float) $coupon_item->get_discount() + (float) $coupon_item->get_discount_tax();
+			$used = round( (float) $coupon_item->get_discount() + (float) $coupon_item->get_discount_tax(), 2 );
 			$rest = round( $v['amount'] - $used, 2 );
 			$order->update_meta_data( $key, (string) $rest );
 			$order->save();
+			$entry = array(
+				'date'  => time(),
+				'order' => $order->get_id(),
+				'used'  => $used,
+				'rest'  => max( 0, $rest ),
+				'new'   => 0,
+				'lost'  => false,
+			);
 			if ( $rest < 0.01 ) {
+				Plan_A_Bon_Voucher::add_history( $coupon_id, $entry );
 				continue;
 			}
 			if ( 'keep' !== Plan_A_Bon_Settings::get( 'remainder' ) ) {
+				$entry['lost'] = true;
+				Plan_A_Bon_Voucher::add_history( $coupon_id, $entry );
 				$order->add_order_note( sprintf( 'Poklon bon %1$s djelomično iskorišten; ostatak od %2$s propada (postavka "Ostatak bona").', $v['code'], Plan_A_Bon_Voucher::money( $rest ) ) );
 				continue;
 			}
@@ -387,10 +613,13 @@ class Plan_A_Bon {
 					)
 				);
 			} catch ( Exception $e ) {
+				Plan_A_Bon_Voucher::add_history( $coupon_id, $entry );
 				$order->add_order_note( 'Ostatak poklon bona nije izdan: ' . $e->getMessage() );
 				continue;
 			}
 			update_post_meta( $coupon_id, '_papb_child', $new );
+			$entry['new'] = $new;
+			Plan_A_Bon_Voucher::add_history( $coupon_id, $entry );
 			$nv   = Plan_A_Bon_Voucher::get( $new );
 			$sent = Plan_A_Bon_Voucher::send(
 				$new,

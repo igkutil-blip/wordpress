@@ -19,7 +19,7 @@
 	box-sizing: border-box;
 	container-type: inline-size;
 	width: 100%;
-	max-width: 1120px;
+	max-width: 760px;
 	margin: 0 auto;
 	padding: 8px 0 32px;
 	color: var(--papb-text);
@@ -67,17 +67,9 @@
 	margin: 0;
 }
 
-@container (min-width: 820px) {
-	.papb .papb-layout {
-		grid-template-columns: minmax(0, 1fr) 420px;
-		align-items: start;
-		gap: 28px;
-	}
-
-	.papb .papb-side {
-		position: sticky;
-		top: 24px;
-	}
+/* Jedan stupac (i na računalu), da pregled bona bude dovoljno velik za čitanje */
+.papb .papb-layout {
+	max-width: 760px;
 }
 
 .papb .papb-form {
@@ -285,137 +277,239 @@
 	background: #fdecea;
 }
 
-/* Pregled bona (omjer kao bon A5: 2480 × 1748) */
+/* Pregled bona: ulaznica 2:1 (isti raspored kao PDF/PNG), sve mjere u cqw pa se smanjuje proporcionalno */
 .papb .papb-side {
 	min-width: 0;
 }
 
-.papb .papb-preview {
-	display: grid;
-	grid-template-columns: 39% minmax(0, 1fr);
-	gap: 5%;
-	aspect-ratio: 2480 / 1748;
-	padding: 5.2%;
-	border: 1px solid #edf1f5;
+.papb-ticket-wrap {
+	padding: 4%;
 	border-radius: 14px;
-	background: #fff;
-	box-shadow: 0 8px 24px rgba(18, 48, 75, 0.12);
-	container-type: inline-size;
-	overflow: hidden;
+	background: #eef3f8;
 }
 
-.papb .papb-preview__photo {
+.papb-ticket {
 	position: relative;
-	border-radius: 8px;
-	background: var(--papb-navy) center / cover no-repeat;
+	display: grid;
+	grid-template-columns: 40% 40% 20%;
+	aspect-ratio: 2 / 1;
+	overflow: hidden;
+	border: 1px solid #d3dce6;
+	border-radius: 2cqw;
+	background: #fff;
+	box-shadow: 0 6px 18px rgba(27, 45, 74, 0.12);
+	container-type: inline-size;
+	color: #24323f;
+	font-family: inherit;
+	line-height: 1.2;
 }
 
-.papb .papb-preview__logo {
+.papb-ticket__photo {
+	position: relative;
+	overflow: hidden;
+	background: #dcecfa center / cover no-repeat;
+}
+
+.papb-ticket__photo[style]::after {
+	content: "";
 	position: absolute;
-	top: 6%;
-	left: 7%;
+	inset: 45% 0 0;
+	background: linear-gradient(to bottom, rgba(27, 45, 74, 0), rgba(27, 45, 74, 0.6));
+}
+
+.papb-ticket__art {
+	position: absolute;
+	inset: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.papb-ticket__logo {
+	position: absolute;
+	z-index: 1;
+	top: 4.2cqw;
+	left: 4.2cqw;
 	display: inline-flex;
 	align-items: center;
-	max-width: 80%;
-	padding: 3% 5%;
-	border-radius: 6px;
+	max-width: 30cqw;
+	padding: 1.6cqw 2.4cqw;
+	border-radius: 2cqw;
 	background: #fff;
-	color: var(--papb-navy);
-	font-size: 4cqw;
+	color: #1b2d4a;
+	font-size: 3.2cqw;
 	font-weight: 900;
 }
 
-.papb .papb-preview__logo img {
+.papb-ticket__logo img {
 	display: block;
 	width: auto;
 	max-width: 100%;
-	height: 5.5cqw;
+	height: 4.4cqw;
 }
 
-.papb .papb-preview__body {
+.papb-ticket__main {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
 	min-width: 0;
+	padding: 4.7cqw 3.2cqw 4.4cqw 3.6cqw;
 	overflow: hidden;
 }
 
-.papb .papb-preview__title {
-	color: var(--papb-navy);
-	font-size: 6.4cqw;
-	font-weight: 900;
-	line-height: 1.05;
+.papb-ticket__label {
+	color: #3d8fd9;
+	font-size: 1.45cqw;
+	font-weight: 700;
+	letter-spacing: 0.32em;
+	text-transform: uppercase;
+	white-space: nowrap;
 }
 
-.papb .papb-preview__amount {
-	margin: 0.5cqw 0 1.8cqw;
-	color: var(--papb-cta);
-	font-size: 11cqw;
+.papb-ticket__amount {
+	margin: 0.6cqw 0 2.4cqw -0.3cqw;
+	color: #e0893a;
+	font-size: 10.4cqw;
 	font-weight: 900;
 	line-height: 1;
 	white-space: nowrap;
 }
 
-.papb .papb-preview__line {
+.papb-ticket__line {
 	max-width: 100%;
 	overflow: hidden;
-	color: var(--papb-muted);
-	font-size: 3cqw;
-	line-height: 1.35;
+	color: #6b7785;
+	font-size: 2.7cqw;
+	line-height: 1.3;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.papb .papb-preview__line strong {
-	color: var(--papb-navy);
+.papb-ticket__line--from {
+	margin-top: 0.4cqw;
+	font-size: 2.2cqw;
+}
+
+.papb-ticket__val {
+	color: #1b2d4a;
 	font-weight: 700;
 }
 
-.papb .papb-preview__line--from {
-	font-size: 2.6cqw;
+.papb-ticket__val.is-empty {
+	color: #a9b4c0;
+	font-weight: 600;
 }
 
-.papb .papb-preview__msg {
+.papb-ticket__msg {
 	display: -webkit-box;
 	max-width: 100%;
-	margin-top: 0.6cqw;
+	margin-top: 1.2cqw;
 	overflow: hidden;
-	color: var(--papb-text);
-	font-size: 2.2cqw;
+	color: #24323f;
+	font-size: 1.8cqw;
 	line-height: 1.3;
 	overflow-wrap: anywhere;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 3;
 }
 
-.papb .papb-preview__code {
-	display: block;
-	align-self: stretch;
-	margin-top: 2.6cqw;
-	padding: 1.6cqw 2.4cqw;
-	border-radius: 1.2cqw;
-	background: var(--papb-navy);
-	color: #fff;
-	font-size: 3.6cqw;
-	font-weight: 900;
-	letter-spacing: 0.08em;
+.papb-ticket__valid {
+	margin-top: auto;
+	color: #1b2d4a;
+	font-size: 1.8cqw;
+	font-weight: 700;
 	white-space: nowrap;
 }
 
-.papb .papb-preview__code small {
-	display: block;
-	color: #9fd3f0;
-	font-size: 1.5cqw;
-	font-weight: 700;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
+/* Otkidni dio: isprekidana linija i polukružni urezi */
+.papb-ticket__stub {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1.4cqw;
+	border-left: 0.2cqw dashed #b8c4d1;
+	text-align: center;
 }
 
-.papb .papb-preview__valid {
-	margin-top: 1.2cqw;
-	color: var(--papb-text);
-	font-size: 2.2cqw;
-	font-weight: 700;
+.papb-ticket__stub::before,
+.papb-ticket__stub::after {
+	content: "";
+	position: absolute;
+	left: -1.9cqw;
+	width: 3.6cqw;
+	height: 3.6cqw;
+	border: 1px solid #d3dce6;
+	border-radius: 50%;
+	background: #eef3f8;
+}
+
+.papb-ticket__stub::before {
+	top: -1.9cqw;
+}
+
+.papb-ticket__stub::after {
+	bottom: -1.9cqw;
+}
+
+.papb-ticket__qr {
+	display: block;
+	width: 13cqw;
+}
+
+.papb-ticket__qr svg {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.papb-ticket__code {
+	color: #6b7785;
+	font-size: 2.1cqw;
+	font-weight: 900;
+	letter-spacing: 0.06em;
+	line-height: 1.3;
+}
+
+.papb-ticket__site {
+	color: #6b7785;
+	font-size: 1.3cqw;
+}
+
+/* Stavka bona u košarici i na naplati (dodatak za košaricu) */
+.paka .papb-cart-item .paka-item__media img.papb-thumb {
+	aspect-ratio: 2 / 1;
+	object-fit: contain;
+	border-radius: 8px;
+	background: #fff;
+}
+
+.paka .papb-cart-item .paka-item__data dl.variation {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 2px 6px;
+}
+
+.paka .papb-cart-item .paka-item__data dl.variation dt,
+.paka .papb-cart-item .paka-item__data dl.variation dd {
+	display: block;
+}
+
+.paka .papb-edit {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 32px;
+	margin: 2px 0 6px;
+	color: var(--paka-accent, #1a9ad6);
+	font-size: 15px;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.paka .papb-edit:hover {
+	text-decoration: underline;
 }
 
 .papb .papb-help--preview {

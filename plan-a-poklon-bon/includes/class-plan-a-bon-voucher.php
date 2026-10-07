@@ -140,6 +140,20 @@ class Plan_A_Bon_Voucher {
 	}
 
 	/**
+	 * Povijest korištenja bona (svaka plaćena narudžba u kojoj je iskorišten).
+	 */
+	public static function add_history( int $coupon_id, array $entry ) {
+		$history   = (array) get_post_meta( $coupon_id, '_papb_history', true );
+		$history   = array_values( array_filter( $history, 'is_array' ) );
+		$history[] = $entry;
+		update_post_meta( $coupon_id, '_papb_history', $history );
+	}
+
+	public static function history( int $coupon_id ): array {
+		return array_values( array_filter( (array) get_post_meta( $coupon_id, '_papb_history', true ), 'is_array' ) );
+	}
+
+	/**
 	 * aktivan, iskoristen ili istekao.
 	 */
 	public static function status( array $v ): string {
@@ -230,7 +244,7 @@ class Plan_A_Bon_Voucher {
 			$v['token'] = wp_generate_password( 32, false );
 			update_post_meta( $coupon_id, '_papb_token', $v['token'] );
 		}
-		$base = self::dir() . 'bon-' . strtolower( $v['code'] ) . '-' . $v['token'];
+		$base = self::dir() . 'bon-' . strtolower( $v['code'] ) . '-' . $v['token'] . '-v' . Plan_A_Bon_Render::VERSION;
 		if ( $regenerate || ! file_exists( $base . '.pdf' ) || ! file_exists( $base . '.png' ) ) {
 			Plan_A_Bon_Render::files( $v, $base );
 		}
@@ -240,7 +254,7 @@ class Plan_A_Bon_Voucher {
 	/**
 	 * Šalje datoteku pregledniku (nakon provjere prava u pozivatelju).
 	 */
-	public static function stream( int $coupon_id, string $format ) {
+	public static function stream( int $coupon_id, string $format, bool $inline = false ) {
 		$path = self::file( $coupon_id, $format );
 		if ( '' === $path ) {
 			wp_die( esc_html__( 'Datoteka bona nije dostupna.', 'plan-a-poklon-bon' ), '', array( 'response' => 404 ) );
@@ -248,7 +262,7 @@ class Plan_A_Bon_Voucher {
 		$v = self::get( $coupon_id );
 		nocache_headers();
 		header( 'Content-Type: ' . ( 'pdf' === $format ? 'application/pdf' : 'image/png' ) );
-		header( 'Content-Disposition: attachment; filename="Poklon-bon-' . $v['code'] . '.' . $format . '"' );
+		header( 'Content-Disposition: ' . ( $inline ? 'inline' : 'attachment' ) . '; filename="Poklon-bon-' . $v['code'] . '.' . $format . '"' );
 		header( 'Content-Length: ' . filesize( $path ) );
 		header( 'X-Content-Type-Options: nosniff' );
 		readfile( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile

@@ -1,7 +1,7 @@
 === Plan A poklon bon ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 
 Prodaja poklon bonova za izlete (WooCommerce): stranica za kupnju, PDF bon s QR kodom
@@ -24,6 +24,19 @@ nakon uplate, korištenje kao kupon u košarici i popis bonova u administraciji.
   novog bona, a nijedan kupon ne umanjuje cijenu bona. Ostatak bona (postavka) postaje novi bon.
 * Zaštita: najviše 10 neuspjelih unosa koda u 15 minuta po IP adresi; PDF datoteke u
   zaštićenoj mapi s nasumičnim nazivima, preuzimanje samo uz ključ narudžbe ili za administratora.
+
+== Novo u 1.1.0 ==
+
+* Novi dizajn bona kao ulaznica (omjer 2:1): fotografija ili ilustracija grebena, iznos i imena,
+  otkidni dio s QR kodom i kodom bona. Isti dizajn u pregledu na stranici, sličici u košarici,
+  naplati, završnoj stranici i e-mailu, u PDF-u (A5, s uputama i izdavateljem) i PNG-u (1600 × 800).
+* "Uredi bon" u košarici: povratak na stranicu bona s upisanim podacima; spremanje zamjenjuje stavku.
+* Izbornik "Poklon bonovi" s karticama Čekaju uplatu (gumb "Uplata je stigla, pošalji bon",
+  crvena oznaka broja), Izdani bonovi (pregled, PDF, ponovno slanje, povijest korištenja, CSV),
+  Ručno izdavanje i Postavke; okvir "Poklon bon" na stranici narudžbe.
+* E-mail administratoru "Novi poklon bon čeka uplatu".
+* Povijest korištenja bona; ostatak se obrađuje i kad je iznos za uplatu 0,00 €.
+* Polje za kod prikazuje dodatak za košaricu (kodovi su obični WooCommerce kuponi).
 
 == Uključene biblioteke ==
 

@@ -10,7 +10,6 @@ defined( 'ABSPATH' ) || exit;
 class Plan_A_Bon_Settings {
 
 	const OPTION = 'plan_a_bon';
-	const PAGE   = 'plan-a-bon-postavke';
 
 	public static function defaults(): array {
 		return array(
@@ -143,11 +142,14 @@ class Plan_A_Bon_Settings {
 	}
 
 	public static function links( array $links ): array {
-		array_unshift( $links, '<a href="' . esc_url( admin_url( 'admin.php?page=' . self::PAGE ) ) . '">Postavke</a>' );
+		array_unshift( $links, '<a href="' . esc_url( admin_url( 'admin.php?page=plan-a-bon&tab=postavke' ) ) . '">Postavke</a>' );
 		return $links;
 	}
 
-	public static function page() {
+	/**
+	 * Obrazac postavki (kartica "Postavke" u izborniku Poklon bonovi).
+	 */
+	public static function form() {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
@@ -155,9 +157,6 @@ class Plan_A_Bon_Settings {
 		$s    = self::get();
 		$name = self::OPTION;
 		?>
-		<div class="wrap papb-admin">
-			<h1>Poklon bonovi – postavke</h1>
-			<?php settings_errors(); ?>
 			<p>Stranica za kupnju: stranica s shortcodeom <code>[plan-a-poklon-bon]</code>. QR kod na bonu vodi na <code><?php echo esc_html( Plan_A_Bon_Voucher::redeem_url( 'KOD' ) ); ?></code>.</p>
 			<form method="post" action="options.php">
 				<?php settings_fields( 'plan_a_bon' ); ?>
@@ -225,7 +224,6 @@ class Plan_A_Bon_Settings {
 				</table>
 				<?php submit_button( 'Spremi promjene' ); ?>
 			</form>
-		</div>
 		<?php
 	}
 }
