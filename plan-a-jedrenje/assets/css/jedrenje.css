@@ -1149,3 +1149,151 @@
 		scroll-behavior: auto;
 	}
 }
+
+/*
+ * Kalendar: cijela sezona odjednom. Mjeseci jedan uz drugi (na računalu svi u jednom redu,
+ * na mobitelu po dva), tjedni kao kompaktne kartice ispod naziva mjeseca.
+ */
+.pajd .pajd-months,
+.pajd .pajd-months.is-multi {
+	grid-template-columns: repeat(auto-fill, minmax(142px, 1fr));
+	gap: 16px 12px;
+}
+
+.pajd .pajd-months .pajd-month__title,
+.pajd .pajd-months:not(.is-multi) .pajd-month__title {
+	display: block;
+	margin: 0 0 8px;
+	padding: 0 0 6px;
+	border-bottom: 2px solid var(--pajd-soft);
+	font-size: 15px;
+}
+
+.pajd .pajd-weeks,
+.pajd .pajd-months.is-multi .pajd-weeks {
+	grid-template-columns: minmax(0, 1fr);
+	gap: 8px;
+}
+
+.pajd button.pajd-week {
+	min-height: 58px;
+	padding: 8px 10px !important;
+	gap: 2px;
+}
+
+.pajd .pajd-week__from {
+	font-size: 15px;
+	font-weight: 800;
+	white-space: nowrap;
+}
+
+.pajd .pajd-week__price {
+	margin-top: 0;
+	font-size: 14px;
+	font-weight: 700;
+}
+
+.pajd .pajd-week__price del {
+	display: inline-block;
+	margin-left: 4px;
+	font-size: 12px;
+}
+
+.pajd .pajd-week__tag,
+.pajd button.pajd-week .pajd-week__tag {
+	position: static;
+	align-self: flex-start;
+	margin-top: 2px;
+	padding: 1px 6px;
+	font-size: 10px;
+}
+
+@container pajd (max-width: 380px) {
+	.pajd .pajd-months,
+	.pajd .pajd-months.is-multi {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 14px 8px;
+	}
+
+	.pajd .pajd-week__from {
+		font-size: 14px;
+	}
+}
+
+/* Koncepti i rute s opisom */
+.pajd .pajd-route span strong {
+	display: block;
+	color: var(--pajd-navy);
+	font-weight: 800;
+}
+
+.pajd .pajd-route span small {
+	display: block;
+	margin-top: 2px;
+	color: var(--pajd-muted);
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 1.4;
+}
+
+.pajd .pajd-route-wrap {
+	display: grid;
+	gap: 0;
+}
+
+.pajd .pajd-days {
+	margin: -4px 0 0;
+	padding: 8px 14px 4px 42px;
+	border: 2px solid var(--pajd-line);
+	border-top: 0;
+	border-radius: 0 0 12px 12px;
+	background: #fafcfd;
+}
+
+.pajd .pajd-route-wrap .pajd-route span {
+	position: relative;
+	z-index: 1;
+}
+
+.pajd .pajd-days summary {
+	color: var(--pajd-accent);
+	font-size: 14px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.pajd .pajd-days ul {
+	display: grid;
+	gap: 4px;
+	margin: 8px 0 6px;
+	padding: 0;
+	list-style: none;
+	font-size: 14px;
+	line-height: 1.45;
+}
+
+.pajd .pajd-days strong {
+	color: var(--pajd-navy);
+}
+
+.pajd .pajd-days__note {
+	margin: 0 0 6px;
+	color: var(--pajd-muted);
+	font-size: 12px;
+}
+
+.pajd .pajd-offer {
+	display: grid;
+	gap: 6px;
+	margin: 0 0 16px;
+	padding: 12px 14px;
+	border-left: 4px solid var(--pajd-cta);
+	border-radius: 0 12px 12px 0;
+	background: var(--pajd-orange-soft);
+	font-size: 15px;
+	line-height: 1.45;
+}
+
+.pajd .pajd-offer strong {
+	color: var(--pajd-navy);
+}

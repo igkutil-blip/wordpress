@@ -1,7 +1,7 @@
 === Plan A jedrenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 
 Rezervacija tjednog jedrenja za ekipu (subota–subota) u terminu koji kupac bira.
@@ -47,6 +47,16 @@ i na stranici iz predmemorije. Ipak izuzmi:
 Košarica, naplata i "Moj račun" već moraju biti izuzeti zbog WooCommercea.
 
 == Promjene ==
+
+= 1.2.0 =
+* Kalendar prikazuje cijelu sezonu odjednom, bez listanja: svi mjeseci jedan uz drugi (na mobitelu
+  po dva), tjedni kao kompaktne kartice "15.–22. 5." s cijenom.
+* Koncepti tjedna (Jedrenje i kupanje, planinarenje s licenciranim diplomiranim planinskim vodičem,
+  biciklizam, gastronomija, kombinirano) s opisima; kupac bira koncept u zahtjevu, a vidi se u
+  e-mailovima i administraciji.
+* Rute s opisom i planom po danima (Ruta A, Ruta B, Dogovor sa skiperom); uređuju se u Postavkama
+  (blok po ruti: naziv, kratki opis, dani).
+* U uvodu kratko: koji koncepti i rute postoje.
 
 = 1.1.0 =
 * Slajder s fotografijama na vrhu rezervacijskog bloka: istaknuta slika i galerija izleta jedrenja

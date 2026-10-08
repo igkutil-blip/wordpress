@@ -109,7 +109,8 @@ final class Plan_A_Jedrenje_Front {
 		$from   = $prices ? min( $prices ) : (float) $s['base_price'];
 		$min    = Plan_A_Jedrenje_Data::min_persons();
 		$max    = Plan_A_Jedrenje_Data::max_persons();
-		$routes = Plan_A_Jedrenje_Data::lines( 'routes' );
+		$routes   = Plan_A_Jedrenje_Data::items( 'routes' );
+		$concepts = Plan_A_Jedrenje_Data::items( 'concepts' );
 		$terms  = Plan_A_Jedrenje_Data::lines( 'cancel_terms' );
 
 		ob_start();
@@ -137,6 +138,16 @@ final class Plan_A_Jedrenje_Front {
 						<del><?php echo esc_html( Plan_A_Jedrenje_Data::money( (float) $s['base_regular'] ) ); ?></del>
 					<?php endif; ?>
 				</p>
+				<?php if ( $concepts || $routes ) : ?>
+					<ul class="pajd-offer">
+						<?php if ( $concepts ) : ?>
+							<li><strong>Kakav tjedan:</strong> <?php echo esc_html( implode( ' · ', array_column( $concepts, 'title' ) ) ); ?></li>
+						<?php endif; ?>
+						<?php if ( $routes ) : ?>
+							<li><strong>Rute:</strong> <?php echo esc_html( implode( ' · ', array_column( $routes, 'title' ) ) ); ?></li>
+						<?php endif; ?>
+					</ul>
+				<?php endif; ?>
 				<div class="pajd-incl">
 					<p class="pajd-incl__title">Uključeno</p>
 					<ul class="pajd-checks">
@@ -160,16 +171,11 @@ final class Plan_A_Jedrenje_Front {
 						<li><span class="pajd-dot pajd-dot--booked"></span>Zauzeto</li>
 					</ul>
 				</div>
-				<div class="pajd-nav">
-					<button type="button" class="pajd-nav__btn" data-pajd-prev aria-label="Prethodni mjesec"><?php echo self::icon( 'left' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></button>
-					<p class="pajd-nav__title" data-pajd-range aria-live="polite"></p>
-					<button type="button" class="pajd-nav__btn" data-pajd-next aria-label="Sljedeći mjesec"><?php echo self::icon( 'right' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></button>
-				</div>
 				<div class="pajd-months" data-pajd-months>
 					<p class="pajd-loading">Učitavam slobodne tjedne…</p>
 				</div>
 				<noscript><p class="pajd-msg">Za rezervaciju uključi JavaScript ili nam se javi e-mailom.</p></noscript>
-				<p class="pajd-cal__note">Cijena tjedna je za cijeli brod. Tjedan „Na upitu” još možeš zatražiti.</p>
+				<p class="pajd-cal__note">Svi tjedni su od subote do subote, cijena je za cijeli brod. Tjedan „Na upitu” još možeš zatražiti.</p>
 			</section>
 
 			<section class="pajd-card pajd-book" data-pajd-book hidden aria-labelledby="pajd-book-title">
@@ -196,10 +202,34 @@ final class Plan_A_Jedrenje_Front {
 						</div>
 					</div>
 
+					<?php if ( $concepts ) : ?>
+						<fieldset class="pajd-routes pajd-concepts">
+							<legend>Kakav tjedan želite?</legend>
+							<?php foreach ( $concepts as $i => $c ) : ?>
+								<label class="pajd-route"><input type="radio" name="concept" value="<?php echo esc_attr( $c['title'] ); ?>" <?php checked( 0, $i ); ?>><span><strong><?php echo esc_html( $c['title'] ); ?></strong><?php if ( $c['text'] ) : ?><small><?php echo esc_html( implode( ' ', $c['text'] ) ); ?></small><?php endif; ?></span></label>
+							<?php endforeach; ?>
+						</fieldset>
+					<?php endif; ?>
+
 					<fieldset class="pajd-routes">
 						<legend>Željena ruta</legend>
 						<?php foreach ( $routes as $i => $route ) : ?>
-							<label class="pajd-route"><input type="radio" name="route" value="<?php echo esc_attr( $route ); ?>" <?php checked( 0, $i ); ?>><span><?php echo esc_html( $route ); ?></span></label>
+							<?php $days = array_slice( $route['text'], 1 ); ?>
+							<div class="pajd-route-wrap">
+								<label class="pajd-route"><input type="radio" name="route" value="<?php echo esc_attr( $route['title'] ); ?>" <?php checked( 0, $i ); ?>><span><strong><?php echo esc_html( $route['title'] ); ?></strong><?php if ( $route['text'] ) : ?><small><?php echo esc_html( $route['text'][0] ); ?></small><?php endif; ?></span></label>
+								<?php if ( $days ) : ?>
+									<details class="pajd-days">
+										<summary>Plan po danima</summary>
+										<ul>
+											<?php foreach ( $days as $d ) : ?>
+												<?php $parts = explode( ':', $d, 2 ); ?>
+												<li><?php if ( 2 === count( $parts ) && strlen( $parts[0] ) < 20 ) : ?><strong><?php echo esc_html( $parts[0] ); ?></strong><?php echo esc_html( ':' . $parts[1] ); ?><?php else : ?><?php echo esc_html( $d ); ?><?php endif; ?></li>
+											<?php endforeach; ?>
+										</ul>
+										<p class="pajd-days__note">Plan je okviran: skiper ga prilagođava vjetru i vremenu.</p>
+									</details>
+								<?php endif; ?>
+							</div>
 						<?php endforeach; ?>
 					</fieldset>
 
@@ -306,9 +336,14 @@ final class Plan_A_Jedrenje_Front {
 			self::fail( 'Broj osoba mora biti od ' . Plan_A_Jedrenje_Data::min_persons() . ' do ' . Plan_A_Jedrenje_Data::max_persons() . '.', 'persons' );
 		}
 		$route  = self::text( 'route', 200 );
-		$routes = Plan_A_Jedrenje_Data::lines( 'routes' );
+		$routes = Plan_A_Jedrenje_Data::titles( 'routes' );
 		if ( $routes && ! in_array( $route, $routes, true ) ) {
 			self::fail( 'Odaberi rutu.', 'route' );
+		}
+		$concept  = self::text( 'concept', 200 );
+		$concepts = Plan_A_Jedrenje_Data::titles( 'concepts' );
+		if ( $concepts && ! in_array( $concept, $concepts, true ) ) {
+			self::fail( 'Odaberi kakav tjedan želite.', 'concept' );
 		}
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- provjereno gore.
 		$note = isset( $_POST['note'] ) ? sanitize_textarea_field( wp_unslash( $_POST['note'] ) ) : '';
@@ -318,6 +353,7 @@ final class Plan_A_Jedrenje_Front {
 			'week'     => $week,
 			'persons'  => $persons,
 			'route'    => $route,
+			'concept'  => $concept,
 			'note'     => $note,
 			'first'    => self::text( 'first', 60 ),
 			'last'     => self::text( 'last', 60 ),

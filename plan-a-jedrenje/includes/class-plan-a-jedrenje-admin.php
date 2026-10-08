@@ -195,7 +195,7 @@ final class Plan_A_Jedrenje_Admin {
 			$v       = sanitize_text_field( wp_unslash( $_POST[ $k ] ?? '' ) );
 			$s[ $k ] = preg_match( '/^([01]?\d|2[0-3])[:.][0-5]\d$/', $v ) ? str_replace( '.', ':', $v ) : Plan_A_Jedrenje_Data::defaults()[ $k ];
 		}
-		foreach ( array( 'included', 'excluded', 'routes', 'cancel_terms', 'mail_request', 'mail_confirm', 'mail_reject', 'mail_booked', 'mail_paid' ) as $k ) {
+		foreach ( array( 'included', 'excluded', 'routes', 'concepts', 'cancel_terms', 'mail_request', 'mail_confirm', 'mail_reject', 'mail_booked', 'mail_paid' ) as $k ) {
 			$s[ $k ] = sanitize_textarea_field( wp_unslash( $_POST[ $k ] ?? '' ) );
 		}
 		if ( '' === trim( $s['routes'] ) ) {
@@ -324,12 +324,13 @@ final class Plan_A_Jedrenje_Admin {
 		$rows = array(
 			'Termin'     => Plan_A_Jedrenje_Data::week_long( $r['week'] ),
 			'Broj osoba' => (string) $r['persons'],
+			'Koncept'    => (string) ( $r['concept'] ?? '' ),
 			'Ruta'       => $r['route'],
 			'Cijena'     => Plan_A_Jedrenje_Data::money( (float) $r['price'] ) . ' za cijeli brod',
 			'Zaprimljeno' => $r['created'] ? wp_date( 'j. n. Y. H:i', (int) $r['created'] ) : '',
 		);
 		$html = '<div class="paj-meta">';
-		foreach ( $rows as $k => $v ) {
+		foreach ( array_filter( $rows, 'strlen' ) as $k => $v ) {
 			$html .= '<div><span>' . esc_html( $k ) . ':</span> <strong>' . esc_html( $v ) . '</strong></div>';
 		}
 		$html .= '</div>';
@@ -592,7 +593,8 @@ final class Plan_A_Jedrenje_Admin {
 			$text( 'disembark_time', 'Iskrcaj (subota)', 'npr. 09:00' );
 			$area( 'included', 'Uključeno', 'Jedna stavka u retku; prikazuje se s kvačicama.' );
 			$area( 'excluded', 'Nije uključeno', 'Jedna stavka u retku; prikazuje se sitnije.' );
-			$area( 'routes', 'Ponuđene rute', 'Jedna ruta u retku.' );
+			$area( 'concepts', 'Koncepti tjedna', 'Svaki koncept u svom bloku: prvi redak naziv, ispod kratki opis; između koncepata prazan redak. Prazno = bez odabira koncepta.' );
+			$area( 'routes', 'Ponuđene rute', 'Svaka ruta u svom bloku: prvi redak naziv, drugi kratki opis, zatim plan po danima ("Subota: …"); između ruta prazan redak.' );
 			$num( 'min_persons', 'Najmanji broj sudionika' );
 			$num( 'max_persons', 'Najveći broj sudionika' );
 			?>

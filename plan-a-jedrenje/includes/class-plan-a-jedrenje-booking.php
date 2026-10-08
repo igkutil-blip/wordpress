@@ -179,6 +179,7 @@ final class Plan_A_Jedrenje_Booking {
 			array(
 				'persons'     => 0,
 				'route'       => '',
+				'concept'     => '',
 				'note'        => '',
 				'first'       => '',
 				'last'        => '',
@@ -334,6 +335,7 @@ final class Plan_A_Jedrenje_Booking {
 				'state'    => 'zahtjev',
 				'persons'  => (int) $in['persons'],
 				'route'    => $in['route'],
+				'concept'  => $in['concept'] ?? '',
 				'note'     => $in['note'],
 				'first'    => $in['first'],
 				'last'     => $in['last'],

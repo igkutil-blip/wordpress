@@ -38,9 +38,6 @@
 			return;
 		}
 		var monthsBox = root.querySelector('[data-pajd-months]');
-		var prev = root.querySelector('[data-pajd-prev]');
-		var next = root.querySelector('[data-pajd-next]');
-		var range = root.querySelector('[data-pajd-range]');
 		var book = root.querySelector('[data-pajd-book]');
 		var form = root.querySelector('[data-pajd-form]');
 		var msg = root.querySelector('[data-pajd-msg]');
@@ -49,11 +46,17 @@
 		var share = root.querySelector('[data-pajd-share]');
 		var weeks = cfg.weeks || [];
 		var months = [];
-		var index = 0;
 		var selected = null;
 
-		function visibleCount() {
-			return root.getBoundingClientRect().width >= 860 ? 3 : 1;
+		/* "15.–22. 5." ili "28. 8.–4. 9." */
+		function span(w) {
+			var a = w.start.split('-');
+			var b = w.end.split('-');
+			var d1 = parseInt(a[2], 10);
+			var m1 = parseInt(a[1], 10);
+			var d2 = parseInt(b[2], 10);
+			var m2 = parseInt(b[1], 10);
+			return m1 === m2 ? d1 + '.–' + d2 + '. ' + m1 + '.' : d1 + '. ' + m1 + '.–' + d2 + '. ' + m2 + '.';
 		}
 
 		function buildMonths() {
@@ -72,36 +75,34 @@
 			return MONTHS[parseInt(p[1], 10) - 1] + (withYear ? ' ' + p[0] + '.' : '');
 		}
 
+		/* Cijela sezona odjednom: svaki mjesec sa svim svojim tjednima. */
 		function render() {
-			var count = visibleCount();
-			if (index > Math.max(0, months.length - count)) {
-				index = Math.max(0, months.length - count);
-			}
 			monthsBox.textContent = '';
-			monthsBox.classList.toggle('is-multi', count > 1);
 			if (!months.length) {
 				monthsBox.appendChild(el('p', 'pajd-loading', 'Trenutno nema slobodnih tjedana u sezoni. Javi nam se za dogovor.'));
-				range.textContent = '';
-				prev.disabled = next.disabled = true;
 				return;
 			}
-			var shown = months.slice(index, index + count);
-			shown.forEach(function (key) {
+			var years = {};
+			months.forEach(function (k) {
+				years[k.slice(0, 4)] = true;
+			});
+			var manyYears = Object.keys(years).length > 1;
+			months.forEach(function (key) {
 				var box = el('div', 'pajd-month');
-				box.appendChild(el('h4', 'pajd-month__title', monthTitle(key, true)));
+				box.appendChild(el('h4', 'pajd-month__title', monthTitle(key, manyYears)));
 				var list = el('div', 'pajd-weeks');
 				weeks.filter(function (w) {
 					return w.month === key;
 				}).forEach(function (w) {
 					var b = el('button', 'pajd-week is-' + w.state);
+					var isSel = selected && selected.start === w.start;
 					b.type = 'button';
 					b.setAttribute('data-start', w.start);
-					b.setAttribute('aria-pressed', selected && selected.start === w.start ? 'true' : 'false');
-					if (selected && selected.start === w.start) {
+					b.setAttribute('aria-pressed', isSel ? 'true' : 'false');
+					if (isSel) {
 						b.classList.add('is-selected');
 					}
-					b.appendChild(el('span', 'pajd-week__from', w.from));
-					b.appendChild(el('span', 'pajd-week__to', 'do ' + w.to));
+					b.appendChild(el('span', 'pajd-week__from', span(w)));
 					var price = el('span', 'pajd-week__price', money(w.price));
 					if (w.regular > w.price) {
 						price.appendChild(el('del', '', money(w.regular)));
@@ -119,13 +120,6 @@
 				box.appendChild(list);
 				monthsBox.appendChild(box);
 			});
-			var first = shown[0];
-			var last = shown[shown.length - 1];
-			range.textContent = shown.length > 1
-				? monthTitle(first, first.slice(0, 4) !== last.slice(0, 4)) + ' – ' + monthTitle(last, true)
-				: monthTitle(first, true);
-			prev.disabled = index <= 0;
-			next.disabled = index + count >= months.length;
 		}
 
 		function sumRow(dl, label, value) {
@@ -233,14 +227,6 @@
 				select(b.getAttribute('data-start'));
 			}
 		});
-		prev.addEventListener('click', function () {
-			index = Math.max(0, index - visibleCount());
-			render();
-		});
-		next.addEventListener('click', function () {
-			index = Math.min(Math.max(0, months.length - visibleCount()), index + visibleCount());
-			render();
-		});
 		persons.addEventListener('change', updatePerPerson);
 
 		form.addEventListener('submit', function (e) {
@@ -298,13 +284,6 @@
 				});
 		});
 
-		var lastCount = visibleCount();
-		window.addEventListener('resize', function () {
-			if (visibleCount() !== lastCount) {
-				lastCount = visibleCount();
-				render();
-			}
-		});
 
 		buildMonths();
 		render();

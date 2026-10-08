@@ -20,6 +20,7 @@ final class Plan_A_Jedrenje_Mail {
 			'Polazak'      => Plan_A_Jedrenje_Data::value( 'marina' ) . ', subota, ukrcaj od ' . Plan_A_Jedrenje_Data::value( 'embark_time' ) . ' h',
 			'Brod'         => Plan_A_Jedrenje_Data::value( 'boat' ) . ', ' . (int) Plan_A_Jedrenje_Data::value( 'cabins' ) . ' kabine, ' . Plan_A_Jedrenje_Data::value( 'skipper' ),
 			'Broj osoba'   => (string) $r['persons'],
+			'Koncept'      => (string) ( $r['concept'] ?? '' ),
 			'Ruta'         => $r['route'],
 			'Cijena'       => Plan_A_Jedrenje_Data::money( (float) $r['price'] ) . ' za cijeli brod',
 		);
@@ -35,7 +36,7 @@ final class Plan_A_Jedrenje_Mail {
 			$rows['Napomena'] = $r['note'];
 		}
 		$html = '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:0 0 18px;font-size:15px;">';
-		foreach ( $rows as $k => $v ) {
+		foreach ( array_filter( $rows, 'strlen' ) as $k => $v ) {
 			$html .= '<tr><td style="padding:7px 10px 7px 0;color:#5f6b77;vertical-align:top;white-space:nowrap;border-bottom:1px solid #edf1f5;">' . esc_html( $k ) . '</td>'
 				. '<td style="padding:7px 0;color:#24323f;font-weight:bold;border-bottom:1px solid #edf1f5;">' . esc_html( $v ) . '</td></tr>';
 		}

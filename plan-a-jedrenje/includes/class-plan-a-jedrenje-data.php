@@ -35,7 +35,8 @@ final class Plan_A_Jedrenje_Data {
 			'disembark_time' => '09:00',
 			'included'       => "najam jedrilice\nskiper\nvođenje na kopnenim turama\ngorivo\nmarine i vezovi\nturistička pristojba\nzavršno čišćenje\nposteljina i ručnici",
 			'excluded'       => "hrana i piće (zajednička blagajna ili pojedinačno, prema dogovoru ekipe)\nulaznice za NP Mljet i PP Lastovsko otočje\nnajam bicikala\ndegustacije i restorani",
-			'routes'         => "Ruta A: Šolta, Brač, Hvar, Vis\nRuta B: Lastovo, Mljet, Korčula\nDogovor sa skiperom",
+			'routes'         => "Ruta A: Šolta, Brač, Hvar, Vis\nSrednjodalmatinski otoci: kraći prijelazi i više vremena za kupanje, uvale i izlete na kopno.\nSubota: ukrcaj u ACI marini Split, upoznavanje broda i prva večer u marini.\nNedjelja: Šolta – uvala Nečujam ili Maslinica, kupanje i šetnja.\nPonedjeljak: Brač – Bol i Zlatni rat, uspon na Vidovu goru (778 m), najviši vrh jadranskih otoka.\nUtorak: Hvar – Pakleni otoci i grad Hvar ili Stari Grad.\nSrijeda: Vis – Komiža, uspon na Hum (587 m) ili vožnja biciklom po otoku.\nČetvrtak: Vis – uvala Stiniva i grad Vis, večer u konobi.\nPetak: povratak preko Šolte ili Brača, zadnje kupanje i večer u Splitu.\nSubota: iskrcaj do 09:00.\n\nRuta B: Lastovo, Mljet, Korčula\nJužna Dalmacija za ekipu koja voli dulje plovidbe: najudaljeniji otoci, park prirode i nacionalni park.\nSubota: ukrcaj u ACI marini Split.\nNedjelja: dulja plovidba prema Korčuli, usput kupanje na Hvaru ili Šćedru.\nPonedjeljak: Lastovo – PP Lastovsko otočje, uspon na Hum (417 m) i noć pod zvijezdama bez svjetlosnog onečišćenja.\nUtorak: Mljet – NP Mljet, Veliko i Malo jezero, otočić Sveta Marija, pješice ili biciklom uz jezera.\nSrijeda: Korčula – stari grad i vinogradi pošipa i grka u Lumbardi.\nČetvrtak: plovidba natrag prema srednjoj Dalmaciji, noćenje na Hvaru.\nPetak: Brač ili Šolta, zadnje kupanje i povratak u Split.\nSubota: iskrcaj do 09:00.\n\nDogovor sa skiperom\nRutu složite zajedno sa skiperom prema vremenu, vjetru i željama ekipe – može i kombinacija obje rute.",
+			'concepts'       => "Jedrenje i kupanje\nKlasičan tjedan na moru: skrivene uvale, kupanje, ronjenje na dah, zalasci sunca na palubi i večeri u otočnim mjestima.\n\nJedrenje i planinarenje\nSvaki dan s broda na vrh otoka: Vidova gora na Braču, Sveti Nikola na Hvaru, Hum na Visu i Lastovu. Ture vodi licencirani diplomirani planinski vodič.\n\nJedrenje i biciklizam\nOtočne ceste i makadami na Visu, Hvaru i Korčuli te staze uz jezera na Mljetu. Bicikli se iznajmljuju na otocima (najam nije uključen u cijenu).\n\nJedrenje i gastronomija\nKonobe, riba s gradela i domaća vina: vugava na Visu, bogdanuša i plavac na Hvaru, pošip i grk na Korčuli. Degustacije i restorani plaćaju se zasebno.\n\nKombinirano\nMalo svega: dogovorite s vodičem i skiperom što ekipa najviše želi.",
 			'min_persons'    => 5,
 			'max_persons'    => 8,
 			'base_price'     => 5600,
@@ -62,7 +63,21 @@ final class Plan_A_Jedrenje_Data {
 	 * od 16. 9. do 15. 10. 2027. 5.600 €. Ne dira cjenik koji je administrator već upisao.
 	 */
 	public static function seed() {
-		if ( get_option( 'plan_a_jedrenje_seeded' ) ) {
+		$done = (int) get_option( 'plan_a_jedrenje_seeded' );
+		if ( $done < 2 ) {
+			// 1.2.0: rute s opisom i planom po danima umjesto samo naziva, ako nisu mijenjane.
+			$saved = get_option( self::OPTION, array() );
+			if ( is_array( $saved ) && isset( $saved['routes'] ) && "Ruta A: Šolta, Brač, Hvar, Vis\nRuta B: Lastovo, Mljet, Korčula\nDogovor sa skiperom" === str_replace( "\r", '', trim( (string) $saved['routes'] ) ) ) {
+				unset( $saved['routes'] );
+				update_option( self::OPTION, $saved, false );
+				self::$settings = null;
+			}
+		}
+		if ( $done >= 2 ) {
+			return;
+		}
+		if ( $done ) {
+			update_option( 'plan_a_jedrenje_seeded', 2, false );
 			return;
 		}
 		if ( ! self::periods() ) {
@@ -87,7 +102,7 @@ final class Plan_A_Jedrenje_Data {
 				false
 			);
 		}
-		update_option( 'plan_a_jedrenje_seeded', 1, false );
+		update_option( 'plan_a_jedrenje_seeded', 2, false );
 	}
 
 	public static function get(): array {
@@ -110,6 +125,35 @@ final class Plan_A_Jedrenje_Data {
 
 	public static function lines( string $key ): array {
 		return array_values( array_filter( array_map( 'trim', preg_split( '/\R/u', (string) self::value( $key ) ) ) ) );
+	}
+
+	/**
+	 * Stavke s opisom (rute, koncepti): blokovi odvojeni praznim retkom, prvi redak je naziv,
+	 * ostali opis. Stari zapis (jedna stavka u retku, bez praznih redaka) i dalje radi.
+	 *
+	 * @return array<int, array{title: string, text: string[]}>
+	 */
+	public static function items( string $key ): array {
+		$raw = trim( str_replace( "\r", '', (string) self::value( $key ) ) );
+		if ( '' === $raw ) {
+			return array();
+		}
+		$blocks = preg_match( '/\n\s*\n/', $raw ) ? preg_split( '/\n\s*\n/', $raw ) : explode( "\n", $raw );
+		$out    = array();
+		foreach ( $blocks as $block ) {
+			$lines = array_values( array_filter( array_map( 'trim', explode( "\n", $block ) ) ) );
+			if ( $lines ) {
+				$out[] = array(
+					'title' => array_shift( $lines ),
+					'text'  => $lines,
+				);
+			}
+		}
+		return $out;
+	}
+
+	public static function titles( string $key ): array {
+		return array_column( self::items( $key ), 'title' );
 	}
 
 	public static function min_persons(): int {
