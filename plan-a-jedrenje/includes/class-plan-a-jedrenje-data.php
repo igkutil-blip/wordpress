@@ -55,6 +55,39 @@ final class Plan_A_Jedrenje_Data {
 		);
 	}
 
+	/**
+	 * Početni cjenik (jednom): špica od subote 26. 6. do 15. 9. 2027. 6.400 € (100 € po osobi više),
+	 * od 16. 9. do 15. 10. 2027. 5.600 €. Ne dira cjenik koji je administrator već upisao.
+	 */
+	public static function seed() {
+		if ( get_option( 'plan_a_jedrenje_seeded' ) ) {
+			return;
+		}
+		if ( ! self::periods() ) {
+			update_option(
+				self::PERIODS,
+				array(
+					array(
+						'name'    => 'Špica',
+						'from'    => '2027-06-26',
+						'to'      => '2027-09-15',
+						'price'   => 6400,
+						'regular' => 0,
+					),
+					array(
+						'name'    => 'Posezona',
+						'from'    => '2027-09-16',
+						'to'      => '2027-10-15',
+						'price'   => 5600,
+						'regular' => 0,
+					),
+				),
+				false
+			);
+		}
+		update_option( 'plan_a_jedrenje_seeded', 1, false );
+	}
+
 	public static function get(): array {
 		if ( null === self::$settings ) {
 			$saved          = get_option( self::OPTION, array() );
@@ -163,7 +196,7 @@ final class Plan_A_Jedrenje_Data {
 
 	/**
 	 * Prva i zadnja subota sezone (zadnja subota = dan iskrcaja zadnjeg tjedna).
-	 * Zadano: prva subota od 15. svibnja i zadnja subota do 15. listopada.
+	 * Zadano: prva subota od 15. svibnja i prva subota od 15. listopada.
 	 *
 	 * @return array{0: string, 1: string}
 	 */
@@ -178,9 +211,10 @@ final class Plan_A_Jedrenje_Data {
 			}
 		}
 		if ( ! self::is_saturday( $last ) || $last <= $first ) {
+			// Zadnji iskrcaj: prva subota od 15. listopada (sezona traje do 15. 10.).
 			$last = sprintf( '%04d-10-15', $year );
 			while ( ! self::is_saturday( $last ) ) {
-				$last = self::add_days( $last, -1 );
+				$last = self::add_days( $last, 1 );
 			}
 		}
 		return array( $first, $last );

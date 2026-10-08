@@ -1,7 +1,7 @@
 === Plan A jedrenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 
 Rezervacija tjednog jedrenja za ekipu (subota–subota) u terminu koji kupac bira.
@@ -47,6 +47,12 @@ i na stranici iz predmemorije. Ipak izuzmi:
 Košarica, naplata i "Moj račun" već moraju biti izuzeti zbog WooCommercea.
 
 == Promjene ==
+
+= 1.0.1 =
+* Sezona zadano traje do 15. listopada: zadnji iskrcaj je prva subota od 15. 10. (2027.: 16. 10.).
+* Početni cjenik 2027.: Špica od subote 26. 6. do 15. 9. (zadnji ukrcaj 11. 9.) 6.400 € za cijeli brod
+  (100 € po osobi više), Posezona od 16. 9. do 15. 10. 5.600 €; ostali tjedni osnovna cijena 5.600 €.
+  Upisuje se samo ako cjenik još nije uređen.
 
 = 1.0.0 =
 * Prva inačica.
