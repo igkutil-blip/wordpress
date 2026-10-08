@@ -261,11 +261,11 @@
 /* Redak izleta */
 .papl .papl-row {
 	display: grid;
-	grid-template-columns: 200px minmax(0, 1fr) auto;
-	gap: 6px 18px;
+	grid-template-columns: 74px minmax(0, 1fr) auto;
+	gap: 6px 16px;
 	align-items: center;
 	margin: 0;
-	padding: 12px 16px 12px 12px;
+	padding: 14px 16px 14px 14px;
 	border: 1px solid #edf1f5;
 	border-left: 4px solid var(--papl-line);
 	border-radius: var(--papl-radius);
@@ -290,59 +290,16 @@
 	box-shadow: 0 0 0 3px rgba(26, 154, 214, 0.35);
 }
 
-.papl .papl-media {
-	position: relative;
-	display: block;
-	align-self: center;
-	width: 100%;
-	height: auto;
-	overflow: hidden;
-	aspect-ratio: 5 / 3;
-	border-radius: 10px;
-	background: linear-gradient(150deg, #12304b 0%, #1a9ad6 100%);
-}
-
-.papl .papl-media__img,
-.papl .papl-media img {
-	position: absolute;
-	inset: 0;
-	display: block;
-	width: 100%;
-	height: 100%;
-	max-width: none;
-	margin: 0;
-	object-fit: cover;
-	transition: transform 0.3s;
-}
-
-.papl a.papl-media:hover img {
-	transform: scale(1.04);
-}
-
-.papl .papl-media__empty {
-	position: absolute;
-	inset: auto 0 0;
-	display: block;
-}
-
-.papl .papl-media__empty svg {
-	display: block;
-	width: 100%;
-	height: auto;
-}
-
 .papl .papl-date {
-	position: absolute;
-	top: 8px;
-	left: 8px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	min-width: 56px;
-	padding: 5px 8px 6px;
-	border-radius: 9px;
-	background: rgba(255, 255, 255, 0.95);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+	justify-content: center;
+	align-self: stretch;
+	min-height: 70px;
+	padding: 6px 4px;
+	border-radius: 10px;
+	background: var(--papl-soft);
 	color: var(--papl-navy);
 	text-align: center;
 	line-height: 1.1;
@@ -350,7 +307,7 @@
 
 .papl .papl-date__wd,
 .papl .papl-date__m {
-	font-size: 11px;
+	font-size: 12px;
 	font-weight: 700;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
@@ -361,13 +318,13 @@
 }
 
 .papl .papl-date__d {
-	margin: 2px 0;
-	font-size: 22px;
+	margin: 3px 0;
+	font-size: 26px;
 	font-weight: 800;
 }
 
 .papl .papl-date__d--multi {
-	font-size: 17px;
+	font-size: 19px;
 }
 
 .papl .papl-main {
@@ -617,32 +574,22 @@
 }
 
 .papl .papl-list--past .papl-row {
-	grid-template-columns: 120px minmax(0, 1fr) auto;
-	padding: 8px 12px 8px 8px;
+	grid-template-columns: 64px minmax(0, 1fr) auto;
+	padding: 10px 12px;
 	box-shadow: none;
 	opacity: 0.85;
 }
 
-.papl .papl-list--past .papl-media {
-	aspect-ratio: 3 / 2;
-}
-
 .papl .papl-list--past .papl-date {
-	top: 6px;
-	left: 6px;
-	min-width: 0;
-	padding: 3px 6px;
+	min-height: 56px;
 }
 
-.papl .papl-list--past .papl-date__wd,
-.papl .papl-list--past .papl-date__m {
-	display: none;
+.papl .papl-list--past .papl-date__d {
+	font-size: 20px;
 }
 
-.papl .papl-list--past .papl-date__d,
 .papl .papl-list--past .papl-date__d--multi {
-	margin: 0;
-	font-size: 14px;
+	font-size: 15px;
 }
 
 .papl .papl-list--past .papl-title {
@@ -664,29 +611,21 @@
 /* Uski prostor (mobitel): oznaka i gumbi ispod naziva */
 @container papl (max-width: 599px) {
 	.papl .papl-row {
-		grid-template-columns: 116px minmax(0, 1fr);
+		grid-template-columns: 64px minmax(0, 1fr);
 		align-items: start;
-		padding: 10px;
-	}
-
-	.papl .papl-media {
-		align-self: start;
-		aspect-ratio: 1 / 1;
+		padding: 12px;
 	}
 
 	.papl .papl-date {
-		top: 6px;
-		left: 6px;
-		min-width: 48px;
-		padding: 4px 6px 5px;
+		min-height: 64px;
 	}
 
 	.papl .papl-date__d {
-		font-size: 19px;
+		font-size: 22px;
 	}
 
 	.papl .papl-date__d--multi {
-		font-size: 15px;
+		font-size: 16px;
 	}
 
 	.papl .papl-side {
@@ -711,11 +650,7 @@
 	}
 
 	.papl .papl-list--past .papl-row {
-		grid-template-columns: 84px minmax(0, 1fr);
-	}
-
-	.papl .papl-list--past .papl-media {
-		aspect-ratio: 4 / 3;
+		grid-template-columns: 56px minmax(0, 1fr);
 	}
 
 	.papl .papl-list--past .papl-side {
@@ -777,4 +712,132 @@
 .papl button.papl-btn:disabled {
 	opacity: 0.6;
 	cursor: wait;
+}
+
+/*
+ * Inačica sa slikama izleta (slike="yes"): slika lijevo, oznaka datuma preko slike.
+ */
+.papl.papl--images .papl-row {
+	grid-template-columns: 200px minmax(0, 1fr) auto;
+	padding: 12px 16px 12px 12px;
+}
+
+.papl .papl-media {
+	position: relative;
+	display: block;
+	align-self: center;
+	width: 100%;
+	height: auto;
+	overflow: hidden;
+	aspect-ratio: 5 / 3;
+	border-radius: 10px;
+	background: linear-gradient(150deg, #12304b 0%, #1a9ad6 100%);
+}
+
+.papl .papl-media img {
+	position: absolute;
+	inset: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	margin: 0;
+	object-fit: cover;
+	transition: transform 0.3s;
+}
+
+.papl a.papl-media:hover img {
+	transform: scale(1.04);
+}
+
+.papl .papl-media__empty {
+	position: absolute;
+	inset: auto 0 0;
+	display: block;
+}
+
+.papl .papl-media__empty svg {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.papl .papl-media .papl-date {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	min-width: 56px;
+	min-height: 0;
+	padding: 5px 8px 6px;
+	border-radius: 9px;
+	background: rgba(255, 255, 255, 0.95);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.papl .papl-media .papl-date__d {
+	font-size: 22px;
+}
+
+.papl .papl-media .papl-date__d--multi {
+	font-size: 17px;
+}
+
+.papl.papl--images .papl-list--past .papl-row {
+	grid-template-columns: 120px minmax(0, 1fr) auto;
+}
+
+.papl .papl-list--past .papl-media {
+	aspect-ratio: 3 / 2;
+}
+
+.papl .papl-list--past .papl-media .papl-date {
+	top: 6px;
+	left: 6px;
+	min-width: 0;
+	padding: 3px 6px;
+}
+
+.papl .papl-list--past .papl-media .papl-date__wd,
+.papl .papl-list--past .papl-media .papl-date__m {
+	display: none;
+}
+
+.papl .papl-list--past .papl-media .papl-date__d {
+	margin: 0;
+	font-size: 14px;
+}
+
+@container papl (max-width: 599px) {
+	.papl.papl--images .papl-row {
+		grid-template-columns: 116px minmax(0, 1fr);
+		padding: 10px;
+	}
+
+	.papl .papl-media {
+		align-self: start;
+		aspect-ratio: 1 / 1;
+	}
+
+	.papl .papl-media .papl-date {
+		top: 6px;
+		left: 6px;
+		min-width: 48px;
+		padding: 4px 6px 5px;
+	}
+
+	.papl .papl-media .papl-date__d {
+		font-size: 19px;
+	}
+
+	.papl .papl-media .papl-date__d--multi {
+		font-size: 15px;
+	}
+
+	.papl.papl--images .papl-list--past .papl-row {
+		grid-template-columns: 84px minmax(0, 1fr);
+	}
+
+	.papl .papl-list--past .papl-media {
+		aspect-ratio: 4 / 3;
+	}
 }

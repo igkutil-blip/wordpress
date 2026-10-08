@@ -1,7 +1,7 @@
 === Plan A izleti ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.17.1
+Stable tag: 1.17.2
 License: GPLv2 or later
 
 Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s filtrom po kategorijama i mjesecima.
@@ -105,9 +105,14 @@ Shortcode [plan-a-plan-izleta] zamjenjuje ručno pisani popis na stranici plana 
   spremanja izleta i jednom dnevno). Za prošle izlete adrese se brišu bez slanja.
   Zaštita: skriveno polje, najviše 6 prijava u 10 minuta po IP adresi, 1000 adresa po izletu.
   Uključeno u WordPressov alat za brisanje osobnih podataka.
-* Atributi: godina="2026" (samo ta godina), odrzani="no", izleti_url="/izleti/" (prazno = bez gumba).
+* Atributi: godina="2026" (samo ta godina), odrzani="no", izleti_url="/izleti/" (prazno = bez gumba),
+  slike="yes" (uz svaki izlet njegova fotografija; zadano bez fotografija).
 
 == Promjene ==
+
+= 1.17.2 =
+* Plan izleta: zadani izgled opet je s blokom datuma (bez fotografija), kako je bio predstavljen;
+  fotografije izleta uključuju se atributom slike="yes".
 
 = 1.17.1 =
 * Plan izleta: svaki izlet ima sliku (slika izleta iz WpTravellyja ili vlastita slika najave,

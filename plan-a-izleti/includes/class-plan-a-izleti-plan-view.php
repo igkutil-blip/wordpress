@@ -6,6 +6,7 @@
  * Atributi:
  *   godina="2026"      samo izleti te godine (zadano: svi nadolazeći)
  *   odrzani="no"       bez popisa održanih izleta ove godine
+ *   slike="yes"        uz svaki izlet njegova slika (zadano bez slika, s blokom datuma)
  *   izleti_url="/izleti/"  gumb "Svi izleti s opisima" ispod plana (prazno = bez gumba)
  *
  * @package Plan_A_Izleti
@@ -125,7 +126,7 @@ final class Plan_A_Izleti_Plan_View {
 		return '<svg class="papl-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $paths[ $name ] . '</svg>';
 	}
 
-	private static function row_html( array $row, string $status, string $today ): string {
+	private static function row_html( array $row, string $status, string $today, bool $images = false ): string {
 		$url    = $row['tour'] ? get_permalink( $row['tour'] ) : '';
 		$range  = self::date_range( $row['from'], $row['to'] );
 		$title  = esc_html( $row['title'] );
@@ -155,7 +156,7 @@ final class Plan_A_Izleti_Plan_View {
 		}
 
 		$html  = '<li class="papl-row is-' . esc_attr( $status ) . '" id="izlet-' . esc_attr( $row['key'] ) . '">';
-		$html .= self::media( $row );
+		$html .= $images ? self::media( $row ) : self::date_block( $row );
 		$html .= '<div class="papl-main">';
 		$html .= '<h4 class="papl-title">' . ( $url ? '<a href="' . esc_url( $url ) . '">' . $title . '</a>' : $title ) . '</h4>';
 		$html .= '<p class="papl-when">' . esc_html( $range ) . '</p>';
@@ -207,6 +208,7 @@ final class Plan_A_Izleti_Plan_View {
 				'godina'     => '',
 				'odrzani'    => 'yes',
 				'izleti_url' => '/izleti/',
+				'slike'      => 'no',
 			),
 			$atts,
 			self::TAG
@@ -216,7 +218,8 @@ final class Plan_A_Izleti_Plan_View {
 		wp_enqueue_script( 'plan-a-plan' );
 		wp_add_inline_script( 'plan-a-plan', 'window.planAPlan=' . wp_json_encode( array( 'ajax' => admin_url( 'admin-ajax.php' ) ) ) . ';', 'before' );
 
-		$today = current_time( 'Y-m-d' );
+		$images = 'yes' === $atts['slike'];
+		$today  = current_time( 'Y-m-d' );
 		$year  = preg_match( '/^\d{4}$/', (string) $atts['godina'] ) ? (string) $atts['godina'] : '';
 		$this_year = $year ?: substr( $today, 0, 4 );
 
@@ -247,7 +250,7 @@ final class Plan_A_Izleti_Plan_View {
 
 		ob_start();
 		?>
-		<div class="papl" data-papl>
+		<div class="papl<?php echo $images ? ' papl--images' : ''; ?>" data-papl>
 			<div class="papl-top">
 				<p class="papl-summary">
 					<?php if ( $total ) : ?>
@@ -283,7 +286,7 @@ final class Plan_A_Izleti_Plan_View {
 					<ul class="papl-list">
 						<?php
 						foreach ( $items as $item ) {
-							echo self::row_html( $item[0], $item[1], $today ); // phpcs:ignore WordPress.Security.EscapeOutput -- escapirano u row_html().
+							echo self::row_html( $item[0], $item[1], $today, $images ); // phpcs:ignore WordPress.Security.EscapeOutput -- escapirano u row_html().
 						}
 						?>
 					</ul>
@@ -296,7 +299,7 @@ final class Plan_A_Izleti_Plan_View {
 					<ul class="papl-list papl-list--past">
 						<?php
 						foreach ( array_reverse( $past ) as $row ) {
-							echo self::row_html( $row, 'past', $today ); // phpcs:ignore WordPress.Security.EscapeOutput
+							echo self::row_html( $row, 'past', $today, $images ); // phpcs:ignore WordPress.Security.EscapeOutput
 						}
 						?>
 					</ul>
