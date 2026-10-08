@@ -111,43 +111,106 @@
 		});
 	}
 
-	/* Brzi odabir: Svi, Prijave otvorene, Uskoro, Jednodnevni, Višednevni. */
+	/*
+	 * Dvije kućice s padajućim izbornikom: "Izleti" (svi, prijave otvorene, uskoro,
+	 * jednodnevni, višednevni) i "Termin" (mjesec). Odabiri se kombiniraju.
+	 */
 	function initFilter(root) {
-		var bar = root.querySelector('.papl-filter');
-		if (!bar) {
+		var box = root.querySelector('[data-papl-filters]');
+		if (!box) {
 			return;
 		}
 		var empty = root.querySelector('[data-papl-empty]');
-		bar.addEventListener('click', function (e) {
-			var btn = e.target.closest('[data-papl-filter]');
-			if (!btn) {
-				return;
-			}
-			var f = btn.getAttribute('data-papl-filter');
-			Array.prototype.forEach.call(bar.querySelectorAll('[data-papl-filter]'), function (b) {
-				b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+		var state = { kind: 'all', month: 'all' };
+		var rows = root.querySelectorAll('[data-papl-section] .papl-row');
+
+		function toggle(name, open) {
+			Array.prototype.forEach.call(box.querySelectorAll('[data-papl-toggle]'), function (t) {
+				var n = t.getAttribute('data-papl-toggle');
+				var on = open && n === name;
+				t.setAttribute('aria-expanded', on ? 'true' : 'false');
+				t.classList.toggle('is-open', on);
+				box.querySelector('[data-papl-panel="' + n + '"]').hidden = !on;
 			});
+		}
+
+		function matchKind(row, kind) {
+			return kind === 'all' || row.getAttribute('data-status') === kind || row.getAttribute('data-days') === kind;
+		}
+
+		function monthOf(row) {
+			return row.closest('[data-papl-section]').getAttribute('data-papl-section');
+		}
+
+		function apply() {
 			var shown = 0;
+			Array.prototype.forEach.call(rows, function (row) {
+				var ok = matchKind(row, state.kind) && (state.month === 'all' || monthOf(row) === state.month);
+				row.hidden = !ok;
+				shown += ok ? 1 : 0;
+			});
 			Array.prototype.forEach.call(root.querySelectorAll('[data-papl-section]'), function (sec) {
-				var n = 0;
-				Array.prototype.forEach.call(sec.querySelectorAll('.papl-row'), function (row) {
-					var ok = f === 'all' || row.getAttribute('data-status') === f || row.getAttribute('data-days') === f;
-					row.hidden = !ok;
-					n += ok ? 1 : 0;
-				});
-				sec.hidden = !n;
-				shown += n;
-				var chip = root.querySelector('[data-papl-month="' + sec.getAttribute('data-papl-section') + '"]');
-				if (chip) {
-					chip.hidden = !n;
-					var c = chip.querySelector('span');
-					if (c) {
-						c.textContent = n;
-					}
-				}
+				sec.hidden = !sec.querySelector('.papl-row:not([hidden])');
 			});
 			if (empty) {
 				empty.hidden = shown > 0;
+			}
+			/* Brojevi uz opcije prema drugom odabiru; opcije bez izleta su zasivljene. */
+			Array.prototype.forEach.call(box.querySelectorAll('[data-papl-panel="month"] [data-papl-opt]'), function (opt) {
+				var m = opt.getAttribute('data-papl-opt');
+				var n = 0;
+				Array.prototype.forEach.call(rows, function (row) {
+					n += matchKind(row, state.kind) && (m === 'all' || monthOf(row) === m) ? 1 : 0;
+				});
+				opt.querySelector('[data-papl-n]').textContent = n;
+				opt.disabled = !n && m !== 'all';
+				opt.classList.toggle('is-disabled', opt.disabled);
+			});
+			Array.prototype.forEach.call(box.querySelectorAll('[data-papl-panel="kind"] [data-papl-opt]'), function (opt) {
+				var k = opt.getAttribute('data-papl-opt');
+				var n = 0;
+				Array.prototype.forEach.call(rows, function (row) {
+					n += matchKind(row, k) && (state.month === 'all' || monthOf(row) === state.month) ? 1 : 0;
+				});
+				opt.querySelector('[data-papl-n]').textContent = n;
+				opt.disabled = !n && k !== 'all';
+				opt.classList.toggle('is-disabled', opt.disabled);
+			});
+		}
+
+		box.addEventListener('click', function (e) {
+			var t = e.target.closest('[data-papl-toggle]');
+			if (t) {
+				toggle(t.getAttribute('data-papl-toggle'), t.getAttribute('aria-expanded') !== 'true');
+				return;
+			}
+			var opt = e.target.closest('[data-papl-opt]');
+			if (!opt || opt.disabled) {
+				return;
+			}
+			var panel = opt.closest('[data-papl-panel]');
+			var name = panel.getAttribute('data-papl-panel');
+			state[name] = opt.getAttribute('data-papl-opt');
+			Array.prototype.forEach.call(panel.querySelectorAll('[data-papl-opt]'), function (o) {
+				o.classList.toggle('is-active', o === opt);
+				o.setAttribute('aria-pressed', o === opt ? 'true' : 'false');
+			});
+			box.querySelector('[data-papl-toggle="' + name + '"] [data-papl-value]').textContent = opt.getAttribute('data-papl-label');
+			toggle(name, false);
+			apply();
+		});
+		document.addEventListener('click', function (e) {
+			if (!box.contains(e.target)) {
+				toggle('', false);
+			}
+		});
+		box.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape') {
+				var open = box.querySelector('[data-papl-toggle][aria-expanded="true"]');
+				toggle('', false);
+				if (open) {
+					open.focus();
+				}
 			}
 		});
 	}

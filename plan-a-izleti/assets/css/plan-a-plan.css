@@ -1034,3 +1034,253 @@ div.papl[data-papl] div {
 	right: 0 !important;
 	left: auto !important;
 }
+
+/*
+ * Sažetak i dvije kućice s padajućim izbornikom (kao na stranici Izleti).
+ */
+div.papl[data-papl] .papl-summary {
+	margin: 0 0 12px;
+	color: var(--papl-muted);
+	font-size: 15px;
+}
+
+.papl .papl-filters {
+	position: relative;
+	z-index: 20;
+	margin: 0 0 8px;
+}
+
+.papl .papl-selects {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12px;
+}
+
+.papl .papl-filters--single .papl-selects {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.papl button.papl-select {
+	display: flex !important;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	min-height: 64px;
+	margin: 0 !important;
+	padding: 10px 14px !important;
+	border: 2px solid transparent !important;
+	border-radius: 14px !important;
+	background: var(--papl-soft) !important;
+	box-shadow: none !important;
+	color: var(--papl-navy) !important;
+	font-size: 16px !important;
+	line-height: 1.2 !important;
+	letter-spacing: normal !important;
+	text-align: left;
+	text-transform: none !important;
+	cursor: pointer;
+	transition: border-color 0.2s;
+}
+
+.papl button.papl-select--month {
+	background: #fdf1e4 !important;
+	color: var(--papl-cta-dark) !important;
+}
+
+.papl button.papl-select:hover,
+.papl button.papl-select.is-open {
+	border-color: currentColor !important;
+}
+
+.papl .papl-select__icon,
+.papl .papl-select__arrow {
+	display: flex;
+	flex: 0 0 auto;
+}
+
+.papl .papl-select__icon .papl-icon {
+	width: 22px;
+	height: 22px;
+}
+
+.papl .papl-select__arrow {
+	margin-left: auto;
+	transition: transform 0.2s;
+}
+
+.papl .papl-select.is-open .papl-select__arrow {
+	transform: rotate(180deg);
+}
+
+.papl .papl-select__text {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	min-width: 0;
+}
+
+.papl .papl-select__label {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	opacity: 0.85;
+}
+
+.papl .papl-select__value {
+	overflow: hidden;
+	font-size: 16px;
+	font-weight: 800;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.papl .papl-panel {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	left: 0;
+	padding: 16px;
+	border: 1px solid var(--papl-line);
+	border-radius: 14px;
+	background: #fff;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+}
+
+.papl .papl-panel__title {
+	margin: 0 0 12px;
+	color: var(--papl-text);
+	font-size: 15px;
+	font-weight: 700;
+}
+
+.papl .papl-panel__options {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 8px;
+}
+
+.papl button.papl-option {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 46px;
+	margin: 0 !important;
+	padding: 8px 10px !important;
+	border: 1px solid var(--papl-accent) !important;
+	border-radius: 10px !important;
+	background: #fff !important;
+	box-shadow: none !important;
+	color: var(--papl-navy) !important;
+	font-size: 15px !important;
+	font-weight: 700 !important;
+	line-height: 1.2 !important;
+	letter-spacing: normal !important;
+	text-align: center;
+	text-transform: none !important;
+	cursor: pointer;
+}
+
+.papl button.papl-option span {
+	display: inline-grid;
+	place-items: center;
+	min-width: 22px;
+	height: 22px;
+	padding: 0 6px;
+	border-radius: 999px;
+	background: var(--papl-soft);
+	font-size: 12px;
+}
+
+.papl .papl-panel--month button.papl-option {
+	border-color: var(--papl-cta) !important;
+	color: var(--papl-cta-dark) !important;
+}
+
+.papl .papl-panel--month button.papl-option span {
+	background: #fdf1e4;
+}
+
+.papl button.papl-option:hover {
+	background: var(--papl-soft) !important;
+}
+
+.papl .papl-panel--month button.papl-option:hover {
+	background: #fdf1e4 !important;
+}
+
+.papl button.papl-option.is-active,
+.papl button.papl-option.is-active:hover {
+	border-color: var(--papl-navy) !important;
+	background: var(--papl-navy) !important;
+	color: #fff !important;
+}
+
+.papl .papl-panel--month button.papl-option.is-active,
+.papl .papl-panel--month button.papl-option.is-active:hover {
+	border-color: var(--papl-cta-dark) !important;
+	background: var(--papl-cta-dark) !important;
+}
+
+.papl button.papl-option.is-active span {
+	background: rgba(255, 255, 255, 0.22);
+}
+
+.papl button.papl-option.is-disabled {
+	border-color: #ddd !important;
+	background: #f6f6f6 !important;
+	color: #aaa !important;
+	cursor: not-allowed;
+}
+
+/* Dno: svi izleti i cijeli plan u kalendaru */
+.papl .papl-more {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 12px;
+	margin: 28px 0 0;
+	text-align: center;
+}
+
+.papl .papl-more .papl-cal__menu {
+	right: auto;
+	left: 50%;
+	transform: translateX(-50%);
+	text-align: left;
+}
+
+@container papl (max-width: 599px) {
+	.papl .papl-selects {
+		gap: 8px;
+	}
+
+	.papl button.papl-select {
+		gap: 8px;
+		min-height: 58px;
+		padding: 8px 10px !important;
+	}
+
+	.papl .papl-select__value {
+		font-size: 14px;
+	}
+
+	.papl .papl-select__label {
+		font-size: 10px;
+	}
+
+	.papl .papl-panel {
+		padding: 14px 12px;
+	}
+
+	.papl .papl-panel__options {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.papl .papl-more > *,
+	.papl .papl-more .papl-cal > summary {
+		width: 100%;
+	}
+}

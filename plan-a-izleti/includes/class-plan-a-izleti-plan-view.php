@@ -117,6 +117,7 @@ final class Plan_A_Izleti_Plan_View {
 	private static function icon( string $name ): string {
 		$paths = array(
 			'calendar' => '<rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+			'mountain' => '<path d="M2.5 20 9 8.5l4 6.5 2.5-3.5 6 8.5z"/><path d="m7 12 2 1.5 2-1.5"/>',
 			'add'      => '<rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M12 12.5v5M9.5 15h5"/>',
 			'bell'     => '<path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
 			'arrow'    => '<path d="M5 12h14M13 6l6 6-6 6"/>',
@@ -284,28 +285,17 @@ final class Plan_A_Izleti_Plan_View {
 		?>
 		<?php $font = self::theme_font(); ?>
 		<div class="papl<?php echo $images ? ' papl--images' : ''; ?>" data-papl<?php echo $font ? ' style="font-family:' . esc_attr( $font ) . '"' : ''; ?>>
-			<div class="papl-top">
-				<p class="papl-summary">
-					<?php if ( $total ) : ?>
-						U planu je još <strong><?php echo (int) $total; ?></strong> <?php echo esc_html( self::plural( $total, array( 'izlet', 'izleta', 'izleta' ) ) ); ?><?php echo $open ? ', a za <strong>' . (int) $open . '</strong> su otvorene prijave' : ''; ?>.
-					<?php else : ?>
-						Plan za sljedeće razdoblje uskoro.
-					<?php endif; ?>
-				</p>
-				<details class="papl-cal">
-					<summary class="papl-btn papl-btn--ghost"><?php echo self::icon( 'calendar' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>Plan u mom kalendaru<?php echo self::icon( 'chevron' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></summary>
-					<div class="papl-cal__menu">
-						<p class="papl-cal__hint">Svi izleti iz plana stižu u tvoj kalendar, a novi se dodaju sami.</p>
-						<a href="<?php echo esc_url( Plan_A_Izleti_Plan_Ics::google_url() ); ?>" target="_blank" rel="noopener">Google kalendar (Android)</a>
-						<a href="<?php echo esc_url( Plan_A_Izleti_Plan_Ics::webcal_url(), array( 'webcal', 'http', 'https' ) ); ?>">iPhone, Mac ili Outlook</a>
-						<a href="<?php echo esc_url( Plan_A_Izleti_Plan_Ics::url() ); ?>" download="plan-izleta.ics">Preuzmi datoteku (.ics)</a>
-					</div>
-				</details>
-			</div>
+			<p class="papl-summary">
+				<?php if ( $total ) : ?>
+					<strong><?php echo (int) $total; ?></strong> <?php echo esc_html( self::plural( $total, array( 'izlet', 'izleta', 'izleta' ) ) ); ?> u planu<?php echo $open ? ' · <strong>' . (int) $open . '</strong> s otvorenim prijavama' : ''; ?>
+				<?php else : ?>
+					Plan za sljedeće razdoblje uskoro.
+				<?php endif; ?>
+			</p>
 
 			<?php
-			// Brzi odabir: samo izleti s otvorenim prijavama, najave, jednodnevni ili višednevni.
-			$counts = array( 'open' => 0, 'soon' => 0, 'one' => 0, 'multi' => 0 );
+			// Dvije kućice s padajućim izbornikom (kao na stranici Izleti): vrsta i termin.
+			$counts = array( 'open' => 0, 'full' => 0, 'soon' => 0, 'one' => 0, 'multi' => 0 );
 			foreach ( $upcoming as $items ) {
 				foreach ( $items as $item ) {
 					if ( isset( $counts[ $item[1] ] ) ) {
@@ -314,31 +304,50 @@ final class Plan_A_Izleti_Plan_View {
 					$counts[ self::days( $item[0] ) > 1 ? 'multi' : 'one' ]++;
 				}
 			}
-			$filters = array(
-				'open'  => 'Prijave otvorene',
-				'soon'  => 'Uskoro',
-				'one'   => 'Jednodnevni',
-				'multi' => 'Višednevni',
-			);
+			$kinds = array( 'all' => array( 'Svi izleti', $total ) );
+			foreach ( array( 'open' => 'Prijave otvorene', 'soon' => 'Uskoro', 'one' => 'Jednodnevni', 'multi' => 'Višednevni' ) as $key => $label ) {
+				if ( $counts[ $key ] && $counts[ $key ] < $total ) {
+					$kinds[ $key ] = array( $label, $counts[ $key ] );
+				}
+			}
+			$months = array( 'all' => array( 'Svi mjeseci', $total ) );
+			foreach ( $upcoming as $ym => $items ) {
+				list( $y, $m ) = array_map( 'intval', explode( '-', $ym ) );
+				$months[ $ym ] = array( self::MONTHS[ $m ] . ( (string) $y !== substr( $today, 0, 4 ) ? ' ' . $y . '.' : '' ), count( $items ) );
+			}
+			$groups = array();
+			if ( count( $kinds ) > 1 ) {
+				$groups['kind'] = array( 'Izleti', 'Što želiš vidjeti?', 'mountain', $kinds );
+			}
+			if ( count( $months ) > 2 ) {
+				$groups['month'] = array( 'Termin', 'Koji mjesec?', 'calendar', $months );
+			}
 			?>
-			<?php if ( $total > 4 ) : ?>
-				<div class="papl-filter" role="group" aria-label="Prikaži izlete">
-					<button type="button" class="papl-chip" data-papl-filter="all" aria-pressed="true">Svi <span><?php echo (int) $total; ?></span></button>
-					<?php foreach ( $filters as $key => $label ) : ?>
-						<?php if ( $counts[ $key ] && $counts[ $key ] < $total ) : ?>
-							<button type="button" class="papl-chip" data-papl-filter="<?php echo esc_attr( $key ); ?>" aria-pressed="false"><?php echo esc_html( $label ); ?> <span><?php echo (int) $counts[ $key ]; ?></span></button>
-						<?php endif; ?>
+			<?php if ( $groups && $total > 3 ) : ?>
+				<div class="papl-filters<?php echo 1 === count( $groups ) ? ' papl-filters--single' : ''; ?>" data-papl-filters>
+					<div class="papl-selects">
+						<?php foreach ( $groups as $name => $g ) : ?>
+							<button type="button" class="papl-select papl-select--<?php echo esc_attr( $name ); ?>" data-papl-toggle="<?php echo esc_attr( $name ); ?>" aria-expanded="false" aria-controls="papl-panel-<?php echo esc_attr( $name ); ?>">
+								<span class="papl-select__icon"><?php echo self::icon( $g[2] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+								<span class="papl-select__text">
+									<span class="papl-select__label"><?php echo esc_html( $g[0] ); ?></span>
+									<span class="papl-select__value" data-papl-value><?php echo esc_html( $g[3]['all'][0] ); ?></span>
+								</span>
+								<span class="papl-select__arrow"><?php echo self::icon( 'chevron' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+							</button>
+						<?php endforeach; ?>
+					</div>
+					<?php foreach ( $groups as $name => $g ) : ?>
+						<div class="papl-panel papl-panel--<?php echo esc_attr( $name ); ?>" id="papl-panel-<?php echo esc_attr( $name ); ?>" data-papl-panel="<?php echo esc_attr( $name ); ?>" role="group" aria-label="<?php echo esc_attr( $g[1] ); ?>" hidden>
+							<p class="papl-panel__title"><?php echo esc_html( $g[1] ); ?></p>
+							<div class="papl-panel__options">
+								<?php foreach ( $g[3] as $value => $opt ) : ?>
+									<button type="button" class="papl-option<?php echo 'all' === $value ? ' is-active' : ''; ?>" data-papl-opt="<?php echo esc_attr( $value ); ?>" data-papl-label="<?php echo esc_attr( $opt[0] ); ?>" aria-pressed="<?php echo 'all' === $value ? 'true' : 'false'; ?>"><?php echo esc_html( $opt[0] ); ?> <span data-papl-n><?php echo (int) $opt[1]; ?></span></button>
+								<?php endforeach; ?>
+							</div>
+						</div>
 					<?php endforeach; ?>
 				</div>
-			<?php endif; ?>
-
-			<?php if ( count( $upcoming ) > 1 ) : ?>
-				<nav class="papl-months" aria-label="Mjeseci u planu">
-					<?php foreach ( $upcoming as $ym => $items ) : ?>
-						<?php list( $y, $m ) = array_map( 'intval', explode( '-', $ym ) ); ?>
-						<a href="#plan-<?php echo esc_attr( $ym ); ?>" data-papl-month="<?php echo esc_attr( $ym ); ?>"><?php echo esc_html( self::MONTHS[ $m ] . ( (string) $y !== substr( $today, 0, 4 ) ? ' ' . $y : '' ) ); ?> <span><?php echo (int) count( $items ); ?></span></a>
-					<?php endforeach; ?>
-				</nav>
 			<?php endif; ?>
 
 			<?php foreach ( $upcoming as $ym => $items ) : ?>
@@ -372,9 +381,20 @@ final class Plan_A_Izleti_Plan_View {
 				</details>
 			<?php endif; ?>
 
-			<?php if ( '' !== trim( (string) $atts['izleti_url'] ) ) : ?>
-				<p class="papl-more"><a class="papl-btn papl-btn--primary" href="<?php echo esc_url( home_url( wp_parse_url( $atts['izleti_url'], PHP_URL_PATH ) ?: '/izleti/' ) ); ?>">Svi izleti s opisima i prijavama<?php echo self::icon( 'arrow' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a></p>
-			<?php endif; ?>
+			<div class="papl-more">
+				<?php if ( '' !== trim( (string) $atts['izleti_url'] ) ) : ?>
+					<a class="papl-btn papl-btn--primary" href="<?php echo esc_url( home_url( wp_parse_url( $atts['izleti_url'], PHP_URL_PATH ) ?: '/izleti/' ) ); ?>">Svi izleti s opisima i prijavama<?php echo self::icon( 'arrow' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
+				<?php endif; ?>
+				<details class="papl-cal">
+					<summary class="papl-btn papl-btn--ghost"><?php echo self::icon( 'calendar' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>Cijeli plan u mom kalendaru<?php echo self::icon( 'chevron' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></summary>
+					<div class="papl-cal__menu">
+						<p class="papl-cal__hint">Svi izleti iz plana stižu u tvoj kalendar, a novi se dodaju sami.</p>
+						<a href="<?php echo esc_url( Plan_A_Izleti_Plan_Ics::google_url() ); ?>" target="_blank" rel="noopener">Google kalendar (Android)</a>
+						<a href="<?php echo esc_url( Plan_A_Izleti_Plan_Ics::webcal_url(), array( 'webcal', 'http', 'https' ) ); ?>">iPhone, Mac ili Outlook</a>
+						<a href="<?php echo esc_url( Plan_A_Izleti_Plan_Ics::url() ); ?>" download="plan-izleta.ics">Preuzmi datoteku (.ics)</a>
+					</div>
+				</details>
+			</div>
 
 			<?php if ( current_user_can( 'edit_posts' ) ) : ?>
 				<p class="papl-admin"><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . Plan_A_Izleti_Plan::POST_TYPE ) ); ?>">Uredi plan izleta</a> (vidi samo administrator)<br><span data-papl-diag></span></p>
