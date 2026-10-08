@@ -117,9 +117,16 @@ final class Plan_A_Jedrenje_Front {
 		<div class="pajd" data-pajd>
 			<script type="application/json" data-pajd-config><?php echo wp_json_encode( $config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE ); ?></script>
 
+			<?php
+			$slider = Plan_A_Jedrenje_Slider::render( Plan_A_Jedrenje_Slider::image_ids( Plan_A_Jedrenje_Slider::tour_id() ) );
+			echo $slider; // phpcs:ignore WordPress.Security.EscapeOutput -- escapirano u render().
+			?>
+
 			<section class="pajd-card pajd-intro">
-				<p class="pajd-kicker">Rezervacija</p>
-				<h2 class="pajd-title"><?php echo esc_html( $s['title'] ); ?></h2>
+				<p class="pajd-kicker"><?php echo '' === $slider ? 'Rezervacija' : 'Rezervacija · što dobivaš'; ?></p>
+				<?php if ( '' === $slider ) : // naziv je već na slajderu ?>
+					<h2 class="pajd-title"><?php echo esc_html( $s['title'] ); ?></h2>
+				<?php endif; ?>
 				<ul class="pajd-facts">
 					<li><?php echo self::icon( 'boat' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span><strong><?php echo esc_html( $s['boat'] ); ?></strong> · <?php echo (int) $s['cabins']; ?> kabine · najviše <?php echo (int) $max; ?> gostiju i <?php echo esc_html( $s['skipper'] ); ?></span></li>
 					<li><?php echo self::icon( 'pin' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span><strong><?php echo esc_html( $s['marina'] ); ?></strong> · subota do subote, ukrcaj od <?php echo esc_html( $s['embark_time'] ); ?>, iskrcaj do <?php echo esc_html( $s['disembark_time'] ); ?></span></li>
@@ -144,7 +151,7 @@ final class Plan_A_Jedrenje_Front {
 				</div>
 			</section>
 
-			<section class="pajd-card pajd-cal" aria-labelledby="pajd-cal-title">
+			<section class="pajd-card pajd-cal" id="pajd-kalendar" aria-labelledby="pajd-cal-title">
 				<div class="pajd-cal__head">
 					<h3 class="pajd-h3" id="pajd-cal-title">Odaberi tjedan</h3>
 					<ul class="pajd-legend" aria-label="Oznake">

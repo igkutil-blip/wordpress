@@ -207,6 +207,9 @@ final class Plan_A_Jedrenje_Admin {
 		$s['deposit_pct']  = max( 1, min( 100, absint( $_POST['deposit_pct'] ?? 30 ) ) );
 		$s['deposit_days'] = max( 1, min( 60, absint( $_POST['deposit_days'] ?? 5 ) ) );
 		$s['rest_days']    = max( 0, min( 180, absint( $_POST['rest_days'] ?? 30 ) ) );
+		$s['lead_days']    = max( 1, min( 90, absint( $_POST['lead_days'] ?? 7 ) ) );
+		$s['gallery_tour'] = max( -1, (int) ( $_POST['gallery_tour'] ?? 0 ) );
+		delete_transient( 'paj_gallery_tour' );
 		$email             = sanitize_email( wp_unslash( $_POST['admin_email'] ?? '' ) );
 		$s['admin_email']  = is_email( $email ) ? $email : '';
 
@@ -594,6 +597,30 @@ final class Plan_A_Jedrenje_Admin {
 			$num( 'max_persons', 'Najveći broj sudionika' );
 			?>
 		</table>
+		<h2>Fotografije</h2>
+		<table class="form-table paj-form-table">
+			<tr><th><label for="paj-gallery">Slajder s fotografijama</label></th><td>
+				<select id="paj-gallery" name="gallery_tour">
+					<option value="0" <?php selected( (int) $s['gallery_tour'], 0 ); ?>>Automatski – izlet s „jedrenje” u nazivu</option>
+					<option value="-1" <?php selected( (int) $s['gallery_tour'], -1 ); ?>>Ne prikazuj slajder</option>
+					<?php
+					$tours = get_posts(
+						array(
+							'post_type'      => class_exists( 'TTBM_Function' ) ? TTBM_Function::get_cpt_name() : 'ttbm_tour',
+							'post_status'    => 'publish',
+							'posts_per_page' => 300,
+							'orderby'        => 'title',
+							'order'          => 'ASC',
+						)
+					);
+					foreach ( $tours as $t ) :
+						?>
+						<option value="<?php echo (int) $t->ID; ?>" <?php selected( (int) $s['gallery_tour'], (int) $t->ID ); ?>><?php echo esc_html( wp_strip_all_tags( get_the_title( $t ) ) . ' (' . count( Plan_A_Jedrenje_Slider::image_ids( (int) $t->ID ) ) . ' slika)' ); ?></option>
+					<?php endforeach; ?>
+				</select>
+				<p class="description">Slajder na vrhu rezervacijskog bloka uzima istaknutu sliku i galeriju odabranog izleta (WpTravelly → izlet → Gallery). Sada: <?php $paj_t = Plan_A_Jedrenje_Slider::tour_id(); echo esc_html( $paj_t ? wp_strip_all_tags( get_the_title( $paj_t ) ) . ', ' . count( Plan_A_Jedrenje_Slider::image_ids( $paj_t ) ) . ' slika' : 'nema slika' ); ?>. Slajder možeš staviti i drugdje: [plan-a-jedrenje-slike].</p>
+			</td></tr>
+		</table>
 		<h2>Sezona</h2>
 		<p>Prva subota sezone (prvi ukrcaj) i zadnja subota sezone (zadnji iskrcaj), za svaku godinu posebno. Prazno = od sredine svibnja do sredine listopada. Datumi kao 15.5.2027.</p>
 		<table class="form-table paj-form-table">
@@ -616,6 +643,7 @@ final class Plan_A_Jedrenje_Admin {
 			$num( 'deposit_pct', 'Akontacija (%)' );
 			$num( 'deposit_days', 'Rok za akontaciju (dana od potvrde)' );
 			$num( 'rest_days', 'Rok za ostatak (dana prije ukrcaja)', 'Ako je do ukrcaja manje od ovoga, odmah se traži cijeli iznos.' );
+			$num( 'lead_days', 'Najmanje dana do ukrcaja', 'Tjedni koji počinju prije toga ne nude se u kalendaru (brod treba stići potvrditi).' );
 			$text( 'admin_email', 'E-mail za zahtjeve i podsjetnike', 'Prazno = e-mail administratora stranice.' );
 			?>
 		</table>

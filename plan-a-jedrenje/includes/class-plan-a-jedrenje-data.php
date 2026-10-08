@@ -43,6 +43,7 @@ final class Plan_A_Jedrenje_Data {
 			'deposit_pct'    => 30,
 			'deposit_days'   => 5,
 			'rest_days'      => 30,
+			'lead_days'      => 7,
 			'seasons'        => array(),
 			'admin_email'    => '',
 			'mail_request'   => 'Hvala na zahtjevu! Provjeravamo je li brod slobodan u charter bazi i javit ćemo ti se u roku 48 sati. Dok ne potvrdimo, ništa ne plaćaš.',
@@ -51,6 +52,7 @@ final class Plan_A_Jedrenje_Data {
 			'mail_booked'    => 'Akontacija je uplaćena i tjedan jedrenja je tvoj. Ostatak uplaćuješ prema uplatnici koju ćemo poslati prije roka.',
 			'mail_paid'      => 'Sve je uplaćeno. Vidimo se u marini! Nekoliko dana prije polaska poslat ćemo ti popis stvari za ponijeti i upute za ukrcaj.',
 			'cancel_terms'   => "Otkaz do 60 dana prije ukrcaja: vraća se uplaćeni iznos umanjen za 10 % cijene.\nOtkaz od 59 do 30 dana prije ukrcaja: zadržava se akontacija.\nOtkaz manje od 30 dana prije ukrcaja: zadržava se cijeli iznos.\nUmjesto otkaza možeš pronaći zamjenu za člana ekipe bez troška.",
+			'gallery_tour'   => 0,
 			'organizer'      => 'Organizator: Adventure Donkey j.d.o.o., turistička agencija, Meksička ulica 11, 10000 Zagreb, OIB 78664134608, u suradnji sa S.R.D. Plan A',
 		);
 	}
@@ -365,7 +367,8 @@ final class Plan_A_Jedrenje_Data {
 	 * Stanje tjedna: free, request (na upitu), booked (zauzeto ili zatvoreno), past.
 	 */
 	public static function state( string $start ): string {
-		if ( $start <= self::today() ) {
+		// Tjedan koji počinje prije nego što se brod stigne potvrditi više se ne nudi.
+		if ( $start < self::add_days( self::today(), max( 1, (int) self::value( 'lead_days' ) ) ) ) {
 			return 'past';
 		}
 		$over = self::week_overrides()[ $start ] ?? array();

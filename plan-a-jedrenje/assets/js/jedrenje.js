@@ -311,7 +311,226 @@
 		refresh();
 	}
 
+
+	/*
+	 * Slajder fotografija: listanje prstom (scroll-snap), strelice, točke, samostalno izmjenjivanje
+	 * (zaustavlja se kad je posjetitelj na slajderu, kad nije vidljiv ili uz smanjeno kretanje)
+	 * i prikaz preko cijelog zaslona.
+	 */
+	function initSlider(box) {
+		var track = box.querySelector('[data-pajd-track]');
+		var slides = Array.prototype.slice.call(box.querySelectorAll('.pajd-slide'));
+		var dots = Array.prototype.slice.call(box.querySelectorAll('[data-pajd-dot]'));
+		var counter = box.querySelector('[data-pajd-count]');
+		var dialog = box.querySelector('[data-pajd-lightbox]');
+		var lbImg = box.querySelector('[data-pajd-lb-img]');
+		var lbCount = box.querySelector('[data-pajd-lb-count]');
+		var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		var index = 0;
+		var lbIndex = 0;
+		var timer = null;
+		var paused = false;
+		var visible = true;
+		if (!track || !slides.length) {
+			return;
+		}
+
+		function setActive(i) {
+			if (i === index && slides[i].classList.contains('is-active')) {
+				return;
+			}
+			index = i;
+			slides.forEach(function (s, k) {
+				s.classList.toggle('is-active', k === i);
+			});
+			dots.forEach(function (d, k) {
+				d.classList.toggle('is-active', k === i);
+				if (k === i) {
+					d.setAttribute('aria-current', 'true');
+				} else {
+					d.removeAttribute('aria-current');
+				}
+			});
+			if (counter) {
+				counter.textContent = i + 1;
+			}
+		}
+
+		function go(i, smooth) {
+			var n = slides.length;
+			i = ((i % n) + n) % n;
+			track.scrollTo({ left: i * track.clientWidth, behavior: smooth === false || reduce ? 'auto' : 'smooth' });
+			setActive(i);
+		}
+
+		var ticking = false;
+		track.addEventListener('scroll', function () {
+			if (ticking) {
+				return;
+			}
+			ticking = true;
+			window.requestAnimationFrame(function () {
+				ticking = false;
+				var i = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+				setActive(Math.max(0, Math.min(slides.length - 1, i)));
+			});
+		}, { passive: true });
+
+		function stop() {
+			if (timer) {
+				window.clearInterval(timer);
+				timer = null;
+			}
+		}
+
+		function start() {
+			stop();
+			if (reduce || slides.length < 2 || paused || !visible || document.hidden || (dialog && dialog.open)) {
+				return;
+			}
+			timer = window.setInterval(function () {
+				go(index + 1);
+			}, 5500);
+		}
+
+		var prev = box.querySelector('[data-pajd-slide-prev]');
+		var next = box.querySelector('[data-pajd-slide-next]');
+		if (prev) {
+			prev.addEventListener('click', function () {
+				go(index - 1);
+				start();
+			});
+		}
+		if (next) {
+			next.addEventListener('click', function () {
+				go(index + 1);
+				start();
+			});
+		}
+		dots.forEach(function (d) {
+			d.addEventListener('click', function () {
+				go(parseInt(d.getAttribute('data-pajd-dot'), 10));
+				start();
+			});
+		});
+		track.addEventListener('keydown', function (e) {
+			if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+				e.preventDefault();
+				go(index + (e.key === 'ArrowRight' ? 1 : -1));
+			}
+		});
+
+		['mouseenter', 'focusin', 'touchstart'].forEach(function (ev) {
+			box.addEventListener(ev, function () {
+				paused = true;
+				stop();
+			}, { passive: true });
+		});
+		['mouseleave', 'focusout'].forEach(function (ev) {
+			box.addEventListener(ev, function () {
+				paused = false;
+				start();
+			});
+		});
+		box.addEventListener('touchend', function () {
+			window.setTimeout(function () {
+				paused = false;
+				start();
+			}, 6000);
+		}, { passive: true });
+		document.addEventListener('visibilitychange', start);
+		if (window.IntersectionObserver) {
+			new IntersectionObserver(function (entries) {
+				visible = entries[0].isIntersecting;
+				start();
+			}, { threshold: 0.3 }).observe(box);
+		}
+		window.addEventListener('resize', function () {
+			go(index, false);
+		});
+
+		/* Preko cijelog zaslona */
+		function lbShow(i) {
+			var n = slides.length;
+			lbIndex = ((i % n) + n) % n;
+			var s = slides[lbIndex];
+			var img = s.querySelector('img');
+			lbImg.src = s.getAttribute('data-full') || (img && img.currentSrc) || '';
+			lbImg.alt = img ? img.alt : '';
+			lbCount.textContent = (lbIndex + 1) + ' / ' + n;
+		}
+		function lbOpen(i) {
+			if (!dialog || typeof dialog.showModal !== 'function') {
+				return;
+			}
+			stop();
+			lbShow(i);
+			dialog.showModal();
+		}
+		if (dialog) {
+			box.querySelector('[data-pajd-full]').addEventListener('click', function () {
+				lbOpen(index);
+			});
+			track.addEventListener('click', function (e) {
+				if (e.target.closest('.pajd-slide')) {
+					lbOpen(index);
+				}
+			});
+			dialog.querySelector('[data-pajd-lb-close]').addEventListener('click', function () {
+				dialog.close();
+			});
+			var lp = dialog.querySelector('[data-pajd-lb-prev]');
+			var ln = dialog.querySelector('[data-pajd-lb-next]');
+			if (lp) {
+				lp.addEventListener('click', function () {
+					lbShow(lbIndex - 1);
+				});
+			}
+			if (ln) {
+				ln.addEventListener('click', function () {
+					lbShow(lbIndex + 1);
+				});
+			}
+			dialog.addEventListener('keydown', function (e) {
+				if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+					lbShow(lbIndex + (e.key === 'ArrowRight' ? 1 : -1));
+				}
+			});
+			dialog.addEventListener('click', function (e) {
+				if (e.target === dialog) {
+					dialog.close();
+				}
+			});
+			var x0 = null;
+			dialog.addEventListener('touchstart', function (e) {
+				x0 = e.touches[0].clientX;
+			}, { passive: true });
+			dialog.addEventListener('touchend', function (e) {
+				if (x0 === null) {
+					return;
+				}
+				var dx = e.changedTouches[0].clientX - x0;
+				x0 = null;
+				if (Math.abs(dx) > 40) {
+					lbShow(lbIndex + (dx < 0 ? 1 : -1));
+				}
+			}, { passive: true });
+			dialog.addEventListener('close', function () {
+				go(lbIndex, false);
+				start();
+			});
+		}
+
+		start();
+	}
+
 	function boot() {
+		Array.prototype.forEach.call(document.querySelectorAll('[data-pajd-slider]'), function (box) {
+			if (!box.hasAttribute('data-pajd-ready')) {
+				box.setAttribute('data-pajd-ready', '');
+				initSlider(box);
+			}
+		});
 		Array.prototype.forEach.call(document.querySelectorAll('[data-pajd]'), function (root) {
 			if (!root.hasAttribute('data-pajd-ready')) {
 				root.setAttribute('data-pajd-ready', '');

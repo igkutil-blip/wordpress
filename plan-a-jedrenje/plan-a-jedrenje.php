@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A jedrenje
  * Description:       Rezervacija tjednog jedrenja za ekipu (subota–subota): kalendar tjedana s cijenama za cijeli brod, zahtjev, potvrda s uplatnicom za akontaciju, uplata ostatka. Shortcode [plan-a-jedrenje].
- * Version:           1.0.1
+ * Version:           1.1.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Plan A
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_JEDRENJE_VERSION', '1.0.1' );
+define( 'PLAN_A_JEDRENJE_VERSION', '1.1.0' );
 define( 'PLAN_A_JEDRENJE_FILE', __FILE__ );
 define( 'PLAN_A_JEDRENJE_URL', plugin_dir_url( __FILE__ ) );
 
@@ -26,6 +26,7 @@ require_once __DIR__ . '/includes/class-plan-a-jedrenje-mail.php';
 require_once __DIR__ . '/includes/class-plan-a-jedrenje-booking.php';
 require_once __DIR__ . '/includes/class-plan-a-jedrenje-front.php';
 require_once __DIR__ . '/includes/class-plan-a-jedrenje-admin.php';
+require_once __DIR__ . '/includes/class-plan-a-jedrenje-slider.php';
 
 register_activation_hook(
 	__FILE__,
@@ -58,6 +59,7 @@ add_action(
 		Plan_A_Jedrenje_Data::seed();
 		Plan_A_Jedrenje_Booking::init();
 		Plan_A_Jedrenje_Front::init();
+		Plan_A_Jedrenje_Slider::init();
 		if ( is_admin() ) {
 			Plan_A_Jedrenje_Admin::init();
 		}

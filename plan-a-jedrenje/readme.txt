@@ -1,7 +1,7 @@
 === Plan A jedrenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.1.0
 License: GPLv2 or later
 
 Rezervacija tjednog jedrenja za ekipu (subota–subota) u terminu koji kupac bira.
@@ -47,6 +47,14 @@ i na stranici iz predmemorije. Ipak izuzmi:
 Košarica, naplata i "Moj račun" već moraju biti izuzeti zbog WooCommercea.
 
 == Promjene ==
+
+= 1.1.0 =
+* Slajder s fotografijama na vrhu rezervacijskog bloka: istaknuta slika i galerija izleta jedrenja
+  iz WpTravellyja (automatski izlet s "jedrenje" u nazivu ili odabrani u Postavke → Fotografije).
+  Slike se same izmjenjuju i lagano približavaju, listaju se prstom, strelicama i točkama, a dodirom
+  se otvaraju preko cijelog zaslona. Preko slika naziv programa i gumb "Odaberi tjedan".
+* Postavka "Najmanje dana do ukrcaja" (zadano 7): bliži tjedni se ne nude.
+* Shortcode [plan-a-jedrenje-slike] (atribut izlet="ID") za slajder bilo gdje na stranici.
 
 = 1.0.1 =
 * Sezona zadano traje do 15. listopada: zadnji iskrcaj je prva subota od 15. 10. (2027.: 16. 10.).
