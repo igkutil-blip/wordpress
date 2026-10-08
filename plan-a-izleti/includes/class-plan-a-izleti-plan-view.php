@@ -85,6 +85,34 @@ final class Plan_A_Izleti_Plan_View {
 			. '<span class="papl-date__m">' . esc_html( $month ) . '</span></div>';
 	}
 
+	/**
+	 * Slika retka: vlastita slika najave, inače slika objavljenog izleta, inače ilustracija.
+	 * Preko slike je oznaka s datumom.
+	 */
+	private static function media( array $row ): string {
+		$image_id = $row['entry'] ? (int) get_post_thumbnail_id( $row['entry'] ) : 0;
+		if ( ! $image_id && $row['tour'] ) {
+			$image_id = Plan_A_Izleti_Shortcode::image_id( $row['tour'] );
+		}
+		$img = $image_id ? wp_get_attachment_image(
+			$image_id,
+			'medium_large',
+			false,
+			array(
+				'class'   => 'papl-media__img',
+				'alt'     => '',
+				'loading' => 'lazy',
+				'sizes'   => '(max-width: 599px) 120px, 220px',
+			)
+		) : '';
+		if ( ! $img ) {
+			$img = '<span class="papl-media__empty" aria-hidden="true"><svg viewBox="0 0 120 60" width="120" height="60" fill="none"><path d="M0 60 30 22l14 16 22-30 54 52z" fill="rgba(255,255,255,.18)"/><path d="M0 60l40-26 18 12 26-20 36 34z" fill="rgba(255,255,255,.28)"/></svg></span>';
+		}
+		$url  = $row['tour'] ? get_permalink( $row['tour'] ) : '';
+		$open = $url ? '<a class="papl-media" href="' . esc_url( $url ) . '" tabindex="-1" aria-hidden="true">' : '<div class="papl-media">';
+		return $open . $img . self::date_block( $row ) . ( $url ? '</a>' : '</div>' );
+	}
+
 	private static function icon( string $name ): string {
 		$paths = array(
 			'calendar' => '<rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
@@ -127,7 +155,7 @@ final class Plan_A_Izleti_Plan_View {
 		}
 
 		$html  = '<li class="papl-row is-' . esc_attr( $status ) . '" id="izlet-' . esc_attr( $row['key'] ) . '">';
-		$html .= self::date_block( $row );
+		$html .= self::media( $row );
 		$html .= '<div class="papl-main">';
 		$html .= '<h4 class="papl-title">' . ( $url ? '<a href="' . esc_url( $url ) . '">' . $title . '</a>' : $title ) . '</h4>';
 		$html .= '<p class="papl-when">' . esc_html( $range ) . '</p>';

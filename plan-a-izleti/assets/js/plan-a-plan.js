@@ -100,6 +100,10 @@
 				return;
 			}
 			root.setAttribute('data-papl-ready', '');
+			/* Ako je shortcode u bloku s oblikovanim tekstom (<pre>/<code>), vrati font stranice. */
+			if (/mono/i.test(getComputedStyle(root).fontFamily)) {
+				root.style.fontFamily = getComputedStyle(document.body).fontFamily;
+			}
 			initNotify(root);
 			initCalendar(root);
 		});
