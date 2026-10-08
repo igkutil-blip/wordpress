@@ -1,0 +1,597 @@
+/*
+ * Plan A kalkulator – boje kao u košarici i poklon bonu.
+ * Prijelomne točke prate Flatsome: mobitel < 550px, tablet 550–849px, računalo ≥ 850px.
+ * Svi stilovi su pod .pakl i poništavaju stilove teme za obrasce (Flatsome).
+ */
+
+.pakl {
+	--pakl-navy: #12304b;
+	--pakl-accent: #1a9ad6;
+	--pakl-cta: #e8862a;
+	--pakl-cta-dark: #c96a12;
+	--pakl-text: #24323f;
+	--pakl-muted: #5f6b77;
+	--pakl-line: #e3e8ee;
+	--pakl-soft: #e8f4fb;
+	--pakl-warn: #fdf1e4;
+	--pakl-radius: 16px;
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 1100px;
+	margin: 0 auto;
+	padding: 8px 0 32px;
+	color: var(--pakl-text);
+	font-size: 16px;
+	line-height: 1.45;
+}
+
+.pakl *,
+.pakl *::before,
+.pakl *::after {
+	box-sizing: border-box;
+}
+
+.pakl [hidden] {
+	display: none !important;
+}
+
+.pakl p {
+	margin: 0;
+}
+
+/* Naslov */
+.pakl .pakl-head {
+	max-width: 720px;
+	margin: 0 0 22px;
+}
+
+.pakl .pakl-kicker {
+	margin: 0 0 6px;
+	color: var(--pakl-cta-dark);
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+.pakl .pakl-title {
+	margin: 0 0 8px;
+	color: var(--pakl-navy);
+	font-size: clamp(28px, 6vw, 40px);
+	font-weight: 800;
+	line-height: 1.15;
+	letter-spacing: -0.01em;
+	text-transform: none;
+}
+
+.pakl .pakl-lead {
+	color: var(--pakl-muted);
+	font-size: 17px;
+}
+
+.pakl .pakl-noscript {
+	padding: 14px 16px;
+	border-radius: 12px;
+	background: var(--pakl-warn);
+}
+
+/*
+ * Raspored ovisi o širini kalkulatora (ne zaslona), pa radi i u užem stupcu ili uz bočnu traku:
+ * obrazac lijevo i rezultat desno (ostaje na zaslonu), a u uskom prostoru jedan stupac.
+ */
+.pakl .pakl-wrap {
+	container-type: inline-size;
+	container-name: pakl;
+}
+
+.pakl .pakl-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 20px;
+	align-items: start;
+	margin: 0;
+}
+
+@container pakl (min-width: 800px) {
+	.pakl .pakl-layout {
+		grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+		gap: 28px;
+	}
+
+	.pakl .pakl-result {
+		position: sticky;
+		top: 90px;
+	}
+}
+
+.pakl .pakl-form {
+	display: grid;
+	gap: 16px;
+	min-width: 0;
+}
+
+.pakl .pakl-card {
+	min-width: 0;
+	margin: 0;
+	padding: 22px;
+	border: 1px solid #edf1f5;
+	border-radius: var(--pakl-radius);
+	background: #fff;
+	box-shadow: 0 2px 10px rgba(18, 48, 75, 0.06);
+}
+
+@container pakl (max-width: 549px) {
+	.pakl .pakl-card {
+		padding: 18px 16px;
+	}
+}
+
+.pakl .pakl-h3 {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0 0 16px;
+	padding: 0;
+	color: var(--pakl-navy);
+	font-size: 19px;
+	font-weight: 800;
+	line-height: 1.25;
+}
+
+.pakl .pakl-icon {
+	flex: none;
+	color: var(--pakl-accent);
+}
+
+/* Polja */
+.pakl .pakl-fields {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 14px;
+	margin: 0;
+}
+
+@container pakl (min-width: 520px) {
+	.pakl .pakl-fields--2 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.pakl .pakl-fields--3 {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+.pakl .pakl-choice + .pakl-fields,
+.pakl .pakl-fields + .pakl-choice,
+.pakl .pakl-choice + .pakl-choice {
+	margin-top: 18px;
+}
+
+.pakl .pakl-field {
+	min-width: 0;
+	margin: 0;
+}
+
+.pakl .pakl-label {
+	display: block;
+	float: none;
+	width: auto;
+	margin: 0 0 6px;
+	padding: 0;
+	border: 0;
+	color: var(--pakl-navy);
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1.3;
+	text-transform: none;
+	letter-spacing: 0;
+}
+
+.pakl .pakl-input {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.pakl .pakl-input input {
+	display: block;
+	width: 100%;
+	height: auto;
+	min-height: 50px;
+	margin: 0;
+	padding: 12px 14px;
+	border: 1px solid #cfd8e3;
+	border-radius: 10px;
+	background: #fff;
+	box-shadow: none;
+	color: var(--pakl-text);
+	font-family: inherit;
+	font-size: 16px; /* bez zumiranja na iPhoneu */
+	font-weight: 700;
+	line-height: 1.3;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.pakl .pakl-input input[inputmode] {
+	padding-right: 48px;
+}
+
+.pakl .pakl-input__unit {
+	position: absolute;
+	right: 14px;
+	color: var(--pakl-muted);
+	font-size: 15px;
+	font-weight: 700;
+	pointer-events: none;
+}
+
+.pakl .pakl-input input:focus {
+	border-color: var(--pakl-accent);
+	outline: 3px solid rgba(26, 154, 214, 0.2);
+	outline-offset: 0;
+	box-shadow: none;
+}
+
+.pakl .pakl-input input[aria-invalid="true"] {
+	border-color: #c0392b;
+	background: #fff8f7;
+}
+
+.pakl .pakl-input input::placeholder {
+	color: #9aa6b2;
+	font-weight: 400;
+	opacity: 1;
+}
+
+.pakl .pakl-help {
+	margin: 6px 0 0;
+	color: var(--pakl-muted);
+	font-size: 13px;
+}
+
+.pakl .pakl-msg {
+	margin: 14px 0 0;
+	padding: 10px 14px;
+	border-radius: 10px;
+	background: #fdecea;
+	color: #a5281b;
+	font-size: 15px;
+	font-weight: 700;
+}
+
+/* Odabir: gumbi (radio); četiri opcije 2 × 2 ili sve u jednom redu */
+.pakl .pakl-choice--4 .pakl-choice__grid {
+	grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+@container pakl (min-width: 600px) {
+	.pakl .pakl-choice--4 .pakl-choice__grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+	}
+}
+
+.pakl .pakl-choice {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.pakl .pakl-choice > legend {
+	float: left;
+	width: 100%;
+}
+
+.pakl .pakl-choice__grid {
+	clear: both;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 8px;
+}
+
+@container pakl (max-width: 519px) {
+	.pakl .pakl-choice__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.pakl .pakl-choice--cards .pakl-choice__grid {
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+@container pakl (max-width: 519px) {
+	.pakl .pakl-choice--cards .pakl-choice__grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.pakl .pakl-option {
+	position: relative;
+	display: block;
+	margin: 0;
+	padding: 0;
+	font-weight: 400;
+	cursor: pointer;
+}
+
+.pakl .pakl-option input {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 1px;
+	height: 1px;
+	margin: 0;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.pakl .pakl-option__box {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	height: 100%;
+	min-height: 48px;
+	padding: 9px 12px;
+	border: 2px solid var(--pakl-line);
+	border-radius: 12px;
+	background: #fff;
+	transition: border-color 0.15s, background-color 0.15s;
+}
+
+.pakl .pakl-option__title {
+	color: var(--pakl-navy);
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1.25;
+}
+
+.pakl .pakl-option__hint {
+	margin-top: 2px;
+	color: var(--pakl-muted);
+	font-size: 13px;
+	line-height: 1.3;
+}
+
+.pakl .pakl-option:hover .pakl-option__box {
+	border-color: var(--pakl-accent);
+}
+
+.pakl .pakl-option input:checked + .pakl-option__box {
+	border-color: var(--pakl-accent);
+	background: var(--pakl-soft);
+	box-shadow: inset 0 0 0 1px var(--pakl-accent);
+}
+
+.pakl .pakl-option input:focus-visible + .pakl-option__box {
+	outline: 3px solid var(--pakl-accent);
+	outline-offset: 2px;
+}
+
+/* Rezultat */
+.pakl .pakl-result {
+	display: grid;
+	gap: 12px;
+	min-width: 0;
+	scroll-margin-top: 90px;
+}
+
+.pakl.is-invalid .pakl-total,
+.pakl.is-invalid .pakl-stats {
+	opacity: 0.45;
+}
+
+.pakl .pakl-total {
+	padding: 22px;
+	border-radius: var(--pakl-radius);
+	background: linear-gradient(150deg, #12304b 0%, #1b4469 100%);
+	color: #fff;
+	box-shadow: 0 6px 20px rgba(18, 48, 75, 0.18);
+}
+
+.pakl .pakl-total__label {
+	color: rgba(255, 255, 255, 0.78);
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+
+.pakl .pakl-total__value {
+	margin: 4px 0 2px;
+	color: #fff;
+	font-size: clamp(34px, 8vw, 44px);
+	font-weight: 800;
+	line-height: 1.1;
+}
+
+.pakl .pakl-total__range {
+	color: rgba(255, 255, 255, 0.78);
+	font-size: 15px;
+}
+
+.pakl .pakl-split {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 8px;
+	margin: 16px 0 0;
+	padding: 14px 0 0;
+	border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.pakl .pakl-split span {
+	display: block;
+	color: rgba(255, 255, 255, 0.72);
+	font-size: 13px;
+	line-height: 1.25;
+}
+
+.pakl .pakl-split strong {
+	display: block;
+	margin-top: 2px;
+	color: #fff;
+	font-size: 17px;
+	font-weight: 800;
+	line-height: 1.25;
+}
+
+.pakl .pakl-stats {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12px;
+}
+
+.pakl .pakl-stat {
+	min-width: 0;
+	padding: 16px;
+	border: 1px solid #edf1f5;
+	border-radius: var(--pakl-radius);
+	background: #fff;
+	box-shadow: 0 2px 10px rgba(18, 48, 75, 0.06);
+}
+
+.pakl .pakl-stat--water {
+	border-top: 4px solid var(--pakl-accent);
+}
+
+.pakl .pakl-stat--food {
+	border-top: 4px solid var(--pakl-cta);
+}
+
+.pakl .pakl-stat__label {
+	color: var(--pakl-muted);
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.pakl .pakl-stat__value {
+	margin: 4px 0 4px;
+	color: var(--pakl-navy);
+	font-size: 26px;
+	font-weight: 800;
+	line-height: 1.15;
+}
+
+.pakl .pakl-stat__hint {
+	color: var(--pakl-muted);
+	font-size: 14px;
+	line-height: 1.35;
+}
+
+/* Napomene */
+.pakl .pakl-notes {
+	display: grid;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pakl .pakl-note {
+	margin: 0;
+	padding: 10px 14px 10px 38px;
+	border-radius: 12px;
+	background: var(--pakl-soft);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a9ad6' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 11v5M12 8h.01'/%3E%3C/svg%3E");
+	background-position: 12px 12px;
+	background-repeat: no-repeat;
+	background-size: 18px 18px;
+	color: var(--pakl-text);
+	font-size: 15px;
+	line-height: 1.4;
+}
+
+.pakl .pakl-note--warn {
+	background-color: var(--pakl-warn);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c96a12' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l10 18H2z'/%3E%3Cpath d='M12 10v5M12 18h.01'/%3E%3C/svg%3E");
+}
+
+/* Kako računamo */
+.pakl .pakl-how {
+	margin: 0;
+	border: 1px solid #edf1f5;
+	border-radius: var(--pakl-radius);
+	background: #fff;
+}
+
+.pakl .pakl-how summary {
+	display: list-item;
+	padding: 14px 16px;
+	color: var(--pakl-navy);
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.pakl .pakl-how__body {
+	display: grid;
+	gap: 10px;
+	padding: 0 16px 16px;
+	color: var(--pakl-muted);
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.pakl .pakl-how__body strong {
+	color: var(--pakl-text);
+}
+
+.pakl .pakl-how__note {
+	font-style: italic;
+}
+
+/* Mobitel: traka s rezultatom na dnu zaslona */
+.pakl .pakl-bar {
+	position: fixed;
+	right: 12px;
+	bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+	left: 12px;
+	z-index: 50;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	min-height: 52px;
+	padding: 10px 16px;
+	border-radius: 14px;
+	background: var(--pakl-navy);
+	box-shadow: 0 8px 24px rgba(18, 48, 75, 0.35);
+	color: #fff;
+	font-size: 15px;
+	font-weight: 800;
+	text-decoration: none;
+}
+
+.pakl .pakl-bar:hover,
+.pakl .pakl-bar:focus {
+	color: #fff;
+}
+
+.pakl .pakl-bar__more {
+	flex: none;
+	padding: 6px 12px;
+	border-radius: 999px;
+	background: var(--pakl-cta);
+	font-size: 14px;
+}
+
+@container pakl (max-width: 549px) {
+	.pakl .pakl-stat {
+		padding: 14px 12px;
+	}
+
+	.pakl .pakl-stat__value {
+		font-size: 22px;
+	}
+}
+
+@container pakl (max-width: 380px) {
+	.pakl .pakl-split strong {
+		font-size: 15px;
+	}
+
+	.pakl .pakl-stat__value {
+		font-size: 20px;
+	}
+}
