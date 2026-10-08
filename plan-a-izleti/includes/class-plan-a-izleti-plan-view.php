@@ -312,7 +312,7 @@ final class Plan_A_Izleti_Plan_View {
 			<?php endif; ?>
 
 			<?php if ( current_user_can( 'edit_posts' ) ) : ?>
-				<p class="papl-admin"><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . Plan_A_Izleti_Plan::POST_TYPE ) ); ?>">Uredi plan izleta</a> (vidi samo administrator)</p>
+				<p class="papl-admin"><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . Plan_A_Izleti_Plan::POST_TYPE ) ); ?>">Uredi plan izleta</a> (vidi samo administrator)<br><span data-papl-diag></span></p>
 			<?php endif; ?>
 		</div>
 		<?php
@@ -326,19 +326,21 @@ final class Plan_A_Izleti_Plan_View {
 	 */
 	private static function theme_font(): string {
 		$font = '';
-		foreach ( array( 'type_texts', 'type_text' ) as $mod ) {
+		// Flatsome: Typography → Text, a ako nije spremljen, font naslova.
+		foreach ( array( 'type_texts', 'type_text', 'type_headings' ) as $mod ) {
 			$value = get_theme_mod( $mod );
-			if ( is_array( $value ) && ! empty( $value['font-family'] ) ) {
+			if ( is_array( $value ) && ! empty( $value['font-family'] ) && ! preg_match( '/mono|courier/i', (string) $value['font-family'] ) ) {
 				$font = (string) $value['font-family'];
 				break;
 			}
 		}
 		$font = (string) apply_filters( 'plan_a_izleti_plan_font', $font );
-		$font = trim( preg_replace( '/[^A-Za-z0-9 \-]/', '', $font ) );
-		if ( '' === $font || preg_match( '/mono|courier/i', $font ) ) {
-			return '';
+		$font = trim( preg_replace( '/[^A-Za-z0-9 \\-]/', '', $font ) );
+		if ( preg_match( '/mono|courier/i', $font ) ) {
+			$font = '';
 		}
-		return '"' . $font . '", "Helvetica Neue", Arial, sans-serif';
+		// Uvijek normalan font, nikad font pisaćeg stroja (Lato je zadani font teme Flatsome).
+		return ( $font ? '"' . $font . '", ' : '' ) . '"Lato", "Helvetica Neue", Arial, sans-serif';
 	}
 
 	private static function plural( int $n, array $forms ): string {

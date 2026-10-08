@@ -841,3 +841,27 @@
 		aspect-ratio: 4 / 3;
 	}
 }
+
+/*
+ * Sav tekst plana koristi font plana (postavljen na .papl iz postavki teme), i kad tema ili
+ * drugi dodatak pojedinim elementima zada drugi font (npr. font pisaćeg stroja). Naslovi
+ * mjeseci i izleta zadržavaju font naslova teme.
+ */
+div.papl[data-papl] p,
+div.papl[data-papl] span,
+div.papl[data-papl] a,
+div.papl[data-papl] li,
+div.papl[data-papl] ul,
+div.papl[data-papl] nav,
+div.papl[data-papl] strong,
+div.papl[data-papl] em,
+div.papl[data-papl] label,
+div.papl[data-papl] input,
+div.papl[data-papl] button,
+div.papl[data-papl] summary,
+div.papl[data-papl] details,
+div.papl[data-papl] form,
+div.papl[data-papl] section,
+div.papl[data-papl] div {
+	font-family: inherit !important;
+}

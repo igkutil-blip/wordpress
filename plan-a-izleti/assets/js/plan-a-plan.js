@@ -115,12 +115,36 @@
 		root.style.fontFamily = font;
 	}
 
+	/* Za administratora: odakle plan dobiva font (pomaže kod neobičnih postavki teme). */
+	function diag(root) {
+		var out = root.querySelector('[data-papl-diag]');
+		if (!out) {
+			return;
+		}
+		var desc = function (el) {
+			return el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).slice(0, 2).join('.') : '');
+		};
+		var text = root.querySelector('.papl-summary') || root;
+		var parts = ['Font teksta: ' + getComputedStyle(text).fontFamily.split(',')[0]];
+		var el = root.parentElement;
+		var mono = /mono|courier|consol|menlo|typewriter/i;
+		while (el && el !== document.documentElement) {
+			if (mono.test(getComputedStyle(el).fontFamily) || /^(PRE|CODE|KBD|SAMP|TT)$/.test(el.tagName)) {
+				parts.push('font pisaćeg stroja dolazi od: ' + desc(el));
+				break;
+			}
+			el = el.parentElement;
+		}
+		out.textContent = parts.join(' · ');
+	}
+
 	function boot() {
 		Array.prototype.forEach.call(document.querySelectorAll('[data-papl]'), function (root) {
 			if (root.hasAttribute('data-papl-ready')) {
 				return;
 			}
 			root.setAttribute('data-papl-ready', '');
+			diag(root);
 			fixFont(root);
 			initNotify(root);
 			initCalendar(root);
