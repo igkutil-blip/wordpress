@@ -250,7 +250,8 @@ final class Plan_A_Izleti_Plan_View {
 
 		ob_start();
 		?>
-		<div class="papl<?php echo $images ? ' papl--images' : ''; ?>" data-papl>
+		<?php $font = self::theme_font(); ?>
+		<div class="papl<?php echo $images ? ' papl--images' : ''; ?>" data-papl<?php echo $font ? ' style="font-family:' . esc_attr( $font ) . '"' : ''; ?>>
 			<div class="papl-top">
 				<p class="papl-summary">
 					<?php if ( $total ) : ?>
@@ -316,6 +317,28 @@ final class Plan_A_Izleti_Plan_View {
 		</div>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Font teksta iz postavki teme Flatsome (Typography → Text), npr. "Jost".
+	 * Upisuje se izravno na plan, pa vrijedi i kad je shortcode u bloku s oblikovanim
+	 * tekstom (<pre>), kojem tema daje font pisaćeg stroja, i bez JavaScripta.
+	 */
+	private static function theme_font(): string {
+		$font = '';
+		foreach ( array( 'type_texts', 'type_text' ) as $mod ) {
+			$value = get_theme_mod( $mod );
+			if ( is_array( $value ) && ! empty( $value['font-family'] ) ) {
+				$font = (string) $value['font-family'];
+				break;
+			}
+		}
+		$font = (string) apply_filters( 'plan_a_izleti_plan_font', $font );
+		$font = trim( preg_replace( '/[^A-Za-z0-9 \-]/', '', $font ) );
+		if ( '' === $font || preg_match( '/mono|courier/i', $font ) ) {
+			return '';
+		}
+		return '"' . $font . '", "Helvetica Neue", Arial, sans-serif';
 	}
 
 	private static function plural( int $n, array $forms ): string {
