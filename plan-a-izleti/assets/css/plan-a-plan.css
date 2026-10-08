@@ -434,15 +434,43 @@
 	gap: 8px;
 }
 
-.papl .papl-ics {
-	display: inline-grid;
+.papl .papl-addcal {
+	position: relative;
 	flex: none;
-	place-items: center;
-	width: 44px;
+	margin: 0;
+}
+
+.papl .papl-ics {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
 	height: 44px;
+	padding: 0 14px 0 12px;
 	border: 2px solid #cfd8e3;
 	border-radius: 999px;
+	background: #fff;
 	color: var(--papl-navy);
+	font-size: 14px;
+	font-weight: 700;
+	white-space: nowrap;
+	list-style: none;
+	cursor: pointer;
+}
+
+.papl .papl-ics::-webkit-details-marker {
+	display: none;
+}
+
+.papl .papl-addcal[open] > .papl-ics {
+	border-color: var(--papl-accent);
+	background: var(--papl-soft);
+}
+
+.papl .papl-addcal__menu {
+	top: calc(100% + 8px);
+	right: 0;
+	left: auto;
+	width: min(270px, calc(100vw - 40px));
 }
 
 .papl .papl-ics:hover,
@@ -450,6 +478,105 @@
 	border-color: var(--papl-accent);
 	background: var(--papl-soft);
 	color: var(--papl-navy);
+}
+
+/* Iznad naziva: "Sljedeći izlet" i (na mobitelu) oznaka statusa */
+.papl .papl-kicker {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 10px;
+	margin: 0 0 4px;
+}
+
+.papl .papl-kicker .papl-badge {
+	display: none;
+}
+
+.papl .papl-kicker:not(:has(.papl-next)) {
+	display: none;
+}
+
+.papl .papl-next {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--papl-cta-dark);
+	font-size: 12px;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.papl .papl-next::before {
+	content: "";
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--papl-cta);
+	box-shadow: 0 0 0 4px rgba(232, 134, 42, 0.2);
+}
+
+.papl .papl-row.is-next {
+	box-shadow: 0 0 0 2px rgba(232, 134, 42, 0.45), 0 6px 18px rgba(18, 48, 75, 0.1);
+}
+
+/* Brzi odabir */
+.papl .papl-filter {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0 0 12px;
+}
+
+.papl button.papl-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 40px;
+	margin: 0 !important;
+	padding: 8px 14px !important;
+	border: 1px solid var(--papl-line) !important;
+	border-radius: 999px !important;
+	background: #fff !important;
+	box-shadow: none !important;
+	color: var(--papl-navy) !important;
+	font-size: 15px !important;
+	font-weight: 700 !important;
+	line-height: 1.2 !important;
+	letter-spacing: 0 !important;
+	text-transform: none !important;
+	cursor: pointer;
+}
+
+.papl button.papl-chip span {
+	display: inline-grid;
+	place-items: center;
+	min-width: 22px;
+	height: 22px;
+	padding: 0 6px;
+	border-radius: 999px;
+	background: var(--papl-soft);
+	font-size: 13px;
+}
+
+.papl button.papl-chip[aria-pressed="true"] {
+	border-color: var(--papl-navy) !important;
+	background: var(--papl-navy) !important;
+	color: #fff !important;
+}
+
+.papl button.papl-chip[aria-pressed="true"] span {
+	background: rgba(255, 255, 255, 0.2);
+}
+
+.papl .papl-empty {
+	margin: 18px 0 0;
+	padding: 16px;
+	border-radius: var(--papl-radius);
+	background: #fff;
+	color: var(--papl-muted);
+	text-align: center;
 }
 
 /* Obrazac "Javi mi" */
@@ -636,12 +763,47 @@
 		justify-content: space-between;
 	}
 
-	.papl .papl-side .papl-badge {
-		order: -1;
+	.papl .papl-filter {
+		flex-wrap: nowrap;
+		margin-right: -4px;
+		padding: 2px 4px 8px 2px;
+		overflow-x: auto;
+		scrollbar-width: thin;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.papl button.papl-chip {
+		flex: none;
+	}
+
+	/* Na mobitelu je oznaka iznad naziva, a ispod su samo gumbi. */
+	.papl .papl-side > .papl-badge {
+		display: none;
+	}
+
+	.papl .papl-kicker,
+	.papl .papl-kicker:not(:has(.papl-next)) {
+		display: flex;
+	}
+
+	.papl .papl-kicker .papl-badge {
+		display: inline-block;
+		padding: 3px 8px;
+		font-size: 11px;
+	}
+
+	.papl .papl-list--past .papl-side > .papl-badge {
+		display: inline-block;
 	}
 
 	.papl .papl-actions {
 		flex: 1 1 100%;
+	}
+
+	.papl .papl-actions .papl-btn {
+		min-height: 44px;
+		padding-top: 8px;
+		padding-bottom: 8px;
 	}
 
 	.papl .papl-actions .papl-btn {
@@ -864,4 +1026,11 @@ div.papl[data-papl] form,
 div.papl[data-papl] section,
 div.papl[data-papl] div {
 	font-family: inherit !important;
+}
+
+/* Izbornik "U kalendar" otvara se prema lijevo, da ne izađe s desnog ruba zaslona. */
+.papl .papl-addcal > .papl-addcal__menu,
+.papl-wrap .papl .papl-addcal > .papl-addcal__menu {
+	right: 0 !important;
+	left: auto !important;
 }

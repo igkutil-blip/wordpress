@@ -75,21 +75,79 @@
 		});
 	}
 
-	/* Izbornik kalendara: zatvori klikom izvan njega ili tipkom Esc. */
+	/* Izbornici kalendara: otvoren je samo jedan; zatvara se klikom izvan njega ili tipkom Esc. */
 	function initCalendar(root) {
-		var cal = root.querySelector('.papl-cal');
-		if (!cal) {
+		var menus = function () {
+			return root.querySelectorAll('details.papl-cal, details.papl-addcal');
+		};
+		root.addEventListener('toggle', function (e) {
+			var opened = e.target;
+			if (!opened.open || !opened.matches || !opened.matches('details.papl-cal, details.papl-addcal')) {
+				return;
+			}
+			Array.prototype.forEach.call(menus(), function (d) {
+				if (d !== opened) {
+					d.open = false;
+				}
+			});
+		}, true);
+		document.addEventListener('click', function (e) {
+			Array.prototype.forEach.call(menus(), function (d) {
+				if (d.open && !d.contains(e.target)) {
+					d.open = false;
+				}
+			});
+		});
+		root.addEventListener('keydown', function (e) {
+			if (e.key !== 'Escape') {
+				return;
+			}
+			Array.prototype.forEach.call(menus(), function (d) {
+				if (d.open) {
+					d.open = false;
+					d.querySelector('summary').focus();
+				}
+			});
+		});
+	}
+
+	/* Brzi odabir: Svi, Prijave otvorene, Uskoro, Jednodnevni, Višednevni. */
+	function initFilter(root) {
+		var bar = root.querySelector('.papl-filter');
+		if (!bar) {
 			return;
 		}
-		document.addEventListener('click', function (e) {
-			if (cal.open && !cal.contains(e.target)) {
-				cal.open = false;
+		var empty = root.querySelector('[data-papl-empty]');
+		bar.addEventListener('click', function (e) {
+			var btn = e.target.closest('[data-papl-filter]');
+			if (!btn) {
+				return;
 			}
-		});
-		cal.addEventListener('keydown', function (e) {
-			if (e.key === 'Escape' && cal.open) {
-				cal.open = false;
-				cal.querySelector('summary').focus();
+			var f = btn.getAttribute('data-papl-filter');
+			Array.prototype.forEach.call(bar.querySelectorAll('[data-papl-filter]'), function (b) {
+				b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+			});
+			var shown = 0;
+			Array.prototype.forEach.call(root.querySelectorAll('[data-papl-section]'), function (sec) {
+				var n = 0;
+				Array.prototype.forEach.call(sec.querySelectorAll('.papl-row'), function (row) {
+					var ok = f === 'all' || row.getAttribute('data-status') === f || row.getAttribute('data-days') === f;
+					row.hidden = !ok;
+					n += ok ? 1 : 0;
+				});
+				sec.hidden = !n;
+				shown += n;
+				var chip = root.querySelector('[data-papl-month="' + sec.getAttribute('data-papl-section') + '"]');
+				if (chip) {
+					chip.hidden = !n;
+					var c = chip.querySelector('span');
+					if (c) {
+						c.textContent = n;
+					}
+				}
+			});
+			if (empty) {
+				empty.hidden = shown > 0;
 			}
 		});
 	}
@@ -169,7 +227,10 @@
 		if (found.length) {
 			parts.push('pravilo: ' + found.join(' | '));
 		}
-		out.textContent = parts.join(' · ');
+		/* Prikaži samo kad nešto nije u redu. */
+		if (parts.length > 2 || mono.test(parts[0])) {
+			out.textContent = parts.join(' · ');
+		}
 	}
 
 	function boot() {
@@ -182,6 +243,7 @@
 			fixFont(root);
 			initNotify(root);
 			initCalendar(root);
+			initFilter(root);
 		});
 	}
 
