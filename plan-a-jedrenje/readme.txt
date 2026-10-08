@@ -13,7 +13,7 @@ Rezervacija tjednog jedrenja za ekipu (subota–subota) u terminu koji kupac bir
    odabranog tjedna, obrazac za zahtjev i gumb "Predloži ekipi".
 2. Kalendar: samo tjedni sezone (ova i sljedeća godina), bez prošlih. Slobodno (plavi obrub),
    Na upitu (narančasto, još se može poslati zahtjev), Zauzeto (sivo, ne može se odabrati).
-   Mobitel: jedan mjesec, gumbi za prethodni i sljedeći, kartice u dva stupca. Računalo: tri mjeseca.
+   Cijela sezona vidi se odjednom: na računalu svi mjeseci u jednom redu, na mobitelu po dva.
 3. Cijena je uvijek za cijeli brod: ručna cijena tjedna > cijena razdoblja (subota ukrcaja) >
    osnovna cijena. Uz cijenu se može prikazati precrtana redovna cijena. Ispod cijene:
    "Za X osoba to je Y € po osobi".
