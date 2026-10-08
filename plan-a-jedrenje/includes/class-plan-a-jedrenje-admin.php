@@ -191,11 +191,14 @@ final class Plan_A_Jedrenje_Admin {
 		foreach ( $text as $k ) {
 			$s[ $k ] = sanitize_text_field( wp_unslash( $_POST[ $k ] ?? '' ) ) ?: Plan_A_Jedrenje_Data::defaults()[ $k ];
 		}
+		foreach ( array( 'contact_name', 'contact_phone' ) as $k ) { // smiju biti prazni
+			$s[ $k ] = sanitize_text_field( wp_unslash( $_POST[ $k ] ?? '' ) );
+		}
 		foreach ( array( 'embark_time', 'disembark_time' ) as $k ) {
 			$v       = sanitize_text_field( wp_unslash( $_POST[ $k ] ?? '' ) );
 			$s[ $k ] = preg_match( '/^([01]?\d|2[0-3])[:.][0-5]\d$/', $v ) ? str_replace( '.', ':', $v ) : Plan_A_Jedrenje_Data::defaults()[ $k ];
 		}
-		foreach ( array( 'included', 'excluded', 'routes', 'concepts', 'cancel_terms', 'mail_request', 'mail_confirm', 'mail_reject', 'mail_booked', 'mail_paid' ) as $k ) {
+		foreach ( array( 'included', 'excluded', 'routes', 'concepts', 'leaders', 'important', 'cancel_terms', 'mail_request', 'mail_confirm', 'mail_reject', 'mail_booked', 'mail_paid' ) as $k ) {
 			$s[ $k ] = sanitize_textarea_field( wp_unslash( $_POST[ $k ] ?? '' ) );
 		}
 		if ( '' === trim( $s['routes'] ) ) {
@@ -324,7 +327,7 @@ final class Plan_A_Jedrenje_Admin {
 		$rows = array(
 			'Termin'     => Plan_A_Jedrenje_Data::week_long( $r['week'] ),
 			'Broj osoba' => (string) $r['persons'],
-			'Koncept'    => (string) ( $r['concept'] ?? '' ),
+			'Sadržaj'    => (string) ( $r['concept'] ?? '' ),
 			'Ruta'       => $r['route'],
 			'Cijena'     => Plan_A_Jedrenje_Data::money( (float) $r['price'] ) . ' za cijeli brod',
 			'Zaprimljeno' => $r['created'] ? wp_date( 'j. n. Y. H:i', (int) $r['created'] ) : '',
@@ -593,8 +596,12 @@ final class Plan_A_Jedrenje_Admin {
 			$text( 'disembark_time', 'Iskrcaj (subota)', 'npr. 09:00' );
 			$area( 'included', 'Uključeno', 'Jedna stavka u retku; prikazuje se s kvačicama.' );
 			$area( 'excluded', 'Nije uključeno', 'Jedna stavka u retku; prikazuje se sitnije.' );
-			$area( 'concepts', 'Koncepti tjedna', 'Svaki koncept u svom bloku: prvi redak naziv, ispod kratki opis; između koncepata prazan redak. Prazno = bez odabira koncepta.' );
+			$area( 'concepts', 'Sadržaji (kupac bira, može više)', 'Svaki sadržaj u svom bloku: prvi redak naziv, ispod kratki opis; između sadržaja prazan redak. Prazno = bez odabira.' );
 			$area( 'routes', 'Ponuđene rute', 'Svaka ruta u svom bloku: prvi redak naziv, drugi kratki opis, zatim plan po danima ("Subota: …"); između ruta prazan redak.' );
+			$area( 'leaders', 'Tko vas vodi', 'Jedan odlomak u retku. "Na moru: …" ističe riječi prije dvotočke.' );
+			$area( 'important', 'Važno znati', 'Jedna stavka u retku.' );
+			$text( 'contact_name', 'Kontakt: ime', 'Prikazuje se kao „Pitanja i dogovor: Igor, 095 …”.' );
+			$text( 'contact_phone', 'Kontakt: telefon' );
 			$num( 'min_persons', 'Najmanji broj sudionika' );
 			$num( 'max_persons', 'Najveći broj sudionika' );
 			?>

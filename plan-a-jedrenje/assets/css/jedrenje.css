@@ -1297,3 +1297,77 @@
 .pajd .pajd-offer strong {
 	color: var(--pajd-navy);
 }
+
+/* Sadržaji: može više (kvadratić s kvačicom) */
+.pajd .pajd-route--multi span::before {
+	border-radius: 5px;
+}
+
+.pajd .pajd-route--multi input:checked + span::before {
+	border: 2px solid var(--pajd-accent);
+	background: var(--pajd-accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7'/%3E%3C/svg%3E") center / 14px no-repeat;
+}
+
+.pajd .pajd-hint {
+	margin: 2px 0 0;
+	color: var(--pajd-muted);
+	font-size: 14px;
+}
+
+/* Tko vas vodi, važno znati */
+.pajd .pajd-about {
+	container-type: inline-size;
+}
+
+.pajd .pajd-about__grid {
+	display: grid;
+	gap: 18px;
+}
+
+@container (min-width: 640px) {
+	.pajd .pajd-about__grid {
+		grid-template-columns: 1fr 1fr;
+		gap: 28px;
+	}
+}
+
+.pajd .pajd-about p {
+	margin: 0 0 10px;
+	font-size: 15px;
+	line-height: 1.55;
+}
+
+.pajd .pajd-about p strong {
+	color: var(--pajd-navy);
+}
+
+.pajd .pajd-important {
+	display: grid;
+	gap: 8px;
+	margin: 0;
+	padding: 0 0 0 18px;
+	list-style: disc outside !important;
+	font-size: 15px;
+	line-height: 1.5;
+}
+
+.pajd .pajd-important li::marker {
+	color: var(--pajd-cta);
+}
+
+.pajd .pajd-contact {
+	margin: 16px 0 0 !important;
+	padding-top: 14px;
+	border-top: 1px solid var(--pajd-line);
+	font-weight: 700;
+}
+
+.pajd .pajd-contact a {
+	color: var(--pajd-accent);
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.pajd .pajd-about .pajd-h3 {
+	margin: 0 0 10px;
+}

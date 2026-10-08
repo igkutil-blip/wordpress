@@ -1,7 +1,7 @@
 === Plan A jedrenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 
 Rezervacija tjednog jedrenja za ekipu (subota–subota) u terminu koji kupac bira.
@@ -47,6 +47,13 @@ i na stranici iz predmemorije. Ipak izuzmi:
 Košarica, naplata i "Moj račun" već moraju biti izuzeti zbog WooCommercea.
 
 == Promjene ==
+
+= 1.3.0 =
+* Tekstovi s izleta "7 dana jedrenja po srednjoj i južnoj Dalmaciji": rute A i B s programom po
+  danima, sadržaji (planinarenje, biciklizam, gastronomija i vino, more i opuštanje), nije uključeno.
+* Sadržaji se biraju kvačicama (može više ili nijedan).
+* Novi dio "Tko vas vodi" i "Važno znati" te kontakt s telefonom (uređuje se u Postavkama).
+* Stari zadani tekstovi se sami zamjenjuju novima; tekstovi koje si uredio ostaju.
 
 = 1.2.0 =
 * Kalendar prikazuje cijelu sezonu odjednom, bez listanja: svi mjeseci jedan uz drugi (na mobitelu

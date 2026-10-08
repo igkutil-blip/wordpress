@@ -34,9 +34,13 @@ final class Plan_A_Jedrenje_Data {
 			'embark_time'    => '17:00',
 			'disembark_time' => '09:00',
 			'included'       => "najam jedrilice\nskiper\nvođenje na kopnenim turama\ngorivo\nmarine i vezovi\nturistička pristojba\nzavršno čišćenje\nposteljina i ručnici",
-			'excluded'       => "hrana i piće (zajednička blagajna ili pojedinačno, prema dogovoru ekipe)\nulaznice za NP Mljet i PP Lastovsko otočje\nnajam bicikala\ndegustacije i restorani",
-			'routes'         => "Ruta A: Šolta, Brač, Hvar, Vis\nSrednjodalmatinski otoci: kraći prijelazi i više vremena za kupanje, uvale i izlete na kopno.\nSubota: ukrcaj u ACI marini Split, upoznavanje broda i prva večer u marini.\nNedjelja: Šolta – uvala Nečujam ili Maslinica, kupanje i šetnja.\nPonedjeljak: Brač – Bol i Zlatni rat, uspon na Vidovu goru (778 m), najviši vrh jadranskih otoka.\nUtorak: Hvar – Pakleni otoci i grad Hvar ili Stari Grad.\nSrijeda: Vis – Komiža, uspon na Hum (587 m) ili vožnja biciklom po otoku.\nČetvrtak: Vis – uvala Stiniva i grad Vis, večer u konobi.\nPetak: povratak preko Šolte ili Brača, zadnje kupanje i večer u Splitu.\nSubota: iskrcaj do 09:00.\n\nRuta B: Lastovo, Mljet, Korčula\nJužna Dalmacija za ekipu koja voli dulje plovidbe: najudaljeniji otoci, park prirode i nacionalni park.\nSubota: ukrcaj u ACI marini Split.\nNedjelja: dulja plovidba prema Korčuli, usput kupanje na Hvaru ili Šćedru.\nPonedjeljak: Lastovo – PP Lastovsko otočje, uspon na Hum (417 m) i noć pod zvijezdama bez svjetlosnog onečišćenja.\nUtorak: Mljet – NP Mljet, Veliko i Malo jezero, otočić Sveta Marija, pješice ili biciklom uz jezera.\nSrijeda: Korčula – stari grad i vinogradi pošipa i grka u Lumbardi.\nČetvrtak: plovidba natrag prema srednjoj Dalmaciji, noćenje na Hvaru.\nPetak: Brač ili Šolta, zadnje kupanje i povratak u Split.\nSubota: iskrcaj do 09:00.\n\nDogovor sa skiperom\nRutu složite zajedno sa skiperom prema vremenu, vjetru i željama ekipe – može i kombinacija obje rute.",
-			'concepts'       => "Jedrenje i kupanje\nKlasičan tjedan na moru: skrivene uvale, kupanje, ronjenje na dah, zalasci sunca na palubi i večeri u otočnim mjestima.\n\nJedrenje i planinarenje\nSvaki dan s broda na vrh otoka: Vidova gora na Braču, Sveti Nikola na Hvaru, Hum na Visu i Lastovu. Ture vodi licencirani diplomirani planinski vodič.\n\nJedrenje i biciklizam\nOtočne ceste i makadami na Visu, Hvaru i Korčuli te staze uz jezera na Mljetu. Bicikli se iznajmljuju na otocima (najam nije uključen u cijenu).\n\nJedrenje i gastronomija\nKonobe, riba s gradela i domaća vina: vugava na Visu, bogdanuša i plavac na Hvaru, pošip i grk na Korčuli. Degustacije i restorani plaćaju se zasebno.\n\nKombinirano\nMalo svega: dogovorite s vodičem i skiperom što ekipa najviše želi.",
+			'excluded'       => "hrana i piće (zajednička brodska kasa ili svatko za sebe, prema dogovoru grupe)\nulaznice za Nacionalni park Mljet i Park prirode Lastovsko otočje\nnajam bicikala\ndegustacije i restorani",
+			'routes'         => "Ruta A: Šolta, Brač, Hvar, Vis\nSrednjodalmatinski otoci, kraće etape i više vremena na otocima; najduža etapa tjedna je plovidba do Visa.\nSubota: ukrcaj u ACI marini Split, plovidba do Šolte (Maslinica ili Nečujam)\nNedjelja: plovidba do Visa (Komiža), najduža etapa tjedna\nPonedjeljak: Vis, Komiža i okolica, po želji Biševo\nUtorak: plovidba do Hvara (Pakleni otoci ili Hvar)\nSrijeda: Hvar (Stari Grad ili Jelsa)\nČetvrtak: plovidba do Brača (Bol ili Milna)\nPetak: povratak u ACI marinu Split, zadnja večer na brodu\nSubota: iskrcaj\n\nRuta B: Lastovo, Mljet, Korčula\nVodi dalje na jug i ima dvije duže etape, ali nudi mirnije i manje posjećene otoke.\nSubota: ukrcaj u ACI marini Split, plovidba do Hvara\nNedjelja: plovidba do Korčule (Vela Luka)\nPonedjeljak: plovidba do Lastova\nUtorak: Lastovo, Park prirode Lastovsko otočje\nSrijeda: plovidba do Mljeta (Polače, Nacionalni park Mljet)\nČetvrtak: plovidba do Korčule (grad Korčula ili Lumbarda)\nPetak: povratak u ACI marinu Split, duža etapa, zadnja večer na brodu\nSubota: iskrcaj\n\nDogovorit ćemo zajedno\nJoš ne znate? Rutu složimo zajedno prema željama ekipe i prognozi.",
+			'concepts'       => "Planinarenje\nUz licenciranog planinskog vodiča: Vidova gora na Braču, Hum na Visu, Sv. Nikola na Hvaru, Hum na Lastovu te staze na Mljetu i Korčuli.\n\nBiciklizam\nOtočke ceste i makadami na Braču, Hvaru, Visu, Mljetu i Korčuli. Bicikli se unajmljuju na otoku.\n\nGastronomija i vino\nKonobe, vinarije i lokalni proizvođači.\n\nMore i opuštanje\nKupanje u uvalama, snorkeling, osnove jedrenja, yoga.",
+			'leaders'        => "Na moru: skiper C kategorije s kvalifikacijom Yacht Master Category A (do 100 GT).\nNa kopnu: planinski vodič Saveza gorskih vodiča Hrvatske s međunarodnom licencom UIMLA International Mountain Leader.\nI na moru i na planini s vama je osoba koja je za taj posao osposobljena, licencirana i odgovorna. Procjena vremena, izbor rute, tempo grupe i odluke na terenu dio su struke, a ne improvizacije.\nNe morate znati jedriti niti imati iskustva na brodu. Uključite se u jedrenje koliko želite ili jednostavno uživajte u plovidbi.",
+			'important'      => "Konačnu rutu svaki dan određuje skiper prema vremenskoj prognozi i stanju mora. Otok se zbog vremena može zamijeniti drugim ili preskočiti.\nO kopnenim turama prema uvjetima na terenu odlučuje planinski vodič. Sigurnost grupe ima prednost pred planom.\nPlovimo danju. Noću smo u marini, luci ili na sigurnom sidrištu.\nDok smo na kopnenim aktivnostima, brod je siguran u marini, na gradskom vezu ili na bovi. Nikad ga ne ostavljamo na sidru.",
+			'contact_name'   => 'Igor',
+			'contact_phone'  => '095 90 60 556',
 			'min_persons'    => 5,
 			'max_persons'    => 8,
 			'base_price'     => 5600,
@@ -64,23 +68,30 @@ final class Plan_A_Jedrenje_Data {
 	 */
 	public static function seed() {
 		$done = (int) get_option( 'plan_a_jedrenje_seeded' );
-		if ( $done < 2 ) {
-			// 1.2.0: rute s opisom i planom po danima umjesto samo naziva, ako nisu mijenjane.
-			$saved = get_option( self::OPTION, array() );
-			if ( is_array( $saved ) && isset( $saved['routes'] ) && "Ruta A: Šolta, Brač, Hvar, Vis\nRuta B: Lastovo, Mljet, Korčula\nDogovor sa skiperom" === str_replace( "\r", '', trim( (string) $saved['routes'] ) ) ) {
-				unset( $saved['routes'] );
+		if ( $done >= 3 ) {
+			return;
+		}
+		$saved = get_option( self::OPTION, array() );
+		if ( is_array( $saved ) ) {
+			// Spremljeni stari zadani tekstovi (1.0–1.2) zamjenjuju se novima; uređeni tekstovi ostaju.
+			$old = array(
+				'routes'   => array( md5( "Ruta A: Šolta, Brač, Hvar, Vis\nRuta B: Lastovo, Mljet, Korčula\nDogovor sa skiperom" ), '09aac4946bdfc3d83b54147ffeaa6758' ),
+				'concepts' => array( '8bb4d969fd121616ad42a54e37e04b08' ),
+				'excluded' => array( 'd7948b1df8508887c688a157334fe81a' ),
+			);
+			$changed = false;
+			foreach ( $old as $key => $hashes ) {
+				if ( isset( $saved[ $key ] ) && in_array( md5( trim( str_replace( "\r", '', (string) $saved[ $key ] ) ) ), $hashes, true ) ) {
+					unset( $saved[ $key ] );
+					$changed = true;
+				}
+			}
+			if ( $changed ) {
 				update_option( self::OPTION, $saved, false );
 				self::$settings = null;
 			}
 		}
-		if ( $done >= 2 ) {
-			return;
-		}
-		if ( $done ) {
-			update_option( 'plan_a_jedrenje_seeded', 2, false );
-			return;
-		}
-		if ( ! self::periods() ) {
+		if ( ! $done && ! self::periods() ) {
 			update_option(
 				self::PERIODS,
 				array(
@@ -102,7 +113,7 @@ final class Plan_A_Jedrenje_Data {
 				false
 			);
 		}
-		update_option( 'plan_a_jedrenje_seeded', 2, false );
+		update_option( 'plan_a_jedrenje_seeded', 3, false );
 	}
 
 	public static function get(): array {

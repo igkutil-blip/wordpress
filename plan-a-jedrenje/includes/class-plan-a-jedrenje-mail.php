@@ -20,7 +20,7 @@ final class Plan_A_Jedrenje_Mail {
 			'Polazak'      => Plan_A_Jedrenje_Data::value( 'marina' ) . ', subota, ukrcaj od ' . Plan_A_Jedrenje_Data::value( 'embark_time' ) . ' h',
 			'Brod'         => Plan_A_Jedrenje_Data::value( 'boat' ) . ', ' . (int) Plan_A_Jedrenje_Data::value( 'cabins' ) . ' kabine, ' . Plan_A_Jedrenje_Data::value( 'skipper' ),
 			'Broj osoba'   => (string) $r['persons'],
-			'Koncept'      => (string) ( $r['concept'] ?? '' ),
+			'Sadržaj'      => (string) ( $r['concept'] ?? '' ),
 			'Ruta'         => $r['route'],
 			'Cijena'       => Plan_A_Jedrenje_Data::money( (float) $r['price'] ) . ' za cijeli brod',
 		);
