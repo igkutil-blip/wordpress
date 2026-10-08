@@ -94,16 +94,34 @@
 		});
 	}
 
+	/*
+	 * Ako je shortcode upisan u blok s oblikovanim tekstom (<pre>, <code>…), tema mu daje
+	 * font pisaćeg stroja; plan tada preuzima font okolnog sadržaja stranice.
+	 */
+	function fixFont(root) {
+		var mono = /mono|courier|consol|menlo|typewriter/i;
+		var host = root.parentElement && root.parentElement.closest('pre, code, kbd, samp, tt');
+		if (!host && !mono.test(getComputedStyle(root).fontFamily)) {
+			return;
+		}
+		var src = host ? host.parentElement : root.parentElement;
+		while (src && src !== document.body && (src.closest('pre, code, kbd, samp, tt') || mono.test(getComputedStyle(src).fontFamily))) {
+			src = src.parentElement;
+		}
+		var font = getComputedStyle(src || document.body).fontFamily;
+		if (mono.test(font)) {
+			font = 'Lato, "Helvetica Neue", Arial, sans-serif';
+		}
+		root.style.fontFamily = font;
+	}
+
 	function boot() {
 		Array.prototype.forEach.call(document.querySelectorAll('[data-papl]'), function (root) {
 			if (root.hasAttribute('data-papl-ready')) {
 				return;
 			}
 			root.setAttribute('data-papl-ready', '');
-			/* Ako je shortcode u bloku s oblikovanim tekstom (<pre>/<code>), vrati font stranice. */
-			if (/mono/i.test(getComputedStyle(root).fontFamily)) {
-				root.style.fontFamily = getComputedStyle(document.body).fontFamily;
-			}
+			fixFont(root);
 			initNotify(root);
 			initCalendar(root);
 		});

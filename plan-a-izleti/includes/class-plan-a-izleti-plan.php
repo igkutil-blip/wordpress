@@ -82,9 +82,49 @@ final class Plan_A_Izleti_Plan {
 		delete_transient( self::CACHE_KEY );
 	}
 
+	/**
+	 * Očisti spremljene kopije stranica s planom u poznatim dodacima za cache
+	 * (LiteSpeed, WP Rocket, W3 Total Cache, WP Super Cache), da se promjena odmah vidi.
+	 */
+	public static function purge_pages() {
+		global $wpdb;
+		$ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_content LIKE '%[plan-a-plan-izleta%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		foreach ( array_map( 'intval', (array) $ids ) as $id ) {
+			clean_post_cache( $id );
+			do_action( 'litespeed_purge_post', $id );
+			if ( function_exists( 'rocket_clean_post' ) ) {
+				rocket_clean_post( $id );
+			}
+			if ( function_exists( 'w3tc_flush_post' ) ) {
+				w3tc_flush_post( $id );
+			}
+			if ( function_exists( 'wp_cache_post_change' ) ) {
+				wp_cache_post_change( $id );
+			}
+		}
+	}
+
 	/* ---------------------------------------------------------------------
 	 * Podaci
 	 * ------------------------------------------------------------------- */
+
+	/**
+	 * Datum upisan kao "21.11.2026." (ili "21. 11. 2026", "21/11/2026") u oblik 'Y-m-d'.
+	 */
+	public static function parse_hr_date( string $value ): string {
+		$value = trim( $value );
+		if ( preg_match( '/^(\d{1,2})\s*[.\/-]\s*(\d{1,2})\s*[.\/-]\s*(\d{4})\s*\.?$/', $value, $m ) ) {
+			return self::valid_date( sprintf( '%04d-%02d-%02d', $m[3], $m[2], $m[1] ) );
+		}
+		return self::valid_date( $value );
+	}
+
+	/**
+	 * 'Y-m-d' u "21.11.2026." za polje u administraciji.
+	 */
+	private static function hr_date( string $ymd ): string {
+		return $ymd ? gmdate( 'j.n.Y.', strtotime( $ymd . ' 12:00:00 UTC' ) ) : '';
+	}
 
 	private static function valid_date( $value ): string {
 		$value = is_string( $value ) ? trim( $value ) : '';
@@ -368,11 +408,39 @@ final class Plan_A_Izleti_Plan {
 			.paiz-plan-box .paiz-row{display:flex;flex-wrap:wrap;gap:16px}.paiz-plan-box .paiz-row p{flex:1 1 180px}
 			.paiz-plan-box input[type=text],.paiz-plan-box select{width:100%;max-width:520px}
 			.paiz-plan-box .paiz-state{padding:10px 12px;border-left:4px solid #2271b1;background:#f0f6fc}
+			.paiz-plan-box .paiz-state--past{border-left-color:#d63638;background:#fcf0f1}
+			.paiz-plan-box .paiz-date-hint{display:block;margin-top:4px;color:#2271b1;font-weight:600}
+			.paiz-plan-box .paiz-date-hint.is-bad{color:#d63638}
 		</style>
+		<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			var months = ['siječnja','veljače','ožujka','travnja','svibnja','lipnja','srpnja','kolovoza','rujna','listopada','studenoga','prosinca'];
+			var days = ['nedjelja','ponedjeljak','utorak','srijeda','četvrtak','petak','subota'];
+			var today = new Date(); today.setHours(0, 0, 0, 0);
+			document.querySelectorAll('[data-paiz-date]').forEach(function (input) {
+				var hint = input.nextElementSibling;
+				var show = function () {
+					var v = input.value.trim(), m = /^(\d{1,2})\s*[.\/-]\s*(\d{1,2})\s*[.\/-]\s*(\d{4})\s*\.?$/.exec(v);
+					hint.className = 'paiz-date-hint';
+					if (!v) { hint.textContent = ''; return; }
+					var d = m ? new Date(+m[3], +m[2] - 1, +m[1]) : null;
+					if (!d || d.getDate() !== +m[1] || d.getMonth() !== +m[2] - 1) {
+						hint.textContent = 'Upiši datum kao dan.mjesec.godina, npr. 21.11.2026.';
+						hint.className += ' is-bad';
+						return;
+					}
+					hint.textContent = '= ' + days[d.getDay()] + ', ' + d.getDate() + '. ' + months[d.getMonth()] + ' ' + d.getFullYear() + '.' + (d < today ? ' – ovaj datum je već prošao!' : '');
+					if (d < today) { hint.className += ' is-bad'; }
+				};
+				input.addEventListener('input', show);
+				show();
+			});
+		});
+		</script>
 		<div class="paiz-plan-box">
 			<div class="paiz-row">
-				<p><label for="paiz_from">Datum početka</label><input type="date" id="paiz_from" name="paiz_from" value="<?php echo esc_attr( $e['from'] ); ?>" required></p>
-				<p><label for="paiz_to">Datum završetka <span style="font-weight:400">(za višednevne)</span></label><input type="date" id="paiz_to" name="paiz_to" value="<?php echo esc_attr( $e['to'] !== $e['from'] ? $e['to'] : '' ); ?>"></p>
+				<p><label for="paiz_from">Datum početka</label><input type="text" id="paiz_from" name="paiz_from" value="<?php echo esc_attr( self::hr_date( $e['from'] ) ); ?>" placeholder="npr. 21.11.2026." autocomplete="off" required data-paiz-date><span class="paiz-date-hint" aria-live="polite"></span></p>
+				<p><label for="paiz_to">Datum završetka <span style="font-weight:400">(za višednevne, inače prazno)</span></label><input type="text" id="paiz_to" name="paiz_to" value="<?php echo esc_attr( $e['to'] !== $e['from'] ? self::hr_date( $e['to'] ) : '' ); ?>" placeholder="npr. 22.11.2026." autocomplete="off" data-paiz-date><span class="paiz-date-hint" aria-live="polite"></span></p>
 			</div>
 			<p><label for="paiz_guides">Vodiči</label><input type="text" id="paiz_guides" name="paiz_guides" value="<?php echo esc_attr( $e['guides'] ); ?>" placeholder="npr. Igor + Krešo" maxlength="120"></p>
 			<p><label for="paiz_note">Kratka napomena <span style="font-weight:400">(neobavezno, vidi se u planu)</span></label><input type="text" id="paiz_note" name="paiz_note" value="<?php echo esc_attr( $e['note'] ); ?>" placeholder="npr. termin okviran, ovisi o vremenu" maxlength="120"></p>
@@ -386,7 +454,11 @@ final class Plan_A_Izleti_Plan {
 					<?php endforeach; ?>
 				</select>
 			</p>
-			<?php if ( $row ) : ?>
+			<?php if ( $row && 'past' === self::status( $row ) ) : ?>
+				<p class="paiz-state paiz-state--past">
+					Datum ovog izleta je prošao (<?php echo esc_html( Plan_A_Izleti_Plan_View::date_range( $row['from'], $row['to'] ) ); ?>), pa je u planu u popisu „Održani izleti”. Ako je datum pogrešan, ispravi ga gore.
+				</p>
+			<?php elseif ( $row ) : ?>
 				<p class="paiz-state">
 					<?php if ( $row['tour'] ) : ?>
 						Na webu: <a href="<?php echo esc_url( get_permalink( $row['tour'] ) ); ?>" target="_blank" rel="noopener"><?php echo esc_html( self::plain_title( $row['tour'] ) ); ?></a><?php echo $row['auto'] ? ' (pronađen automatski)' : ''; ?>.
@@ -409,8 +481,8 @@ final class Plan_A_Izleti_Plan {
 		if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
 		}
-		$from = self::valid_date( sanitize_text_field( wp_unslash( $_POST['paiz_from'] ?? '' ) ) );
-		$to   = self::valid_date( sanitize_text_field( wp_unslash( $_POST['paiz_to'] ?? '' ) ) );
+		$from = self::parse_hr_date( sanitize_text_field( wp_unslash( $_POST['paiz_from'] ?? '' ) ) );
+		$to   = self::parse_hr_date( sanitize_text_field( wp_unslash( $_POST['paiz_to'] ?? '' ) ) );
 		update_post_meta( $post_id, '_paiz_from', $from );
 		update_post_meta( $post_id, '_paiz_to', ( $to && $to > $from ) ? $to : '' );
 		update_post_meta( $post_id, '_paiz_guides', sanitize_text_field( wp_unslash( $_POST['paiz_guides'] ?? '' ) ) );
@@ -421,6 +493,7 @@ final class Plan_A_Izleti_Plan {
 		}
 		update_post_meta( $post_id, '_paiz_tour', max( self::NO_LINK, $tour ) );
 		self::flush();
+		self::purge_pages();
 	}
 
 	public static function columns( $columns ) {
@@ -601,6 +674,7 @@ final class Plan_A_Izleti_Plan {
 			$done++;
 		}
 		self::flush();
+		self::purge_pages();
 		wp_safe_redirect(
 			add_query_arg(
 				array(
