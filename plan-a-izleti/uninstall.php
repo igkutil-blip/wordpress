@@ -18,6 +18,11 @@ $plan_a_izleti_cleanup = static function () {
 	delete_option( Plan_A_Izleti_Cleanup::DONE_OPTION );
 	// Postavke i slike kartica za "Predloži ekipi".
 	delete_option( 'plan_a_izleti_settings' );
+	// Plan izleta: adrese za obavijesti (osobni podaci) i cache; najave izleta ostaju.
+	delete_post_meta_by_key( '_paiz_subs' );
+	delete_transient( 'plan_a_izleti_plan' );
+	wp_clear_scheduled_hook( 'paiz_plan_notify' );
+	wp_clear_scheduled_hook( 'paiz_plan_notify_daily' );
 	delete_option( 'plan_a_izleti_cards' );
 	delete_option( 'plan_a_izleti_cards_layout' );
 	wp_clear_scheduled_hook( 'plan_a_izleti_make_cards' );

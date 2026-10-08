@@ -1,7 +1,7 @@
 === Plan A izleti ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.16.0
+Stable tag: 1.17.0
 License: GPLv2 or later
 
 Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s filtrom po kategorijama i mjesecima.
@@ -84,6 +84,33 @@ Zahtijeva aktivne dodatke WpTravelly (tour-booking-manager) i WooCommerce.
 Ne mijenja WpTravelly, temu ni bazu podataka; sprema samo privremeni cache
 (transient `plan_a_izleti_cache`) koji se briše pri deaktivaciji i brisanju dodatka.
 
+== Plan izleta (od 1.17.0) ==
+
+Shortcode [plan-a-plan-izleta] zamjenjuje ručno pisani popis na stranici plana izleta.
+
+* Administracija → Plan izleta: najava izleta = naziv, datum od–do, vodiči, kratka napomena i
+  "Izlet na webu". Uvoz popisa: zalijepi stari popis (datum, naziv, "Vodiči: …") i izleti se
+  sami dodaju; isti naziv i datum se ne dodaju dvaput.
+* Izlet na webu se pronalazi sam: objavljeni izlet u WpTravellyju s istim datumom početka i
+  sličnim nazivom (zajednička riječ). Može se odabrati ručno ili "Ne povezuj".
+* Objavljeni izleti koji nemaju najavu dolaze u plan sami (osim izleta s više od 24 termina).
+* Plan po mjesecima: blok s datumom (dan u tjednu, dani, mjesec), naziv, raspon, vodiči,
+  trajanje, cijena i status: Prijave otvorene (gumb "Prijavi se"), Popunjeno, Uskoro (gumb
+  "Javi mi kad bude objavljen") i Održano (sklopivi popis održanih izleta ove godine).
+* Traka mjeseci s brojem izleta, sažetak "U planu je još N izleta…".
+* "Plan u mom kalendaru": pretplata (Google kalendar, iPhone/Mac/Outlook preko webcal) ili
+  .ics datoteka; svaki izlet ima i svoj gumb za kalendar. Adresa: /?plan_a_ics=plan
+* "Javi mi kad bude objavljen": e-mail adresa se sprema uz najavu; čim se izlet poveže s
+  objavljenim izletom, šalje se jedan e-mail i adresa se briše (provjera minutu nakon
+  spremanja izleta i jednom dnevno). Za prošle izlete adrese se brišu bez slanja.
+  Zaštita: skriveno polje, najviše 6 prijava u 10 minuta po IP adresi, 1000 adresa po izletu.
+  Uključeno u WordPressov alat za brisanje osobnih podataka.
+* Atributi: godina="2026" (samo ta godina), odrzani="no", izleti_url="/izleti/" (prazno = bez gumba).
+
 == Promjene ==
+
+= 1.17.0 =
+* Plan izleta (vidi gore).
+
 
 * 1.16.0 – kuke plan_a_izleti_before_grid (iznad kartica) i plan_a_izleti_after_list (ispod popisa) za dodatne sadržaje, npr. traku poklon bona; atribut bon="no" isključuje traku poklon bona na tom popisu.

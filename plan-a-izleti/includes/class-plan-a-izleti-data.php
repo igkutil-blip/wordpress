@@ -231,6 +231,50 @@ final class Plan_A_Izleti_Data {
 	}
 
 	/**
+	 * Objavljeni izleti sa svim terminima (i prošlim), za plan izleta.
+	 *
+	 * @return array<int, array{dates: string[], sold_out: bool}>
+	 */
+	public static function get_tour_dates(): array {
+		if ( ! self::is_source_available() ) {
+			return array();
+		}
+		$ids = get_posts(
+			array(
+				'post_type'        => self::post_type(),
+				'post_status'      => 'publish',
+				'posts_per_page'   => (int) apply_filters( 'plan_a_izleti_max_tours', 500 ),
+				'fields'           => 'ids',
+				'no_found_rows'    => true,
+				'suppress_filters' => false,
+			)
+		);
+		$ids = array_map( 'intval', $ids );
+		if ( ! $ids ) {
+			return array();
+		}
+		update_meta_cache( 'post', $ids );
+		if ( method_exists( 'TTBM_Function', 'prime_sold_cache' ) ) {
+			TTBM_Function::prime_sold_cache( $ids );
+		}
+		$out = array();
+		foreach ( $ids as $id ) {
+			try {
+				$dates = self::get_all_dates( $id );
+			} catch ( \Throwable $e ) {
+				continue;
+			}
+			if ( $dates ) {
+				$out[ $id ] = array(
+					'dates'    => $dates,
+					'sold_out' => self::is_sold_out( $id ),
+				);
+			}
+		}
+		return $out;
+	}
+
+	/**
 	 * Prvi termin u svakom mjesecu, npr. [ '2026-11' => '2026-11-03' ].
 	 *
 	 * @param string[] $dates Sortirani budući termini 'Y-m-d'.
