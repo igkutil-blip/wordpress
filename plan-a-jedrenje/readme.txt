@@ -1,7 +1,7 @@
 === Plan A jedrenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 
 Rezervacija tjednog jedrenja za ekipu (subota–subota) u terminu koji kupac bira.
@@ -47,6 +47,13 @@ i na stranici iz predmemorije. Ipak izuzmi:
 Košarica, naplata i "Moj račun" već moraju biti izuzeti zbog WooCommercea.
 
 == Promjene ==
+
+= 1.4.0 =
+* Slajder: fotografije se više ne režu – cijela slika na zamućenoj pozadini iste slike (na mobitelu
+  kvadrat), a naziv programa i gumb "Odaberi tjedan" su ispod fotografija.
+* U uvodu samo podebljano "Ruta A · Ruta B".
+* Prijelazni tjedni 26. 6. – 3. 7. 2027. i 11. – 18. 9. 2027. po 6.000 € (ručna cijena tjedna;
+  mijenja se u Jedrenje → Kalendar).
 
 = 1.3.0 =
 * Tekstovi s izleta "7 dana jedrenja po srednjoj i južnoj Dalmaciji": rute A i B s programom po

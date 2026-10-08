@@ -68,7 +68,7 @@ final class Plan_A_Jedrenje_Data {
 	 */
 	public static function seed() {
 		$done = (int) get_option( 'plan_a_jedrenje_seeded' );
-		if ( $done >= 3 ) {
+		if ( $done >= 4 ) {
 			return;
 		}
 		$saved = get_option( self::OPTION, array() );
@@ -90,6 +90,16 @@ final class Plan_A_Jedrenje_Data {
 				update_option( self::OPTION, $saved, false );
 				self::$settings = null;
 			}
+		}
+		if ( $done < 4 ) {
+			// 1.4.0: prijelazni tjedni 26. 6. – 3. 7. i 11. – 18. 9. 2027. po 6.000 € (ako nisu ručno upisani).
+			$weeks = (array) get_option( self::WEEKS, array() );
+			foreach ( array( '2027-06-26', '2027-09-11' ) as $week ) {
+				if ( empty( $weeks[ $week ]['price'] ) ) {
+					$weeks[ $week ] = array_merge( (array) ( $weeks[ $week ] ?? array() ), array( 'price' => 6000 ) );
+				}
+			}
+			update_option( self::WEEKS, $weeks, false );
 		}
 		if ( ! $done && ! self::periods() ) {
 			update_option(
@@ -113,7 +123,7 @@ final class Plan_A_Jedrenje_Data {
 				false
 			);
 		}
-		update_option( 'plan_a_jedrenje_seeded', 3, false );
+		update_option( 'plan_a_jedrenje_seeded', 4, false );
 	}
 
 	public static function get(): array {

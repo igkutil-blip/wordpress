@@ -182,7 +182,18 @@ final class Plan_A_Jedrenje_Front {
 							<li><strong>Sadržaj po želji:</strong> <?php echo esc_html( implode( ' · ', array_column( $concepts, 'title' ) ) ); ?></li>
 						<?php endif; ?>
 						<?php if ( $routes ) : ?>
-							<li><strong>Rute:</strong> <?php echo esc_html( implode( ' · ', array_column( $routes, 'title' ) ) ); ?></li>
+							<?php
+							// Samo kratki nazivi ruta s planom po danima ("Ruta A", "Ruta B"), podebljano.
+							$paj_short = array();
+							foreach ( $routes as $route ) {
+								if ( count( $route['text'] ) > 1 ) {
+									$paj_short[] = '<strong>' . esc_html( trim( explode( ':', $route['title'], 2 )[0] ) ) . '</strong>';
+								}
+							}
+							?>
+							<?php if ( $paj_short ) : ?>
+								<li><?php echo implode( ' · ', $paj_short ); // phpcs:ignore WordPress.Security.EscapeOutput -- escapirano gore. ?></li>
+							<?php endif; ?>
 						<?php endif; ?>
 					</ul>
 				<?php endif; ?>

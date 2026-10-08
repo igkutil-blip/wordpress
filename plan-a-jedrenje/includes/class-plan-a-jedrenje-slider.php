@@ -112,11 +112,13 @@ final class Plan_A_Jedrenje_Slider {
 		$s     = Plan_A_Jedrenje_Data::get();
 		$count = count( $ids );
 		$html  = '<section class="pajd-slider" data-pajd-slider aria-roledescription="carousel" aria-label="Fotografije s jedrenja">'
+			. '<div class="pajd-slider__stage">'
 			. '<div class="pajd-slider__track" data-pajd-track tabindex="0" aria-label="Fotografije, listaj strelicama">';
 		foreach ( $ids as $i => $id ) {
 			$alt      = trim( (string) get_post_meta( $id, '_wp_attachment_image_alt', true ) );
 			$caption  = trim( (string) wp_get_attachment_caption( $id ) );
 			$full     = wp_get_attachment_image_url( $id, 'full' );
+			$bg       = wp_get_attachment_image_url( $id, 'medium' );
 			$img      = wp_get_attachment_image(
 				$id,
 				'large',
@@ -131,20 +133,13 @@ final class Plan_A_Jedrenje_Slider {
 				)
 			);
 			$html .= '<figure class="pajd-slide' . ( 0 === $i ? ' is-active' : '' ) . '" role="group" aria-roledescription="slide" aria-label="' . esc_attr( ( $i + 1 ) . ' od ' . $count ) . '" data-full="' . esc_url( (string) $full ) . '">'
+				. ( $bg ? '<span class="pajd-slide__bg" style="background-image:url(' . esc_url( $bg ) . ')" aria-hidden="true"></span>' : '' )
 				. $img
 				. ( $caption ? '<figcaption class="pajd-slide__cap">' . esc_html( $caption ) . '</figcaption>' : '' )
 				. '</figure>';
 		}
 		$html .= '</div>';
 
-		if ( $overlay ) {
-			$html .= '<div class="pajd-slider__overlay">'
-				. '<p class="pajd-slider__kicker">' . esc_html( $s['marina'] ) . ' · subota do subote</p>'
-				. '<p class="pajd-slider__title">' . esc_html( $s['title'] ) . '</p>'
-				. '<p class="pajd-slider__sub">' . esc_html( $s['boat'] . ' · ekipa do ' . Plan_A_Jedrenje_Data::max_persons() . ' osoba · skiper' ) . '</p>'
-				. '<a class="pajd-slider__cta" href="#pajd-kalendar">Odaberi tjedan' . self::icon( 'down' ) . '</a>'
-				. '</div>';
-		}
 		if ( $count > 1 ) {
 			$html .= '<button type="button" class="pajd-slider__arrow pajd-slider__arrow--prev" data-pajd-slide-prev aria-label="Prethodna fotografija">' . self::icon( 'left' ) . '</button>'
 				. '<button type="button" class="pajd-slider__arrow pajd-slider__arrow--next" data-pajd-slide-next aria-label="Sljedeća fotografija">' . self::icon( 'right' ) . '</button>'
@@ -156,7 +151,16 @@ final class Plan_A_Jedrenje_Slider {
 		}
 		$html .= '<p class="pajd-slider__count" aria-hidden="true"><span data-pajd-count>1</span> / ' . (int) $count . '</p>'
 			. '<button type="button" class="pajd-slider__full" data-pajd-full aria-label="Prikaži preko cijelog zaslona">' . self::icon( 'expand' ) . '</button>'
-			. '<dialog class="pajd-lightbox" data-pajd-lightbox aria-label="Fotografije s jedrenja">'
+			. '</div>';
+		if ( $overlay ) {
+			$html .= '<div class="pajd-slider__overlay">'
+				. '<p class="pajd-slider__kicker">' . esc_html( $s['marina'] ) . ' · subota do subote</p>'
+				. '<p class="pajd-slider__title">' . esc_html( $s['title'] ) . '</p>'
+				. '<p class="pajd-slider__sub">' . esc_html( $s['boat'] . ' · ekipa do ' . Plan_A_Jedrenje_Data::max_persons() . ' osoba · skiper' ) . '</p>'
+				. '<a class="pajd-slider__cta" href="#pajd-kalendar">Odaberi tjedan' . self::icon( 'down' ) . '</a>'
+				. '</div>';
+		}
+		$html .= '<dialog class="pajd-lightbox" data-pajd-lightbox aria-label="Fotografije s jedrenja">'
 			. '<img class="pajd-lightbox__img" data-pajd-lb-img alt="">'
 			. '<p class="pajd-lightbox__count" data-pajd-lb-count></p>'
 			. '<button type="button" class="pajd-lightbox__btn pajd-lightbox__btn--close" data-pajd-lb-close aria-label="Zatvori">' . self::icon( 'close' ) . '</button>'

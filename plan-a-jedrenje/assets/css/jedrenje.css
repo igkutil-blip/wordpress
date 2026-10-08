@@ -1371,3 +1371,127 @@
 .pajd .pajd-about .pajd-h3 {
 	margin: 0 0 10px;
 }
+
+/*
+ * 1.4.0: fotografije se ne režu. Cijela slika (contain) na zamućenoj pozadini iste slike,
+ * naslov i gumb ispod fotografija, a ne preko njih.
+ */
+.pajd .pajd-slider__stage {
+	position: relative;
+}
+
+@container pajd (max-width: 599px) {
+	.pajd .pajd-slider__track {
+		aspect-ratio: 1 / 1;
+	}
+}
+
+.pajd .pajd-slide__bg {
+	position: absolute;
+	inset: -40px;
+	background-position: center;
+	background-size: cover;
+	filter: blur(24px) brightness(0.72) saturate(1.1);
+	transform-origin: 50% 50%;
+}
+
+.pajd .pajd-slide .pajd-slide__img,
+.pajd .pajd-slide img {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: contain;
+	object-position: center;
+	animation: none !important;
+	transform: none;
+}
+
+.pajd .pajd-slide.is-active .pajd-slide__bg {
+	animation: pajd-kenburns 9s ease-out both;
+}
+
+.pajd .pajd-slide__cap {
+	z-index: 2;
+}
+
+.pajd .pajd-slider__overlay {
+	position: static;
+	display: grid;
+	gap: 0 20px;
+	align-items: center;
+	padding: 20px 24px 22px;
+	background: var(--pajd-navy);
+	pointer-events: auto;
+}
+
+.pajd .pajd-slider__title {
+	font-size: clamp(24px, 4.4cqw, 36px);
+	text-shadow: none;
+}
+
+.pajd .pajd-slider__sub {
+	margin-bottom: 0;
+}
+
+.pajd .pajd-slider__cta,
+.pajd .pajd-slider__cta:visited {
+	justify-self: start;
+	margin-top: 14px;
+}
+
+@container pajd (min-width: 700px) {
+	.pajd .pajd-slider__overlay {
+		grid-template-columns: 1fr auto;
+	}
+
+	.pajd .pajd-slider__overlay > p {
+		grid-column: 1;
+	}
+
+	.pajd .pajd-slider__cta,
+	.pajd .pajd-slider__cta:visited {
+		grid-column: 2;
+		grid-row: 1 / span 3;
+		margin-top: 0;
+	}
+}
+
+.pajd .pajd-slider__arrow--prev,
+.pajd .pajd-slider__arrow--next {
+	top: calc(50% - 23px) !important;
+}
+
+.pajd .pajd-slider__dots {
+	right: 0;
+	bottom: 12px;
+	left: 0;
+	justify-content: center;
+	max-width: none;
+	margin: 0 auto;
+	padding: 0 60px;
+}
+
+@container pajd (max-width: 599px) {
+	.pajd .pajd-slider__overlay {
+		padding: 16px 18px 18px;
+	}
+
+	.pajd .pajd-slider__arrow--prev,
+	.pajd .pajd-slider__arrow--next {
+		top: calc(50% - 20px) !important;
+	}
+
+	.pajd .pajd-slider__cta,
+	.pajd .pajd-slider__cta:visited {
+		justify-self: stretch;
+		justify-content: center;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pajd .pajd-slide.is-active .pajd-slide__bg {
+		animation: none;
+	}
+}
