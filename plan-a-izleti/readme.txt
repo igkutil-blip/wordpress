@@ -1,7 +1,7 @@
 === Plan A izleti ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.17.5
+Stable tag: 1.17.6
 License: GPLv2 or later
 
 Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s filtrom po kategorijama i mjesecima.
@@ -109,6 +109,10 @@ Shortcode [plan-a-plan-izleta] zamjenjuje ručno pisani popis na stranici plana 
   slike="yes" (uz svaki izlet njegova fotografija; zadano bez fotografija).
 
 == Promjene ==
+
+= 1.17.6 =
+* Dijagnostika fonta za administratora ispisuje i CSS pravilo (s datotekom) koje tekstu plana
+  zadaje font pisaćeg stroja.
 
 = 1.17.5 =
 * Plan izleta: font plana uvijek je normalan (font teksta ili naslova iz postavki teme, inače

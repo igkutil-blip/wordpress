@@ -135,6 +135,40 @@
 			}
 			el = el.parentElement;
 		}
+		parts.push('font plana: ' + (root.style.fontFamily ? root.style.fontFamily.split(',')[0] : 'nije postavljen'));
+		/* CSS pravila koja tekstu plana zadaju font, s datotekom iz koje dolaze. */
+		var found = [];
+		var check = function (rules, href) {
+			Array.prototype.forEach.call(rules || [], function (rule) {
+				if (found.length >= 4) {
+					return;
+				}
+				if (rule.cssRules && !rule.selectorText) {
+					check(rule.cssRules, href);
+					return;
+				}
+				if (!rule.selectorText || !rule.style || !/font/.test(rule.style.cssText)) {
+					return;
+				}
+				var ff = rule.style.getPropertyValue('font-family') || '';
+				if (!mono.test(ff) && !/monospace|courier/i.test(rule.style.getPropertyValue('font') || '')) {
+					return;
+				}
+				try {
+					if (text.matches(rule.selectorText) || root.matches(rule.selectorText)) {
+						found.push(rule.selectorText.slice(0, 80) + ' {' + (ff || rule.style.getPropertyValue('font')) + (rule.style.getPropertyPriority('font-family') ? ' !important' : '') + '} u ' + (href ? href.split('/').slice(-3).join('/').split('?')[0] : 'stilu u stranici'));
+					}
+				} catch (e) {}
+			});
+		};
+		Array.prototype.forEach.call(document.styleSheets, function (sheet) {
+			try {
+				check(sheet.cssRules, sheet.href);
+			} catch (e) {}
+		});
+		if (found.length) {
+			parts.push('pravilo: ' + found.join(' | '));
+		}
 		out.textContent = parts.join(' · ');
 	}
 

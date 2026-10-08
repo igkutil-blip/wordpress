@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A izleti
  * Description:       Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s izbornicima vrste izleta i termina.
- * Version:           1.17.5
+ * Version:           1.17.6
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Plan A
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_IZLETI_VERSION', '1.17.5' );
+define( 'PLAN_A_IZLETI_VERSION', '1.17.6' );
 define( 'PLAN_A_IZLETI_FILE', __FILE__ );
 define( 'PLAN_A_IZLETI_URL', plugin_dir_url( __FILE__ ) );
 define( 'PLAN_A_IZLETI_DIR', plugin_dir_path( __FILE__ ) );
