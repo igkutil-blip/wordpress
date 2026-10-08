@@ -537,8 +537,26 @@
 	color: var(--pakl-text);
 }
 
-.pakl .pakl-how__note {
-	font-style: italic;
+.pakl .pakl-disclaimer {
+	display: grid;
+	gap: 8px;
+	margin: 24px 0 0;
+	padding: 16px 18px;
+	border-left: 4px solid var(--pakl-cta);
+	border-radius: 0 12px 12px 0;
+	background: #f6f8fa;
+	color: var(--pakl-muted);
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.pakl .pakl-disclaimer strong {
+	color: var(--pakl-text);
+}
+
+.pakl .pakl-disclaimer a {
+	color: var(--pakl-navy);
+	font-weight: 700;
 }
 
 /* Mobitel: traka s rezultatom na dnu zaslona */

@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A kalkulator
  * Description:       Planinarski kalkulator (shortcode [plan-a-kalkulator]): procjena vremena hoda s odmorima, povratka, vode i energije za planinarsku turu.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Plan A
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_KALK_VERSION', '1.0.0' );
+define( 'PLAN_A_KALK_VERSION', '1.0.1' );
 define( 'PLAN_A_KALK_URL', plugin_dir_url( __FILE__ ) );
 
 require_once __DIR__ . '/includes/class-plan-a-kalkulator.php';

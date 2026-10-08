@@ -1,7 +1,7 @@
 === Plan A kalkulator ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 
 Planinarski kalkulator: procjena trajanja ture s odmorima, povratka, vode i energije.
@@ -28,3 +28,9 @@ Planinarski kalkulator: procjena trajanja ture s odmorima, povratka, vode i ener
 
 Sve se računa u pregledniku; ništa se ne sprema ni ne šalje. Stilovi su samo unutar
 kalkulatora i ne mijenjaju temu. Raspored se prilagođava širini sadržaja (i uz bočnu traku).
+
+== Promjene ==
+
+= 1.0.1 =
+* Napomena (odricanje od odgovornosti) ispod kalkulatora: okvirna procjena, provjera staze i
+  prognoze, upute vodiča, vlastita odgovornost, 112 / HGSS.

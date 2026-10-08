@@ -276,11 +276,16 @@ class Plan_A_Kalkulator {
 							<p><strong>Odmori</strong> se dodaju na vrijeme hoda, a <strong>povratak</strong> je polazak plus ukupno vrijeme. Raspon (oko −10 % do +15 %) pokazuje koliko se stvarne ture obično razlikuju od procjene.</p>
 							<p><strong>Energija</strong> prema mjerenjima potrošnje pri hodu uzbrdo i nizbrdo (Minetti i sur.), za tvoju težinu i ruksak, s dodatkom za podlogu i osnovnu potrošnju tijela za cijelo trajanje ture.</p>
 							<p><strong>Voda</strong> prema procjeni znojenja iz napora, temperature i sunca; preporuka je nadoknaditi oko 80 % gubitka. Na vrućini piti i elektrolite.</p>
-							<p class="pakl-how__note">Procjena je okvirna i ne zamjenjuje opis staze, vremensku prognozu ni upute vodiča.</p>
 						</div>
 					</details>
 				</aside>
 			</form>
+			</div>
+
+			<div class="pakl-disclaimer" role="note">
+				<p><strong>Napomena:</strong> kalkulator daje okvirnu procjenu za zdravu odraslu osobu i služi samo za lakše planiranje ture. Stvarno trajanje te potrebe za vodom i hranom ovise o stanju staze, vremenu, zdravlju, iskustvu i opremi, pa se mogu bitno razlikovati od procjene.</p>
+				<p>Prije ture provjeri opis staze i vremensku prognozu te procijeni svoje mogućnosti, a na izletima Plan A slijedi upute vodiča. Planinarenje nosi rizike i svatko na turu ide na vlastitu odgovornost; SRD Plan A ne odgovara za odluke donesene na temelju ove procjene.</p>
+				<p>U nuždi zovi <a href="tel:112">112</a> – Hrvatska gorska služba spašavanja (HGSS) dolazi preko tog broja.</p>
 			</div>
 
 			<a class="pakl-bar" href="#pakl<?php echo (int) self::$count; ?>-res" data-pakl-bar hidden>
