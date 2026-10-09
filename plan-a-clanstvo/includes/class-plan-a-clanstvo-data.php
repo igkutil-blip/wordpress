@@ -117,7 +117,6 @@ final class Plan_A_Clanstvo_Data {
 			'provjera'      => 0, // uključi nakon uvoza postojećih članova
 			'valid_days'    => 7,
 			'remind_days'   => 3,
-			'delete_days'   => 30,
 			'from_name'     => 'Plan A',
 			'naslov'        => 'Dobrodošli u zajednicu Plan A!',
 			'uvod'          => 'Plan A je zajednica ljubitelja prirode, planina i aktivnog boravka na otvorenom: mreža ljudi okupljenih oko planina, a ne samo popis imena onih koji dođu na isti izlet.',
@@ -471,11 +470,8 @@ final class Plan_A_Clanstvo_Data {
 				continue;
 			}
 			$age = time() - $sent;
-			if ( $age > DAY_IN_SECONDS * max( 7, (int) $s['delete_days'] ) ) {
-				self::delete( (int) $id );
-				continue;
-			}
-			if ( $age > DAY_IN_SECONDS * max( 1, (int) $s['remind_days'] ) && ! get_post_meta( $id, '_pac_reminded', true ) ) {
+			// Nepotvrđeni se nikad ne brišu; dobiju samo jedan podsjetnik (0 = bez podsjetnika).
+			if ( (int) $s['remind_days'] > 0 && $age > DAY_IN_SECONDS * (int) $s['remind_days'] && ! get_post_meta( $id, '_pac_reminded', true ) ) {
 				update_post_meta( $id, '_pac_reminded', 1 );
 				Plan_A_Clanstvo_Mail::confirm_request( (int) $id, true );
 			}

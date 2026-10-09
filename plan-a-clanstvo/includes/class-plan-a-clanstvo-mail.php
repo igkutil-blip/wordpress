@@ -75,7 +75,7 @@ final class Plan_A_Clanstvo_Mail {
 				: 'hvala na pristupnici u udrugu Plan A! Još samo jedan korak: klikni gumb i potvrdi da si je ispunio/la ti.' )
 			. self::button( 'Potvrđujem pristupnicu', $url )
 			. self::p( '<span style="color:#5f6b77;font-size:14px">Klikom potvrđuješ i da prihvaćaš Izjavu člana. Poveznica vrijedi ' . (int) $days . ' dana. Ako gumb ne radi, kopiraj ovu adresu u preglednik:<br><a href="' . esc_url( $url ) . '" style="color:#1a73b8;word-break:break-all">' . esc_html( $url ) . '</a></span>' )
-			. self::p( '<span style="color:#5f6b77;font-size:14px">Ako pristupnicu nisi ispunio/la ti, zanemari ovu poruku: bez potvrde se podaci brišu.</span>' );
+			. self::p( '<span style="color:#5f6b77;font-size:14px">Ako pristupnicu nisi ispunio/la ti, javi nam se na info@srd-plan-a.hr.</span>' );
 		return self::send( $m['email'], ( $reminder ? 'Podsjetnik: ' : '' ) . 'Potvrdi pristupnicu u Plan A', self::wrap( $reminder ? 'Potvrdi svoju pristupnicu' : 'Potvrdi svoju pristupnicu', $inner ) );
 	}
 

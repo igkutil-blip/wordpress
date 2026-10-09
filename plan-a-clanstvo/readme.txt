@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -25,7 +25,8 @@ automatski upis u Google tablicu i provjera članstva pri prijavi na izlet.
 3. Nakon potvrde stiže e-mail s podacima za članarinu i 2D kodom na račun udruge.
 4. Svaka pristupnica i potvrda sama se upisuje u Google tablicu (stupci, Status, Datum
    potvrde). Stupce "Članarina GGGG" s kvačicama ispunjavate ručno; stranica ih ne dira.
-5. Nepotvrđeni dobiju podsjetnik 3 dana nakon e-maila za potvrdu; brišu se 30 dana nakon njega.
+5. Nepotvrđeni dobiju jedan podsjetnik 3 dana nakon e-maila za potvrdu. Nikad se ne brišu sami:
+   ostaju sa statusom "Čeka potvrdu".
 6. Pri prijavi na izlet e-mail kupca uspoređuje se s potvrđenim pristupnicama. Ako ga nema,
    kupac na stranici "Hvala" i u e-mailu dobiva poveznicu na pristupnicu, a u narudžbama piše
    "Član: ne". Prijava se ne blokira.
@@ -34,6 +35,10 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.2.2 =
+* Nepotvrđene pristupnice se nikad ne brišu same; ostaju sa statusom "Čeka potvrdu".
+  Podsjetnik se može isključiti (0 dana).
 
 = 1.2.1 =
 * Podsjetnik i brisanje nepotvrđenih računaju se od e-maila za potvrdu, ne od datuma prijave;

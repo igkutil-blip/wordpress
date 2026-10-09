@@ -359,8 +359,7 @@ final class Plan_A_Clanstvo_Admin {
 		$s['pogodnosti']    = sanitize_textarea_field( wp_unslash( $_POST['pogodnosti'] ?? '' ) );
 		$s['provjera']      = empty( $_POST['provjera'] ) ? 0 : 1;
 		$s['valid_days']    = max( 1, min( 60, absint( $_POST['valid_days'] ?? 7 ) ) );
-		$s['remind_days']   = max( 1, min( 30, absint( $_POST['remind_days'] ?? 3 ) ) );
-		$s['delete_days']   = max( 7, min( 365, absint( $_POST['delete_days'] ?? 30 ) ) );
+		$s['remind_days']   = min( 30, absint( $_POST['remind_days'] ?? 3 ) );
 		// phpcs:enable
 		Plan_A_Clanstvo_Data::set( $s );
 	}
@@ -482,8 +481,8 @@ final class Plan_A_Clanstvo_Admin {
 					<tr><th>Prijava na izlet</th><td><label><input type="checkbox" name="provjera" value="1" <?php checked( (int) $s['provjera'], 1 ); ?>> Provjeri članstvo po e-mailu kupca (napomena na stranici „Hvala” i u e-mailu, stupac „Član” u narudžbama)</label></td></tr>
 					<tr><th>Rokovi (dana)</th><td>
 						poveznica vrijedi <input type="number" min="1" max="60" name="valid_days" value="<?php echo (int) $s['valid_days']; ?>" style="width:70px">
-						· podsjetnik nakon <input type="number" min="1" max="30" name="remind_days" value="<?php echo (int) $s['remind_days']; ?>" style="width:70px">
-						· nepotvrđene se brišu nakon <input type="number" min="7" max="365" name="delete_days" value="<?php echo (int) $s['delete_days']; ?>" style="width:70px">
+						· jedan podsjetnik nakon <input type="number" min="0" max="30" name="remind_days" value="<?php echo (int) $s['remind_days']; ?>" style="width:70px"> (0 = bez podsjetnika)
+						<p class="description">Nepotvrđene pristupnice se nikad ne brišu same; ostaju sa statusom „Čeka potvrdu”.</p>
 					</td></tr>
 				</table>
 				<p><button type="submit" class="button button-primary">Spremi postavke</button></p>
