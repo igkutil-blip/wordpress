@@ -202,6 +202,39 @@ final class Plan_A_Izleti_Data {
 			);
 		}
 
+		/**
+		 * Dodatne stavke u popisu izleta koje nisu izleti iz WpTravellyja, npr. stranica s
+		 * rezervacijom jedrenja: [ ID objave => [ 'Y-m-d', … ] ]. Kartica koristi naslov, adresu
+		 * i sliku te objave, a cijenu, trajanje i državu iz filtara plan_a_izleti_*.
+		 *
+		 * @param array<int, string[]> $extra
+		 */
+		$extra = (array) apply_filters( 'plan_a_izleti_extra_tours', array() );
+		foreach ( $extra as $extra_id => $extra_dates ) {
+			$extra_id = (int) $extra_id;
+			if ( $extra_id <= 0 || in_array( $extra_id, $ids, true ) || 'publish' !== get_post_status( $extra_id ) ) {
+				continue;
+			}
+			$upcoming = array();
+			foreach ( (array) $extra_dates as $date ) {
+				if ( is_string( $date ) && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) && $date >= $today ) {
+					$upcoming[ $date ] = $date;
+				}
+			}
+			sort( $upcoming );
+			if ( ! $upcoming ) {
+				continue;
+			}
+			$dated[] = array(
+				'id'       => $extra_id,
+				'date'     => $upcoming[0],
+				'more'     => count( $upcoming ) > 1,
+				'months'   => self::first_date_per_month( $upcoming ),
+				'sold_out' => (bool) apply_filters( 'plan_a_izleti_sold_out', false, $extra_id ),
+				'pos'      => count( $ids ) + count( $dated ),
+			);
+		}
+
 		usort(
 			$dated,
 			static function ( $a, $b ) {
@@ -337,6 +370,13 @@ final class Plan_A_Izleti_Data {
 		}
 
 		return array_values( $dates );
+	}
+
+	/**
+	 * Naziv izleta (filtar: npr. naziv programa za stranicu s rezervacijom jedrenja).
+	 */
+	public static function title( int $id ): string {
+		return (string) apply_filters( 'plan_a_izleti_title', get_the_title( $id ), $id );
 	}
 
 	/**

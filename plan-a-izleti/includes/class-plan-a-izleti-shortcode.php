@@ -556,7 +556,7 @@ final class Plan_A_Izleti_Shortcode {
 	private static function render_card( array $tour, array $cats, array $months, bool $hidden, array $activities ): string {
 		$id        = (int) $tour['id'];
 		$source_id = Plan_A_Izleti_Data::source_id( $id );
-		$title     = get_the_title( $id );
+		$title     = Plan_A_Izleti_Data::title( $id );
 		$url       = Plan_A_Izleti_Data::tour_url( $id );
 		$country   = self::get_country( $id, $source_id )['value'];
 		$duration  = self::get_duration( $id );
@@ -865,7 +865,7 @@ final class Plan_A_Izleti_Shortcode {
 		if ( ! $image_id ) {
 			$image_id = (int) get_post_meta( $id, 'mp_thumbnail', true );
 		}
-		return $image_id;
+		return (int) apply_filters( 'plan_a_izleti_image_id', $image_id, $id );
 	}
 
 	private static function get_image_html( int $id, string $title ): string {

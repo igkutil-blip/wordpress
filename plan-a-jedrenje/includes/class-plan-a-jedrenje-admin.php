@@ -212,7 +212,7 @@ final class Plan_A_Jedrenje_Admin {
 		$s['rest_days']    = max( 0, min( 180, absint( $_POST['rest_days'] ?? 30 ) ) );
 		$s['lead_days']    = max( 1, min( 90, absint( $_POST['lead_days'] ?? 7 ) ) );
 		$s['gallery_tour'] = max( -1, (int) ( $_POST['gallery_tour'] ?? 0 ) );
-		$s['list_tour']    = max( -1, (int) ( $_POST['list_tour'] ?? 0 ) );
+		$s['list_tour']    = (int) ( $_POST['list_tour'] ?? 0 ) < 0 ? -1 : 0;
 		delete_transient( 'paj_gallery_tour' );
 		$email             = sanitize_email( wp_unslash( $_POST['admin_email'] ?? '' ) );
 		$s['admin_email']  = is_email( $email ) ? $email : '';
@@ -633,15 +633,12 @@ final class Plan_A_Jedrenje_Admin {
 		</table>
 		<h2>Popis i plan izleta</h2>
 		<table class="form-table paj-form-table">
-			<tr><th><label for="paj-list">Izlet jedrenja u popisu</label></th><td>
+			<tr><th><label for="paj-list">Jedrenje u popisu i planu izleta</label></th><td>
 				<select id="paj-list" name="list_tour">
-					<option value="0" <?php selected( (int) $s['list_tour'], 0 ); ?>>Isti izlet kao za fotografije</option>
-					<option value="-1" <?php selected( (int) $s['list_tour'], -1 ); ?>>Ne povezuj s popisom izleta</option>
-					<?php foreach ( $tours as $t ) : ?>
-						<option value="<?php echo (int) $t->ID; ?>" <?php selected( (int) $s['list_tour'], (int) $t->ID ); ?>><?php echo esc_html( wp_strip_all_tags( get_the_title( $t ) ) ); ?></option>
-					<?php endforeach; ?>
+					<option value="0" <?php selected( (int) $s['list_tour'] >= 0 ); ?>>Prikaži kao zasebnu karticu i redak</option>
+					<option value="-1" <?php selected( (int) $s['list_tour'], -1 ); ?>>Ne prikazuj</option>
 				</select>
-				<p class="description">Taj izlet iz WpTravellyja ostaje kartica u popisu izleta (dodatak Plan A izleti), ali s terminima i cijenom iz kalendara jedrenja, a kartica i plan izleta vode na stranicu s rezervacijom<?php $paj_p = Plan_A_Jedrenje_Izleti::page_url(); echo $paj_p ? ' (' . esc_html( $paj_p ) . ')' : ''; ?>. U planu izleta jedrenje je jedan redak za cijelu sezonu. Sada: <?php $paj_l = Plan_A_Jedrenje_Izleti::tour_id(); echo esc_html( $paj_l ? wp_strip_all_tags( get_the_title( $paj_l ) ) : 'nije povezano' ); ?>.</p>
+				<p class="description">Stranica s rezervacijom<?php $paj_p = Plan_A_Jedrenje_Izleti::page_url(); echo $paj_p ? ' (' . esc_html( $paj_p ) . ')' : ''; ?> dolazi u popis izleta (dodatak Plan A izleti) kao zasebna kartica sa slobodnim tjednima i cijenom „od … za cijeli brod”, a u plan izleta kao jedan redak za cijelu sezonu. Izleti iz WpTravellyja ostaju kakvi jesu.</p>
 			</td></tr>
 		</table>
 		<h2>Sezona</h2>
