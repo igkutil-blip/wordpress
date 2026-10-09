@@ -120,7 +120,7 @@ final class Plan_A_Clanstvo_Form {
 			$e['datum'] = 'Upiši datum rođenja, npr. 15.3.1990.';
 		}
 		if ( ! Plan_A_Clanstvo_Data::valid_oib( $v['oib'] ) ) {
-			$e['oib'] = 'OIB nije ispravan. Provjeri 11 znamenki.';
+			$e['oib'] = 'OIB nije ispravan – provjeri znamenke (zadnja, kontrolna znamenka ne odgovara ostalima ili ih nema 11).';
 		}
 		if ( ! is_email( $v['email'] ) ) {
 			$e['email'] = 'Upiši ispravnu e-mail adresu.';

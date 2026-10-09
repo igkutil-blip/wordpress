@@ -400,7 +400,7 @@ final class Plan_A_Clanstvo_Checkout {
 			$errors->add( 'pac', $who . __( 'upiši datum rođenja, npr. 15.3.1990.', 'plan-a-clanstvo' ) );
 		}
 		if ( ! Plan_A_Clanstvo_Data::valid_oib( $v['oib'] ) ) {
-			$errors->add( 'pac', $who . __( 'OIB nije ispravan (11 znamenki).', 'plan-a-clanstvo' ) );
+			$errors->add( 'pac', $who . __( 'OIB nije ispravan – provjeri znamenke (zadnja, kontrolna znamenka ne odgovara ostalima ili ih nema 11).', 'plan-a-clanstvo' ) );
 		}
 		if ( $own && $date && Plan_A_Clanstvo_Data::age( $date ) < 18 ) {
 			if ( '' === $v['roditelj'] || '' === $v['roditelj_kontakt'] || empty( $v['suglasnost'] ) ) {

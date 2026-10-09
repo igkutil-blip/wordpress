@@ -175,6 +175,24 @@
 		return false;
 	}
 
+	/* OIB: provjera kontrolne znamenke odmah ispod polja. */
+	function validOib(v) {
+		if (!/^\d{11}$/.test(v)) { return false; }
+		var a = 10;
+		for (var i = 0; i < 10; i++) { a = (a + +v[i]) % 10; a = (a === 0 ? 10 : a) * 2 % 11; }
+		var c = 11 - a;
+		return (c === 10 ? 0 : c) === +v[10];
+	}
+	function oibHint(el) {
+		var v = (el.value || '').replace(/\D/g, '');
+		var $row = $(el).closest('.form-row');
+		$row.find('.pac-oib-hint').remove();
+		if (!v) { return; }
+		var ok = validOib(v);
+		var msg = ok ? '✔ OIB je ispravan' : (v.length !== 11 ? 'OIB ima 11 znamenki (upisano ' + v.length + ').' : 'OIB nije ispravan – provjeri znamenke (kontrolna znamenka ne odgovara).');
+		$row.append($('<span class="pac-oib-hint">').attr('data-ok', ok ? '1' : '0').text(msg));
+	}
+
 	$(function () {
 		var $form = $('form.checkout');
 		// E-mail na vrh (i kad drugi dodatak promijeni redoslijed polja).
@@ -196,6 +214,7 @@
 			later('p' + $p.index(), function () { person($p); });
 		});
 		$form.on('input change', '[name="pac_datum"]', minor);
+		$form.on('input blur', 'input[name="pac_oib"], input[name$="[oib]"]', function () { oibHint(this); });
 		// Woo nakon osvježavanja ponovno iscrta dio stranice; stanje se vraća.
 		$(document.body).on('updated_checkout', function () { buyer(); });
 		r1Watch();

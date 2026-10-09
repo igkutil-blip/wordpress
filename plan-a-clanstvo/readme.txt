@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.6.8
+Stable tag: 1.6.9
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.6.9 =
+* OIB: jasnija poruka (kontrolna znamenka) i provjera odmah ispod polja u košarici.
 
 = 1.6.8 =
 * "Trebam R1 račun": kad je označeno, polja R1 računa (naziv tvrtke, adresa, OIB) su obavezna (zvjezdica i provjera prije slanja).

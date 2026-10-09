@@ -28,3 +28,5 @@
 .pac-info__list li, .pac-info__steps li { margin: 0 0 4px; }
 .pac-info .pac-muted { margin: 8px 0 0; }
 .pac-join__fill { margin: 10px 0 6px; font-weight: 700; color: #12304b; }
+.pac-oib-hint { display: block; margin-top: 4px; font-size: 13px; color: #b32d2e; }
+.pac-oib-hint[data-ok="1"] { color: #1e7d3a; }
