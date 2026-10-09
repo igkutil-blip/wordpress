@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -10,7 +10,7 @@ automatski upis u Google tablicu i provjera članstva pri prijavi na izlet.
 == Postavljanje ==
 
 1. Instaliraj i aktiviraj dodatak.
-2. Na stranici /uclanjenje/ obriši sav stari sadržaj i stavi samo [plan-a-pristupnica]
+2. Na stranici /pristupnica/ obriši sav stari sadržaj i stavi samo [plan-a-pristupnica]
    u Flatsome HTML blok (stranica se složi sama).
 3. Članovi → Postavke i tablica: slijedi upute za Google tablicu (skripta, Deploy, URL),
    klikni "Provjeri vezu" pa "Pošalji sve članove u tablicu".
@@ -34,6 +34,12 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.1.1 =
+* Poveznica za potvrdu i napomena na naplati vode na objavljenu stranicu sa shortcodeom
+  (npr. /pristupnica/), i prije nego je itko otvori.
+* Provjera članstva pri prijavi na izlet zadano je isključena; uključi je u Postavkama nakon
+  uvoza postojećih članova (inače bi svi kupci dobili napomenu da nisu članovi).
 
 = 1.1.0 =
 * [plan-a-pristupnica] prikazuje cijelu stranicu: uvod s pogodnostima i članarinom, "Kako postati

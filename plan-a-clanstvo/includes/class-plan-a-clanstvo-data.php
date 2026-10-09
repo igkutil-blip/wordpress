@@ -108,7 +108,7 @@ final class Plan_A_Clanstvo_Data {
 			'barcode'       => 'osobni', // osobni | slika | ne
 			'barcode_slika' => 'https://srd-plan-a.hr/wp-content/uploads/2024/12/unnamed.png',
 			'izjava'        => $izjava,
-			'provjera'      => 1,
+			'provjera'      => 0, // uključi nakon uvoza postojećih članova
 			'valid_days'    => 7,
 			'remind_days'   => 3,
 			'delete_days'   => 30,
@@ -161,7 +161,15 @@ final class Plan_A_Clanstvo_Data {
 
 	public static function page_url(): string {
 		$id = (int) get_option( self::PAGE );
-		return $id && 'publish' === get_post_status( $id ) ? (string) get_permalink( $id ) : home_url( '/' );
+		if ( ! $id || 'publish' !== get_post_status( $id ) || ! has_shortcode( (string) get_post_field( 'post_content', $id ), 'plan-a-pristupnica' ) ) {
+			// Objavljena stranica sa shortcodeom (npr. /pristupnica/), i prije nego je itko otvori.
+			global $wpdb;
+			$id = (int) $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = 'page' AND post_content LIKE '%[plan-a-pristupnica%' ORDER BY ID DESC LIMIT 1" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			if ( $id ) {
+				update_option( self::PAGE, $id, false );
+			}
+		}
+		return $id ? (string) get_permalink( $id ) : home_url( '/pristupnica/' );
 	}
 
 	/* ---------------------------------------------------------------------
