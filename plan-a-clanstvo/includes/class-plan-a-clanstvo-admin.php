@@ -46,6 +46,37 @@ final class Plan_A_Clanstvo_Admin {
 
 	public static function menu() {
 		add_submenu_page( 'edit.php?post_type=' . Plan_A_Clanstvo_Data::CPT, 'Postavke i Google tablica', 'Postavke i tablica', self::CAP, self::SLUG, array( __CLASS__, 'page' ) );
+		add_submenu_page( 'edit.php?post_type=' . Plan_A_Clanstvo_Data::CPT, 'Uvoz članova', 'Uvoz članova', self::CAP, self::SLUG . '-uvoz', array( __CLASS__, 'import_page' ) );
+	}
+
+	public static function import_page() {
+		if ( ! current_user_can( self::CAP ) ) {
+			return;
+		}
+		$left = Plan_A_Clanstvo_Sheets::pending();
+		?>
+		<div class="wrap">
+			<h1>Uvoz članova iz CSV-a</h1>
+			<?php if ( '' === Plan_A_Clanstvo_Sheets::url() ) : ?>
+				<div class="notice notice-warning"><p>Google tablica još nije povezana (Članovi → Postavke i tablica). Članovi će se uvesti, a u tablicu poslati kad je povežeš.</p></div>
+			<?php endif; ?>
+			<p><strong>Prije prvog uvoza</strong> u Google tablicu zalijepi novu skriptu i objavi novu verziju (Postavke i tablica → Kopiraj skriptu; u tablici Proširenja → Apps Script; Deploy → Manage deployments → Edit → New version).</p>
+			<p>Prvi redak su naslovi stupaca: <code>Datum prijave, Datum potvrde, Ime, Prezime, Datum rođenja, OIB, Adresa, Mjesto, E-mail, Mobitel, Status, Članarina, Iskaznica, Napomena</code> (obavezni su samo Ime i Prezime; razdvojeno zarezom ili točka-zarezom). „Članarina” su godine, npr. <code>2024, 2025</code>.</p>
+			<p class="description">Uvoz <strong>ne šalje e-mailove</strong>. Isti član se ne duplira nego ažurira (isti OIB; ili isti e-mail, ime i datum rođenja; ili, kad nema ni OIB-a ni e-maila, isto ime i prezime). Prazna polja u datoteci ne brišu postojeće podatke. Kvačice za članarine i iskaznicu te napomena upisuju se u tablicu samo jednom, a postojeće kvačice se ne skidaju.</p>
+			<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Uvozim… (može potrajati minutu-dvije)';">
+				<input type="hidden" name="action" value="pac_admin">
+				<input type="hidden" name="do" value="import">
+				<input type="hidden" name="id" value="0">
+				<?php wp_nonce_field( 'pac_admin_import_0' ); ?>
+				<p><label for="pac-csv"><strong>1. Odaberi datoteku</strong> (npr. uvoz-clanova.csv):</label><br><input type="file" id="pac-csv" name="csv" accept=".csv,text/csv" required></p>
+				<p><strong>2.</strong> 
+				<button type="submit" class="button button-primary">Uvezi članove</button></p>
+			</form>
+			<?php if ( $left ) : ?>
+				<p><a class="button button-primary" href="<?php echo esc_url( self::action_url( 'pending' ) ); ?>">Pošalji neposlane u tablicu (<?php echo (int) $left; ?>)</a></p>
+			<?php endif; ?>
+		</div>
+		<?php
 	}
 
 	/* ---------------------------------------------------------------------
@@ -468,6 +499,7 @@ final class Plan_A_Clanstvo_Admin {
 				<a class="button" href="<?php echo esc_url( self::action_url( 'ping' ) ); ?>">Provjeri vezu</a>
 				<a class="button" href="<?php echo esc_url( self::action_url( 'resync' ) ); ?>">Pošalji sve članove u tablicu</a>
 				<?php $paj_left = Plan_A_Clanstvo_Sheets::pending(); ?>
+				<a class="button" href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . Plan_A_Clanstvo_Data::CPT . '&page=' . self::SLUG . '-uvoz' ) ); ?>">Uvoz članova (CSV)</a>
 				<?php if ( $paj_left ) : ?>
 					<a class="button button-primary" href="<?php echo esc_url( self::action_url( 'pending' ) ); ?>">Pošalji neposlane u tablicu (<?php echo (int) $paj_left; ?>)</a>
 				<?php endif; ?>
@@ -521,17 +553,6 @@ final class Plan_A_Clanstvo_Admin {
 				<p><button type="submit" class="button button-primary">Spremi postavke</button></p>
 			</form>
 
-			<h2>4. Uvoz članova iz CSV-a</h2>
-			<p>Prvi redak su naslovi stupaca: <code>Datum prijave, Datum potvrde, Ime, Prezime, Datum rođenja, OIB, Adresa, Mjesto, E-mail, Mobitel, Status, Članarina, Iskaznica, Napomena</code> (obavezni su samo Ime i Prezime; razdvojeno zarezom ili točka-zarezom). „Članarina” su godine, npr. <code>2024, 2025</code>.</p>
-			<p class="description">Uvoz <strong>ne šalje e-mailove</strong>. Isti član se ne duplira nego ažurira (isti OIB; ili isti e-mail, ime i datum rođenja; ili, kad nema ni OIB-a ni e-maila, isto ime i prezime). Prazna polja u datoteci ne brišu postojeće podatke. Kvačice za članarine i iskaznicu te napomena upisuju se u tablicu samo jednom, a postojeće kvačice se ne skidaju.</p>
-			<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Uvozim… (može potrajati minutu-dvije)';">
-				<input type="hidden" name="action" value="pac_admin">
-				<input type="hidden" name="do" value="import">
-				<input type="hidden" name="id" value="0">
-				<?php wp_nonce_field( 'pac_admin_import_0' ); ?>
-				<input type="file" name="csv" accept=".csv,text/csv" required>
-				<button type="submit" class="button">Uvezi članove</button>
-			</form>
 		</div>
 		<?php
 	}
