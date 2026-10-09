@@ -221,7 +221,8 @@ final class Plan_A_Clanstvo_Checkout {
 		echo '<div class="pac-status" id="pac-buyer-status" aria-live="polite" hidden></div>';
 		echo '<div class="pac-join" id="pac-buyer-join" hidden>';
 		echo '<h3 class="pac-join__h">' . esc_html__( 'Pristupnica u udrugu Plan A', 'plan-a-clanstvo' ) . '</h3>';
-		echo '<p class="pac-muted">' . esc_html__( 'Članstvo je uvjet za sudjelovanje na izletima. Uz podatke iznad upiši još ovo; članarina vrijedi kalendarsku godinu.', 'plan-a-clanstvo' ) . '</p>';
+		echo self::join_info(); // phpcs:ignore WordPress.Security.EscapeOutput
+		echo '<p class="pac-join__fill">' . esc_html__( 'Uz podatke iznad upiši još:', 'plan-a-clanstvo' ) . '</p>';
 		echo self::input( 'pac_datum', __( 'Datum rođenja', 'plan-a-clanstvo' ), 'text', array( 'inputmode' => 'numeric', 'placeholder' => 'npr. 15.3.1990.', 'maxlength' => 12, 'autocomplete' => 'bday', 'data-pac-date' => '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput
 		echo self::input( 'pac_oib', __( 'OIB', 'plan-a-clanstvo' ), 'text', array( 'inputmode' => 'numeric', 'maxlength' => 11, 'pattern' => '[0-9]{11}' ) ); // phpcs:ignore WordPress.Security.EscapeOutput
 		echo '<div class="pac-minor" id="pac-buyer-minor" hidden>';
@@ -231,8 +232,40 @@ final class Plan_A_Clanstvo_Checkout {
 		echo '<p class="form-row form-row-wide pac-check"><label><input type="checkbox" name="pac_suglasnost" value="1"> <span>' . esc_html__( 'Kao roditelj ili skrbnik dajem suglasnost za učlanjenje.', 'plan-a-clanstvo' ) . '</span></label></p>';
 		echo '</div>';
 		echo self::izjava_box( 'pac_izjava', __( 'Pročitao/la sam Izjavu člana i u cijelosti je prihvaćam.', 'plan-a-clanstvo' ) ); // phpcs:ignore WordPress.Security.EscapeOutput
-		echo '<p class="pac-muted">' . esc_html__( 'Pristupnicu potvrđuješ gumbom u e-mailu o prijavi.', 'plan-a-clanstvo' ) . '</p>';
 		echo '</div>';
+	}
+
+	/** Što donosi članstvo i što slijedi (za kupca koji još nije član). */
+	private static function join_info(): string {
+		$s     = Plan_A_Clanstvo_Data::get();
+		$year  = self::cart_year();
+		$fee   = Plan_A_Clanstvo_Data::money( (float) $s['iznos'] );
+		$items = array_values( array_filter( array_map( 'trim', preg_split( '/\R/u', (string) $s['pogodnosti'] ) ) ) );
+		$html  = '<div class="pac-info">';
+		$html .= '<p class="pac-info__lead">' . esc_html( sprintf( 'Članstvo u udruzi Plan A uvjet je za sudjelovanje na izletima. Članarina je %1$s i vrijedi za kalendarsku godinu (za ovaj izlet: %2$d.).', $fee, $year ) ) . '</p>';
+		if ( $items ) {
+			$html .= '<p class="pac-info__h">' . esc_html__( 'Članstvo donosi', 'plan-a-clanstvo' ) . '</p><ul class="pac-info__list">';
+			foreach ( $items as $item ) {
+				$html .= '<li>' . esc_html( $item ) . '</li>';
+			}
+			$html .= '</ul>';
+		}
+		$steps = array(
+			'Upiši datum rođenja i OIB ispod i prihvati Izjavu člana. Ostali podaci iz prijave (ime, adresa, mobitel, e-mail) ujedno su podaci tvoje pristupnice.',
+			'Pošalji prijavu na izlet. U e-mailu o prijavi dobit ćeš gumb „Potvrđujem pristupnicu” – klikni ga i članstvo je potvrđeno.',
+			sprintf( 'Nakon potvrde stiže ti e-mail s 2D kodom za članarinu (%s) na račun udruge. Uplata za izlet i članarina su dvije odvojene uplate.', $fee ),
+			'Člansku iskaznicu preuzimaš na prvom izletu s nama.',
+		);
+		$html .= '<p class="pac-info__h">' . esc_html__( 'Kako ide', 'plan-a-clanstvo' ) . '</p><ol class="pac-info__steps">';
+		foreach ( $steps as $st ) {
+			$html .= '<li>' . esc_html( $st ) . '</li>';
+		}
+		$html .= '</ol>';
+		$url   = Plan_A_Clanstvo_Data::page_url();
+		if ( $url ) {
+			$html .= '<p class="pac-muted">' . esc_html__( 'Više o članstvu:', 'plan-a-clanstvo' ) . ' <a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">' . esc_html__( 'stranica Pristupnica', 'plan-a-clanstvo' ) . '</a></p>';
+		}
+		return $html . '</div>';
 	}
 
 	/** Ostali sudionici (kad je u prijavi više osoba). */
