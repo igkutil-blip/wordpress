@@ -271,7 +271,7 @@ final class Plan_A_Clanstvo_Data {
 	 * Nova pristupnica ili ažuriranje postojeće (isti OIB). Vraća ID.
 	 */
 	public static function save( array $data, string $status = 'ceka', string $created = '' ): int {
-		$existing = ! empty( $data['oib'] ) ? self::find( 'oib', $data['oib'] ) : 0;
+		$existing = self::find_same( $data );
 		$title    = trim( $data['ime'] . ' ' . $data['prezime'] );
 		if ( $existing ) {
 			$id = $existing;
@@ -305,6 +305,51 @@ final class Plan_A_Clanstvo_Data {
 			update_post_meta( $id, '_pac_status', $status );
 		}
 		return $id;
+	}
+
+	/**
+	 * Ista osoba: isti OIB, ili (ako je OIB krivo upisan) isti e-mail, ime i datum rođenja.
+	 * Roditelj s jednim e-mailom za više djece ostaje više članova (različito ime ili datum).
+	 */
+	public static function find_same( array $data ): int {
+		if ( ! empty( $data['oib'] ) ) {
+			$id = self::find( 'oib', (string) $data['oib'] );
+			if ( $id ) {
+				return $id;
+			}
+		}
+		if ( empty( $data['email'] ) || empty( $data['datum'] ) || empty( $data['ime'] ) ) {
+			return 0;
+		}
+		$ids = get_posts(
+			array(
+				'post_type'      => self::CPT,
+				'post_status'    => 'any',
+				'posts_per_page' => 20,
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery
+					array(
+						'key'   => '_pac_email',
+						'value' => strtolower( trim( (string) $data['email'] ) ),
+					),
+					array(
+						'key'   => '_pac_datum',
+						'value' => (string) $data['datum'],
+					),
+				),
+			)
+		);
+		$norm = static function ( $t ) {
+			$t = remove_accents( function_exists( 'mb_strtolower' ) ? mb_strtolower( trim( (string) $t ) ) : strtolower( trim( (string) $t ) ) );
+			return preg_replace( '/[^a-z]/', '', $t );
+		};
+		foreach ( $ids as $id ) {
+			if ( $norm( get_post_meta( $id, '_pac_ime', true ) ) === $norm( $data['ime'] ) ) {
+				return (int) $id;
+			}
+		}
+		return 0;
 	}
 
 	public static function find( string $field, string $value ): int {
