@@ -27,7 +27,7 @@ final class Plan_A_Jedrenje_Slider {
 	 */
 	public static function tour_id(): int {
 		$id = (int) Plan_A_Jedrenje_Data::value( 'gallery_tour' );
-		if ( $id > 0 && get_post_type( $id ) === self::tour_type() && 'publish' === get_post_status( $id ) ) {
+		if ( self::valid_tour( $id ) ) {
 			return $id;
 		}
 		if ( $id < 0 ) {
@@ -36,8 +36,40 @@ final class Plan_A_Jedrenje_Slider {
 		return self::detect();
 	}
 
+	/**
+	 * Izlet iz kojeg se uzimaju slike. Može biti i isključen (skica, privatno, na čekanju):
+	 * izlet se ne prikazuje, ali fotografije iz njegove galerije ostaju u slajderu.
+	 */
 	public static function valid_tour( int $id ): bool {
-		return $id > 0 && get_post_type( $id ) === self::tour_type() && 'publish' === get_post_status( $id );
+		return $id > 0 && get_post_type( $id ) === self::tour_type() && in_array( get_post_status( $id ), self::STATUSES, true );
+	}
+
+	const STATUSES = array( 'publish', 'draft', 'private', 'pending', 'future' );
+
+	/**
+	 * Fotografije za slajder: vlastiti odabir iz medija (Postavke → Fotografije), inače galerija izleta.
+	 *
+	 * @return int[]
+	 */
+	public static function block_images(): array {
+		$own = self::own_ids();
+		return $own ? $own : self::image_ids( self::tour_id() );
+	}
+
+	/**
+	 * @return int[] Odabrane slike iz medija, redom kako su odabrane.
+	 */
+	public static function own_ids(): array {
+		$raw = Plan_A_Jedrenje_Data::value( 'gallery_images' );
+		$raw = is_array( $raw ) ? $raw : explode( ',', (string) $raw );
+		$ids = array();
+		foreach ( $raw as $id ) {
+			$id = absint( $id );
+			if ( $id && wp_attachment_is_image( $id ) && ! in_array( $id, $ids, true ) ) {
+				$ids[] = $id;
+			}
+		}
+		return array_slice( $ids, 0, 40 );
 	}
 
 	/**
@@ -50,7 +82,7 @@ final class Plan_A_Jedrenje_Slider {
 			$ids   = get_posts(
 				array(
 					'post_type'      => self::tour_type(),
-					'post_status'    => 'publish',
+					'post_status'    => self::STATUSES,
 					'posts_per_page' => 200,
 					'fields'         => 'ids',
 					'orderby'        => 'date',

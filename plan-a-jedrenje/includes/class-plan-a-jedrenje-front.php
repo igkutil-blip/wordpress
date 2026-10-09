@@ -157,7 +157,7 @@ final class Plan_A_Jedrenje_Front {
 			<script type="application/json" data-pajd-config><?php echo wp_json_encode( $config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE ); ?></script>
 
 			<?php
-			$slider = Plan_A_Jedrenje_Slider::render( Plan_A_Jedrenje_Slider::image_ids( Plan_A_Jedrenje_Slider::tour_id() ) );
+			$slider = Plan_A_Jedrenje_Slider::render( Plan_A_Jedrenje_Slider::block_images() );
 			echo $slider; // phpcs:ignore WordPress.Security.EscapeOutput -- escapirano u render().
 			?>
 

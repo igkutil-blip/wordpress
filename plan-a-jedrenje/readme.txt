@@ -1,7 +1,7 @@
 === Plan A jedrenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 License: GPLv2 or later
 
 Rezervacija tjednog jedrenja za ekipu (subota–subota) u terminu koji kupac bira.
@@ -47,6 +47,11 @@ i na stranici iz predmemorije. Ipak izuzmi:
 Košarica, naplata i "Moj račun" već moraju biti izuzeti zbog WooCommercea.
 
 == Promjene ==
+
+= 1.8.0 =
+* Fotografije u slajderu ostaju i kad je izlet jedrenja u WpTravellyju isključen (skica, privatno).
+* Postavke → Fotografije → "Odaberi fotografije iz medija": vlastiti odabir fotografija za slajder
+  (i sliku kartice u popisu izleta), neovisno o izletima.
 
 = 1.7.0 =
 * Kalendar u administraciji: uz "zatvoren" i kućica "na upitu". Tjedan je tada na webu narančast

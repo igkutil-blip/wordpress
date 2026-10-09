@@ -58,6 +58,7 @@ final class Plan_A_Jedrenje_Data {
 			'mail_paid'      => 'Sve je uplaćeno. Vidimo se u marini! Nekoliko dana prije polaska poslat ćemo ti popis stvari za ponijeti i upute za ukrcaj.',
 			'cancel_terms'   => "Otkaz do 60 dana prije ukrcaja: vraća se uplaćeni iznos umanjen za 10 % cijene.\nOtkaz od 59 do 30 dana prije ukrcaja: zadržava se akontacija.\nOtkaz manje od 30 dana prije ukrcaja: zadržava se cijeli iznos.\nUmjesto otkaza možeš pronaći zamjenu za člana ekipe bez troška.",
 			'gallery_tour'   => 0,
+			'gallery_images' => '',
 			'list_tour'      => 0,
 			'organizer'      => 'Organizator: Adventure Donkey j.d.o.o., turistička agencija, Meksička ulica 11, 10000 Zagreb, OIB 78664134608, u suradnji sa S.R.D. Plan A',
 		);

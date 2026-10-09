@@ -70,7 +70,7 @@ final class Plan_A_Jedrenje_Izleti {
 		if ( ! self::is_ours( $id ) || $image_id ) {
 			return $image_id;
 		}
-		$ids = Plan_A_Jedrenje_Slider::image_ids( Plan_A_Jedrenje_Slider::tour_id() );
+		$ids = Plan_A_Jedrenje_Slider::block_images();
 		return $ids ? $ids[0] : $image_id;
 	}
 

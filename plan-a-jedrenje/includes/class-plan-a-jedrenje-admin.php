@@ -23,7 +23,28 @@ final class Plan_A_Jedrenje_Admin {
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
 		add_action( 'admin_post_paj_admin', array( __CLASS__, 'action' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( PLAN_A_JEDRENJE_FILE ), array( __CLASS__, 'links' ) );
+	}
+
+	/**
+	 * Odabir fotografija iz medija (samo na kartici Postavke).
+	 */
+	public static function assets( $hook ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- samo odabir kartice.
+		if ( false === strpos( (string) $hook, self::PAGE ) || 'postavke' !== sanitize_key( wp_unslash( $_GET['tab'] ?? '' ) ) ) {
+			return;
+		}
+		wp_enqueue_media();
+		wp_add_inline_script(
+			'media-editor',
+			"jQuery(function($){var box=$('#paj-photos');if(!box.length)return;var input=$('#paj-gallery-images'),list=box.find('.paj-photos__list'),frame;"
+			. "function draw(sel){list.empty();sel.forEach(function(a){var u=(a.sizes&&a.sizes.thumbnail?a.sizes.thumbnail.url:a.url);list.append($('<img>').attr({src:u,alt:'',width:72,height:72}).css({objectFit:'cover',borderRadius:'6px'}));});}"
+			. "box.on('click','.paj-photos__pick',function(e){e.preventDefault();if(!frame){frame=wp.media({title:'Fotografije za slajder jedrenja',button:{text:'Koristi ove fotografije'},library:{type:'image'},multiple:'add'});"
+			. "frame.on('open',function(){var s=frame.state().get('selection');s.reset();(input.val()||'').split(',').forEach(function(id){id=parseInt(id,10);if(id){var a=wp.media.attachment(id);a.fetch();s.add(a);}});});"
+			. "frame.on('select',function(){var sel=frame.state().get('selection').toJSON();input.val(sel.map(function(a){return a.id;}).join(','));draw(sel);});}frame.open();});"
+			. "box.on('click','.paj-photos__clear',function(e){e.preventDefault();input.val('');list.empty();});});"
+		);
 	}
 
 	public static function links( $links ) {
@@ -216,6 +237,7 @@ final class Plan_A_Jedrenje_Admin {
 		$s['rest_days']    = max( 0, min( 180, absint( $_POST['rest_days'] ?? 30 ) ) );
 		$s['lead_days']    = max( 1, min( 90, absint( $_POST['lead_days'] ?? 7 ) ) );
 		$s['gallery_tour'] = max( -1, (int) ( $_POST['gallery_tour'] ?? 0 ) );
+		$s['gallery_images'] = implode( ',', array_filter( array_map( 'absint', explode( ',', sanitize_text_field( wp_unslash( $_POST['gallery_images'] ?? '' ) ) ) ) ) );
 		$s['list_tour']    = (int) ( $_POST['list_tour'] ?? 0 ) < 0 ? -1 : 0;
 		delete_transient( 'paj_gallery_tour' );
 		$email             = sanitize_email( wp_unslash( $_POST['admin_email'] ?? '' ) );
@@ -623,7 +645,7 @@ final class Plan_A_Jedrenje_Admin {
 					$tours = get_posts(
 						array(
 							'post_type'      => class_exists( 'TTBM_Function' ) ? TTBM_Function::get_cpt_name() : 'ttbm_tour',
-							'post_status'    => 'publish',
+							'post_status'    => Plan_A_Jedrenje_Slider::STATUSES,
 							'posts_per_page' => 300,
 							'orderby'        => 'title',
 							'order'          => 'ASC',
@@ -631,10 +653,22 @@ final class Plan_A_Jedrenje_Admin {
 					);
 					foreach ( $tours as $t ) :
 						?>
-						<option value="<?php echo (int) $t->ID; ?>" <?php selected( (int) $s['gallery_tour'], (int) $t->ID ); ?>><?php echo esc_html( wp_strip_all_tags( get_the_title( $t ) ) . ' (' . count( Plan_A_Jedrenje_Slider::image_ids( (int) $t->ID ) ) . ' slika)' ); ?></option>
+						<option value="<?php echo (int) $t->ID; ?>" <?php selected( (int) $s['gallery_tour'], (int) $t->ID ); ?>><?php echo esc_html( wp_strip_all_tags( get_the_title( $t ) ) . ( 'publish' === $t->post_status ? '' : ' (isključen)' ) . ' (' . count( Plan_A_Jedrenje_Slider::image_ids( (int) $t->ID ) ) . ' slika)' ); ?></option>
 					<?php endforeach; ?>
 				</select>
-				<p class="description">Slajder na vrhu rezervacijskog bloka uzima istaknutu sliku i galeriju odabranog izleta (WpTravelly → izlet → Gallery). Sada: <?php $paj_t = Plan_A_Jedrenje_Slider::tour_id(); echo esc_html( $paj_t ? wp_strip_all_tags( get_the_title( $paj_t ) ) . ', ' . count( Plan_A_Jedrenje_Slider::image_ids( $paj_t ) ) . ' slika' : 'nema slika' ); ?>. Slajder možeš staviti i drugdje: [plan-a-jedrenje-slike].</p>
+				<p class="description">Ako nisu odabrane vlastite fotografije (ispod), slajder uzima istaknutu sliku i galeriju odabranog izleta (WpTravelly → izlet → Gallery), i kad je izlet isključen (skica). Izlet iz galerije: <?php $paj_t = Plan_A_Jedrenje_Slider::tour_id(); echo esc_html( $paj_t ? wp_strip_all_tags( get_the_title( $paj_t ) ) . ', ' . count( Plan_A_Jedrenje_Slider::image_ids( $paj_t ) ) . ' slika' : 'nema slika' ); ?>. Slajder možeš staviti i drugdje: [plan-a-jedrenje-slike].</p>
+			</td></tr>
+			<tr><th>Vlastite fotografije</th><td id="paj-photos">
+				<?php $paj_own = Plan_A_Jedrenje_Slider::own_ids(); ?>
+				<input type="hidden" id="paj-gallery-images" name="gallery_images" value="<?php echo esc_attr( implode( ',', $paj_own ) ); ?>">
+				<div class="paj-photos__list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+					<?php foreach ( $paj_own as $paj_id ) : ?>
+						<?php echo wp_get_attachment_image( $paj_id, 'thumbnail', false, array( 'style' => 'width:72px;height:72px;object-fit:cover;border-radius:6px' ) ); ?>
+					<?php endforeach; ?>
+				</div>
+				<button type="button" class="button paj-photos__pick">Odaberi fotografije iz medija</button>
+				<button type="button" class="button-link paj-photos__clear" style="margin-left:8px">Ukloni sve</button>
+				<p class="description">Odabrane fotografije imaju prednost pred galerijom izleta (najviše 40). Nakon odabira klikni „Spremi postavke”.</p>
 			</td></tr>
 		</table>
 		<h2>Popis i plan izleta</h2>
