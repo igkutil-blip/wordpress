@@ -248,6 +248,7 @@ final class Plan_A_Clanstvo_Data {
 		$m['confirmed'] = (string) get_post_meta( $id, '_pac_confirmed', true );
 		$m['godine']    = array_values( array_filter( array_map( 'intval', (array) get_post_meta( $id, '_pac_godine', true ) ) ) );
 		$m['iskaznica'] = (bool) get_post_meta( $id, '_pac_iskaznica', true );
+		$m['napomena']  = (string) get_post_meta( $id, '_pac_napomena', true );
 		return $m;
 	}
 
@@ -268,10 +269,10 @@ final class Plan_A_Clanstvo_Data {
 	}
 
 	/**
-	 * Nova pristupnica ili ažuriranje postojeće (isti OIB). Vraća ID.
+	 * Nova pristupnica ili ažuriranje postojeće (isti OIB ili zadani $existing). Vraća ID.
 	 */
-	public static function save( array $data, string $status = 'ceka', string $created = '' ): int {
-		$existing = self::find_same( $data );
+	public static function save( array $data, string $status = 'ceka', string $created = '', int $existing = 0 ): int {
+		$existing = $existing && self::CPT === get_post_type( $existing ) ? $existing : self::find_same( $data );
 		$title    = trim( $data['ime'] . ' ' . $data['prezime'] );
 		if ( $existing ) {
 			$id = $existing;

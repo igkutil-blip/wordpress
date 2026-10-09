@@ -308,8 +308,27 @@ final class Plan_A_Clanstvo_Admin {
 				$msg = $r['ok'] ? 'Veza radi. Tablica: ' . ( $r['name'] ?? '' ) . ' (list „Članovi”).' : 'Veza ne radi: ' . ( $r['error'] ?? '' );
 				break;
 			case 'resync':
-				$r   = Plan_A_Clanstvo_Sheets::bulk( false );
-				$msg = $r['ok'] ? 'U tablicu je poslano članova: ' . $r['n'] . '.' : 'Slanje nije uspjelo: ' . ( $r['error'] ?? '' );
+				foreach ( get_posts( array( 'post_type' => Plan_A_Clanstvo_Data::CPT, 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids', 'no_found_rows' => true ) ) as $pid ) {
+					update_post_meta( (int) $pid, '_pac_sync', 'pending' );
+				}
+				$msg = self::send_pending();
+				break;
+			case 'pending':
+				$msg = self::send_pending();
+				break;
+			case 'import':
+				$f = $_FILES['csv'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				if ( ! $f || UPLOAD_ERR_OK !== (int) $f['error'] || ! is_uploaded_file( (string) $f['tmp_name'] ) || ! preg_match( '/\.csv$/i', (string) $f['name'] ) ) {
+					$msg = 'Odaberi CSV datoteku.';
+					break;
+				}
+				$r = Plan_A_Clanstvo_Import::run( (string) $f['tmp_name'] );
+				if ( ! $r['ok'] ) {
+					$msg = 'Uvoz nije uspio: ' . $r['error'];
+					break;
+				}
+				$msg = sprintf( 'Uvoz gotov: novih %d, ažuriranih %d, preskočenih redaka %d (od toga „Čeka potvrdu”: %d). E-mailovi nisu slani. ', $r['new'], $r['updated'], $r['skipped'], $r['ceka'] );
+				$msg .= '' !== Plan_A_Clanstvo_Sheets::url() ? self::send_pending() : 'Tablica još nije povezana; članovi će se poslati kad je povežeš.';
 				break;
 			case 'secret':
 				$s           = Plan_A_Clanstvo_Data::get();
@@ -330,6 +349,16 @@ final class Plan_A_Clanstvo_Admin {
 		set_transient( 'pac_notice_' . get_current_user_id(), $msg, 60 );
 		wp_safe_redirect( $back );
 		exit;
+	}
+
+	private static function send_pending(): string {
+		if ( function_exists( 'set_time_limit' ) ) {
+			set_time_limit( 300 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions
+		}
+		$r    = Plan_A_Clanstvo_Sheets::bulk( true, 50, 150 );
+		$left = Plan_A_Clanstvo_Sheets::pending();
+		$msg  = $r['ok'] ? 'U tablicu je poslano članova: ' . $r['n'] . '.' : 'Slanje u tablicu nije uspjelo: ' . ( $r['error'] ?? '' ) . '.';
+		return $msg . ( $left ? ' Još nije poslano: ' . $left . ' – klikni „Pošalji neposlane u tablicu” (ili se pošalju sami, malo po malo, svaki sat).' : '' );
 	}
 
 	public static function notices() {
@@ -438,6 +467,10 @@ final class Plan_A_Clanstvo_Admin {
 				<button type="button" class="button" onclick="var t=document.getElementById('pac-script');t.select();navigator.clipboard?navigator.clipboard.writeText(t.value):document.execCommand('copy');this.textContent='Kopirano ✔';">Kopiraj skriptu</button>
 				<a class="button" href="<?php echo esc_url( self::action_url( 'ping' ) ); ?>">Provjeri vezu</a>
 				<a class="button" href="<?php echo esc_url( self::action_url( 'resync' ) ); ?>">Pošalji sve članove u tablicu</a>
+				<?php $paj_left = Plan_A_Clanstvo_Sheets::pending(); ?>
+				<?php if ( $paj_left ) : ?>
+					<a class="button button-primary" href="<?php echo esc_url( self::action_url( 'pending' ) ); ?>">Pošalji neposlane u tablicu (<?php echo (int) $paj_left; ?>)</a>
+				<?php endif; ?>
 				<a class="button-link" style="margin-left:12px" href="<?php echo esc_url( self::action_url( 'secret' ) ); ?>" onclick="return confirm('Napraviti novi ključ? Poslije treba ponovno zalijepiti skriptu u tablicu.')">Novi ključ</a>
 			</p>
 			<p class="description">Smjer je stranica → tablica: promjene u tablici (osim kvačica za članarinu) ne vraćaju se na stranicu. Stupce „Članarina GGGG” i „Iskaznica uručena” stranica ne dira (kvačice se označavaju ručno), a stupac za novu godinu dodaje se sam u siječnju, ispred stupca za iskaznicu. Stupac „Br.” ne briši.</p>
@@ -486,6 +519,18 @@ final class Plan_A_Clanstvo_Admin {
 					</td></tr>
 				</table>
 				<p><button type="submit" class="button button-primary">Spremi postavke</button></p>
+			</form>
+
+			<h2>4. Uvoz članova iz CSV-a</h2>
+			<p>Prvi redak su naslovi stupaca: <code>Datum prijave, Datum potvrde, Ime, Prezime, Datum rođenja, OIB, Adresa, Mjesto, E-mail, Mobitel, Status, Članarina, Iskaznica, Napomena</code> (obavezni su samo Ime i Prezime; razdvojeno zarezom ili točka-zarezom). „Članarina” su godine, npr. <code>2024, 2025</code>.</p>
+			<p class="description">Uvoz <strong>ne šalje e-mailove</strong>. Isti član se ne duplira nego ažurira (isti OIB; ili isti e-mail, ime i datum rođenja; ili, kad nema ni OIB-a ni e-maila, isto ime i prezime). Prazna polja u datoteci ne brišu postojeće podatke. Kvačice za članarine i iskaznicu te napomena upisuju se u tablicu samo jednom, a postojeće kvačice se ne skidaju.</p>
+			<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Uvozim… (može potrajati minutu-dvije)';">
+				<input type="hidden" name="action" value="pac_admin">
+				<input type="hidden" name="do" value="import">
+				<input type="hidden" name="id" value="0">
+				<?php wp_nonce_field( 'pac_admin_import_0' ); ?>
+				<input type="file" name="csv" accept=".csv,text/csv" required>
+				<button type="submit" class="button">Uvezi članove</button>
 			</form>
 		</div>
 		<?php

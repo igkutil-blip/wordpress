@@ -27,7 +27,7 @@ final class Plan_A_Clanstvo_Sheets {
 	/**
 	 * @return array{ok: bool, error?: string, name?: string, n?: int}
 	 */
-	public static function post( array $payload ): array {
+	public static function post( array $payload, int $timeout = 20 ): array {
 		$url = self::url();
 		if ( '' === $url ) {
 			return array(
@@ -41,7 +41,7 @@ final class Plan_A_Clanstvo_Sheets {
 			array(
 				'headers'     => array( 'Content-Type' => 'application/json; charset=utf-8' ),
 				'body'        => wp_json_encode( $payload ),
-				'timeout'     => 20,
+				'timeout'     => $timeout,
 				'redirection' => 5,
 			)
 		);
@@ -91,15 +91,38 @@ final class Plan_A_Clanstvo_Sheets {
 				'row'       => self::row( $m ),
 				'godine'    => $m['godine'],
 				'iskaznica' => $m['iskaznica'],
+				'napomena'  => $m['napomena'],
 			)
 		);
 		update_post_meta( (int) $id, '_pac_sync', $res['ok'] ? 'ok' : 'pending' );
 		if ( $res['ok'] ) {
-			// Godine i iskaznica iz uvoza šalju se samo jednom; dalje ih vodite ručno u tablici.
-			delete_post_meta( (int) $id, '_pac_godine' );
-			delete_post_meta( (int) $id, '_pac_iskaznica' );
+			self::sent( (int) $id );
 		}
 		return (bool) $res['ok'];
+	}
+
+	/** Godine, iskaznica i napomena iz uvoza šalju se samo jednom; dalje se vode ručno u tablici. */
+	private static function sent( int $id ) {
+		update_post_meta( $id, '_pac_sync', 'ok' );
+		delete_post_meta( $id, '_pac_godine' );
+		delete_post_meta( $id, '_pac_iskaznica' );
+		delete_post_meta( $id, '_pac_napomena' );
+	}
+
+	public static function pending(): int {
+		return count(
+			get_posts(
+				array(
+					'post_type'      => Plan_A_Clanstvo_Data::CPT,
+					'post_status'    => 'any',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+					'no_found_rows'  => true,
+					'meta_key'       => '_pac_sync', // phpcs:ignore WordPress.DB.SlowDBQuery
+					'meta_value'     => 'pending', // phpcs:ignore WordPress.DB.SlowDBQuery
+				)
+			)
+		);
 	}
 
 	public static function send_delete( int $broj ) {
@@ -118,10 +141,12 @@ final class Plan_A_Clanstvo_Sheets {
 
 	/**
 	 * Šalje članove u paketima. $only_pending = samo oni koji nisu stigli u tablicu.
+	 * $seconds = najdulje trajanje (ostatak ide sljedeći put ili satnim ponavljanjem).
 	 *
 	 * @return array{ok: bool, n: int, error?: string}
 	 */
-	public static function bulk( bool $only_pending = true, int $limit = 100 ): array {
+	public static function bulk( bool $only_pending = true, int $limit = 50, int $seconds = 0 ): array {
+		$start = time();
 		$args = array(
 			'post_type'      => Plan_A_Clanstvo_Data::CPT,
 			'post_status'    => 'any',
@@ -151,6 +176,7 @@ final class Plan_A_Clanstvo_Sheets {
 						'row'       => self::row( $m ),
 						'godine'    => $m['godine'],
 						'iskaznica' => $m['iskaznica'],
+						'napomena'  => $m['napomena'],
 					);
 				}
 			}
@@ -158,7 +184,8 @@ final class Plan_A_Clanstvo_Sheets {
 				array(
 					'action' => 'bulk',
 					'rows'   => $rows,
-				)
+				),
+				90
 			);
 			if ( ! $res['ok'] ) {
 				return array(
@@ -168,14 +195,12 @@ final class Plan_A_Clanstvo_Sheets {
 				);
 			}
 			foreach ( $ids as $id ) {
-				update_post_meta( (int) $id, '_pac_sync', 'ok' );
-				delete_post_meta( (int) $id, '_pac_godine' );
-				delete_post_meta( (int) $id, '_pac_iskaznica' );
+				self::sent( (int) $id );
 			}
 			$total += count( $ids );
 			// Kod "samo neposlanih" poslani više nisu u upitu, pa se uvijek uzima prva stranica.
 			$page = $only_pending ? 1 : $page + 1;
-		} while ( count( $ids ) === $limit && $total < 5000 );
+		} while ( count( $ids ) === $limit && $total < 5000 && ( ! $seconds || time() - $start < $seconds ) );
 		return array(
 			'ok' => true,
 			'n'  => $total,
@@ -193,6 +218,6 @@ final class Plan_A_Clanstvo_Sheets {
 				self::send_delete( (int) $broj );
 			}
 		}
-		self::bulk( true, 50 );
+		self::bulk( true, 50, 120 );
 	}
 }

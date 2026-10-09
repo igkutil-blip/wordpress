@@ -3,7 +3,8 @@
  *
  * Skriptu je napravio dodatak "Plan A članstvo" (WordPress). Stranica šalje svaku novu
  * pristupnicu i potvrdu u ovu tablicu. Stupce "Članarina GGGG" i "Iskaznica uručena"
- * stranica ne mijenja: kvačice označavate ručno. Stupac "Br." nemojte brisati ni mijenjati
+ * stranica ne mijenja: kvačice označavate ručno. "Napomena" se popunjava samo pri uvozu
+ * i samo ako je prazna, pa je možete slobodno mijenjati. Stupac "Br." nemojte brisati ni mijenjati
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
@@ -12,6 +13,7 @@ var HEAD = ['Br.', 'Datum prijave', 'Ime', 'Prezime', 'Datum rođenja', 'OIB', '
 var KEYS = ['broj', 'prijava', 'ime', 'prezime', 'datum', 'oib', 'adresa', 'mjesto', 'email', 'mobitel', 'roditelj', 'status', 'potvrda'];
 var YEAR_PREFIX = 'Članarina ';
 var CARD = 'Iskaznica uručena';
+var NOTE = 'Napomena';
 
 function doPost(e) {
   var out;
@@ -27,10 +29,10 @@ function doPost(e) {
       if (d.action === 'ping') {
         out = { ok: true, name: SpreadsheetApp.getActive().getName() };
       } else if (d.action === 'upsert') {
-        upsert_(sh, d.row, d.godine || [], d.iskaznica);
+        upsert_(sh, d.row, d.godine || [], d.iskaznica, d.napomena);
         out = { ok: true };
       } else if (d.action === 'bulk') {
-        (d.rows || []).forEach(function (r) { upsert_(sh, r.row, r.godine || [], r.iskaznica); });
+        (d.rows || []).forEach(function (r) { upsert_(sh, r.row, r.godine || [], r.iskaznica, r.napomena); });
         out = { ok: true, n: (d.rows || []).length };
       } else if (d.action === 'delete') {
         var r = findRow_(sh, d.broj);
@@ -63,6 +65,7 @@ function sheet_() {
     sh.getRange('J:J').setNumberFormat('@'); // mobitel kao tekst
   }
   cardCol_(sh);
+  noteCol_(sh);
   yearCol_(sh, new Date().getFullYear());
   styleHead_(sh);
   return sh;
@@ -112,19 +115,40 @@ function cardCol_(sh) {
   return col;
 }
 
+/** Stupac "Napomena" (običan tekst), iza stupca za iskaznicu; vraća broj stupca. */
+function noteCol_(sh) {
+  var last = sh.getLastColumn();
+  var heads = sh.getRange(1, 1, 1, last).getValues()[0];
+  var at = heads.indexOf(NOTE);
+  if (at >= 0) return at + 1;
+  var col = heads.indexOf(CARD) + 2;
+  if (col <= last) sh.insertColumnBefore(col); else sh.insertColumnAfter(last);
+  sh.getRange(1, col).setValue(NOTE);
+  sh.setColumnWidth(col, 220);
+  return col;
+}
+
+/** Stupci s kvačicama: "Članarina GGGG" i "Iskaznica uručena". */
+function isBox_(h) {
+  h = String(h);
+  return h === CARD || h.indexOf(YEAR_PREFIX) === 0;
+}
+
 function findRow_(sh, broj) {
   if (!broj || sh.getLastRow() < 2) return 0;
   var f = sh.getRange(2, 1, sh.getLastRow() - 1, 1).createTextFinder(String(broj)).matchEntireCell(true).findNext();
   return f ? f.getRow() : 0;
 }
 
-function upsert_(sh, row, godine, iskaznica) {
+function upsert_(sh, row, godine, iskaznica, napomena) {
   if (!row || !row.broj) return;
   var r = findRow_(sh, row.broj);
   if (!r) {
     r = sh.getLastRow() + 1;
-    var lastCol = sh.getLastColumn();
-    if (lastCol > HEAD.length) sh.getRange(r, HEAD.length + 1, 1, lastCol - HEAD.length).insertCheckboxes();
+    var heads = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+    for (var i = HEAD.length; i < heads.length; i++) {
+      if (isBox_(heads[i])) sh.getRange(r, i + 1).insertCheckboxes();
+    }
   }
   var values = KEYS.map(function (k) {
     var v = row[k] === undefined || row[k] === null ? '' : String(row[k]);
@@ -139,4 +163,8 @@ function upsert_(sh, row, godine, iskaznica) {
     sh.getRange(r, c).insertCheckboxes().setValue(true);
   });
   if (iskaznica) sh.getRange(r, cardCol_(sh)).insertCheckboxes().setValue(true);
+  if (napomena) {
+    var n = sh.getRange(r, noteCol_(sh));
+    if (n.getValue() === '') n.setValue(/^[=+\-@]/.test(napomena) ? "'" + napomena : String(napomena));
+  }
 }
