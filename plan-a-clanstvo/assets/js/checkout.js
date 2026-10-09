@@ -28,7 +28,7 @@
 		if (state === 'ceka') {
 			return ['wait', other
 				? 'Pristupnica ove osobe još nije potvrđena – na njezin e-mail šaljemo novu poveznicu za potvrdu.'
-				: 'Tvoja pristupnica još nije potvrđena – gumb za potvrdu stiže ti u e-mailu o prijavi.'];
+				: 'Tvoja pristupnica je zaprimljena, ali još nije potvrđena. Nastavi s prijavom – ostale podatke upisat ćemo iz pristupnice. U e-mailu o prijavi dobit ćeš gumb „Potvrđujem pristupnicu”: klikni ga i članstvo je potvrđeno.'];
 		}
 		return ['new', other
 			? 'Osoba još nije član Plan A – upiši njezine podatke za pristupnicu.'

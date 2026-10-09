@@ -50,6 +50,7 @@ final class Plan_A_Clanstvo_Checkout {
 		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'line_item' ), 10, 4 );
 		add_action( 'woocommerce_checkout_create_order', array( __CLASS__, 'order_meta' ), 10, 2 );
 		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'processed' ), 10, 3 );
+		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'forget' ), 99, 3 );
 		add_filter( 'plan_a_kosarica_hide_customer_details', array( __CLASS__, 'hide_details' ), 10, 2 );
 	}
 
@@ -533,6 +534,31 @@ final class Plan_A_Clanstvo_Checkout {
 			}
 		}
 		$order->save_meta_data();
+	}
+
+	/**
+	 * Podaci upisani iz pristupnice ne smiju ostati zapamćeni u košarici posjetitelja
+	 * (WooCommerce inače sljedeći put popuni obrazac podacima zadnje narudžbe).
+	 */
+	public static function forget( $order_id, $posted, $order ) {
+		$order = $order instanceof WC_Order ? $order : wc_get_order( $order_id );
+		if ( ! $order || ! $order->get_meta( '_pac_autofill' ) || ! WC()->customer ) {
+			return;
+		}
+		$c = WC()->customer;
+		foreach ( array( 'first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'postcode', 'state', 'phone', 'email' ) as $f ) {
+			$set = 'set_billing_' . $f;
+			if ( is_callable( array( $c, $set ) ) ) {
+				$c->$set( '' );
+			}
+			$set = 'set_shipping_' . $f;
+			if ( is_callable( array( $c, $set ) ) ) {
+				$c->$set( '' );
+			}
+		}
+		if ( ! is_user_logged_in() ) {
+			$c->save();
+		}
 	}
 
 	/** Na stranici "Hvala" ne prikazuj podatke koji su upisani iz pristupnice. */
