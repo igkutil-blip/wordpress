@@ -4,8 +4,9 @@
  * završna stranica narudžbe. Tablični raspored i stilovi u elementima (za programe
  * za e-poštu), širina do 600 px.
  *
- * $paka_mode: 'received' (prijava zaprimljena, s podacima za plaćanje) ili 'paid'
- * (uplata zaprimljena, bez bloka za plaćanje).
+ * $paka_mode: 'received' (prijava zaprimljena, s podacima za plaćanje), 'paid'
+ * (uplata zaprimljena, bez bloka za plaćanje) ili 'admin' (nova narudžba, e-mail vama:
+ * kupac s poveznicama, članstvo i gumb za narudžbu, bez plaćanja i dijeljenja).
  *
  * 2D kod i podatke za plaćanje ispisuje postojeći dodatak (Hub3 / bankovni prijenos)
  * na kukama woocommerce_email_before_order_table i woocommerce_email_after_order_table;
@@ -32,14 +33,16 @@ $paka_font   = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica
 $paka_text   = '#24323f';
 $paka_muted  = '#5f6b77';
 $paka_paid   = 'paid' === $paka_mode;
+$paka_admin  = 'admin' === $paka_mode;
 $paka_first  = trim( (string) $order->get_billing_first_name() );
 $paka_logo   = Plan_A_Kosarica_Order::logo_url();
 $paka_site   = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
 
 // Izlaz dodataka za plaćanje (Hub3, bankovni prijenos) na standardnim kukama e-maila.
-$paka_before = Plan_A_Kosarica_Order::capture( 'woocommerce_email_before_order_table', $order, $sent_to_admin, $plain_text, $email );
-$paka_after  = Plan_A_Kosarica_Order::capture( 'woocommerce_email_after_order_table', $order, $sent_to_admin, $plain_text, $email );
-$paka_pay    = $paka_paid ? '' : trim( $paka_before . $paka_after );
+// (U e-mailu vama nisu potrebni.)
+$paka_before = $paka_admin ? '' : Plan_A_Kosarica_Order::capture( 'woocommerce_email_before_order_table', $order, $sent_to_admin, $plain_text, $email );
+$paka_after  = $paka_admin ? '' : Plan_A_Kosarica_Order::capture( 'woocommerce_email_after_order_table', $order, $sent_to_admin, $plain_text, $email );
+$paka_pay    = $paka_paid || $paka_admin ? '' : trim( $paka_before . $paka_after );
 $paka_extra  = $paka_paid ? trim( $paka_before . $paka_after ) : '';
 
 // Ostale kuke e-maila (strukturirani podaci, meta podaci narudžbe, dodaci); WooCommerceove
@@ -62,9 +65,19 @@ if ( $paka_removed_ea ) {
 
 $paka_sum   = Plan_A_Kosarica_Order::summary( $order );
 $paka_tour  = Plan_A_Kosarica_Order::first_tour_id( $order );
-$paka_share = $paka_tour ? Plan_A_Kosarica_Order::share_url( $paka_tour ) : '';
+$paka_share = $paka_tour && ! $paka_admin ? Plan_A_Kosarica_Order::share_url( $paka_tour ) : '';
+$paka_name  = trim( $order->get_formatted_billing_full_name() );
 
-if ( $paka_paid ) {
+/**
+ * Retci bloka "Članstvo Plan A" [oznaka, vrijednost (HTML)]; puni ih dodatak Plan A članstvo.
+ * $year je godina početka izleta (članarina vrijedi kalendarsku godinu).
+ */
+$paka_member = (array) apply_filters( 'plan_a_kosarica_member_rows', array(), $order, Plan_A_Kosarica_Order::tour_year( $order ), $paka_mode );
+
+if ( $paka_admin ) {
+	/* translators: %s: broj narudžbe */
+	$paka_heading = sprintf( __( 'Nova prijava #%s', 'plan-a-kosarica' ), $order->get_order_number() );
+} elseif ( $paka_paid ) {
 	$paka_heading = __( 'Uplata je zaprimljena, vidimo se na izletu', 'plan-a-kosarica' );
 } else {
 	$paka_heading = '' !== $paka_first
@@ -137,11 +150,15 @@ $paka_rows = static function ( array $rows ) use ( $paka_label, $paka_value ): s
 				<tr>
 					<td style="background:#ffffff;border-radius:0 0 14px 14px;padding:26px 24px 22px;text-align:center;">
 						<table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 12px;">
-							<tr><td align="center" width="56" height="56" style="width:56px;height:56px;border-radius:28px;background:#1e9e4a;color:#ffffff;font-family:<?php echo esc_attr( $paka_font ); ?>;font-size:30px;font-weight:700;line-height:56px;text-align:center;">&#10003;</td></tr>
+							<tr><td align="center" width="56" height="56" style="width:56px;height:56px;border-radius:28px;background:<?php echo $paka_admin ? esc_attr( $paka_s['accent'] ) : '#1e9e4a'; ?>;color:#ffffff;font-family:<?php echo esc_attr( $paka_font ); ?>;font-size:30px;font-weight:700;line-height:56px;text-align:center;"><?php echo $paka_admin ? '&#43;' : '&#10003;'; ?></td></tr>
 						</table>
 						<h1 class="paka-mail-h1" style="margin:0 0 8px;color:<?php echo esc_attr( $paka_navy ); ?>;font-family:<?php echo esc_attr( $paka_font ); ?>;font-size:24px;line-height:1.3;font-weight:800;text-align:center;"><?php echo esc_html( $paka_heading ); ?></h1>
 						<p style="margin:0;color:<?php echo esc_attr( $paka_muted ); ?>;font-family:<?php echo esc_attr( $paka_font ); ?>;font-size:15px;line-height:1.5;">
-							<?php esc_html_e( 'Broj narudžbe:', 'plan-a-kosarica' ); ?> <strong style="color:<?php echo esc_attr( $paka_text ); ?>;"><?php echo esc_html( $order->get_order_number() ); ?></strong>
+							<?php if ( $paka_admin ) : ?>
+								<strong style="color:<?php echo esc_attr( $paka_text ); ?>;"><?php echo esc_html( '' !== $paka_name ? $paka_name : $order->get_billing_email() ); ?></strong>
+							<?php else : ?>
+								<?php esc_html_e( 'Broj narudžbe:', 'plan-a-kosarica' ); ?> <strong style="color:<?php echo esc_attr( $paka_text ); ?>;"><?php echo esc_html( $order->get_order_number() ); ?></strong>
+							<?php endif; ?>
 							<?php if ( $order->get_date_created() ) : ?>
 								&middot; <?php echo esc_html( Plan_A_Kosarica_Order::hr_date( $order->get_date_created()->getOffsetTimestamp() ) ); ?>
 							<?php endif; ?>
@@ -150,7 +167,7 @@ $paka_rows = static function ( array $rows ) use ( $paka_label, $paka_value ): s
 				</tr>
 				<tr><td style="height:16px;line-height:16px;font-size:0;">&nbsp;</td></tr>
 
-				<?php if ( ! $paka_paid ) : ?>
+				<?php if ( 'received' === $paka_mode ) : ?>
 					<!-- Što sada? -->
 					<?php echo $paka_card_open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<h2 style="<?php echo esc_attr( $paka_h2 ); ?>"><?php esc_html_e( 'Što sada?', 'plan-a-kosarica' ); ?></h2>
@@ -194,7 +211,7 @@ $paka_rows = static function ( array $rows ) use ( $paka_label, $paka_value ): s
 
 				<!-- Vaš izlet -->
 				<?php echo $paka_card_open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					<h2 style="<?php echo esc_attr( $paka_h2 ); ?>"><?php echo esc_html( $paka_tour ? __( 'Vaš izlet', 'plan-a-kosarica' ) : __( 'Detalji narudžbe', 'plan-a-kosarica' ) ); ?></h2>
+					<h2 style="<?php echo esc_attr( $paka_h2 ); ?>"><?php echo esc_html( $paka_tour ? ( $paka_admin ? __( 'Izlet', 'plan-a-kosarica' ) : __( 'Vaš izlet', 'plan-a-kosarica' ) ) : __( 'Detalji narudžbe', 'plan-a-kosarica' ) ); ?></h2>
 					<?php foreach ( $paka_sum['items'] as $paka_item_rows ) : ?>
 						<?php echo $paka_rows( $paka_item_rows ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
 						<div style="height:10px;line-height:10px;font-size:0;">&nbsp;</div>
@@ -204,6 +221,9 @@ $paka_rows = static function ( array $rows ) use ( $paka_label, $paka_value ): s
 					$paka_totals[] = array( __( 'Ukupno', 'plan-a-kosarica' ), '<strong style="color:' . esc_attr( $paka_navy ) . ';font-size:18px;">' . wp_kses_post( $paka_sum['total'] ) . '</strong>' );
 					if ( $order->get_payment_method_title() ) {
 						$paka_totals[] = array( __( 'Način plaćanja', 'plan-a-kosarica' ), esc_html( wp_strip_all_tags( $order->get_payment_method_title() ) ) );
+					}
+					if ( $paka_admin ) {
+						$paka_totals[] = array( __( 'Plaćeno', 'plan-a-kosarica' ), $order->is_paid() ? '<span style="color:#1e7d3a;font-weight:700;">&#10003; ' . esc_html__( 'da', 'plan-a-kosarica' ) . '</span>' : '<span style="color:#b26200;font-weight:700;">' . esc_html__( 'čeka uplatu', 'plan-a-kosarica' ) . '</span>' );
 					}
 					if ( '' !== $paka_sum['note'] ) {
 						$paka_totals[] = array( __( 'Bilješka', 'plan-a-kosarica' ), nl2br( esc_html( $paka_sum['note'] ) ) );
@@ -216,17 +236,33 @@ $paka_rows = static function ( array $rows ) use ( $paka_label, $paka_value ): s
 
 				<!-- Vaši podaci -->
 				<?php echo $paka_card_open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					<h2 style="<?php echo esc_attr( $paka_h2 ); ?>"><?php esc_html_e( 'Vaši podaci', 'plan-a-kosarica' ); ?></h2>
+					<h2 style="<?php echo esc_attr( $paka_h2 ); ?>"><?php echo esc_html( $paka_admin ? __( 'Kupac', 'plan-a-kosarica' ) : __( 'Vaši podaci', 'plan-a-kosarica' ) ); ?></h2>
 					<p style="<?php echo esc_attr( $paka_p ); ?>font-style:normal;">
 						<?php echo wp_kses_post( $order->get_formatted_billing_address( esc_html__( 'N/A', 'woocommerce' ) ) ); ?>
 						<?php if ( $order->get_billing_phone() ) : ?>
-							<br><?php echo esc_html( $order->get_billing_phone() ); ?>
+							<br><?php echo $paka_admin ? '<a href="tel:' . esc_attr( preg_replace( '/[^\d+]/', '', $order->get_billing_phone() ) ) . '" style="color:' . esc_attr( $paka_s['accent'] ) . ';">' . esc_html( $order->get_billing_phone() ) . '</a>' : esc_html( $order->get_billing_phone() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php endif; ?>
 						<?php if ( $order->get_billing_email() ) : ?>
-							<br><?php echo esc_html( $order->get_billing_email() ); ?>
+							<br><?php echo $paka_admin ? '<a href="mailto:' . esc_attr( $order->get_billing_email() ) . '" style="color:' . esc_attr( $paka_s['accent'] ) . ';">' . esc_html( $order->get_billing_email() ) . '</a>' : esc_html( $order->get_billing_email() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php endif; ?>
 					</p>
 				<?php echo $paka_card_close; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
+				<?php if ( $paka_member ) : ?>
+					<!-- Članstvo Plan A (dodatak Plan A članstvo) -->
+					<?php echo $paka_card_open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<h2 style="<?php echo esc_attr( $paka_h2 ); ?>"><?php esc_html_e( 'Članstvo Plan A', 'plan-a-kosarica' ); ?></h2>
+						<?php echo $paka_rows( $paka_member ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
+					<?php echo $paka_card_close; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php endif; ?>
+
+				<?php if ( $paka_admin ) : ?>
+					<tr>
+						<td align="center" style="padding:18px 16px 6px;">
+							<a href="<?php echo esc_url( $order->get_edit_order_url() ); ?>" style="display:inline-block;padding:14px 28px;border-radius:10px;background:<?php echo esc_attr( $paka_cta ); ?>;color:#ffffff;font-family:<?php echo esc_attr( $paka_font ); ?>;font-size:16px;font-weight:700;text-decoration:none;"><?php esc_html_e( 'Otvori narudžbu', 'plan-a-kosarica' ); ?></a>
+						</td>
+					</tr>
+				<?php endif; ?>
 
 				<?php if ( Plan_A_Kosarica_Order::has_content( $paka_extra . $paka_hooks ) ) : ?>
 					<!-- Izlaz drugih dodataka -->
@@ -235,7 +271,7 @@ $paka_rows = static function ( array $rows ) use ( $paka_label, $paka_value ): s
 					<?php echo $paka_card_close; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php endif; ?>
 
-				<?php if ( $additional_content ) : ?>
+				<?php if ( $additional_content && ! $paka_admin ) : ?>
 					<?php echo $paka_card_open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<div style="<?php echo esc_attr( $paka_p ); ?>"><?php echo wp_kses_post( wpautop( wptexturize( $additional_content ) ) ); ?></div>
 					<?php echo $paka_card_close; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

@@ -16,6 +16,8 @@ final class Plan_A_Clanstvo_Woo {
 	const META = '_pac_clan';
 
 	public static function init() {
+		// Blok "Članstvo Plan A" u e-mailu "Nova narudžba" (dodatak Plan A košarica); uvijek.
+		add_filter( 'plan_a_kosarica_member_rows', array( __CLASS__, 'member_rows' ), 10, 4 );
 		if ( ! (int) Plan_A_Clanstvo_Data::value( 'provjera' ) ) {
 			return;
 		}
@@ -28,6 +30,53 @@ final class Plan_A_Clanstvo_Woo {
 		add_filter( 'manage_edit-shop_order_columns', array( __CLASS__, 'column' ), 20 );
 		add_action( 'manage_woocommerce_page_wc-orders_custom_column', array( __CLASS__, 'column_value' ), 10, 2 );
 		add_action( 'manage_shop_order_posts_custom_column', array( __CLASS__, 'column_value' ), 10, 2 );
+	}
+
+	/**
+	 * Stanje članstva kupca za e-mail vama: pristupnica, članarina za godinu izleta, iskaznica.
+	 *
+	 * @return array<int, array{0: string, 1: string}>
+	 */
+	public static function member_rows( $rows, $order, $year, $mode ) {
+		if ( 'admin' !== $mode || ! $order instanceof WC_Order || self::skip( $order ) ) {
+			return $rows;
+		}
+		$ok   = static fn( $t ) => '<span style="color:#1e7d3a;font-weight:700;">&#10003; ' . esc_html( $t ) . '</span>';
+		$no   = static fn( $t ) => '<span style="color:#b32d2e;font-weight:700;">&#10007; ' . esc_html( $t ) . '</span>';
+		$wait = static fn( $t ) => '<span style="color:#b26200;font-weight:700;">&#9203; ' . esc_html( $t ) . '</span>';
+		$year = (int) $year;
+		$id   = Plan_A_Clanstvo_Data::find( 'email', (string) $order->get_billing_email() );
+		if ( ! $id ) {
+			// Član bez e-maila u popisu (npr. iz starih tablica članarina): moguće ista osoba po imenu.
+			$guess = get_posts(
+				array(
+					'post_type'      => Plan_A_Clanstvo_Data::CPT,
+					'post_status'    => 'any',
+					'title'          => trim( $order->get_formatted_billing_full_name() ),
+					'posts_per_page' => 1,
+					'fields'         => 'ids',
+					'no_found_rows'  => true,
+				)
+			);
+			$rows[] = array( 'Pristupnica', $no( 'nema pristupnice s ovim e-mailom' ) );
+			if ( $guess ) {
+				$g      = Plan_A_Clanstvo_Data::get_member( (int) $guess[0] );
+				$rows[] = array( 'Moguće', esc_html( 'član istog imena: Br. ' . $g['broj'] . ( '' !== $g['email'] ? ', ' . $g['email'] : ', bez e-maila' ) ) . ' – provjeriti' );
+				$id     = (int) $guess[0];
+			} else {
+				return $rows;
+			}
+		} else {
+			$m      = Plan_A_Clanstvo_Data::get_member( $id );
+			$rows[] = array( 'Pristupnica', 'potvrdeno' === $m['status'] ? $ok( 'potvrđena (Br. ' . $m['broj'] . ')' ) : $wait( 'ispunjena, ali nije potvrđena (Br. ' . $m['broj'] . ')' ) );
+		}
+		$rows[] = array( 'Članarina ' . $year, Plan_A_Clanstvo_Data::fee_paid( $id, $year ) ? $ok( 'plaćena' ) : $no( 'nije plaćena' ) );
+		$rows[] = array( 'Iskaznica', get_post_meta( $id, '_pac_kartica', true ) ? $ok( 'uručena' ) : esc_html( 'nije uručena' ) );
+		$pull   = get_option( 'plan_a_clanstvo_pull' );
+		if ( is_array( $pull ) ) {
+			$rows[] = array( '', '<span style="color:#5f6b77;font-size:13px;">' . esc_html( 'Članarina i iskaznica prema Google tablici, stanje ' . Plan_A_Clanstvo_Data::hr_datetime( (string) $pull['time'] ) . '.' ) . '</span>' );
+		}
+		return $rows;
 	}
 
 	/** Narudžbe na koje se provjera ne odnosi (npr. rezervacija jedrenja). */

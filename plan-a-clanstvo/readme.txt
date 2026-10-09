@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.5.1 =
+* Blok "Članstvo Plan A" u e-mailu "Nova narudžba": pristupnica, članarina za godinu izleta, iskaznica; za kupca bez pristupnice moguće podudaranje po imenu.
 
 = 1.5.0 =
 * Stranica svaki sat čita kvačice "Članarina GGGG" i "Iskaznica uručena" iz tablice (i gumb "Osvježi kvačice iz tablice"). Potrebna nova skripta (v5).

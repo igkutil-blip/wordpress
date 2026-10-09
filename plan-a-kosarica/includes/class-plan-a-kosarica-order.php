@@ -21,6 +21,7 @@ final class Plan_A_Kosarica_Order {
 		'emails/customer-on-hold-order.php',
 		'emails/customer-processing-order.php',
 		'emails/customer-completed-order.php',
+		'emails/admin-new-order.php',
 	);
 
 	/** @var bool Upravo se iscrtava naša stranica ili e-mail (za prijevode). */
@@ -41,6 +42,7 @@ final class Plan_A_Kosarica_Order {
 		add_filter( 'woocommerce_email_subject_customer_on_hold_order', array( __CLASS__, 'subject_received' ), 20, 2 );
 		add_filter( 'woocommerce_email_subject_customer_processing_order', array( __CLASS__, 'subject_paid' ), 20, 2 );
 		add_filter( 'woocommerce_email_subject_customer_completed_order', array( __CLASS__, 'subject_paid' ), 20, 2 );
+		add_filter( 'woocommerce_email_subject_new_order', array( __CLASS__, 'subject_admin' ), 20, 2 );
 	}
 
 	public static function locate_template( $template, $template_name ) {
@@ -123,6 +125,33 @@ final class Plan_A_Kosarica_Order {
 		}
 		/* translators: %s: broj narudžbe */
 		return sprintf( __( 'Vaša prijava je zaprimljena (narudžba #%s)', 'plan-a-kosarica' ), $order->get_order_number() );
+	}
+
+	/** "Nova prijava #8928 – Krešo Batovanja – Doček Nove godine pod Velebitom" */
+	public static function subject_admin( $subject, $order ) {
+		if ( ! $order instanceof WC_Order ) {
+			return $subject;
+		}
+		$name  = trim( $order->get_formatted_billing_full_name() );
+		$items = $order->get_items();
+		$first = $items ? reset( $items ) : null;
+		$parts = array( sprintf( __( 'Nova prijava #%s', 'plan-a-kosarica' ), $order->get_order_number() ), $name, $first ? $first->get_name() : '' );
+		return implode( ' – ', array_filter( $parts, 'strlen' ) );
+	}
+
+	/**
+	 * Godina početka (prvog) izleta u narudžbi; bez izleta godina narudžbe.
+	 */
+	public static function tour_year( WC_Order $order ): int {
+		foreach ( $order->get_items() as $item ) {
+			if ( $item instanceof WC_Order_Item_Product ) {
+				$ts = strtotime( (string) $item->get_meta( '_ttbm_date' ) );
+				if ( $ts ) {
+					return (int) gmdate( 'Y', $ts );
+				}
+			}
+		}
+		return $order->get_date_created() ? (int) $order->get_date_created()->date( 'Y' ) : (int) gmdate( 'Y' );
 	}
 
 	public static function subject_paid( $subject, $order ) {
@@ -440,7 +469,7 @@ final class Plan_A_Kosarica_Order {
 		if ( $order ) {
 			$to     = (string) get_option( 'admin_email' );
 			$emails = WC()->mailer()->get_emails();
-			foreach ( array( 'WC_Email_Customer_On_Hold_Order', 'WC_Email_Customer_Processing_Order' ) as $class ) {
+			foreach ( array( 'WC_Email_Customer_On_Hold_Order', 'WC_Email_Customer_Processing_Order', 'WC_Email_New_Order' ) as $class ) {
 				if ( empty( $emails[ $class ] ) ) {
 					continue;
 				}
