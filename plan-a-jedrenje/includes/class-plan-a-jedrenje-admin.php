@@ -120,6 +120,27 @@ final class Plan_A_Jedrenje_Admin {
 				self::save_settings();
 				$ok = 'Postavke su spremljene.';
 				break;
+			case 'testmail':
+				$to   = wp_get_current_user()->user_email;
+				$err  = '';
+				$hook = static function ( $e ) use ( &$err ) {
+					$err = $e->get_error_message();
+				};
+				add_action( 'wp_mail_failed', $hook );
+				$sent = Plan_A_Jedrenje_Mail::send(
+					$to,
+					'Plan A jedrenje – probni e-mail',
+					Plan_A_Jedrenje_Mail::wrap( 'Probni e-mail', array( 'Ako čitaš ovo, e-mailovi za jedrenje (zahtjevi, uplatnice, potvrde i podsjetnici) stižu.' ) )
+				);
+				remove_action( 'wp_mail_failed', $hook );
+				$from = substr( Plan_A_Jedrenje_Mail::headers()[1], 6 );
+				if ( $sent ) {
+					$ok = 'Probni e-mail je predan na slanje na ' . $to . ' (pošiljatelj: ' . $from . '). Ako ne stigne za nekoliko minuta, provjeri i mapu Neželjena pošta.';
+				} else {
+					$res = new WP_Error( 'mail', 'Slanje nije uspjelo' . ( $err ? ': ' . $err : '.' ) );
+				}
+				$tab = 'postavke';
+				break;
 			default:
 				$res = new WP_Error( 'do', 'Nepoznata radnja.' );
 				$ok  = '';
@@ -602,6 +623,7 @@ final class Plan_A_Jedrenje_Admin {
 
 	private static function tab_settings() {
 		$s = Plan_A_Jedrenje_Data::get();
+		echo '<p>' . self::button( 'testmail', 'Pošalji mi probni e-mail', 'postavke', 0 ) . ' <span class="description">Šalje se na ' . esc_html( wp_get_current_user()->user_email ) . ', s istog pošiljatelja kao e-mailovi kupcima.</span></p>'; // phpcs:ignore WordPress.Security.EscapeOutput
 		echo self::form_open( 'settings', 'postavke' ); // phpcs:ignore WordPress.Security.EscapeOutput
 		$text = static function ( $key, $label, $help = '' ) use ( $s ) {
 			echo '<tr><th><label for="paj-' . esc_attr( $key ) . '">' . esc_html( $label ) . '</label></th><td><input type="text" class="regular-text" id="paj-' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '" value="' . esc_attr( (string) $s[ $key ] ) . '">' . ( $help ? '<p class="description">' . esc_html( $help ) . '</p>' : '' ) . '</td></tr>';
