@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A članstvo
  * Description:       Pristupnica za članstvo u udruzi: obrazac na stranici, potvrda klikom u e-mailu, 2D kod za članarinu, automatski upis u Google tablicu i provjera članstva pri prijavi na izlet.
- * Version:           1.5.1
+ * Version:           1.6.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_CLANSTVO_VERSION', '1.5.1' );
+define( 'PLAN_A_CLANSTVO_VERSION', '1.6.0' );
 define( 'PLAN_A_CLANSTVO_FILE', __FILE__ );
 define( 'PLAN_A_CLANSTVO_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PLAN_A_CLANSTVO_URL', plugin_dir_url( __FILE__ ) );
@@ -28,6 +28,7 @@ require_once PLAN_A_CLANSTVO_DIR . 'includes/class-plan-a-clanstvo-woo.php';
 require_once PLAN_A_CLANSTVO_DIR . 'includes/class-plan-a-clanstvo-admin.php';
 require_once PLAN_A_CLANSTVO_DIR . 'includes/class-plan-a-clanstvo-import.php';
 require_once PLAN_A_CLANSTVO_DIR . 'includes/class-plan-a-clanstvo-agency.php';
+require_once PLAN_A_CLANSTVO_DIR . 'includes/class-plan-a-clanstvo-checkout.php';
 
 register_activation_hook(
 	__FILE__,
@@ -57,6 +58,7 @@ add_action(
 		Plan_A_Clanstvo_Sheets::init();
 		Plan_A_Clanstvo_Woo::init();
 		Plan_A_Clanstvo_Agency::init();
+		Plan_A_Clanstvo_Checkout::init();
 		if ( is_admin() ) {
 			Plan_A_Clanstvo_Admin::init();
 		}

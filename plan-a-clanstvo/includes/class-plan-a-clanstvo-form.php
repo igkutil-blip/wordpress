@@ -364,7 +364,7 @@ final class Plan_A_Clanstvo_Form {
 			. '</div>';
 	}
 
-	private static function izjava_html(): string {
+	public static function izjava_html(): string {
 		$lines = array_values( array_filter( array_map( 'trim', preg_split( '/\R/u', (string) Plan_A_Clanstvo_Data::value( 'izjava' ) ) ) ) );
 		$html  = '';
 		foreach ( $lines as $l ) {

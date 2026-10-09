@@ -82,9 +82,10 @@ final class Plan_A_Clanstvo_Mail {
 	/**
 	 * Podaci za uplatu članarine (HTML, za e-mail i stranicu).
 	 */
-	public static function payment_html( int $id, string $img_style = 'display:block;width:100%;max-width:420px;height:auto;margin:0 auto 14px' ): string {
-		$pay  = Plan_A_Clanstvo_Hub3::payment();
-		$code = Plan_A_Clanstvo_Hub3::for_member( $id );
+	public static function payment_html( int $id, string $img_style = 'display:block;width:100%;max-width:420px;height:auto;margin:0 auto 14px', int $year = 0 ): string {
+		$year = $year ?: self::fee_year( $id );
+		$pay  = Plan_A_Clanstvo_Hub3::payment( $year );
+		$code = Plan_A_Clanstvo_Hub3::for_member( $id, $year );
 		$rows = array(
 			'Iznos'          => Plan_A_Clanstvo_Data::money( $pay['iznos'] ),
 			'Primatelj'      => $pay['primatelj'] . ', ' . $pay['adresa'],
@@ -93,7 +94,7 @@ final class Plan_A_Clanstvo_Mail {
 			'Opis plaćanja'  => $pay['opis'],
 		);
 		$html = '<div style="background:#f3f8fc;border-radius:14px;padding:18px 18px 10px;margin:6px 0 16px">';
-		$html .= '<p style="margin:0 0 12px;color:#12304b;font-size:17px;font-weight:bold">Članarina za ' . (int) Plan_A_Clanstvo_Data::year() . '.</p>';
+		$html .= '<p style="margin:0 0 12px;color:#12304b;font-size:17px;font-weight:bold">Članarina za ' . (int) $year . '.</p>';
 		if ( $code ) {
 			$html .= '<p style="margin:0 0 8px;font-size:14px;color:#5f6b77">Skeniraj kod u mobilnom bankarstvu ili aplikaciji FotoNalog:</p>'
 				. '<img src="' . esc_url( $code['url'] ) . '" alt="2D kod za uplatu članarine" style="' . esc_attr( $img_style ) . '">';
@@ -105,12 +106,36 @@ final class Plan_A_Clanstvo_Mail {
 		return $html . '</table></div>';
 	}
 
+	/**
+	 * Godina članarine: tekuća, ili kasnija ako je član upisan za izlet u toj godini.
+	 */
+	public static function fee_year( int $id ): int {
+		return max( (int) Plan_A_Clanstvo_Data::year(), (int) get_post_meta( $id, '_pac_fee_year', true ) );
+	}
+
+	/**
+	 * Članarina za godinu izleta nije plaćena: e-mail s 2D kodom.
+	 */
+	public static function fee_request( int $id, int $year ): bool {
+		$m = Plan_A_Clanstvo_Data::get_member( $id );
+		if ( ! $m || ! is_email( $m['email'] ) ) {
+			return false;
+		}
+		$code  = Plan_A_Clanstvo_Hub3::for_member( $id, $year );
+		$inner = self::p( 'Pozdrav ' . esc_html( $m['ime'] ) . ',' )
+			. self::p( 'hvala na prijavi na izlet! Članarina u udruzi Plan A za <strong>' . (int) $year . '.</strong> još nije plaćena. Uplati je na račun udruge (ne agencije), najjednostavnije skeniranjem 2D koda:' )
+			. self::payment_html( $id, 'display:block;width:100%;max-width:420px;height:auto;margin:0 auto 14px', $year )
+			. self::p( '<span style="color:#5f6b77;font-size:14px">Članarina vrijedi kalendarsku godinu. Ako si je već platio/la, zanemari ovu poruku.</span>' );
+		$files = $code && $code['path'] ? array( $code['path'] ) : array();
+		return self::send( $m['email'], 'Članarina Plan A za ' . (int) $year . '.', self::wrap( 'Članarina za ' . (int) $year . '.', $inner ), $files );
+	}
+
 	public static function confirmed( int $id ): bool {
 		$m = Plan_A_Clanstvo_Data::get_member( $id );
 		if ( ! $m ) {
 			return false;
 		}
-		$code  = Plan_A_Clanstvo_Hub3::for_member( $id );
+		$code  = Plan_A_Clanstvo_Hub3::for_member( $id, self::fee_year( $id ) );
 		$inner = self::p( 'Pozdrav ' . esc_html( $m['ime'] ) . ',' )
 			. self::p( 'tvoja pristupnica je <strong>potvrđena</strong>. Dobrodošao/la u Plan A!' )
 			. self::p( 'Članarina vrijedi za kalendarsku godinu. Člansku iskaznicu preuzimaš na prvom susretu s nama.' )

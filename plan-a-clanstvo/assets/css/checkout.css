@@ -1,0 +1,22 @@
+/* Plan A članstvo u košarici */
+.pac-hidden, .pac-status[hidden], .pac-join[hidden], .pac-minor[hidden] { display: none !important; }
+.pac-status { clear: both; margin: 10px 0 4px; padding: 11px 14px; border-radius: 10px; font-size: 15px; line-height: 1.45; background: #f3f6f9; color: #24323f; border-left: 4px solid #9aa8b5; }
+.pac-status[data-state="ok"] { background: #eaf7ef; border-left-color: #1e9e4a; color: #14532d; }
+.pac-status[data-state="wait"] { background: #fff6e8; border-left-color: #e8862a; color: #6b3d0a; }
+.pac-status[data-state="new"] { background: #eef5fc; border-left-color: #1a73b8; color: #12304b; }
+.pac-status[data-state="busy"] { color: #5f6b77; }
+.pac-join { clear: both; margin: 6px 0 4px; padding: 14px 16px 6px; border: 1px solid #dfe6ee; border-radius: 12px; background: #fbfcfe; }
+.pac-join__h { margin: 0 0 6px; font-size: 17px; color: #12304b; }
+.pac-muted { margin: 0 0 10px; font-size: 14px; color: #5f6b77; line-height: 1.45; }
+.pac-izjava { margin: 4px 0 8px; font-size: 14px; }
+.pac-izjava summary { cursor: pointer; color: #1a73b8; font-weight: 600; }
+.pac-izjava__text { max-height: 260px; overflow: auto; margin-top: 8px; padding: 10px 12px; background: #fff; border: 1px solid #e3e8ee; border-radius: 8px; }
+.pac-izjava__text h4 { margin: 10px 0 4px; font-size: 14px; }
+.pac-izjava__text p { margin: 0 0 8px; }
+.pac-check label { display: flex; gap: 8px; align-items: flex-start; font-weight: 600; }
+.pac-check input { margin-top: 3px; }
+.pac-others { margin-top: 16px; }
+.pac-others h3 { margin: 0 0 6px; }
+.pac-others__tour { margin: 14px 0 6px; font-size: 15px; color: #12304b; }
+.pac-person { margin: 0 0 14px; padding: 12px 14px 4px; border: 1px solid #dfe6ee; border-radius: 12px; }
+.pac-person legend { padding: 0 6px; font-weight: 700; color: #12304b; }

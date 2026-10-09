@@ -153,11 +153,37 @@ defined( 'ABSPATH' ) || exit;
 		</dl>
 	</section>
 
+	<?php
+	/** Blok "Članstvo Plan A" (dodatak Plan A članstvo). */
+	$paka_member = (array) apply_filters( 'plan_a_kosarica_member_rows', array(), $order, Plan_A_Kosarica_Order::tour_year( $order ), 'thankyou' );
+	/** Podaci upisani iz pristupnice člana ne prikazuju se na stranici (samo ime i e-mail). */
+	$paka_hide = (bool) apply_filters( 'plan_a_kosarica_hide_customer_details', false, $order );
+	?>
+	<?php if ( $paka_member ) : ?>
+		<section class="paka-card paka-member" aria-labelledby="paka-member-h">
+			<h2 class="paka-h2" id="paka-member-h"><?php esc_html_e( 'Članstvo Plan A', 'plan-a-kosarica' ); ?></h2>
+			<dl class="paka-dl">
+				<?php foreach ( $paka_member as $paka_row ) : ?>
+					<?php if ( '' === $paka_row[0] ) : ?>
+						<dd class="paka-dl__full"><?php echo wp_kses_post( $paka_row[1] ); ?></dd>
+					<?php else : ?>
+						<dt><?php echo esc_html( $paka_row[0] ); ?></dt>
+						<dd><?php echo wp_kses_post( $paka_row[1] ); ?></dd>
+					<?php endif; ?>
+				<?php endforeach; ?>
+			</dl>
+		</section>
+	<?php endif; ?>
+
 	<section class="paka-card paka-customer-data woocommerce-customer-details" aria-labelledby="paka-cust-h">
 		<h2 class="paka-h2" id="paka-cust-h"><?php esc_html_e( 'Vaši podaci', 'plan-a-kosarica' ); ?></h2>
 		<p class="paka-address">
-			<?php echo wp_kses_post( $order->get_formatted_billing_address( esc_html__( 'N/A', 'woocommerce' ) ) ); ?>
-			<?php if ( $order->get_billing_phone() ) : ?>
+			<?php if ( $paka_hide ) : ?>
+				<?php echo esc_html( $order->get_formatted_billing_full_name() ); ?><br><?php esc_html_e( 'Ostali podaci upisani su iz tvoje pristupnice Plan A.', 'plan-a-kosarica' ); ?>
+			<?php else : ?>
+				<?php echo wp_kses_post( $order->get_formatted_billing_address( esc_html__( 'N/A', 'woocommerce' ) ) ); ?>
+			<?php endif; ?>
+			<?php if ( $order->get_billing_phone() && ! $paka_hide ) : ?>
 				<br><?php echo esc_html( $order->get_billing_phone() ); ?>
 			<?php endif; ?>
 			<?php if ( $order->get_billing_email() ) : ?>

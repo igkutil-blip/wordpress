@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -78,6 +78,11 @@ sadrži poveznicu na stranicu narudžbe s tim podacima.
 E-mail "Nova narudžba" ima isti izgled kao e-mailovi kupcu: izlet, ukupno i je li plaćeno, kupac
 (mobitel i e-mail su poveznice), blok "Članstvo Plan A" (puni ga dodatak Plan A članstvo preko
 filtra plan_a_kosarica_member_rows) i gumb "Otvori narudžbu". Naslov: "Nova prijava #… – kupac – izlet".
+
+== Članstvo na stranici "Hvala" (1.5.1) ==
+
+Blok "Članstvo Plan A" (filtar plan_a_kosarica_member_rows, način 'thankyou'); podaci kupca upisani iz pristupnice
+ne prikazuju se (filtar plan_a_kosarica_hide_customer_details).
 
 == Postavke ==
 

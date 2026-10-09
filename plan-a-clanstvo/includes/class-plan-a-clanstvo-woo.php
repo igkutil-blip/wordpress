@@ -23,8 +23,6 @@ final class Plan_A_Clanstvo_Woo {
 		}
 		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'mark' ), 20, 1 );
 		add_action( 'woocommerce_store_api_checkout_order_processed', array( __CLASS__, 'mark' ), 20, 1 );
-		add_action( 'woocommerce_before_thankyou', array( __CLASS__, 'thankyou' ), 5 );
-		add_action( 'woocommerce_email_order_meta', array( __CLASS__, 'email' ), 30, 4 );
 		add_action( 'woocommerce_admin_order_data_after_billing_address', array( __CLASS__, 'admin_box' ) );
 		add_filter( 'manage_woocommerce_page_wc-orders_columns', array( __CLASS__, 'column' ), 20 );
 		add_filter( 'manage_edit-shop_order_columns', array( __CLASS__, 'column' ), 20 );
@@ -38,12 +36,15 @@ final class Plan_A_Clanstvo_Woo {
 	 * @return array<int, array{0: string, 1: string}>
 	 */
 	public static function member_rows( $rows, $order, $year, $mode ) {
-		if ( 'admin' !== $mode || ! $order instanceof WC_Order || self::skip( $order ) ) {
+		if ( ! $order instanceof WC_Order || self::skip( $order ) ) {
 			return $rows;
+		}
+		if ( 'admin' !== $mode ) {
+			return (int) Plan_A_Clanstvo_Data::value( 'provjera' ) ? self::customer_rows( $rows, $order, (int) $year, $mode ) : $rows;
 		}
 		$ok   = static fn( $t ) => '<span style="color:#1e7d3a;font-weight:700;">&#10003; ' . esc_html( $t ) . '</span>';
 		$no   = static fn( $t ) => '<span style="color:#b32d2e;font-weight:700;">&#10007; ' . esc_html( $t ) . '</span>';
-		$wait = static fn( $t ) => '<span style="color:#b26200;font-weight:700;">&#9203; ' . esc_html( $t ) . '</span>';
+		$wait = static fn( $t ) => '<span style="color:#b26200;font-weight:700;">' . esc_html( $t ) . '</span>';
 		$year = (int) $year;
 		$id   = Plan_A_Clanstvo_Data::find( 'email', (string) $order->get_billing_email() );
 		if ( ! $id ) {
@@ -68,7 +69,8 @@ final class Plan_A_Clanstvo_Woo {
 			}
 		} else {
 			$m      = Plan_A_Clanstvo_Data::get_member( $id );
-			$rows[] = array( 'Pristupnica', 'potvrdeno' === $m['status'] ? $ok( 'potvrđena (Br. ' . $m['broj'] . ')' ) : $wait( 'ispunjena, ali nije potvrđena (Br. ' . $m['broj'] . ')' ) );
+			$new    = $order->get_meta( '_pac_nova' ) ? 'nova, upisana u košarici – ' : '';
+			$rows[] = array( 'Pristupnica', 'potvrdeno' === $m['status'] ? $ok( 'potvrđena (Br. ' . $m['broj'] . ')' ) : $wait( $new . 'čeka potvrdu kupca (Br. ' . $m['broj'] . ')' ) );
 		}
 		$rows[] = array( 'Članarina ' . $year, Plan_A_Clanstvo_Data::fee_paid( $id, $year ) ? $ok( 'plaćena' ) : $no( 'nije plaćena' ) );
 		$rows[] = array( 'Iskaznica', get_post_meta( $id, '_pac_kartica', true ) ? $ok( 'uručena' ) : esc_html( 'nije uručena' ) );
@@ -76,6 +78,34 @@ final class Plan_A_Clanstvo_Woo {
 		if ( is_array( $pull ) ) {
 			$rows[] = array( '', '<span style="color:#5f6b77;font-size:13px;">' . esc_html( 'Članarina i iskaznica prema Google tablici, stanje ' . Plan_A_Clanstvo_Data::hr_datetime( (string) $pull['time'] ) . '.' ) . '</span>' );
 		}
+		return $rows;
+	}
+
+	/**
+	 * Blok "Članstvo Plan A" za kupca (e-mail i stranica "Hvala"). Gumb za potvrdu samo u
+	 * e-mailu (stiže na adresu člana), ne na stranici.
+	 */
+	private static function customer_rows( array $rows, WC_Order $order, int $year, string $mode ): array {
+		$ok   = static fn( $t ) => '<span style="color:#1e7d3a;font-weight:700;">&#10003; ' . esc_html( $t ) . '</span>';
+		$wait = static fn( $t ) => '<span style="color:#b26200;font-weight:700;">' . esc_html( $t ) . '</span>';
+		$id   = Plan_A_Clanstvo_Data::find( 'email', (string) $order->get_billing_email() );
+		$m    = $id ? Plan_A_Clanstvo_Data::get_member( $id ) : null;
+		if ( ! $m ) {
+			return $rows;
+		}
+		if ( 'potvrdeno' === $m['status'] ) {
+			$rows[] = array( 'Pristupnica', $ok( 'potvrđena' ) );
+			$rows[] = array( 'Članarina ' . $year, Plan_A_Clanstvo_Data::fee_paid( (int) $m['id'], $year ) ? $ok( 'plaćena' ) : $wait( 'nije plaćena' ) . ' – ' . esc_html( 'uplatnicu s 2D kodom poslali smo ti posebnim e-mailom.' ) );
+			return $rows;
+		}
+		$url    = (string) $order->get_meta( '_pac_confirm_url' );
+		$rows[] = array( 'Pristupnica', $wait( 'čeka tvoju potvrdu' ) );
+		if ( 'thankyou' !== $mode && '' !== $url ) {
+			$rows[] = array( '', '<a href="' . esc_url( $url ) . '" style="display:inline-block;margin:6px 0 4px;padding:12px 22px;border-radius:10px;background:#1e9e4a;color:#ffffff;font-weight:700;text-decoration:none;">Potvrđujem pristupnicu</a><br><span style="color:#5f6b77;font-size:13px;">Klikom potvrđuješ da si pristupnicu ispunio/la ti i da prihvaćaš Izjavu člana.</span>' );
+		} elseif ( 'thankyou' === $mode ) {
+			$rows[] = array( '', esc_html( 'Gumb za potvrdu stiže ti u e-mailu o prijavi.' ) );
+		}
+		$rows[] = array( 'Članarina ' . $year, esc_html( 'uplatnicu s 2D kodom dobivaš nakon potvrde pristupnice.' ) );
 		return $rows;
 	}
 
