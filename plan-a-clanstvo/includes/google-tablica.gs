@@ -8,7 +8,8 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 6;
+var SCRIPT_VERSION = 7;
+var SITE = '{{SITE}}';
 var SHEET_NAME = 'Članovi';
 var HEAD = ['Br.', 'Datum prijave', 'Ime', 'Prezime', 'Datum rođenja', 'OIB', 'Adresa', 'Mjesto, poštanski broj', 'E-mail', 'Mobitel', 'Roditelj ili skrbnik', 'Status', 'Datum potvrde'];
 var KEYS = ['broj', 'prijava', 'ime', 'prezime', 'datum', 'oib', 'adresa', 'mjesto', 'email', 'mobitel', 'roditelj', 'status', 'potvrda'];
@@ -270,6 +271,59 @@ var AG_KEYS = ['', 'ime', 'prezime', 'oib', 'datum', 'adresa', 'mjesto', 'mobite
 var AG_BOX = { osiguranje: 1, uplaceno: 1, clanarina: 1, iskaznica: 1 };
 var AG_KEY_COL = AG_HEAD.length; // skriveni stupac
 var AG_LAST = AG_HEAD.length - 1; // zadnji vidljivi stupac
+
+/**
+ * Brzo osvježavanje: pokreni JEDNOM u uređivaču (Run) i dopusti pristup. Nakon toga, čim
+ * netko označi kvačicu "Članarina GGGG" ili "Iskaznica uručena", tablica javi stranici
+ * (a stranica osvježi tablicu za agenciju). Ponovno pokretanje ne pravi duple okidače.
+ */
+function ukljuciBrzoOsvjezavanje() {
+  var ss = SpreadsheetApp.getActive();
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'naIzmjenu') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('naIzmjenu').forSpreadsheet(ss).onEdit().create();
+  return 'Brzo osvježavanje je uključeno.';
+}
+
+/** Okidač: promjena kvačica za članarinu ili iskaznicu → javi stranici za te retke. */
+function naIzmjenu(e) {
+  try {
+    if (!e || !e.range || !SITE || SITE.indexOf('{{') === 0) return;
+    var sh = e.range.getSheet();
+    if (sh.getName() !== SHEET_NAME) return;
+    var r0 = Math.max(2, e.range.getRow()), r1 = e.range.getLastRow();
+    if (r1 < r0) return;
+    var lastCol = sh.getLastColumn();
+    var heads = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(String);
+    var touched = false;
+    for (var c = e.range.getColumn(); c <= e.range.getLastColumn(); c++) {
+      if (isBox_(heads[c - 1])) touched = true;
+    }
+    if (!touched) return;
+    var years = [];
+    heads.forEach(function (h, c) { if (h.indexOf(YEAR_PREFIX) === 0) years.push([c, parseInt(h.replace(YEAR_PREFIX, ''), 10)]); });
+    var cardC = heads.indexOf(CARD);
+    var data = sh.getRange(r0, 1, r1 - r0 + 1, lastCol).getValues();
+    var rows = [];
+    data.forEach(function (r) {
+      var b = parseInt(r[0], 10);
+      if (!b) return;
+      var y = [];
+      years.forEach(function (p) { if (r[p[0]] === true) y.push(p[1]); });
+      rows.push({ b: b, y: y, k: cardC >= 0 && r[cardC] === true ? 1 : 0 });
+    });
+    if (!rows.length) return;
+    UrlFetchApp.fetch(SITE, {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({ secret: SECRET, rows: rows }),
+      muteHttpExceptions: true
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
 
 /** Ovo pokreni jednom u uređivaču (Run), da Google dopusti pristup tablici za agenciju. */
 function ovlasti() {

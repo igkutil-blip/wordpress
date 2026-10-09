@@ -336,13 +336,16 @@ final class Plan_A_Clanstvo_Agency {
 	}
 
 	/** Stanje redova (uplata, pristupnica, članarina, iskaznica). $orders = samo te narudžbe. */
-	public static function send_status( array $orders = array() ): array {
+	public static function send_status( array $orders = array(), array $members = array() ): array {
 		$map   = (array) get_option( self::ROWS, array() );
 		$from  = gmdate( 'Y-m-d', strtotime( current_time( 'Y-m-d' ) . ' -10 days' ) );
 		$items = array();
 		$cache = array();
 		foreach ( $map as $pkey => $r ) {
 			if ( $orders && ! in_array( (int) ( $r['o'] ?? 0 ), $orders, true ) ) {
+				continue;
+			}
+			if ( $members && ! in_array( (int) ( $r['b'] ?? 0 ), $members, true ) ) {
 				continue;
 			}
 			if ( ! $orders && strcmp( (string) $r['d'], substr( $from, 0, strlen( (string) $r['d'] ) ) ) < 0 ) {

@@ -11,15 +11,18 @@ defined( 'ABSPATH' ) || exit;
 final class Plan_A_Clanstvo_Sheets {
 
 	/** Verzija skripte u google-tablica.gs (SCRIPT_VERSION). Starija skripta je spora za pakete. */
-	const SCRIPT_VERSION = 5;
+	const SCRIPT_VERSION = 7;
+
+	const ROUTE = 'plan-a-clanstvo/v1';
 
 	public static function init() {
+		add_action( 'rest_api_init', array( __CLASS__, 'routes' ) );
 		add_action( 'plan_a_clanstvo_changed', array( __CLASS__, 'send' ) );
 	}
 
 	public static function script(): string {
 		$code = (string) file_get_contents( PLAN_A_CLANSTVO_DIR . 'includes/google-tablica.gs' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-		return str_replace( '{{SECRET}}', Plan_A_Clanstvo_Data::secret(), $code );
+		return str_replace( array( '{{SECRET}}', '{{SITE}}' ), array( Plan_A_Clanstvo_Data::secret(), rest_url( self::ROUTE . '/kvacice' ) ), $code );
 	}
 
 	public static function url(): string {
@@ -251,13 +254,28 @@ final class Plan_A_Clanstvo_Sheets {
 				'error' => (int) ( $res['v'] ?? 0 ) < self::SCRIPT_VERSION && ( $res['ok'] || 'Nepoznata radnja.' === ( $res['error'] ?? '' ) ) ? 'u tablici je stara skripta – kopiraj novu i objavi je kao „New version”.' : (string) ( $res['error'] ?? 'nepoznata greška' ),
 			);
 		}
+		$n = count( self::apply( $res['rows'] ) );
+		update_option( 'plan_a_clanstvo_pull', array( 'time' => current_time( 'mysql' ), 'n' => $n ), false );
+		return array(
+			'ok' => true,
+			'n'  => $n,
+		);
+	}
+
+	/**
+	 * Kvačice za članove: rows [{b: broj, y: [godine], k: iskaznica}]. Vraća brojeve članova.
+	 *
+	 * @return int[]
+	 */
+	public static function apply( array $rows ): array {
 		$by = array();
 		foreach ( get_posts( array( 'post_type' => Plan_A_Clanstvo_Data::CPT, 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids', 'no_found_rows' => true ) ) as $id ) {
 			$by[ (int) get_post_meta( $id, '_pac_broj', true ) ] = (int) $id;
 		}
-		$n = 0;
-		foreach ( $res['rows'] as $r ) {
-			$id = $by[ (int) ( $r['b'] ?? 0 ) ] ?? 0;
+		$done = array();
+		foreach ( $rows as $r ) {
+			$b  = (int) ( $r['b'] ?? 0 );
+			$id = $by[ $b ] ?? 0;
 			if ( ! $id ) {
 				continue;
 			}
@@ -265,13 +283,36 @@ final class Plan_A_Clanstvo_Sheets {
 			sort( $years );
 			update_post_meta( $id, '_pac_placeno', $years );
 			update_post_meta( $id, '_pac_kartica', empty( $r['k'] ) ? 0 : 1 );
-			++$n;
+			$done[] = $b;
 		}
-		update_option( 'plan_a_clanstvo_pull', array( 'time' => current_time( 'mysql' ), 'n' => $n ), false );
-		return array(
-			'ok' => true,
-			'n'  => $n,
+		return $done;
+	}
+
+	/** Tablica članova javlja promjenu kvačica (okidač u Apps Scriptu). */
+	public static function routes() {
+		register_rest_route(
+			self::ROUTE,
+			'/kvacice',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'push' ),
+				'permission_callback' => '__return_true', // provjerava se tajni ključ
+			)
 		);
+	}
+
+	public static function push( WP_REST_Request $req ) {
+		$d = (array) $req->get_json_params();
+		if ( ! hash_equals( Plan_A_Clanstvo_Data::secret(), (string) ( $d['secret'] ?? '' ) ) ) {
+			return new WP_REST_Response( array( 'ok' => false ), 403 );
+		}
+		$rows = array_slice( (array) ( $d['rows'] ?? array() ), 0, 500 );
+		$done = self::apply( array_filter( $rows, 'is_array' ) );
+		update_option( 'plan_a_clanstvo_pull', array( 'time' => current_time( 'mysql' ), 'n' => count( $done ) ), false );
+		if ( $done && Plan_A_Clanstvo_Agency::enabled() ) {
+			Plan_A_Clanstvo_Agency::send_status( array(), $done );
+		}
+		return new WP_REST_Response( array( 'ok' => true, 'n' => count( $done ) ), 200 );
 	}
 
 	/** Je li u tablici stara skripta (prema zadnjem odgovoru). */
