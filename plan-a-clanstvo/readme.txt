@@ -1,0 +1,39 @@
+=== Plan A članstvo ===
+Requires at least: 5.8
+Requires PHP: 7.4
+Stable tag: 1.0.0
+License: GPLv2 or later
+
+Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
+automatski upis u Google tablicu i provjera članstva pri prijavi na izlet.
+
+== Postavljanje ==
+
+1. Instaliraj i aktiviraj dodatak.
+2. Na stranici /uclanjenje/ zamijeni stari obrazac (Contact Form 7) shortcodeom
+   [plan-a-pristupnica] u Flatsome HTML bloku.
+3. Članovi → Postavke i tablica: slijedi upute za Google tablicu (skripta, Deploy, URL),
+   klikni "Provjeri vezu" pa "Pošalji sve članove u tablicu".
+4. SpeedyCache: izuzmi adrese s parametrima potvrda i pristupnica (npr. /uclanjenje/?potvrda=…).
+
+== Kako radi ==
+
+1. Član ispuni pristupnicu (OIB i datum se provjeravaju, za mlađe od 18 polja za roditelja).
+2. Stiže e-mail s gumbom "Potvrđujem pristupnicu". Klik otvara stranicu "Pristupnica je
+   potvrđena!" (potvrda se šalje sama s te stranice, pa je ne potvrđuju programi koji u pošti
+   provjeravaju poveznice).
+3. Nakon potvrde stiže e-mail s podacima za članarinu i 2D kodom na račun udruge.
+4. Svaka pristupnica i potvrda sama se upisuje u Google tablicu (stupci, Status, Datum
+   potvrde). Stupce "Članarina GGGG" s kvačicama ispunjavate ručno; stranica ih ne dira.
+5. Nepotvrđeni dobiju podsjetnik nakon 3 dana; nepotvrđene pristupnice brišu se nakon 30 dana.
+6. Pri prijavi na izlet e-mail kupca uspoređuje se s potvrđenim pristupnicama. Ako ga nema,
+   kupac na stranici "Hvala" i u e-mailu dobiva poveznicu na pristupnicu, a u narudžbama piše
+   "Član: ne". Prijava se ne blokira.
+
+Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP adresi protiv
+botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
+
+== Promjene ==
+
+= 1.0.0 =
+* Prva inačica.
