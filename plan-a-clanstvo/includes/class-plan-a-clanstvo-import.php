@@ -117,6 +117,27 @@ final class Plan_A_Clanstvo_Import {
 		);
 	}
 
+	/** Posao bez CSV-a: samo slanje neposlanih članova u tablicu (s trakom napretka). */
+	public static function start_sheet(): void {
+		update_option(
+			self::JOB,
+			array(
+				'rows'  => array(),
+				'pos'   => 0,
+				'names' => array(),
+				'stats' => array(
+					'new'     => 0,
+					'updated' => 0,
+					'skipped' => 0,
+					'ceka'    => 0,
+				),
+				'sheet' => 0,
+				'error' => '',
+			),
+			false
+		);
+	}
+
 	public static function job(): ?array {
 		$job = get_option( self::JOB );
 		return is_array( $job ) && isset( $job['rows'] ) ? $job : null;
@@ -167,10 +188,15 @@ final class Plan_A_Clanstvo_Import {
 			wp_defer_term_counting( false );
 			$phase = 'clanovi';
 		} elseif ( '' !== Plan_A_Clanstvo_Sheets::url() && Plan_A_Clanstvo_Sheets::pending() ) {
-			$r = Plan_A_Clanstvo_Sheets::bulk( true, 50, 10 );
+			// Jedan paket po koraku; stara skripta u tablici je spora pa dobiva male pakete.
+			$r = Plan_A_Clanstvo_Sheets::bulk( true, Plan_A_Clanstvo_Sheets::old_script() ? 5 : 50, 1 );
 			$job['sheet'] += $r['n'];
 			if ( ! $r['ok'] ) {
 				$err = 'Slanje u Google tablicu nije uspjelo: ' . ( $r['error'] ?? '' );
+				if ( false !== stripos( (string) ( $r['error'] ?? '' ), 'timed out' ) ) {
+					update_option( 'plan_a_clanstvo_script_old', 1, false ); // sljedeći put manji paket
+					$err .= ' – Tablica ne odgovara dovoljno brzo. Provjeri je li u tablici nova skripta objavljena kao „New version”, pa klikni Nastavi (šalje se u manjim paketima).';
+				}
 			}
 			$phase = 'tablica';
 		} else {
@@ -201,6 +227,7 @@ final class Plan_A_Clanstvo_Import {
 			'pending' => $pending,
 			'stats'   => $job['stats'],
 			'error'   => $err,
+			'old'     => Plan_A_Clanstvo_Sheets::old_script(),
 		);
 	}
 

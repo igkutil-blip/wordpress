@@ -10,6 +10,9 @@ defined( 'ABSPATH' ) || exit;
 
 final class Plan_A_Clanstvo_Sheets {
 
+	/** Verzija skripte u google-tablica.gs (SCRIPT_VERSION). Starija skripta je spora za pakete. */
+	const SCRIPT_VERSION = 3;
+
 	public static function init() {
 		add_action( 'plan_a_clanstvo_changed', array( __CLASS__, 'send' ) );
 	}
@@ -194,6 +197,7 @@ final class Plan_A_Clanstvo_Sheets {
 					'error' => $res['error'] ?? '',
 				);
 			}
+			update_option( 'plan_a_clanstvo_script_old', (int) ( $res['v'] ?? 0 ) < self::SCRIPT_VERSION ? 1 : 0, false );
 			foreach ( $ids as $id ) {
 				self::sent( (int) $id );
 			}
@@ -205,6 +209,11 @@ final class Plan_A_Clanstvo_Sheets {
 			'ok' => true,
 			'n'  => $total,
 		);
+	}
+
+	/** Je li u tablici stara skripta (prema zadnjem odgovoru). */
+	public static function old_script(): bool {
+		return (bool) get_option( 'plan_a_clanstvo_script_old', 0 );
 	}
 
 	public static function retry() {

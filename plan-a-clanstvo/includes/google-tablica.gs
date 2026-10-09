@@ -8,6 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
+var SCRIPT_VERSION = 3;
 var SHEET_NAME = 'Članovi';
 var HEAD = ['Br.', 'Datum prijave', 'Ime', 'Prezime', 'Datum rođenja', 'OIB', 'Adresa', 'Mjesto, poštanski broj', 'E-mail', 'Mobitel', 'Roditelj ili skrbnik', 'Status', 'Datum potvrde'];
 var KEYS = ['broj', 'prijava', 'ime', 'prezime', 'datum', 'oib', 'adresa', 'mjesto', 'email', 'mobitel', 'roditelj', 'status', 'potvrda'];
@@ -47,6 +48,7 @@ function doPost(e) {
   } catch (err) {
     out = { ok: false, error: String(err) };
   }
+  out.v = SCRIPT_VERSION;
   return json_(out);
 }
 

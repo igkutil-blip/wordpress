@@ -68,9 +68,12 @@ final class Plan_A_Clanstvo_Admin {
 			</p>
 			<?php if ( $job ) : ?>
 				<div id="pac-import" style="max-width:640px;background:#fff;border:1px solid #c3c4c7;border-radius:6px;padding:16px 18px;margin:16px 0" data-nonce="<?php echo esc_attr( wp_create_nonce( 'pac_import_step' ) ); ?>">
-					<h2 style="margin-top:0">Uvoz u tijeku – ne zatvaraj ovu stranicu</h2>
+					<h2 style="margin-top:0"><?php echo $job['rows'] ? 'Uvoz u tijeku' : 'Slanje u Google tablicu'; ?> – ne zatvaraj ovu stranicu</h2>
 					<div style="height:18px;background:#f0f0f1;border-radius:9px;overflow:hidden"><div id="pac-bar" style="height:100%;width:0;background:#2271b1;transition:width .3s"></div></div>
 					<p id="pac-status">Počinjem…</p>
+					<?php if ( Plan_A_Clanstvo_Sheets::old_script() ) : ?>
+						<p style="color:#996800">Tablica je zadnji put odgovorila sporo ili ima staru skriptu, pa se šalje u malim paketima. Za brže slanje u tablicu stavi novu skriptu i objavi je kao „New version”.</p>
+					<?php endif; ?>
 					<p id="pac-error" style="color:#d63638;font-weight:600"></p>
 					<p><button type="button" class="button" id="pac-retry" style="display:none">Nastavi</button>
 					<a class="button-link" style="margin-left:10px;color:#b32d2e" href="<?php echo esc_url( self::action_url( 'import_cancel' ) ); ?>" onclick="return confirm('Prekinuti uvoz? Već uvezeni članovi ostaju.')">Prekini uvoz</a></p>
@@ -80,8 +83,9 @@ final class Plan_A_Clanstvo_Admin {
 					var box = document.getElementById('pac-import'), bar = document.getElementById('pac-bar'), st = document.getElementById('pac-status'), er = document.getElementById('pac-error'), btn = document.getElementById('pac-retry'), fails = 0;
 					function show(d) {
 						var s = d.stats || {};
-						var pct = d.total ? Math.round(d.pos / d.total * (d.pending || d.phase === 'tablica' ? 70 : 100)) : 100;
-						if (d.phase === 'tablica' || (d.pos >= d.total && d.pending)) { pct = 70 + Math.round(30 * (1 - d.pending / Math.max(d.total, 1))); }
+						if (!window.pacStart && d.phase === 'tablica') window.pacStart = d.pending + 50;
+						var pct = d.total ? Math.round(d.pos / d.total * 70) : 0;
+						if (d.phase === 'tablica' || (d.pos >= d.total && d.pending)) { var all = Math.max(d.total, window.pacStart || 1); pct = (d.total ? 70 : 0) + Math.round((d.total ? 30 : 100) * (1 - d.pending / all)); }
 						bar.style.width = Math.min(100, pct) + '%';
 						st.textContent = (d.phase === 'clanovi' ? 'Upisujem članove: ' + d.pos + ' / ' + d.total : 'Šaljem u Google tablicu, preostalo: ' + d.pending) + ' (novih ' + (s.new || 0) + ', ažuriranih ' + (s.updated || 0) + ')';
 					}
@@ -92,7 +96,7 @@ final class Plan_A_Clanstvo_Admin {
 							if (!j || !j.success) throw new Error(j && j.data ? j.data : 'nepoznata greška');
 							var d = j.data; fails = 0; show(d);
 							if (d.error) { er.textContent = d.error; btn.style.display = ''; return; }
-							if (d.done) { bar.style.width = '100%'; st.textContent = 'Gotovo! Novih ' + d.stats.new + ', ažuriranih ' + d.stats.updated + ', preskočenih ' + d.stats.skipped + '. E-mailovi nisu slani.'; setTimeout(function () { location.reload(); }, 2500); return; }
+							if (d.done) { bar.style.width = '100%'; st.textContent = !d.total ? 'Gotovo! Svi članovi su poslani u Google tablicu.' : 'Gotovo! Novih ' + d.stats.new + ', ažuriranih ' + d.stats.updated + ', preskočenih ' + d.stats.skipped + '. E-mailovi nisu slani.'; setTimeout(function () { location.reload(); }, 2500); return; }
 							step();
 						}).catch(function (e) {
 							if (++fails < 4) { setTimeout(step, 2000 * fails); return; }
@@ -395,17 +399,25 @@ final class Plan_A_Clanstvo_Admin {
 				break;
 			case 'ping':
 				$r   = Plan_A_Clanstvo_Sheets::post( array( 'action' => 'ping' ) );
-				$msg = $r['ok'] ? 'Veza radi. Tablica: ' . ( $r['name'] ?? '' ) . ' (list „Članovi”).' : 'Veza ne radi: ' . ( $r['error'] ?? '' );
+				if ( $r['ok'] ) {
+					$old = (int) ( $r['v'] ?? 0 ) < Plan_A_Clanstvo_Sheets::SCRIPT_VERSION;
+					update_option( 'plan_a_clanstvo_script_old', $old ? 1 : 0, false );
+					$msg = 'Veza radi. Tablica: ' . ( $r['name'] ?? '' ) . ' (list „Članovi”). ' . ( $old ? 'POZOR: u tablici je STARA skripta – kopiraj novu i objavi je kao „New version” (Deploy → Manage deployments → Edit).' : 'Skripta je nova (v' . (int) $r['v'] . ').' );
+				} else {
+					$msg = 'Veza ne radi: ' . ( $r['error'] ?? '' );
+				}
 				break;
 			case 'resync':
 				foreach ( get_posts( array( 'post_type' => Plan_A_Clanstvo_Data::CPT, 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids', 'no_found_rows' => true ) ) as $pid ) {
 					update_post_meta( (int) $pid, '_pac_sync', 'pending' );
 				}
-				$msg = self::send_pending();
-				break;
+				Plan_A_Clanstvo_Import::start_sheet();
+				wp_safe_redirect( admin_url( 'edit.php?post_type=' . Plan_A_Clanstvo_Data::CPT . '&page=' . self::SLUG . '-uvoz' ) );
+				exit;
 			case 'pending':
-				$msg = self::send_pending();
-				break;
+				Plan_A_Clanstvo_Import::start_sheet();
+				wp_safe_redirect( admin_url( 'edit.php?post_type=' . Plan_A_Clanstvo_Data::CPT . '&page=' . self::SLUG . '-uvoz' ) );
+				exit;
 			case 'import':
 				$f = $_FILES['csv'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 				if ( ! $f || UPLOAD_ERR_OK !== (int) $f['error'] || ! is_uploaded_file( (string) $f['tmp_name'] ) ) {
@@ -446,16 +458,6 @@ final class Plan_A_Clanstvo_Admin {
 		set_transient( 'pac_notice_' . get_current_user_id(), $msg, 60 );
 		wp_safe_redirect( $back );
 		exit;
-	}
-
-	private static function send_pending(): string {
-		if ( function_exists( 'set_time_limit' ) ) {
-			set_time_limit( 300 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions
-		}
-		$r    = Plan_A_Clanstvo_Sheets::bulk( true, 50, 150 );
-		$left = Plan_A_Clanstvo_Sheets::pending();
-		$msg  = $r['ok'] ? 'U tablicu je poslano članova: ' . $r['n'] . '.' : 'Slanje u tablicu nije uspjelo: ' . ( $r['error'] ?? '' ) . '.';
-		return $msg . ( $left ? ' Još nije poslano: ' . $left . ' – klikni „Pošalji neposlane u tablicu” (ili se pošalju sami, malo po malo, svaki sat).' : '' );
 	}
 
 	public static function notices() {
