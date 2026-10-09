@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.5.2
+Stable tag: 1.5.3
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -88,6 +88,10 @@ ne prikazuju se (filtar plan_a_kosarica_hide_customer_details).
 
 Izlet se može dodati u košaricu više puta (WooCommerce inače javlja "Ne možete dodati još jedan …");
 svaka prijava je zasebna stavka, a sudionici se zbrajaju.
+
+== Povratak na izlet (1.5.3) ==
+
+Kad se kupac tipkom "Natrag" vrati na stranicu izleta, stranica se osvježi (inače gumb za rezervaciju ostane u stanju učitavanja).
 
 == Postavke ==
 

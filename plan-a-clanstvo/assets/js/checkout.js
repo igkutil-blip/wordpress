@@ -72,7 +72,7 @@
 				$rows.each(function () {
 					var f = (this.id || '').replace(/_field$/, '');
 					var ours = fields.indexOf(f) >= 0;
-					var optional = (f === 'billing_company' || f === 'billing_address_2') && !$(this).hasClass('validate-required');
+					var optional = f === 'billing_address_2' && !$(this).hasClass('validate-required');
 					if ((ours && missing.indexOf(f) < 0) || optional) {
 						$(this).addClass('pac-hidden');
 					}
@@ -100,7 +100,7 @@
 
 	function later(key, fn) {
 		clearTimeout(timers[key]);
-		timers[key] = setTimeout(fn, 450);
+		timers[key] = setTimeout(fn, 700);
 	}
 
 	/* Maloljetni kupac: polja roditelja */
@@ -114,6 +114,65 @@
 			show = age >= 0 && age < 18;
 		}
 		$('#pac-buyer-minor').prop('hidden', !show);
+	}
+
+	/* R1 račun (drugi dodatak): kad je označen, njegova polja su obavezna. */
+	var r1 = { $box: $(), rows: [] };
+	function r1Find() {
+		r1.$box = $('.woocommerce-billing-fields .form-row').filter(function () {
+			return /\bR1\b/.test($(this).text()) && $(this).find('input[type=checkbox]').length;
+		}).first().find('input[type=checkbox]').first();
+	}
+	function r1Mark(rows, on) {
+		rows.forEach(function (row) {
+			var $l = $(row).find('label').first();
+			$l.find('.optional').toggle(!on);
+			$l.find('.pac-req').remove();
+			if (on) { $l.append('<abbr class="required pac-req" title="obavezno">*</abbr>'); }
+		});
+	}
+	function r1Guess() {
+		return $('.woocommerce-billing-fields .form-row').filter(function () {
+			var t = $(this).find('label').first().text();
+			return this.offsetParent && $(this).find('.optional').length && (/r1/i.test(this.id) || /tvrtk|OIB|adres/i.test(t)) && this !== r1.$box.closest('.form-row')[0];
+		}).toArray();
+	}
+	function r1Watch() {
+		r1Find();
+		if (!r1.$box.length) { return; }
+		if (r1.$box.is(':checked')) { r1.rows = r1Guess(); r1Mark(r1.rows, true); }
+		r1.$box.off('change.pac').on('change.pac', function () {
+			var $all = $('.woocommerce-billing-fields .form-row');
+			var before = $all.filter(function () { return !!this.offsetParent; }).toArray();
+			var on = $(this).is(':checked');
+			setTimeout(function () {
+				if (on) {
+					var now = $all.filter(function () { return !!this.offsetParent; }).toArray();
+					r1.rows = now.filter(function (r) { return before.indexOf(r) < 0; });
+					if (!r1.rows.length) { r1.rows = r1Guess(); }
+				}
+				r1Mark(r1.rows, on);
+				if (!on) { r1.rows = []; }
+			}, 60);
+		});
+	}
+	function r1Check() {
+		if (!r1.$box.length || !r1.$box.is(':checked')) { return true; }
+		var miss = [];
+		r1.rows.forEach(function (row) {
+			var $i = $(row).find('input, select, textarea').first();
+			var v = $.trim($i.val() || '');
+			var label = $.trim($(row).find('label').first().clone().children().remove().end().text());
+			if (!v) { miss.push(label); }
+			else if (/OIB/i.test(label) && !/^\d{11}$/.test(v)) { miss.push(label + ' (11 znamenki)'); }
+			$(row).toggleClass('woocommerce-invalid', !v);
+		});
+		if (!miss.length) { return true; }
+		$('.pac-r1-err').remove();
+		var $err = $('<ul class="woocommerce-error pac-r1-err" role="alert"><li>Za R1 račun upiši: ' + $('<span>').text(miss.join(', ')).html() + '.</li></ul>');
+		$('form.checkout').prepend($err);
+		$('html, body').animate({ scrollTop: $err.offset().top - 120 }, 300);
+		return false;
 	}
 
 	$(function () {
@@ -139,6 +198,8 @@
 		$form.on('input change', '[name="pac_datum"]', minor);
 		// Woo nakon osvježavanja ponovno iscrta dio stranice; stanje se vraća.
 		$(document.body).on('updated_checkout', function () { buyer(); });
+		r1Watch();
+		$form.on('checkout_place_order', function () { $('.pac-r1-err').remove(); return r1Check(); });
 		if ($('#billing_email').val()) { buyer(); }
 		$('[data-pac-person]').each(function () { if ($(this).find('[data-pac-email]').val()) { person($(this)); } });
 	});

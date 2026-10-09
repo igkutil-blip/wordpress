@@ -124,6 +124,12 @@ final class Plan_A_Kosarica {
 	}
 
 	public static function assets() {
+		if ( is_singular( 'ttbm_tour' ) ) {
+			// Povratak tipkom "Natrag" vraća zapamćenu stranicu s gumbom koji se još "učitava"; osvježi je.
+			wp_register_script( 'plan-a-kosarica-tour', '', array(), PLAN_A_KOSARICA_VERSION, true );
+			wp_enqueue_script( 'plan-a-kosarica-tour' );
+			wp_add_inline_script( 'plan-a-kosarica-tour', 'window.addEventListener("pageshow",function(e){if(e.persisted){location.reload();}});' );
+		}
 		if ( ! self::active_page() ) {
 			return;
 		}
