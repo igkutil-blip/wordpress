@@ -38,7 +38,8 @@ final class Plan_A_Clanstvo_Checkout {
 		if ( ! (int) Plan_A_Clanstvo_Data::value( 'provjera' ) ) {
 			return;
 		}
-		add_filter( 'woocommerce_billing_fields', array( __CLASS__, 'billing_fields' ), 50 );
+		add_filter( 'woocommerce_billing_fields', array( __CLASS__, 'billing_fields' ), 9999 );
+		add_filter( 'woocommerce_checkout_fields', array( __CLASS__, 'checkout_fields' ), 9999 );
 		add_action( 'woocommerce_after_checkout_billing_form', array( __CLASS__, 'buyer_box' ) );
 		add_action( 'woocommerce_checkout_after_customer_details', array( __CLASS__, 'others_box' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ), 40 );
@@ -169,6 +170,13 @@ final class Plan_A_Clanstvo_Checkout {
 			$fields['billing_email']['class']    = array( 'form-row-wide' );
 			$fields['billing_email']['label']    = __( 'E-mail', 'plan-a-clanstvo' );
 			$fields['billing_email']['description'] = __( 'Ako si član Plan A, upiši e-mail iz pristupnice. Ostale podatke upisat ćemo sami.', 'plan-a-clanstvo' );
+		}
+		return $fields;
+	}
+
+	public static function checkout_fields( $fields ) {
+		if ( isset( $fields['billing'] ) ) {
+			$fields['billing'] = self::billing_fields( $fields['billing'] );
 		}
 		return $fields;
 	}

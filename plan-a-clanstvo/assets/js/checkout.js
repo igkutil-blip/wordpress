@@ -72,7 +72,8 @@
 				$rows.each(function () {
 					var f = (this.id || '').replace(/_field$/, '');
 					var ours = fields.indexOf(f) >= 0;
-					if ((ours && missing.indexOf(f) < 0) || (!ours && !$(this).hasClass('validate-required'))) {
+					var optional = (f === 'billing_company' || f === 'billing_address_2') && !$(this).hasClass('validate-required');
+					if ((ours && missing.indexOf(f) < 0) || optional) {
 						$(this).addClass('pac-hidden');
 					}
 				});
@@ -117,6 +118,17 @@
 
 	$(function () {
 		var $form = $('form.checkout');
+		// E-mail na vrh (i kad drugi dodatak promijeni redoslijed polja).
+		function emailFirst() {
+			var $e = $('#billing_email_field');
+			var $wrap = $e.parent();
+			$e.attr('data-priority', 1);
+			if ($wrap.children('.form-row').first()[0] !== $e[0]) {
+				$e.prependTo($wrap);
+			}
+		}
+		emailFirst();
+		$(document.body).on('updated_checkout country_to_state_changed', function () { setTimeout(emailFirst, 0); });
 		// Poruka o članstvu odmah ispod polja za e-mail.
 		$('#pac-buyer-status').appendTo('#billing_email_field');
 		$form.on('input change', '#billing_email', function () { later('buyer', buyer); });
