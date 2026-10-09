@@ -415,7 +415,7 @@ final class Plan_A_Clanstvo_Admin {
 				$msg = 'Postavke su spremljene.';
 				break;
 			case 'ping':
-				$r   = Plan_A_Clanstvo_Sheets::post( array( 'action' => 'ping' ) );
+				$r   = Plan_A_Clanstvo_Sheets::post( array( 'action' => 'ping', 'ag' => Plan_A_Clanstvo_Agency::id() ) );
 				if ( $r['ok'] ) {
 					$old = (int) ( $r['v'] ?? 0 ) < Plan_A_Clanstvo_Sheets::SCRIPT_VERSION;
 					update_option( 'plan_a_clanstvo_script_old', $old ? 1 : 0, false );
@@ -685,7 +685,7 @@ final class Plan_A_Clanstvo_Admin {
 				<?php wp_nonce_field( 'pac_admin_settings_0' ); ?>
 				<table class="form-table">
 					<?php $text( 'sheet_url', 'Web app URL tablice', 'npr. https://script.google.com/macros/s/…/exec', 'large-text' ); ?>
-					<?php $text( 'agency_url', 'Tablica za agenciju', 'Poveznica Google tablice „Prijave na izlete” (iz adresne trake, https://docs.google.com/spreadsheets/d/…). Tablicu mora moći uređivati isti Google račun koji je objavio skriptu. List „Prijave” napravi se sam.', 'large-text' ); ?>
+					<?php $text( 'agency_url', 'Tablica za agenciju', 'Poveznica Google tablice „Prijave na izlete” (iz adresne trake, https://docs.google.com/spreadsheets/d/…). Tablicu mora moći uređivati isti Google račun koji je objavio skriptu. List „Prijave” napravi se sam. Kad agencija označi „Uplaćeno” kod svih osoba iz narudžbe, narudžba postaje „Završeno” i kupac dobiva e-mail; maknuta kvačica vraća je na čekanje bez e-maila (u Apps Scriptu jednom pokreni <code>ukljuciBrzoOsvjezavanje</code>).', 'large-text' ); ?>
 				</table>
 
 				<h2>2. Članarina i 2D kod</h2>

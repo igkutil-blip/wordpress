@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.8.0 =
+* Uplata iz tablice za agenciju: kad agencija označi „Uplaćeno” kod svih osoba iz narudžbe, narudžba postaje „Završeno” i kupac dobiva e-mail „Uplata je zaprimljena, vidimo se na izletu”. Maknuta kvačica vraća narudžbu na čekanje (bez e-maila). Kartično plaćene i otkazane narudžbe se ne diraju. Stranica više ne briše kvačicu „Uplaćeno” kod neplaćenih narudžbi. Za svaki slučaj stranica kvačice čita i svaki sat. Skripta v8.
 
 = 1.7.0 =
 * Brzo osvježavanje: tablica članova javlja stranici čim se označi kvačica za članarinu ili iskaznicu (okidač u Apps Scriptu, funkcija ukljuciBrzoOsvjezavanje), a stranica odmah osvježi tablicu za agenciju. Skripta v7.

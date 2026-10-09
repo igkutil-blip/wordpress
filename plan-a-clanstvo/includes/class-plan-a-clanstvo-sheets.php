@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 final class Plan_A_Clanstvo_Sheets {
 
 	/** Verzija skripte u google-tablica.gs (SCRIPT_VERSION). Starija skripta je spora za pakete. */
-	const SCRIPT_VERSION = 7;
+	const SCRIPT_VERSION = 8;
 
 	const ROUTE = 'plan-a-clanstvo/v1';
 
@@ -22,7 +22,7 @@ final class Plan_A_Clanstvo_Sheets {
 
 	public static function script(): string {
 		$code = (string) file_get_contents( PLAN_A_CLANSTVO_DIR . 'includes/google-tablica.gs' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-		return str_replace( array( '{{SECRET}}', '{{SITE}}' ), array( Plan_A_Clanstvo_Data::secret(), rest_url( self::ROUTE . '/kvacice' ) ), $code );
+		return str_replace( array( '{{SECRET}}', '{{SITE}}', '{{AG}}' ), array( Plan_A_Clanstvo_Data::secret(), rest_url( self::ROUTE . '/kvacice' ), Plan_A_Clanstvo_Agency::id() ), $code );
 	}
 
 	public static function url(): string {
@@ -288,7 +288,7 @@ final class Plan_A_Clanstvo_Sheets {
 		return $done;
 	}
 
-	/** Tablica članova javlja promjenu kvačica (okidač u Apps Scriptu). */
+	/** Tablica članova (ili agencije) javlja promjenu kvačica (okidač u Apps Scriptu). */
 	public static function routes() {
 		register_rest_route(
 			self::ROUTE,
@@ -305,6 +305,10 @@ final class Plan_A_Clanstvo_Sheets {
 		$d = (array) $req->get_json_params();
 		if ( ! hash_equals( Plan_A_Clanstvo_Data::secret(), (string) ( $d['secret'] ?? '' ) ) ) {
 			return new WP_REST_Response( array( 'ok' => false ), 403 );
+		}
+		if ( isset( $d['ag'] ) ) {
+			$n = Plan_A_Clanstvo_Agency::apply_paid( (array) $d['ag'] );
+			return new WP_REST_Response( array( 'ok' => true, 'n' => $n ), 200 );
 		}
 		$rows = array_slice( (array) ( $d['rows'] ?? array() ), 0, 500 );
 		$done = self::apply( array_filter( $rows, 'is_array' ) );

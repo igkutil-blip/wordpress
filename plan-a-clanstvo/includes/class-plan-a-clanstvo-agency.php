@@ -7,6 +7,8 @@
  *   se ne vraća.
  * - Uplaćeno, Pristupnica, Članarina (za godinu izleta) i Iskaznica osvježavaju se: uplata
  *   iz narudžbe, članarina i iskaznica iz tablice članova.
+ * - Uplaćeno označava i agencija: kad su označene sve osobe iz narudžbe, narudžba postaje
+ *   "Završeno" (kupac dobiva e-mail). Maknuta kvačica vraća narudžbu na čekanje bez e-maila.
  * - Rezervacije jedrenja se preskaču.
  *
  * Tablicu vodi ista skripta kao tablicu članova (SpreadsheetApp.openById).
@@ -22,6 +24,7 @@ final class Plan_A_Clanstvo_Agency {
 	const TOURS = 'plan_a_clanstvo_ag_tours'; // ključ bloka => 1 (već poslan)
 	const DIRTY = 'plan_a_clanstvo_ag_dirty'; // narudžbe kojima treba osvježiti stanje
 	const META  = '_pac_ag';                  // narudžba: pending | sent
+	const PAID  = '_pac_ag_paid';             // narudžba: završena kvačicom agencije
 
 	public static function init() {
 		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'queue' ), 30, 1 );
@@ -373,7 +376,7 @@ final class Plan_A_Clanstvo_Agency {
 					$o             = wc_get_order( $oid );
 					$cache[ $oid ] = $o ? array( $o->is_paid(), $o->has_status( array( 'cancelled', 'refunded', 'failed' ) ) ) : array( null, false );
 				}
-				$it['u'] = $cache[ $oid ][0];
+				$it['u'] = $cache[ $oid ][0] ? true : null; // neplaćenu ne diraj: kvačicu stavlja agencija
 				$it['x'] = $cache[ $oid ][1];
 			}
 			$items[] = $it;
@@ -413,8 +416,50 @@ final class Plan_A_Clanstvo_Agency {
 		if ( ! self::enabled() ) {
 			return array( 'ok' => false, 'error' => 'Tablica za agenciju nije povezana.' );
 		}
+		self::pull_paid();
 		self::run();
 		return self::send_status();
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Uplata koju je označila agencija                                     */
+	/* ------------------------------------------------------------------ */
+
+	/**
+	 * Kvačice „Uplaćeno” iz tablice: orders [{o: ID narudžbe, paid: označene sve osobe}].
+	 * Plaćena → "Završeno" (WooCommerce šalje kupcu e-mail). Maknuta kvačica → "Na čekanju",
+	 * ali samo ako je narudžbu završila agencija. Kartično plaćene i otkazane se ne diraju.
+	 */
+	public static function apply_paid( array $orders ): int {
+		$n = 0;
+		foreach ( array_slice( $orders, 0, 1000 ) as $it ) {
+			$order = is_array( $it ) ? wc_get_order( (int) ( $it['o'] ?? 0 ) ) : null;
+			if ( self::skip( $order ) || ! $order->get_meta( self::META ) || $order->has_status( array( 'cancelled', 'refunded', 'failed', 'checkout-draft', 'trash' ) ) ) {
+				continue;
+			}
+			if ( ! empty( $it['paid'] ) ) {
+				if ( $order->is_paid() ) {
+					continue;
+				}
+				$order->update_meta_data( self::PAID, current_time( 'mysql' ) );
+				$order->update_status( 'completed', 'Uplatu je potvrdila agencija (kvačica „Uplaćeno” u tablici „Prijave na izlete”).' );
+				++$n;
+			} elseif ( '' !== (string) $order->get_meta( self::PAID ) && $order->has_status( 'completed' ) ) {
+				$order->delete_meta_data( self::PAID );
+				$order->update_status( 'on-hold', 'Agencija je maknula kvačicu „Uplaćeno” – narudžba je vraćena na čekanje (kupcu nije poslan e-mail).' );
+				++$n;
+			}
+		}
+		return $n;
+	}
+
+	/** Svaki sat: pročitaj kvačice „Uplaćeno” (ako javljanje iz tablice nije stiglo). */
+	public static function pull_paid(): array {
+		$res = self::post( array( 'action' => 'ag_paid' ) );
+		if ( ! $res['ok'] || ! isset( $res['orders'] ) || ! is_array( $res['orders'] ) ) {
+			return array( 'ok' => false, 'n' => 0, 'error' => $res['error'] ?? '' );
+		}
+		return array( 'ok' => true, 'n' => self::apply_paid( $res['orders'] ) );
 	}
 
 	/* ------------------------------------------------------------------ */
