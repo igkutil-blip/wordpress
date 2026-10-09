@@ -121,6 +121,7 @@ final class Plan_A_Jedrenje_Admin {
 	private static function save_calendar() {
 		$weeks  = Plan_A_Jedrenje_Data::week_overrides();
 		$closed = (array) ( $_POST['closed'] ?? array() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput -- provjereno u action(), čisti se ispod.
+		$asked  = (array) ( $_POST['request'] ?? array() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput -- samo provjera je li polje poslano.
 		$prices = (array) ( $_POST['price'] ?? array() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput
 		$shown  = array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['weeks'] ?? array() ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		foreach ( $shown as $week ) {
@@ -131,6 +132,9 @@ final class Plan_A_Jedrenje_Admin {
 			$entry = array();
 			if ( ! empty( $closed[ $week ] ) ) {
 				$entry['closed'] = 1;
+			}
+			if ( ! empty( $asked[ $week ] ) ) {
+				$entry['request'] = 1;
 			}
 			$price = self::money_in( wp_unslash( $prices[ $week ] ?? '' ) );
 			if ( $price > 0 ) {
@@ -505,7 +509,7 @@ final class Plan_A_Jedrenje_Admin {
 			'booked'  => 'Zauzeto',
 			'past'    => 'Prošlo',
 		);
-		echo '<p>Sezona se podešava u kartici Postavke, cijene razdoblja u kartici Cjenik. Ovdje možeš tjedan ručno zatvoriti (npr. brod je zauzet izvan weba) ili mu upisati drugu cijenu, koja ima prednost.</p>';
+		echo '<p>Sezona se podešava u kartici Postavke, cijene razdoblja u kartici Cjenik. Ovdje možeš tjedan ručno zatvoriti (npr. brod je zauzet izvan weba), označiti ga „Na upitu” (kupci ga vide narančasto i još mogu poslati zahtjev) ili mu upisati drugu cijenu, koja ima prednost. Ako su označena oba, vrijedi „zatvoren”.</p>';
 		echo self::form_open( 'calendar', 'kalendar' ); // phpcs:ignore WordPress.Security.EscapeOutput
 		foreach ( Plan_A_Jedrenje_Data::years() as $year ) {
 			list( $first, $last ) = Plan_A_Jedrenje_Data::season( $year );
@@ -514,13 +518,14 @@ final class Plan_A_Jedrenje_Admin {
 				continue; // sezona je prošla
 			}
 			echo '<h2>Sezona ' . (int) $year . '. <small style="font-weight:400">(' . esc_html( Plan_A_Jedrenje_Data::numeric( $first ) . ' – ' . Plan_A_Jedrenje_Data::numeric( $last ) ) . ')</small></h2>';
-			echo '<table class="widefat striped paj-table"><thead><tr><th>Tjedan</th><th>Cijena (za cijeli brod)</th><th>Odakle</th><th>Stanje</th><th>Zatvori tjedan</th><th>Ručna cijena</th></tr></thead><tbody>';
+			echo '<table class="widefat striped paj-table"><thead><tr><th>Tjedan</th><th>Cijena (za cijeli brod)</th><th>Odakle</th><th>Stanje</th><th>Ručno stanje</th><th>Ručna cijena</th></tr></thead><tbody>';
 			foreach ( $weeks as $week ) {
 				$price  = Plan_A_Jedrenje_Data::price( $week );
 				$state  = Plan_A_Jedrenje_Data::state( $week );
 				$closed = ! empty( $over[ $week ]['closed'] );
+				$asked  = ! empty( $over[ $week ]['request'] );
 				$who    = Plan_A_Jedrenje_Booking::for_week( $week, array( 'zahtjev', 'potvrdeno', 'rezervirano', 'placeno' ) );
-				$label  = $closed ? 'Zatvoreno ručno' : $names[ $state ];
+				$label  = $closed ? 'Zatvoreno ručno' : $names[ $state ] . ( $asked && 'request' === $state && ! Plan_A_Jedrenje_Booking::for_week( $week, array( 'zahtjev', 'potvrdeno' ) ) ? ' (ručno)' : '' );
 				if ( $who ) {
 					$label .= ' – ' . implode( ', ', array_map( array( 'Plan_A_Jedrenje_Booking', 'name' ), $who ) );
 				}
@@ -529,7 +534,8 @@ final class Plan_A_Jedrenje_Admin {
 					. '<td>' . esc_html( Plan_A_Jedrenje_Data::money( $price['price'] ) ) . ( $price['regular'] ? ' <del>' . esc_html( Plan_A_Jedrenje_Data::money( $price['regular'] ) ) . '</del>' : '' ) . '</td>'
 					. '<td>' . esc_html( $price['label'] ) . '</td>'
 					. '<td class="paj-st-' . esc_attr( $closed ? 'booked' : $state ) . '">' . esc_html( $label ) . '</td>'
-					. '<td><label><input type="checkbox" name="closed[' . esc_attr( $week ) . ']" value="1"' . checked( $closed, true, false ) . '> zatvoren</label></td>'
+					. '<td><label style="display:block"><input type="checkbox" name="closed[' . esc_attr( $week ) . ']" value="1"' . checked( $closed, true, false ) . '> zatvoren</label>'
+					. '<label style="display:block;margin-top:4px"><input type="checkbox" name="request[' . esc_attr( $week ) . ']" value="1"' . checked( $asked, true, false ) . '> na upitu</label></td>'
 					. '<td><input type="text" name="price[' . esc_attr( $week ) . ']" value="' . esc_attr( isset( $over[ $week ]['price'] ) ? (string) $over[ $week ]['price'] : '' ) . '" placeholder="npr. 5800" inputmode="decimal"> €</td></tr>';
 			}
 			echo '</tbody></table>';

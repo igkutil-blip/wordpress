@@ -5,7 +5,7 @@
  * Opcije:
  *   plan_a_jedrenje         postavke programa (vidi defaults())
  *   plan_a_jedrenje_periods cjenik po razdobljima: [ [name, from, to, price, regular], … ]
- *   plan_a_jedrenje_weeks   ručno po tjednu: [ 'Y-m-d' => [ 'closed' => 1, 'price' => 5800 ] ]
+ *   plan_a_jedrenje_weeks   ručno po tjednu: [ 'Y-m-d' => [ 'closed' => 1, 'request' => 1, 'price' => 5800 ] ]
  *
  * @package Plan_A_Jedrenje
  */
@@ -441,7 +441,12 @@ final class Plan_A_Jedrenje_Data {
 		if ( ! empty( $over['closed'] ) ) {
 			return 'booked';
 		}
-		return self::reservation_states()[ $start ] ?? 'free';
+		$state = self::reservation_states()[ $start ] ?? 'free';
+		// Ručno "Na upitu": kupci ga vide narančasto i mogu poslati zahtjev; rezervacija ima prednost.
+		if ( 'free' === $state && ! empty( $over['request'] ) ) {
+			return 'request';
+		}
+		return $state;
 	}
 
 	/**
