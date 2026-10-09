@@ -73,6 +73,12 @@ barkod), ispod se dodaju podaci za ručnu uplatu koje ispisuje sam WSB HUB3.
 Ako dodatak za uplatnicu u e-mail ne ispisuje podatke za ručnu uplatu kao tekst, e-mail
 sadrži poveznicu na stranicu narudžbe s tim podacima.
 
+== E-mail vama: Nova narudžba (1.5.0) ==
+
+E-mail "Nova narudžba" ima isti izgled kao e-mailovi kupcu: izlet, ukupno i je li plaćeno, kupac
+(mobitel i e-mail su poveznice), blok "Članstvo Plan A" (puni ga dodatak Plan A članstvo preko
+filtra plan_a_kosarica_member_rows) i gumb "Otvori narudžbu". Naslov: "Nova prijava #… – kupac – izlet".
+
 == Postavke ==
 
 Postavke → Plan A košarica: uključivanje, koraci (koraci teme Flatsome se tada skrivaju),
