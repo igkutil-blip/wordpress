@@ -1284,3 +1284,9 @@ div.papl[data-papl] .papl-summary {
 		width: 100%;
 	}
 }
+
+.papl .paiz-price-unit {
+	color: #5f6b77;
+	font-size: 0.85em;
+	font-weight: 400;
+}

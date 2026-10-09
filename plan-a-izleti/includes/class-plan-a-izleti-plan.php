@@ -282,6 +282,16 @@ final class Plan_A_Izleti_Plan {
 			}
 		}
 
+		/**
+		 * Retci plana prije slaganja (npr. dodatak Plan A jedrenje mijenja tjedne svog izleta
+		 * jednim retkom za cijelu sezonu). Redak: key, entry, tour, from, to, title, guides,
+		 * note, sold_out, auto.
+		 *
+		 * @param array[] $rows
+		 * @param string  $since Najraniji datum u planu.
+		 */
+		$rows = array_values( (array) apply_filters( 'plan_a_izleti_plan_rows', $rows, $since ) );
+
 		usort(
 			$rows,
 			static function ( $a, $b ) {
@@ -338,6 +348,13 @@ final class Plan_A_Izleti_Plan {
 			}
 		}
 		return array_unique( $out );
+	}
+
+	/**
+	 * Redak dulji od mjesec dana (npr. cijela sezona jedrenja, tjedan po izboru).
+	 */
+	public static function long_row( array $row ): bool {
+		return strtotime( $row['to'] . ' 12:00:00 UTC' ) - strtotime( $row['from'] . ' 12:00:00 UTC' ) > 31 * DAY_IN_SECONDS;
 	}
 
 	/**

@@ -557,7 +557,7 @@ final class Plan_A_Izleti_Shortcode {
 		$id        = (int) $tour['id'];
 		$source_id = Plan_A_Izleti_Data::source_id( $id );
 		$title     = get_the_title( $id );
-		$url       = get_permalink( $id );
+		$url       = Plan_A_Izleti_Data::tour_url( $id );
 		$country   = self::get_country( $id, $source_id )['value'];
 		$duration  = self::get_duration( $id );
 		$price     = self::get_price_html( $id, $source_id );
@@ -829,12 +829,16 @@ final class Plan_A_Izleti_Shortcode {
 			? TTBM_Function::get_tour_start_price( $source_id )
 			: get_post_meta( $source_id, 'ttbm_travel_start_price', true );
 		if ( ! is_numeric( $price ) || (float) $price <= 0 ) {
-			return '';
+			$html = '';
+		} elseif ( function_exists( 'wc_price' ) ) {
+			$html = (string) wc_price( (float) $price );
+		} else {
+			$html = esc_html( number_format_i18n( (float) $price, 2 ) );
 		}
-		if ( function_exists( 'wc_price' ) ) {
-			return (string) wc_price( (float) $price );
-		}
-		return esc_html( number_format_i18n( (float) $price, 2 ) );
+		/**
+		 * HTML početne cijene (dopušteni samo span s klasom i bdi).
+		 */
+		return (string) apply_filters( 'plan_a_izleti_price_html', $html, $id );
 	}
 
 	/**

@@ -29,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
 final class Plan_A_Izleti_Data {
 
 	const CACHE_KEY     = 'plan_a_izleti_cache';
-	const CACHE_VERSION = 4;
+	const CACHE_VERSION = 5;
 
 	public static function init() {
 		add_action( 'save_post_' . self::post_type(), array( __CLASS__, 'flush_cache' ) );
@@ -319,7 +319,32 @@ final class Plan_A_Izleti_Data {
 		}
 		sort( $dates );
 
-		return $dates;
+		/**
+		 * Termini izleta (npr. dodatak Plan A jedrenje daje slobodne tjedne svog izleta).
+		 *
+		 * @param string[] $dates   Sortirani datumi 'Y-m-d'.
+		 * @param int      $tour_id Izlet.
+		 */
+		$filtered = apply_filters( 'plan_a_izleti_tour_dates', $dates, $tour_id );
+		if ( $filtered !== $dates && is_array( $filtered ) ) {
+			$dates = array();
+			foreach ( $filtered as $value ) {
+				if ( is_string( $value ) && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) {
+					$dates[ $value ] = $value;
+				}
+			}
+			sort( $dates );
+		}
+
+		return array_values( $dates );
+	}
+
+	/**
+	 * Adresa izleta na webu (filtar: npr. izlet jedrenja vodi na stranicu s rezervacijom).
+	 */
+	public static function tour_url( int $id ): string {
+		$url = (string) get_permalink( $id );
+		return (string) apply_filters( 'plan_a_izleti_tour_url', $url, $id );
 	}
 
 	/**

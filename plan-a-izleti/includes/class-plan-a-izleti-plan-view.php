@@ -109,7 +109,7 @@ final class Plan_A_Izleti_Plan_View {
 		if ( ! $img ) {
 			$img = '<span class="papl-media__empty" aria-hidden="true"><svg viewBox="0 0 120 60" width="120" height="60" fill="none"><path d="M0 60 30 22l14 16 22-30 54 52z" fill="rgba(255,255,255,.18)"/><path d="M0 60l40-26 18 12 26-20 36 34z" fill="rgba(255,255,255,.28)"/></svg></span>';
 		}
-		$url  = $row['tour'] ? get_permalink( $row['tour'] ) : '';
+		$url  = $row['tour'] ? Plan_A_Izleti_Data::tour_url( $row['tour'] ) : '';
 		$open = $url ? '<a class="papl-media" href="' . esc_url( $url ) . '" tabindex="-1" aria-hidden="true">' : '<div class="papl-media">';
 		return $open . $img . self::date_block( $row ) . ( $url ? '</a>' : '</div>' );
 	}
@@ -149,7 +149,7 @@ final class Plan_A_Izleti_Plan_View {
 	}
 
 	private static function row_html( array $row, string $status, string $today, bool $images = false, bool $next = false ): string {
-		$url    = $row['tour'] ? get_permalink( $row['tour'] ) : '';
+		$url    = $row['tour'] ? Plan_A_Izleti_Data::tour_url( $row['tour'] ) : '';
 		$range  = self::date_range( $row['from'], $row['to'] );
 		$title  = esc_html( $row['title'] );
 		$labels = array(
@@ -206,7 +206,7 @@ final class Plan_A_Izleti_Plan_View {
 				$form_id = 'papl-n-' . $row['entry'];
 				$html   .= '<button type="button" class="papl-btn papl-btn--ghost" data-papl-notify aria-expanded="false" aria-controls="' . esc_attr( $form_id ) . '">' . self::icon( 'bell' ) . 'Javi mi kad bude objavljen</button>';
 			}
-			$html .= '<details class="papl-addcal">'
+			$html .= Plan_A_Izleti_Plan::long_row( $row ) ? '' : '<details class="papl-addcal">'
 				. '<summary class="papl-ics" title="Dodaj u svoj kalendar" aria-label="' . esc_attr( 'Dodaj u svoj kalendar: ' . $row['title'] ) . '">' . self::icon( 'add' ) . '<span class="papl-ics__text">U kalendar</span></summary>'
 				. '<div class="papl-cal__menu papl-addcal__menu">'
 				. '<p class="papl-cal__hint">Dodaj ovaj izlet u svoj kalendar:</p>'

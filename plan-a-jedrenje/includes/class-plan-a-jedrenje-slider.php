@@ -33,6 +33,17 @@ final class Plan_A_Jedrenje_Slider {
 		if ( $id < 0 ) {
 			return 0; // slajder isključen
 		}
+		return self::detect();
+	}
+
+	public static function valid_tour( int $id ): bool {
+		return $id > 0 && get_post_type( $id ) === self::tour_type() && 'publish' === get_post_status( $id );
+	}
+
+	/**
+	 * Prvi objavljeni izlet s "jedren" u nazivu i barem jednom slikom (spremljeno na sat).
+	 */
+	public static function detect(): int {
 		$found = get_transient( 'paj_gallery_tour' );
 		if ( false === $found ) {
 			$found = 0;

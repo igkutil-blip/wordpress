@@ -67,8 +67,11 @@ final class Plan_A_Izleti_Plan_Ics {
 			'X-PUBLISHED-TTL:PT6H',
 		);
 		foreach ( $rows as $row ) {
+			if ( Plan_A_Izleti_Plan::long_row( $row ) ) {
+				continue; // npr. sezona jedrenja: događaj od više mjeseci nije koristan u kalendaru
+			}
 			$status = Plan_A_Izleti_Plan::status( $row, $today );
-			$url    = $row['tour'] ? get_permalink( $row['tour'] ) : '';
+			$url    = $row['tour'] ? Plan_A_Izleti_Data::tour_url( $row['tour'] ) : '';
 			$desc   = array();
 			if ( $row['guides'] ) {
 				$desc[] = 'Vodiči: ' . $row['guides'];

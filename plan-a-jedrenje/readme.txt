@@ -1,7 +1,7 @@
 === Plan A jedrenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.4.1
+Stable tag: 1.5.0
 License: GPLv2 or later
 
 Rezervacija tjednog jedrenja za ekipu (subota–subota) u terminu koji kupac bira.
@@ -47,6 +47,13 @@ i na stranici iz predmemorije. Ipak izuzmi:
 Košarica, naplata i "Moj račun" već moraju biti izuzeti zbog WooCommercea.
 
 == Promjene ==
+
+= 1.5.0 =
+* Jedrenje u popisu izleta i planu izleta (treba Plan A izleti 1.20.0 ili noviji). Izlet jedrenja
+  iz WpTravellyja (Postavke → Popis i plan izleta) ostaje kartica u popisu, ali s terminima i cijenom
+  iz kalendara jedrenja ("od 5.600 € za cijeli brod"), a kartica, plan i "Predloži ekipi" vode na
+  stranicu s rezervacijom. U planu izleta jedrenje je jedan redak za cijelu sezonu.
+* Popis i plan se osvježe čim se promijeni tjedan, cijena ili rezervacija.
 
 = 1.4.1 =
 * U uvodu svaka ruta u svom retku: podebljano "Ruta A:", pa otoci (Šolta, Brač, Hvar, Vis).

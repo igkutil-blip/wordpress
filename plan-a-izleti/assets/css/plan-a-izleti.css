@@ -469,6 +469,15 @@
 	font-weight: 700;
 }
 
+/* Dodatak uz cijenu, npr. "za cijeli brod" (jedrenje) */
+.paiz .paiz-price-unit {
+	display: block;
+	color: var(--paiz-muted, #5f6b77);
+	font-size: 0.72em;
+	font-weight: 400;
+	white-space: normal;
+}
+
 /* Otkrivanje kartica gumbom "Prikaži još izleta" */
 .paiz .paiz-card.is-entering {
 	opacity: 0;

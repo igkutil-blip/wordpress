@@ -96,7 +96,7 @@ final class Plan_A_Izleti_Share {
 	 * Poveznica na izlet s oznakama za statistiku posjeta.
 	 */
 	public static function share_url( int $id ): string {
-		return add_query_arg( self::UTM, get_permalink( $id ) );
+		return add_query_arg( self::UTM, Plan_A_Izleti_Data::tour_url( $id ) );
 	}
 
 	/**
