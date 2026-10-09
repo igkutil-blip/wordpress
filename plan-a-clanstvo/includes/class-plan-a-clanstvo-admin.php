@@ -295,6 +295,12 @@ final class Plan_A_Clanstvo_Admin {
 				Plan_A_Clanstvo_Data::set( $s );
 				$msg = 'Napravljen je novi ključ. Kopiraj novu skriptu u tablicu i ponovno je objavi (Deploy → Manage deployments → Edit → New version).';
 				break;
+			case 'testmail':
+				$to  = wp_get_current_user()->user_email;
+				$ok  = Plan_A_Clanstvo_Mail::send( $to, 'Plan A – probni e-mail pristupnice', Plan_A_Clanstvo_Mail::wrap( 'Probni e-mail', Plan_A_Clanstvo_Mail::p( 'Ako čitaš ovo, e-mailovi pristupnice stižu.' ) ) );
+				$h   = Plan_A_Clanstvo_Mail::headers();
+				$msg = $ok ? 'Probni e-mail je predan na slanje na ' . $to . ' (pošiljatelj: ' . substr( $h[1], 6 ) . '). Ako ne stigne za nekoliko minuta, provjeri SMTP postavke stranice.' : 'Slanje nije uspjelo: ' . (string) get_option( 'plan_a_clanstvo_mail_error', '' );
+				break;
 			case 'export':
 				self::export();
 				exit;
@@ -389,6 +395,13 @@ final class Plan_A_Clanstvo_Admin {
 			<p>Pristupnica se prikazuje shortcodeom <code>[plan-a-pristupnica]</code> (u Flatsome HTML bloku). <?php echo $page ? 'Stranica: <a href="' . esc_url( get_permalink( $page ) ) . '" target="_blank">' . esc_html( get_the_title( $page ) ) . '</a>.' : 'Shortcode još nije ni na jednoj stranici.'; ?> Članova: <?php echo (int) ( $count->publish ?? 0 ); ?>.</p>
 			<p>
 				<a class="button" href="<?php echo esc_url( self::action_url( 'export' ) ); ?>">Preuzmi popis (CSV za Excel)</a>
+				<a class="button" href="<?php echo esc_url( self::action_url( 'testmail' ) ); ?>">Pošalji mi probni e-mail</a>
+				<?php
+				$paj_last = get_option( 'plan_a_clanstvo_last_mail' );
+				if ( is_array( $paj_last ) ) {
+					echo '<span class="description" style="margin-left:8px">Zadnji e-mail: ' . esc_html( Plan_A_Clanstvo_Data::hr_datetime( (string) $paj_last['time'] ) . ' → ' . $paj_last['to'] . ( $paj_last['ok'] ? ' (predan na slanje)' : ' – GREŠKA: ' . $paj_last['error'] ) ) . '</span>';
+				}
+				?>
 			</p>
 
 			<h2>1. Google tablica</h2>

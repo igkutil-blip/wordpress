@@ -38,6 +38,12 @@ final class Plan_A_Clanstvo_Data {
 		add_action( 'init', array( __CLASS__, 'register' ) );
 		add_action( self::CRON, array( __CLASS__, 'cron' ) );
 		add_action( 'before_delete_post', array( __CLASS__, 'before_delete' ) );
+		add_action(
+			'wp_mail_failed',
+			static function ( $error ) {
+				update_option( 'plan_a_clanstvo_mail_error', is_wp_error( $error ) ? $error->get_error_message() : 'nepoznata greška', false );
+			}
+		);
 		add_filter( 'wp_privacy_personal_data_exporters', array( __CLASS__, 'exporters' ) );
 		add_filter( 'wp_privacy_personal_data_erasers', array( __CLASS__, 'erasers' ) );
 		if ( ! wp_next_scheduled( self::CRON ) ) {

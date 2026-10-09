@@ -65,11 +65,29 @@ final class Plan_A_Jedrenje_Mail {
 		return $body . self::organizer_html() . '</div></body></html>';
 	}
 
+	/**
+	 * Pošiljatelj kao u e-mailovima WooCommercea (npr. info@srd-plan-a.hr), a ne zadani
+	 * wordpress@…, koji poslužitelji pošte često odbace.
+	 */
+	public static function headers(): array {
+		$from = sanitize_email( (string) get_option( 'woocommerce_email_from_address', '' ) );
+		if ( ! is_email( $from ) ) {
+			$from = sanitize_email( (string) get_option( 'admin_email' ) );
+		}
+		$name = trim( wp_strip_all_tags( (string) get_option( 'woocommerce_email_from_name', '' ) ) ) ?: 'Plan A';
+		$name = str_replace( array( '"', "\r", "\n" ), '', $name );
+		return array(
+			'Content-Type: text/html; charset=UTF-8',
+			'From: "' . $name . '" <' . $from . '>',
+			'Reply-To: ' . $from,
+		);
+	}
+
 	public static function send( string $to, string $subject, string $body ): bool {
 		if ( ! is_email( $to ) ) {
 			return false;
 		}
-		return (bool) wp_mail( $to, $subject, $body, array( 'Content-Type: text/html; charset=UTF-8' ) );
+		return (bool) wp_mail( $to, $subject, $body, self::headers() );
 	}
 
 	public static function terms_html(): string {

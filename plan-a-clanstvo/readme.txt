@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -34,6 +34,11 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.1.2 =
+* E-mailovi se šalju s adrese pošiljatelja iz WooCommercea (npr. info@srd-plan-a.hr) umjesto
+  wordpress@…, koju poslužitelji pošte često odbace. Gumb "Pošalji mi probni e-mail" i zapis
+  zadnjeg poslanog e-maila u Postavkama.
 
 = 1.1.1 =
 * Poveznica za potvrdu i napomena na naplati vode na objavljenu stranicu sa shortcodeom

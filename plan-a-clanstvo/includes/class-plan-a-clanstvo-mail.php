@@ -28,11 +28,31 @@ final class Plan_A_Clanstvo_Mail {
 		return '<p style="margin:22px 0 22px;text-align:center"><a href="' . esc_url( $url ) . '" style="display:inline-block;padding:16px 30px;border-radius:999px;background:#e8862a;color:#fff;font-size:18px;font-weight:bold;text-decoration:none">' . esc_html( $label ) . '</a></p>';
 	}
 
+	/**
+	 * Pošiljatelj kao u e-mailovima WooCommercea (npr. info@srd-plan-a.hr), a ne zadani
+	 * wordpress@…, koji poslužitelji pošte često odbace.
+	 */
+	public static function headers(): array {
+		$from = sanitize_email( (string) get_option( 'woocommerce_email_from_address', '' ) );
+		if ( ! is_email( $from ) ) {
+			$from = sanitize_email( (string) get_option( 'admin_email' ) );
+		}
+		$name = trim( wp_strip_all_tags( (string) get_option( 'woocommerce_email_from_name', '' ) ) ) ?: 'Plan A';
+		$name = str_replace( array( '"', "\r", "\n" ), '', $name );
+		return array(
+			'Content-Type: text/html; charset=UTF-8',
+			'From: "' . $name . '" <' . $from . '>',
+			'Reply-To: ' . $from,
+		);
+	}
+
 	public static function send( string $to, string $subject, string $html, array $attachments = array() ): bool {
 		if ( ! is_email( $to ) ) {
 			return false;
 		}
-		return (bool) wp_mail( $to, $subject, $html, array( 'Content-Type: text/html; charset=UTF-8' ), $attachments );
+		$ok = (bool) wp_mail( $to, $subject, $html, self::headers(), $attachments );
+		update_option( 'plan_a_clanstvo_last_mail', array( 'time' => current_time( 'mysql' ), 'to' => $to, 'ok' => $ok, 'error' => $ok ? '' : (string) get_option( 'plan_a_clanstvo_mail_error', '' ) ), false );
+		return $ok;
 	}
 
 	/**
