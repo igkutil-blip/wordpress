@@ -29,11 +29,10 @@ function doPost(e) {
       if (d.action === 'ping') {
         out = { ok: true, name: SpreadsheetApp.getActive().getName() };
       } else if (d.action === 'upsert') {
-        upsert_(sh, d.row, d.godine || [], d.iskaznica, d.napomena);
+        upsertMany_(sh, [d]);
         out = { ok: true };
       } else if (d.action === 'bulk') {
-        (d.rows || []).forEach(function (r) { upsert_(sh, r.row, r.godine || [], r.iskaznica, r.napomena); });
-        out = { ok: true, n: (d.rows || []).length };
+        out = { ok: true, n: upsertMany_(sh, d.rows || []) };
       } else if (d.action === 'delete') {
         var r = findRow_(sh, d.broj);
         if (r) sh.deleteRow(r);
@@ -140,31 +139,71 @@ function findRow_(sh, broj) {
   return f ? f.getRow() : 0;
 }
 
-function upsert_(sh, row, godine, iskaznica, napomena) {
-  if (!row || !row.broj) return;
-  var r = findRow_(sh, row.broj);
-  if (!r) {
-    r = sh.getLastRow() + 1;
-    var heads = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
-    for (var i = HEAD.length; i < heads.length; i++) {
-      if (isBox_(heads[i])) sh.getRange(r, i + 1).insertCheckboxes();
+function clean_(v) {
+  v = v === undefined || v === null ? '' : String(v);
+  // Tekst koji počinje s = + - @ ne smije postati formula.
+  return /^[=+\-@]/.test(v) ? "'" + v : v;
+}
+
+/**
+ * Upis cijelog paketa odjednom: tablica se pročita jednom, novi redovi upišu se jednim
+ * potezom na kraj, a postojeći dobiju samo svoje podatke (i kvačice koje nedostaju).
+ */
+function upsertMany_(sh, items) {
+  items = (items || []).filter(function (it) { return it && it.row && it.row.broj; });
+  if (!items.length) return 0;
+  var years = {};
+  items.forEach(function (it) { (it.godine || []).forEach(function (y) { years[parseInt(y, 10)] = 1; }); });
+  Object.keys(years).sort().forEach(function (y) { yearCol_(sh, parseInt(y, 10)); });
+
+  var lastCol = sh.getLastColumn();
+  var heads = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(String);
+  var cardC = heads.indexOf(CARD), noteC = heads.indexOf(NOTE), statusC = KEYS.indexOf('status');
+  var lastRow = sh.getLastRow();
+  var ids = lastRow > 1 ? sh.getRange(2, 1, lastRow - 1, 1).getValues() : [];
+  var index = {};
+  ids.forEach(function (r, i) { if (r[0] !== '') index[String(r[0])] = i + 2; });
+
+  var fresh = [], freshAt = {};
+  items.forEach(function (it) {
+    var key = String(it.row.broj);
+    var keys = KEYS.map(function (k) { return clean_(it.row[k]); });
+    var boxes = [];
+    (it.godine || []).forEach(function (y) { var c = heads.indexOf(YEAR_PREFIX + parseInt(y, 10)); if (c >= 0) boxes.push(c); });
+    if (it.iskaznica && cardC >= 0) boxes.push(cardC);
+    var note = it.napomena && noteC >= 0 ? clean_(it.napomena) : '';
+    var r = index[key];
+    if (r) {
+      // Postojeći red: osnovni podaci, kvačice samo dodati, napomena samo ako je prazna.
+      sh.getRange(r, 1, 1, KEYS.length).setValues([keys]);
+      sh.getRange(r, statusC + 1).setBackground(it.row.status === 'Potvrđeno' ? '#d9f2e3' : '#fdebd3');
+      if (boxes.length || note) {
+        var line = sh.getRange(r, 1, 1, lastCol).getValues()[0];
+        boxes.forEach(function (c) { if (line[c] !== true) sh.getRange(r, c + 1).insertCheckboxes().setValue(true); });
+        if (note && line[noteC] === '') sh.getRange(r, noteC + 1).setValue(note);
+      }
+      return;
     }
-  }
-  var values = KEYS.map(function (k) {
-    var v = row[k] === undefined || row[k] === null ? '' : String(row[k]);
-    // Tekst koji počinje s = + - @ ne smije postati formula.
-    return /^[=+\-@]/.test(v) ? "'" + v : v;
+    var row = freshAt[key];
+    if (row === undefined) {
+      row = heads.map(function (h, c) { return c >= HEAD.length && isBox_(h) ? false : ''; });
+      freshAt[key] = row;
+      fresh.push(row);
+    }
+    keys.forEach(function (v, c) { row[c] = v; });
+    boxes.forEach(function (c) { row[c] = true; });
+    if (note && row[noteC] === '') row[noteC] = note;
   });
-  sh.getRange(r, 1, 1, KEYS.length).setValues([values]);
-  var st = sh.getRange(r, KEYS.indexOf('status') + 1);
-  st.setBackground(row.status === 'Potvrđeno' ? '#d9f2e3' : '#fdebd3');
-  (godine || []).forEach(function (y) {
-    var c = yearCol_(sh, parseInt(y, 10));
-    sh.getRange(r, c).insertCheckboxes().setValue(true);
-  });
-  if (iskaznica) sh.getRange(r, cardCol_(sh)).insertCheckboxes().setValue(true);
-  if (napomena) {
-    var n = sh.getRange(r, noteCol_(sh));
-    if (n.getValue() === '') n.setValue(/^[=+\-@]/.test(napomena) ? "'" + napomena : String(napomena));
+
+  if (fresh.length) {
+    var start = lastRow + 1;
+    heads.forEach(function (h, c) {
+      if (c >= HEAD.length && isBox_(h)) sh.getRange(start, c + 1, fresh.length, 1).insertCheckboxes();
+    });
+    sh.getRange(start, 1, fresh.length, lastCol).setValues(fresh);
+    sh.getRange(start, statusC + 1, fresh.length, 1).setBackgrounds(fresh.map(function (row) {
+      return [row[statusC] === 'Potvrđeno' ? '#d9f2e3' : '#fdebd3'];
+    }));
   }
+  return items.length;
 }

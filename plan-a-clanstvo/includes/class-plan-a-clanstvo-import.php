@@ -167,7 +167,7 @@ final class Plan_A_Clanstvo_Import {
 			wp_defer_term_counting( false );
 			$phase = 'clanovi';
 		} elseif ( '' !== Plan_A_Clanstvo_Sheets::url() && Plan_A_Clanstvo_Sheets::pending() ) {
-			$r = Plan_A_Clanstvo_Sheets::bulk( true, 25, 10 );
+			$r = Plan_A_Clanstvo_Sheets::bulk( true, 50, 10 );
 			$job['sheet'] += $r['n'];
 			if ( ! $r['ok'] ) {
 				$err = 'Slanje u Google tablicu nije uspjelo: ' . ( $r['error'] ?? '' );
