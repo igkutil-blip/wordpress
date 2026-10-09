@@ -41,7 +41,7 @@ final class Plan_A_Clanstvo_Checkout {
 		add_filter( 'woocommerce_billing_fields', array( __CLASS__, 'billing_fields' ), 9999 );
 		add_filter( 'woocommerce_checkout_fields', array( __CLASS__, 'checkout_fields' ), 9999 );
 		add_action( 'woocommerce_after_checkout_billing_form', array( __CLASS__, 'buyer_box' ) );
-		add_action( 'woocommerce_checkout_after_customer_details', array( __CLASS__, 'others_box' ) );
+		add_action( 'woocommerce_after_checkout_billing_form', array( __CLASS__, 'others_box' ), 20 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ), 40 );
 		add_action( 'wp_ajax_pac_member_check', array( __CLASS__, 'ajax' ) );
 		add_action( 'wp_ajax_nopriv_pac_member_check', array( __CLASS__, 'ajax' ) );
@@ -57,9 +57,14 @@ final class Plan_A_Clanstvo_Checkout {
 	/* Košarica: izleti, osobe, godina                                     */
 	/* ------------------------------------------------------------------ */
 
-	/** Stavke izleta u košarici: [ključ => [naziv, broj osoba, godina]]. */
+	/**
+	 * Stavke izleta u košarici: [ključ => [naziv, broj osoba, godina, from, to, first]].
+	 * Kupac je osoba 1 jednom po izletu (isti izlet i termin); ostale osobe se broje redom,
+	 * i kad je isti izlet u košarici više puta (from–to su brojevi osoba te stavke).
+	 */
 	private static function cart_tours(): array {
-		$out = array();
+		$out  = array();
+		$last = array();
 		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
 			return $out;
 		}
@@ -73,10 +78,20 @@ final class Plan_A_Clanstvo_Checkout {
 			}
 			$ts          = strtotime( (string) ( $item['ttbm_date'] ?? '' ) );
 			$product     = $item['data'] ?? null;
+			$people      = max( 1, $people ?: (int) ( $item['quantity'] ?? 1 ) );
+			$group       = (int) $item['ttbm_id'] . '|' . ( $ts ? gmdate( 'Y-m-d', $ts ) : '' );
+			$first       = ! isset( $last[ $group ] );
+			$from        = $first ? 2 : $last[ $group ] + 1;
+			$to          = $first ? $people : $last[ $group ] + $people;
+			$last[ $group ] = $to;
 			$out[ $key ] = array(
 				'name'   => $product ? wp_strip_all_tags( $product->get_name() ) : get_the_title( (int) $item['ttbm_id'] ),
-				'people' => max( 1, $people ?: (int) ( $item['quantity'] ?? 1 ) ),
+				'people' => $people,
 				'year'   => $ts ? (int) gmdate( 'Y', $ts ) : (int) current_time( 'Y' ),
+				'group'  => $group,
+				'first'  => $first,
+				'from'   => $from,
+				'to'     => min( $to, 40 ),
 			);
 		}
 		return $out;
@@ -224,18 +239,21 @@ final class Plan_A_Clanstvo_Checkout {
 		if ( ! self::active() ) {
 			return;
 		}
-		$tours = array_filter( self::cart_tours(), static fn( $t ) => $t['people'] > 1 );
+		$tours = array_filter( self::cart_tours(), static fn( $t ) => $t['to'] >= $t['from'] );
 		if ( ! $tours ) {
 			return;
 		}
-		echo '<div class="paka-card pac-others" data-pac-others>';
+		$groups = count( array_unique( wp_list_pluck( $tours, 'group' ) ) );
+		echo '<div class="pac-others" data-pac-others>';
 		echo '<h3>' . esc_html__( 'Ostali sudionici', 'plan-a-clanstvo' ) . '</h3>';
 		echo '<p class="pac-muted">' . esc_html__( 'Za svaku osobu upiši ime, prezime i e-mail. Ako osoba nije član Plan A, otvorit će se njezina pristupnica; potvrdu će dobiti na svoj e-mail.', 'plan-a-clanstvo' ) . '</p>';
+		$shown = array();
 		foreach ( $tours as $key => $t ) {
-			if ( count( $tours ) > 1 ) {
+			if ( $groups > 1 && ! isset( $shown[ $t['group'] ] ) ) {
 				echo '<h4 class="pac-others__tour">' . esc_html( $t['name'] ) . '</h4>';
 			}
-			for ( $i = 2; $i <= min( 20, $t['people'] ); $i++ ) {
+			$shown[ $t['group'] ] = 1;
+			for ( $i = $t['from']; $i <= $t['to']; $i++ ) {
 				$n = 'pac_osobe[' . $key . '][' . $i . ']';
 				echo '<fieldset class="pac-person" data-pac-person>';
 				echo '<legend>' . esc_html( sprintf( /* translators: %d: redni broj osobe */ __( '%d. osoba', 'plan-a-clanstvo' ), $i ) ) . '</legend>';
@@ -327,7 +345,7 @@ final class Plan_A_Clanstvo_Checkout {
 		$raw = isset( $_POST['pac_osobe'] ) && is_array( $_POST['pac_osobe'] ) ? wp_unslash( $_POST['pac_osobe'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- čisti se ispod.
 		$out = array();
 		foreach ( self::cart_tours() as $key => $t ) {
-			for ( $i = 2; $i <= min( 20, $t['people'] ); $i++ ) {
+			for ( $i = $t['from']; $i <= $t['to']; $i++ ) {
 				$p = isset( $raw[ $key ][ $i ] ) && is_array( $raw[ $key ][ $i ] ) ? $raw[ $key ][ $i ] : array();
 				$v = array();
 				foreach ( array( 'ime', 'prezime', 'email', 'datum', 'oib', 'adresa', 'mjesto', 'mobitel' ) as $f ) {
@@ -401,8 +419,11 @@ final class Plan_A_Clanstvo_Checkout {
 		if ( empty( $values['ttbm_id'] ) || ! empty( $values['paj_rez'] ) ) {
 			return;
 		}
-		$list   = array(
+		$tours  = self::cart_tours();
+		$first  = ! isset( $tours[ $cart_key ] ) || $tours[ $cart_key ]['first'];
+		$list   = ! $first ? array() : array(
 			array(
+				'kupac'   => 1,
 				'ime'     => $order->get_billing_first_name(),
 				'prezime' => $order->get_billing_last_name(),
 				'email'   => strtolower( $order->get_billing_email() ),
@@ -419,6 +440,7 @@ final class Plan_A_Clanstvo_Checkout {
 			$list[] = $v;
 		}
 		$item->add_meta_data( '_pac_osobe', $list, true );
+		$item->add_meta_data( '_pac_osobe_v', 2, true );
 	}
 
 	public static function order_meta( $order, $data ) {
@@ -478,7 +500,7 @@ final class Plan_A_Clanstvo_Checkout {
 				}
 				$done[ $email ] = 1;
 				$m              = self::member( $email );
-				if ( 0 === $n ) {
+				if ( ! empty( $p['kupac'] ) || ( 0 === $n && ! $item->get_meta( '_pac_osobe_v' ) ) ) {
 					// Kupac: gumb za potvrdu dolazi u e-mailu o narudžbi.
 					if ( ! $m ) {
 						$p['roditelj']         = self::posted( 'pac_roditelj' );

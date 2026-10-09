@@ -210,9 +210,11 @@ final class Plan_A_Clanstvo_Agency {
 				$list[] = array( 'ime' => $i . '. osoba', 'prezime' => '(upisati)', 'ph' => 1 );
 			}
 		}
+		$v2 = (bool) $item->get_meta( '_pac_osobe_v' );
 		foreach ( $list as $i => &$p ) {
-			$p = (array) $p;
-			if ( $i > 0 && empty( $p['prijavio'] ) ) {
+			$p          = (array) $p;
+			$p['kupac'] = $v2 ? ! empty( $p['kupac'] ) : 0 === $i;
+			if ( ! $p['kupac'] && empty( $p['prijavio'] ) ) {
 				$p['prijavio'] = $buyer;
 			}
 		}
@@ -244,7 +246,7 @@ final class Plan_A_Clanstvo_Agency {
 				}
 			}
 			foreach ( self::persons( $order, $item, $count ) as $n => $p ) {
-				$m = 0 === $n ? self::member_by_email( (string) $order->get_billing_email() ) : null;
+				$m = ! empty( $p['kupac'] ) ? self::member_by_email( (string) $order->get_billing_email() ) : null;
 				if ( ! $m && ! empty( $p['email'] ) ) {
 					$m = self::member_by_email( (string) $p['email'] );
 				}

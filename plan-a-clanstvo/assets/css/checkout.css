@@ -15,7 +15,7 @@
 .pac-izjava__text p { margin: 0 0 8px; }
 .pac-check label { display: flex; gap: 8px; align-items: flex-start; font-weight: 600; }
 .pac-check input { margin-top: 3px; }
-.pac-others { margin-top: 16px; }
+.pac-others { clear: both; margin: 18px 0 6px; padding-top: 14px; border-top: 1px solid #e3e8ee; }
 .pac-others h3 { margin: 0 0 6px; }
 .pac-others__tour { margin: 14px 0 6px; font-size: 15px; color: #12304b; }
 .pac-person { margin: 0 0 14px; padding: 12px 14px 4px; border: 1px solid #dfe6ee; border-radius: 12px; }
