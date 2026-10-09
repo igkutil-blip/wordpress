@@ -501,6 +501,17 @@ final class Plan_A_Clanstvo_Admin {
 				exit;
 		}
 		self::flash( $msg );
+		// Poruka ide i u adresu (potpisana), da se prikaže i kad se ništa ne može spremiti.
+		$back = remove_query_arg( array( 'pac_msg', 'pac_sig' ), $back );
+		if ( '' !== $msg ) {
+			$back = add_query_arg(
+				array(
+					'pac_msg' => rawurlencode( $msg ),
+					'pac_sig' => substr( wp_hash( $msg . '|' . get_current_user_id() ), 0, 16 ),
+				),
+				$back
+			);
+		}
 		wp_safe_redirect( $back );
 		exit;
 	}
@@ -513,6 +524,15 @@ final class Plan_A_Clanstvo_Admin {
 	}
 
 	private static function take(): string {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- poruka je potpisana.
+		if ( isset( $_GET['pac_msg'], $_GET['pac_sig'] ) ) {
+			$msg = sanitize_text_field( rawurldecode( wp_unslash( $_GET['pac_msg'] ) ) );
+			if ( hash_equals( substr( wp_hash( $msg . '|' . get_current_user_id() ), 0, 16 ), sanitize_key( wp_unslash( $_GET['pac_sig'] ) ) ) ) {
+				delete_user_meta( get_current_user_id(), '_pac_notice' );
+				return $msg;
+			}
+		}
+		// phpcs:enable
 		$msg = (string) get_user_meta( get_current_user_id(), '_pac_notice', true );
 		if ( '' !== $msg ) {
 			delete_user_meta( get_current_user_id(), '_pac_notice' );
@@ -525,6 +545,8 @@ final class Plan_A_Clanstvo_Admin {
 		$msg = self::take();
 		if ( '' !== $msg ) {
 			echo '<div class="pac-notice pac-msg" role="status" style="margin:14px 0;padding:12px 16px;background:#fff;border:1px solid #c3c4c7;border-left:4px solid #2271b1;font-size:14px;">' . esc_html( $msg ) . '</div>';
+			// Bez poruke u adresi, da se ne ponovi nakon osvježavanja.
+			echo '<script>try{var u=new URL(location.href);u.searchParams.delete("pac_msg");u.searchParams.delete("pac_sig");history.replaceState(null,"",u);}catch(e){}</script>';
 		}
 	}
 
@@ -614,7 +636,7 @@ final class Plan_A_Clanstvo_Admin {
 		$count = wp_count_posts( Plan_A_Clanstvo_Data::CPT );
 		?>
 		<div class="wrap">
-			<h1>Plan A članstvo</h1>
+			<h1>Plan A članstvo <span style="font-size:13px;font-weight:400;color:#646970">verzija <?php echo esc_html( PLAN_A_CLANSTVO_VERSION ); ?></span></h1>
 			<?php self::message_box(); ?>
 			<p>Pristupnica se prikazuje shortcodeom <code>[plan-a-pristupnica]</code> (u Flatsome HTML bloku). <?php echo $page ? 'Stranica: <a href="' . esc_url( get_permalink( $page ) ) . '" target="_blank">' . esc_html( get_the_title( $page ) ) . '</a>.' : 'Shortcode još nije ni na jednoj stranici.'; ?> Članova: <?php echo (int) ( $count->publish ?? 0 ); ?>.</p>
 			<p>
