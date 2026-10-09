@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 3;
+var SCRIPT_VERSION = 4;
 var SHEET_NAME = 'Članovi';
 var HEAD = ['Br.', 'Datum prijave', 'Ime', 'Prezime', 'Datum rođenja', 'OIB', 'Adresa', 'Mjesto, poštanski broj', 'E-mail', 'Mobitel', 'Roditelj ili skrbnik', 'Status', 'Datum potvrde'];
 var KEYS = ['broj', 'prijava', 'ime', 'prezime', 'datum', 'oib', 'adresa', 'mjesto', 'email', 'mobitel', 'roditelj', 'status', 'potvrda'];
@@ -34,6 +34,8 @@ function doPost(e) {
         out = { ok: true };
       } else if (d.action === 'bulk') {
         out = { ok: true, n: upsertMany_(sh, d.rows || []) };
+      } else if (d.action === 'renumber') {
+        out = { ok: true, n: renumber_(sh, d.map || {}) };
       } else if (d.action === 'delete') {
         var r = findRow_(sh, d.broj);
         if (r) sh.deleteRow(r);
@@ -133,6 +135,21 @@ function noteCol_(sh) {
 function isBox_(h) {
   h = String(h);
   return h === CARD || h.indexOf(YEAR_PREFIX) === 0;
+}
+
+/** Novi brojevi članova (stari → novi), pa redovi poredani po broju; kvačice idu s redom. */
+function renumber_(sh, map) {
+  var last = sh.getLastRow();
+  if (last < 2) return 0;
+  var col = sh.getRange(2, 1, last - 1, 1).getValues();
+  var n = 0;
+  col.forEach(function (r) {
+    var k = String(r[0]);
+    if (Object.prototype.hasOwnProperty.call(map, k)) { r[0] = map[k]; n++; }
+  });
+  sh.getRange(2, 1, last - 1, 1).setValues(col);
+  sh.getRange(2, 1, last - 1, sh.getLastColumn()).sort({ column: 1, ascending: true });
+  return n;
 }
 
 function findRow_(sh, broj) {

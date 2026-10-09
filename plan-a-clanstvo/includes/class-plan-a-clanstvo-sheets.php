@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 final class Plan_A_Clanstvo_Sheets {
 
 	/** Verzija skripte u google-tablica.gs (SCRIPT_VERSION). Starija skripta je spora za pakete. */
-	const SCRIPT_VERSION = 3;
+	const SCRIPT_VERSION = 4;
 
 	public static function init() {
 		add_action( 'plan_a_clanstvo_changed', array( __CLASS__, 'send' ) );

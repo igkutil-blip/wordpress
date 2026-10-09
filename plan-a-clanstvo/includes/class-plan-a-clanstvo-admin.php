@@ -126,6 +126,8 @@ final class Plan_A_Clanstvo_Admin {
 			<?php if ( $left ) : ?>
 				<p><a class="button button-primary" href="<?php echo esc_url( self::action_url( 'pending' ) ); ?>">Pošalji neposlane u tablicu (<?php echo (int) $left; ?>)</a></p>
 			<?php endif; ?>
+			<h2>Redoslijed brojeva</h2>
+			<p><a class="button" href="<?php echo esc_url( self::action_url( 'renumber' ) ); ?>" onclick="return confirm('Poredati brojeve članova (Br.) po datumu prijave, na stranici i u Google tablici?')">Poredaj brojeve po datumu prijave</a> <span class="description">Br. 1 dobiva član s najranijim datumom prijave. Redovi u tablici se poredaju po broju, a kvačice i napomene idu sa svojim redom.</span></p>
 			<?php endif; ?>
 		</div>
 		<?php
@@ -435,6 +437,14 @@ final class Plan_A_Clanstvo_Admin {
 				}
 				wp_safe_redirect( admin_url( 'edit.php?post_type=' . Plan_A_Clanstvo_Data::CPT . '&page=' . self::SLUG . '-uvoz' ) );
 				exit;
+			case 'renumber':
+				if ( Plan_A_Clanstvo_Import::job() || Plan_A_Clanstvo_Sheets::pending() ) {
+					$msg = 'Najprije pošalji sve članove u tablicu (gumb „Pošalji neposlane u tablicu”), pa onda poredaj brojeve.';
+					break;
+				}
+				$r   = Plan_A_Clanstvo_Data::renumber();
+				$msg = $r['ok'] ? ( $r['n'] ? 'Brojevi su poredani po datumu prijave (promijenjeno: ' . $r['n'] . '), na stranici i u tablici.' : 'Brojevi su već poredani po datumu prijave.' ) : 'Brojevi nisu promijenjeni: ' . $r['error'];
+				break;
 			case 'import_cancel':
 				Plan_A_Clanstvo_Import::cancel();
 				$msg = 'Uvoz je prekinut. Već uvezeni članovi ostaju.';

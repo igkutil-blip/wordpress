@@ -309,6 +309,62 @@ final class Plan_A_Clanstvo_Data {
 	}
 
 	/**
+	 * Brojevi članova redom po datumu prijave (isti datum: dosadašnji redoslijed).
+	 * Tablica se prenumerira prva; ako to ne uspije, na stranici se ništa ne mijenja.
+	 *
+	 * @return array{ok: bool, n: int, error?: string}
+	 */
+	public static function renumber(): array {
+		$list = array();
+		foreach ( get_posts( array( 'post_type' => self::CPT, 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids', 'no_found_rows' => true ) ) as $id ) {
+			$list[] = array(
+				'id'      => (int) $id,
+				'created' => (string) get_post_meta( $id, '_pac_created', true ),
+				'broj'    => (int) get_post_meta( $id, '_pac_broj', true ),
+			);
+		}
+		usort(
+			$list,
+			static function ( $a, $b ) {
+				return array( $a['created'], $a['broj'], $a['id'] ) <=> array( $b['created'], $b['broj'], $b['id'] );
+			}
+		);
+		$map = array();
+		foreach ( $list as $i => $m ) {
+			if ( $m['broj'] !== $i + 1 ) {
+				$map[ (string) $m['broj'] ] = $i + 1;
+			}
+		}
+		if ( $map && '' !== Plan_A_Clanstvo_Sheets::url() ) {
+			$res = Plan_A_Clanstvo_Sheets::post(
+				array(
+					'action' => 'renumber',
+					'map'    => (object) $map,
+				),
+				90
+			);
+			if ( ! $res['ok'] ) {
+				return array(
+					'ok'    => false,
+					'n'     => 0,
+					'error' => 'Nepoznata radnja.' === ( $res['error'] ?? '' ) ? 'u tablici je stara skripta. Kopiraj novu skriptu i objavi je kao „New version”, pa pokušaj ponovno.' : (string) ( $res['error'] ?? '' ),
+				);
+			}
+		}
+		foreach ( $list as $i => $m ) {
+			if ( $m['broj'] !== $i + 1 ) {
+				update_post_meta( $m['id'], '_pac_broj', $i + 1 );
+			}
+		}
+		update_option( 'plan_a_clanstvo_broj', count( $list ), false );
+		delete_option( 'plan_a_clanstvo_delete_queue' ); // stari brojevi više ne vrijede
+		return array(
+			'ok' => true,
+			'n'  => count( $map ),
+		);
+	}
+
+	/**
 	 * Ista osoba: isti OIB, ili (ako je OIB krivo upisan) isti e-mail, ime i datum rođenja.
 	 * Roditelj s jednim e-mailom za više djece ostaje više članova (različito ime ili datum).
 	 */

@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.3.5
+Stable tag: 1.4.0
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,11 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.4.0 =
+* Gumb "Poredaj brojeve po datumu prijave" (Članovi → Uvoz članova): Br. redom po datumu prijave, na stranici i u tablici; kvačice idu sa svojim redom.
+* Uvoz ažurira datum prijave i potvrde i postojećim članovima.
+* Potrebno: nova skripta u tablici (v4) – kopirati i objaviti kao New version.
 
 = 1.3.5 =
 * Ispravak: veći paketi za tablicu dobivali su od Googlea HTTP 400. Preusmjeravanje Google skripte sada se otvara kao GET.

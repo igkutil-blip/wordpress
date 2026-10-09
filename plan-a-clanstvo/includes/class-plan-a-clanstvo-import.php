@@ -264,11 +264,12 @@ final class Plan_A_Clanstvo_Import {
 			return null;
 		}
 		$names[ $key ] = $names[ $key ] ?? $id;
-		if ( 'potvrdeno' === $status && ! get_post_meta( $id, '_pac_confirmed', true ) ) {
-			update_post_meta( $id, '_pac_confirmed', $confirmed ?: ( $created ?: current_time( 'mysql' ) ) );
-		}
-		if ( $is_new && $created ) {
+		// Datumi iz datoteke vrijede i za postojeće članove (npr. ispravak datuma prijave).
+		if ( $created ) {
 			update_post_meta( $id, '_pac_created', $created );
+		}
+		if ( 'potvrdeno' === get_post_meta( $id, '_pac_status', true ) && ( $confirmed || ! get_post_meta( $id, '_pac_confirmed', true ) ) ) {
+			update_post_meta( $id, '_pac_confirmed', $confirmed ?: ( $created ?: current_time( 'mysql' ) ) );
 		}
 		preg_match_all( '/20\d\d/', $r['godine'] ?? '', $y );
 		$years = array_values( array_unique( array_map( 'intval', $y[0] ) ) );
