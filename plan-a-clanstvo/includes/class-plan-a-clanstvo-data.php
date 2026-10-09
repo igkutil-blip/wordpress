@@ -248,6 +248,7 @@ final class Plan_A_Clanstvo_Data {
 		$m['created']   = (string) get_post_meta( $id, '_pac_created', true );
 		$m['confirmed'] = (string) get_post_meta( $id, '_pac_confirmed', true );
 		$m['godine']    = array_values( array_filter( array_map( 'intval', (array) get_post_meta( $id, '_pac_godine', true ) ) ) );
+		$m['iskaznica'] = (bool) get_post_meta( $id, '_pac_iskaznica', true );
 		return $m;
 	}
 

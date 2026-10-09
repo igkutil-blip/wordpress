@@ -419,7 +419,7 @@ final class Plan_A_Clanstvo_Admin {
 				<a class="button" href="<?php echo esc_url( self::action_url( 'resync' ) ); ?>">Pošalji sve članove u tablicu</a>
 				<a class="button-link" style="margin-left:12px" href="<?php echo esc_url( self::action_url( 'secret' ) ); ?>" onclick="return confirm('Napraviti novi ključ? Poslije treba ponovno zalijepiti skriptu u tablicu.')">Novi ključ</a>
 			</p>
-			<p class="description">Smjer je stranica → tablica: promjene u tablici (osim kvačica za članarinu) ne vraćaju se na stranicu. Stupce „Članarina GGGG” stranica ne dira, a stupac za novu godinu dodaje se sam u siječnju. Stupac „Br.” ne briši.</p>
+			<p class="description">Smjer je stranica → tablica: promjene u tablici (osim kvačica za članarinu) ne vraćaju se na stranicu. Stupce „Članarina GGGG” i „Iskaznica uručena” stranica ne dira (kvačice se označavaju ručno), a stupac za novu godinu dodaje se sam u siječnju, ispred stupca za iskaznicu. Stupac „Br.” ne briši.</p>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="pac_admin">

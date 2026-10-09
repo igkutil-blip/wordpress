@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.1.3
+Stable tag: 1.2.0
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -34,6 +34,11 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.2.0 =
+* Google tablica: stupac "Iskaznica uručena" s kvačicama, uvijek na kraju (stupac za novu godinu
+  članarine dodaje se ispred njega). Kvačice se označavaju ručno; pri uvozu se popune iz starih tablica.
+  Postojeću skriptu treba zamijeniti novom i objaviti novu verziju (Manage deployments → Edit → New version).
 
 = 1.1.3 =
 * Ista osoba se ne duplira: isti OIB, ili (kod krivo upisanog OIB-a) isti e-mail, ime i datum

@@ -88,13 +88,16 @@ final class Plan_A_Clanstvo_Sheets {
 		$res = self::post(
 			array(
 				'action' => 'upsert',
-				'row'    => self::row( $m ),
-				'godine' => $m['godine'],
+				'row'       => self::row( $m ),
+				'godine'    => $m['godine'],
+				'iskaznica' => $m['iskaznica'],
 			)
 		);
 		update_post_meta( (int) $id, '_pac_sync', $res['ok'] ? 'ok' : 'pending' );
-		if ( $res['ok'] && $m['godine'] ) {
-			delete_post_meta( (int) $id, '_pac_godine' ); // godine iz uvoza šalju se samo jednom
+		if ( $res['ok'] ) {
+			// Godine i iskaznica iz uvoza šalju se samo jednom; dalje ih vodite ručno u tablici.
+			delete_post_meta( (int) $id, '_pac_godine' );
+			delete_post_meta( (int) $id, '_pac_iskaznica' );
 		}
 		return (bool) $res['ok'];
 	}
@@ -145,8 +148,9 @@ final class Plan_A_Clanstvo_Sheets {
 				$m = Plan_A_Clanstvo_Data::get_member( (int) $id );
 				if ( $m ) {
 					$rows[] = array(
-						'row'    => self::row( $m ),
-						'godine' => $m['godine'],
+						'row'       => self::row( $m ),
+						'godine'    => $m['godine'],
+						'iskaznica' => $m['iskaznica'],
 					);
 				}
 			}
@@ -166,6 +170,7 @@ final class Plan_A_Clanstvo_Sheets {
 			foreach ( $ids as $id ) {
 				update_post_meta( (int) $id, '_pac_sync', 'ok' );
 				delete_post_meta( (int) $id, '_pac_godine' );
+				delete_post_meta( (int) $id, '_pac_iskaznica' );
 			}
 			$total += count( $ids );
 			// Kod "samo neposlanih" poslani više nisu u upitu, pa se uvijek uzima prva stranica.
