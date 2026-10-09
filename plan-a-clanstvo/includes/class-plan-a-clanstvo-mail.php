@@ -64,6 +64,10 @@ final class Plan_A_Clanstvo_Mail {
 			return false;
 		}
 		$url   = Plan_A_Clanstvo_Data::confirm_url( Plan_A_Clanstvo_Data::new_token( $id ) );
+		if ( ! $reminder ) {
+			update_post_meta( $id, '_pac_requested', time() ); // od sada teku rokovi za podsjetnik i brisanje
+			delete_post_meta( $id, '_pac_reminded' );
+		}
 		$days  = (int) Plan_A_Clanstvo_Data::value( 'valid_days' );
 		$inner = self::p( 'Pozdrav ' . esc_html( $m['ime'] ) . ',' )
 			. self::p( $reminder

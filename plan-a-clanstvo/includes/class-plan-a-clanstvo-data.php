@@ -465,8 +465,12 @@ final class Plan_A_Clanstvo_Data {
 			)
 		);
 		foreach ( $ids as $id ) {
-			$created = strtotime( (string) get_post_meta( $id, '_pac_created', true ) . ' ' . wp_timezone_string() );
-			$age     = time() - ( $created ?: time() );
+			// Rokovi teku od e-maila za potvrdu; tko ga još nije dobio (npr. uvezeni), ostaje netaknut.
+			$sent = (int) get_post_meta( $id, '_pac_requested', true );
+			if ( ! $sent ) {
+				continue;
+			}
+			$age = time() - $sent;
 			if ( $age > DAY_IN_SECONDS * max( 7, (int) $s['delete_days'] ) ) {
 				self::delete( (int) $id );
 				continue;

@@ -23,6 +23,8 @@ final class Plan_A_Clanstvo_Admin {
 		add_action( 'restrict_manage_posts', array( __CLASS__, 'filter_ui' ) );
 		add_action( 'pre_get_posts', array( __CLASS__, 'query' ) );
 		add_filter( 'post_row_actions', array( __CLASS__, 'row_actions' ), 10, 2 );
+		add_filter( "bulk_actions-edit-{$cpt}", array( __CLASS__, 'bulk_actions' ) );
+		add_filter( "handle_bulk_actions-edit-{$cpt}", array( __CLASS__, 'bulk_handle' ), 10, 3 );
 		add_action( 'add_meta_boxes_' . $cpt, array( __CLASS__, 'meta_boxes' ) );
 		add_action( 'save_post_' . $cpt, array( __CLASS__, 'save' ), 10, 2 );
 		add_action( 'admin_notices', array( __CLASS__, 'notices' ) );
@@ -178,6 +180,26 @@ final class Plan_A_Clanstvo_Admin {
 			$actions['pac_pay'] = '<a href="' . esc_url( self::action_url( 'paymail', $post->ID ) ) . '">Pošalji uplatnicu za članarinu</a>';
 		}
 		return $actions;
+	}
+
+	public static function bulk_actions( $actions ) {
+		unset( $actions['edit'] );
+		$actions['pac_resend'] = 'Pošalji e-mail za potvrdu (nepotvrđenima)';
+		return $actions;
+	}
+
+	public static function bulk_handle( $redirect, $action, $ids ) {
+		if ( 'pac_resend' !== $action || ! current_user_can( self::CAP ) ) {
+			return $redirect;
+		}
+		$n = 0;
+		foreach ( (array) $ids as $id ) {
+			if ( 'potvrdeno' !== get_post_meta( (int) $id, '_pac_status', true ) && Plan_A_Clanstvo_Mail::confirm_request( (int) $id ) ) {
+				$n++;
+			}
+		}
+		set_transient( 'pac_notice_' . get_current_user_id(), 'E-mail za potvrdu poslan je na ' . $n . ' adresa.', 60 );
+		return $redirect;
 	}
 
 	/* ---------------------------------------------------------------------
