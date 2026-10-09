@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,10 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.3.2 =
+* Uvoz ide u dijelovima s trakom napretka (ne prekida ga vremensko ograničenje poslužitelja) i nastavlja gdje je stao.
+* Na stranici uvoza vidi se broj članova i rezultat zadnjeg uvoza.
 
 = 1.3.1 =
 * Uvoz članova je zasebna stavka izbornika: Članovi → Uvoz članova.

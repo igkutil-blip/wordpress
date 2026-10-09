@@ -17,6 +17,7 @@ final class Plan_A_Clanstvo_Admin {
 		$cpt = Plan_A_Clanstvo_Data::CPT;
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
 		add_action( 'admin_post_pac_admin', array( __CLASS__, 'action' ) );
+		add_action( 'wp_ajax_pac_import_step', array( __CLASS__, 'import_step' ) );
 		add_filter( "manage_{$cpt}_posts_columns", array( __CLASS__, 'columns' ) );
 		add_action( "manage_{$cpt}_posts_custom_column", array( __CLASS__, 'column' ), 10, 2 );
 		add_filter( "manage_edit-{$cpt}_sortable_columns", array( __CLASS__, 'sortable' ) );
@@ -53,10 +54,56 @@ final class Plan_A_Clanstvo_Admin {
 		if ( ! current_user_can( self::CAP ) ) {
 			return;
 		}
-		$left = Plan_A_Clanstvo_Sheets::pending();
+		$left  = Plan_A_Clanstvo_Sheets::pending();
+		$job   = Plan_A_Clanstvo_Import::job();
+		$last  = get_option( Plan_A_Clanstvo_Import::LAST );
+		$count = wp_count_posts( Plan_A_Clanstvo_Data::CPT );
 		?>
 		<div class="wrap">
 			<h1>Uvoz članova iz CSV-a</h1>
+			<p>Članova na stranici: <strong><?php echo (int) ( $count->publish ?? 0 ); ?></strong><?php echo $left ? ' · još nije poslano u Google tablicu: <strong>' . (int) $left . '</strong>' : ''; ?>.
+			<?php if ( is_array( $last ) ) : ?>
+				Zadnji uvoz: <?php echo esc_html( Plan_A_Clanstvo_Data::hr_datetime( (string) $last['time'] ) . sprintf( ' – novih %d, ažuriranih %d, preskočenih %d', $last['stats']['new'] ?? 0, $last['stats']['updated'] ?? 0, $last['stats']['skipped'] ?? 0 ) ); ?>.
+			<?php endif; ?>
+			</p>
+			<?php if ( $job ) : ?>
+				<div id="pac-import" style="max-width:640px;background:#fff;border:1px solid #c3c4c7;border-radius:6px;padding:16px 18px;margin:16px 0" data-nonce="<?php echo esc_attr( wp_create_nonce( 'pac_import_step' ) ); ?>">
+					<h2 style="margin-top:0">Uvoz u tijeku – ne zatvaraj ovu stranicu</h2>
+					<div style="height:18px;background:#f0f0f1;border-radius:9px;overflow:hidden"><div id="pac-bar" style="height:100%;width:0;background:#2271b1;transition:width .3s"></div></div>
+					<p id="pac-status">Počinjem…</p>
+					<p id="pac-error" style="color:#d63638;font-weight:600"></p>
+					<p><button type="button" class="button" id="pac-retry" style="display:none">Nastavi</button>
+					<a class="button-link" style="margin-left:10px;color:#b32d2e" href="<?php echo esc_url( self::action_url( 'import_cancel' ) ); ?>" onclick="return confirm('Prekinuti uvoz? Već uvezeni članovi ostaju.')">Prekini uvoz</a></p>
+				</div>
+				<script>
+				(function () {
+					var box = document.getElementById('pac-import'), bar = document.getElementById('pac-bar'), st = document.getElementById('pac-status'), er = document.getElementById('pac-error'), btn = document.getElementById('pac-retry'), fails = 0;
+					function show(d) {
+						var s = d.stats || {};
+						var pct = d.total ? Math.round(d.pos / d.total * (d.pending || d.phase === 'tablica' ? 70 : 100)) : 100;
+						if (d.phase === 'tablica' || (d.pos >= d.total && d.pending)) { pct = 70 + Math.round(30 * (1 - d.pending / Math.max(d.total, 1))); }
+						bar.style.width = Math.min(100, pct) + '%';
+						st.textContent = (d.phase === 'clanovi' ? 'Upisujem članove: ' + d.pos + ' / ' + d.total : 'Šaljem u Google tablicu, preostalo: ' + d.pending) + ' (novih ' + (s.new || 0) + ', ažuriranih ' + (s.updated || 0) + ')';
+					}
+					function step() {
+						er.textContent = ''; btn.style.display = 'none';
+						var f = new FormData(); f.append('action', 'pac_import_step'); f.append('nonce', box.dataset.nonce);
+						fetch(ajaxurl, { method: 'POST', body: f, credentials: 'same-origin' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(function (j) {
+							if (!j || !j.success) throw new Error(j && j.data ? j.data : 'nepoznata greška');
+							var d = j.data; fails = 0; show(d);
+							if (d.error) { er.textContent = d.error; btn.style.display = ''; return; }
+							if (d.done) { bar.style.width = '100%'; st.textContent = 'Gotovo! Novih ' + d.stats.new + ', ažuriranih ' + d.stats.updated + ', preskočenih ' + d.stats.skipped + '. E-mailovi nisu slani.'; setTimeout(function () { location.reload(); }, 2500); return; }
+							step();
+						}).catch(function (e) {
+							if (++fails < 4) { setTimeout(step, 2000 * fails); return; }
+							er.textContent = 'Greška: ' + e.message + '. Klikni „Nastavi” – uvoz nastavlja gdje je stao.'; btn.style.display = '';
+						});
+					}
+					btn.addEventListener('click', function () { fails = 0; step(); });
+					step();
+				})();
+				</script>
+			<?php else : ?>
 			<?php if ( '' === Plan_A_Clanstvo_Sheets::url() ) : ?>
 				<div class="notice notice-warning"><p>Google tablica još nije povezana (Članovi → Postavke i tablica). Članovi će se uvesti, a u tablicu poslati kad je povežeš.</p></div>
 			<?php endif; ?>
@@ -75,8 +122,20 @@ final class Plan_A_Clanstvo_Admin {
 			<?php if ( $left ) : ?>
 				<p><a class="button button-primary" href="<?php echo esc_url( self::action_url( 'pending' ) ); ?>">Pošalji neposlane u tablicu (<?php echo (int) $left; ?>)</a></p>
 			<?php endif; ?>
+			<?php endif; ?>
 		</div>
 		<?php
+	}
+
+	public static function import_step() {
+		check_ajax_referer( 'pac_import_step', 'nonce' );
+		if ( ! current_user_can( self::CAP ) ) {
+			wp_send_json_error( 'Nemaš ovlasti.', 403 );
+		}
+		if ( function_exists( 'set_time_limit' ) ) {
+			set_time_limit( 120 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions
+		}
+		wp_send_json_success( Plan_A_Clanstvo_Import::step() );
 	}
 
 	/* ---------------------------------------------------------------------
@@ -349,17 +408,24 @@ final class Plan_A_Clanstvo_Admin {
 				break;
 			case 'import':
 				$f = $_FILES['csv'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-				if ( ! $f || UPLOAD_ERR_OK !== (int) $f['error'] || ! is_uploaded_file( (string) $f['tmp_name'] ) || ! preg_match( '/\.csv$/i', (string) $f['name'] ) ) {
-					$msg = 'Odaberi CSV datoteku.';
+				if ( ! $f || UPLOAD_ERR_OK !== (int) $f['error'] || ! is_uploaded_file( (string) $f['tmp_name'] ) ) {
+					$msg = 'Datoteka nije stigla na stranicu' . ( $f && UPLOAD_ERR_OK !== (int) $f['error'] ? ' (greška ' . (int) $f['error'] . ')' : '' ) . '. Odaberi CSV datoteku i pokušaj ponovno.';
 					break;
 				}
-				$r = Plan_A_Clanstvo_Import::run( (string) $f['tmp_name'] );
+				if ( ! preg_match( '/\.(csv|txt)$/i', (string) $f['name'] ) ) {
+					$msg = 'Odabrana datoteka nije CSV (' . sanitize_file_name( (string) $f['name'] ) . ').';
+					break;
+				}
+				$r = Plan_A_Clanstvo_Import::start( (string) $f['tmp_name'] );
 				if ( ! $r['ok'] ) {
 					$msg = 'Uvoz nije uspio: ' . $r['error'];
 					break;
 				}
-				$msg = sprintf( 'Uvoz gotov: novih %d, ažuriranih %d, preskočenih redaka %d (od toga „Čeka potvrdu”: %d). E-mailovi nisu slani. ', $r['new'], $r['updated'], $r['skipped'], $r['ceka'] );
-				$msg .= '' !== Plan_A_Clanstvo_Sheets::url() ? self::send_pending() : 'Tablica još nije povezana; članovi će se poslati kad je povežeš.';
+				wp_safe_redirect( admin_url( 'edit.php?post_type=' . Plan_A_Clanstvo_Data::CPT . '&page=' . self::SLUG . '-uvoz' ) );
+				exit;
+			case 'import_cancel':
+				Plan_A_Clanstvo_Import::cancel();
+				$msg = 'Uvoz je prekinut. Već uvezeni članovi ostaju.';
 				break;
 			case 'secret':
 				$s           = Plan_A_Clanstvo_Data::get();

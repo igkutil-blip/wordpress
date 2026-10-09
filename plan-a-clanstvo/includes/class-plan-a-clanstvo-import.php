@@ -35,10 +35,16 @@ final class Plan_A_Clanstvo_Import {
 		'napomena'               => 'napomena',
 	);
 
+	const JOB  = 'plan_a_clanstvo_import';
+	const LAST = 'plan_a_clanstvo_import_last';
+
 	/**
-	 * @return array{ok: bool, error?: string, new?: int, updated?: int, skipped?: int, ceka?: int}
+	 * Čita CSV i sprema ga kao posao uvoza; sami redovi obrađuju se u dijelovima (step()),
+	 * da uvoz ne prekine vremensko ograničenje poslužitelja.
+	 *
+	 * @return array{ok: bool, error?: string, total?: int}
 	 */
-	public static function run( string $file ): array {
+	public static function start( string $file ): array {
 		if ( ! is_readable( $file ) || filesize( $file ) > self::MAX_BYTES ) {
 			return array(
 				'ok'    => false,
@@ -46,8 +52,8 @@ final class Plan_A_Clanstvo_Import {
 			);
 		}
 		$text = (string) file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-		$text = preg_replace( '/^\xEF\xBB\xBF/', '', $text );
-		if ( ! seems_utf8( $text ) ) {
+		$text = (string) preg_replace( '/^\xEF\xBB\xBF/', '', $text );
+		if ( function_exists( 'mb_check_encoding' ) && ! mb_check_encoding( $text, 'UTF-8' ) ) {
 			$text = mb_convert_encoding( $text, 'UTF-8', 'Windows-1250' );
 		}
 		$first = strtok( $text, "\n" );
@@ -68,41 +74,134 @@ final class Plan_A_Clanstvo_Import {
 			fclose( $fh ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 			return array(
 				'ok'    => false,
-				'error' => 'U prvom retku nedostaju stupci „Ime” i „Prezime”.',
+				'error' => 'U prvom retku nedostaju stupci „Ime” i „Prezime” (pronađeno: ' . implode( ', ', array_map( 'sanitize_text_field', array_slice( (array) $head, 0, 6 ) ) ) . ').',
 			);
 		}
-
-		wp_raise_memory_limit( 'admin' );
-		if ( function_exists( 'set_time_limit' ) ) {
-			set_time_limit( 300 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions
-		}
-		wp_defer_term_counting( true );
-		$names = self::names();
-		$out   = array(
-			'ok'      => true,
-			'new'     => 0,
-			'updated' => 0,
-			'skipped' => 0,
-			'ceka'    => 0,
-		);
+		$rows = array();
 		while ( ( $cells = fgetcsv( $fh, 0, $sep, '"', '' ) ) !== false ) {
 			$r = array();
 			foreach ( $map as $i => $k ) {
 				$r[ $k ] = trim( (string) ( $cells[ $i ] ?? '' ) );
 			}
-			$res = self::row( $r, $names );
-			if ( ! $res ) {
-				++$out['skipped'];
-				continue;
-			}
-			++$out[ $res[1] ? 'new' : 'updated' ];
-			if ( 'ceka' === $res[2] ) {
-				++$out['ceka'];
+			if ( implode( '', $r ) !== '' ) {
+				$rows[] = $r;
 			}
 		}
 		fclose( $fh ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-		wp_defer_term_counting( false );
-		return $out;
+		if ( ! $rows ) {
+			return array(
+				'ok'    => false,
+				'error' => 'U datoteci nema redaka s članovima.',
+			);
+		}
+		update_option(
+			self::JOB,
+			array(
+				'rows'  => $rows,
+				'pos'   => 0,
+				'names' => self::names(),
+				'stats' => array(
+					'new'     => 0,
+					'updated' => 0,
+					'skipped' => 0,
+					'ceka'    => 0,
+				),
+				'sheet' => 0,
+				'error' => '',
+			),
+			false
+		);
+		return array(
+			'ok'    => true,
+			'total' => count( $rows ),
+		);
+	}
+
+	public static function job(): ?array {
+		$job = get_option( self::JOB );
+		return is_array( $job ) && isset( $job['rows'] ) ? $job : null;
+	}
+
+	public static function cancel() {
+		delete_option( self::JOB );
+	}
+
+	/**
+	 * Sljedeći dio uvoza: najprije članovi (po 40 redaka), zatim slanje u tablicu (po 25).
+	 *
+	 * @return array{done: bool, phase: string, pos: int, total: int, pending: int, stats: array, error: string}
+	 */
+	public static function step(): array {
+		$job = self::job();
+		if ( ! $job ) {
+			return array(
+				'done'    => true,
+				'phase'   => 'gotovo',
+				'pos'     => 0,
+				'total'   => 0,
+				'pending' => Plan_A_Clanstvo_Sheets::pending(),
+				'stats'   => (array) ( get_option( self::LAST )['stats'] ?? array() ),
+				'error'   => '',
+			);
+		}
+		$total = count( $job['rows'] );
+		$start = microtime( true );
+		$err   = '';
+		if ( $job['pos'] < $total ) {
+			wp_defer_term_counting( true );
+			while ( $job['pos'] < $total && microtime( true ) - $start < 15 ) {
+				$res = self::row( $job['rows'][ $job['pos'] ], $job['names'] );
+				++$job['pos'];
+				if ( ! $res ) {
+					++$job['stats']['skipped'];
+				} else {
+					++$job['stats'][ $res[1] ? 'new' : 'updated' ];
+					if ( 'ceka' === $res[2] ) {
+						++$job['stats']['ceka'];
+					}
+				}
+				if ( 0 === $job['pos'] % 40 ) {
+					break;
+				}
+			}
+			wp_defer_term_counting( false );
+			$phase = 'clanovi';
+		} elseif ( '' !== Plan_A_Clanstvo_Sheets::url() && Plan_A_Clanstvo_Sheets::pending() ) {
+			$r = Plan_A_Clanstvo_Sheets::bulk( true, 25, 10 );
+			$job['sheet'] += $r['n'];
+			if ( ! $r['ok'] ) {
+				$err = 'Slanje u Google tablicu nije uspjelo: ' . ( $r['error'] ?? '' );
+			}
+			$phase = 'tablica';
+		} else {
+			$phase = 'gotovo';
+		}
+		$pending = Plan_A_Clanstvo_Sheets::pending();
+		$done    = 'gotovo' === $phase || ( $job['pos'] >= $total && ( '' === Plan_A_Clanstvo_Sheets::url() || ! $pending ) );
+		if ( $done ) {
+			update_option(
+				self::LAST,
+				array(
+					'time'  => current_time( 'mysql' ),
+					'total' => $total,
+					'stats' => $job['stats'],
+				),
+				false
+			);
+			self::cancel();
+		} else {
+			$job['error'] = $err;
+			update_option( self::JOB, $job, false );
+		}
+		return array(
+			'done'    => $done,
+			'phase'   => $phase,
+			'pos'     => (int) $job['pos'],
+			'total'   => $total,
+			'pending' => $pending,
+			'stats'   => $job['stats'],
+			'error'   => $err,
+		);
 	}
 
 	/**
