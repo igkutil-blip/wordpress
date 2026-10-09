@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.5.3
+Stable tag: 1.5.4
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -92,6 +92,10 @@ svaka prijava je zasebna stavka, a sudionici se zbrajaju.
 == Povratak na izlet (1.5.3) ==
 
 Kad se kupac tipkom "Natrag" vrati na stranicu izleta, stranica se osvježi (inače gumb za rezervaciju ostane u stanju učitavanja).
+
+== Obavijest na vrhu e-maila (1.5.4) ==
+
+Filtar plan_a_kosarica_email_notice: HTML u narančastom okviru ispod naslova e-maila kupcu (npr. potvrda pristupnice).
 
 == Postavke ==
 

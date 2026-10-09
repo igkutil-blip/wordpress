@@ -167,6 +167,20 @@ $paka_rows = static function ( array $rows ) use ( $paka_label, $paka_value ): s
 				</tr>
 				<tr><td style="height:16px;line-height:16px;font-size:0;">&nbsp;</td></tr>
 
+				<?php
+				/** Važna obavijest na vrhu e-maila (npr. potvrda pristupnice; dodatak Plan A članstvo). */
+				$paka_notice = (string) apply_filters( 'plan_a_kosarica_email_notice', '', $order, $paka_mode );
+				?>
+				<?php if ( '' !== trim( $paka_notice ) ) : ?>
+					<tr>
+						<td style="padding:0 0 14px;">
+							<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#fff4e8;border:2px solid #e8862a;border-radius:14px;padding:20px 22px;font-family:<?php echo esc_attr( $paka_font ); ?>;color:<?php echo esc_attr( $paka_text ); ?>;font-size:15px;line-height:1.55;">
+								<?php echo wp_kses_post( $paka_notice ); ?>
+							</td></tr></table>
+						</td>
+					</tr>
+				<?php endif; ?>
+
 				<?php if ( 'received' === $paka_mode ) : ?>
 					<!-- Što sada? -->
 					<?php echo $paka_card_open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

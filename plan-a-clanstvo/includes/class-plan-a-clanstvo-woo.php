@@ -18,6 +18,7 @@ final class Plan_A_Clanstvo_Woo {
 	public static function init() {
 		// Blok "Članstvo Plan A" u e-mailu "Nova narudžba" (dodatak Plan A košarica); uvijek.
 		add_filter( 'plan_a_kosarica_member_rows', array( __CLASS__, 'member_rows' ), 10, 4 );
+		add_filter( 'plan_a_kosarica_email_notice', array( __CLASS__, 'email_notice' ), 10, 3 );
 		if ( ! (int) Plan_A_Clanstvo_Data::value( 'provjera' ) ) {
 			return;
 		}
@@ -107,6 +108,28 @@ final class Plan_A_Clanstvo_Woo {
 		}
 		$rows[] = array( 'Članarina ' . $year, esc_html( 'uplatnicu s 2D kodom dobivaš nakon potvrde pristupnice.' ) );
 		return $rows;
+	}
+
+	/**
+	 * Narančasti okvir na vrhu e-maila kupcu: pristupnica čeka potvrdu.
+	 */
+	public static function email_notice( $html, $order, $mode ) {
+		if ( 'admin' === $mode || ! $order instanceof WC_Order || self::skip( $order ) || ! (int) Plan_A_Clanstvo_Data::value( 'provjera' ) ) {
+			return $html;
+		}
+		$url = (string) $order->get_meta( '_pac_confirm_url' );
+		$id  = Plan_A_Clanstvo_Data::find( 'email', (string) $order->get_billing_email() );
+		$m   = $id ? Plan_A_Clanstvo_Data::get_member( $id ) : null;
+		if ( '' === $url || ! $m || 'potvrdeno' === $m['status'] ) {
+			return $html;
+		}
+		$days = (int) Plan_A_Clanstvo_Data::value( 'valid_days' );
+		return $html
+			. '<p style="margin:0 0 8px;color:#b25d00;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Važno – još jedan korak</p>'
+			. '<p style="margin:0 0 10px;color:#12304b;font-size:20px;font-weight:800;line-height:1.3;">Potvrdi svoju pristupnicu u udrugu Plan A</p>'
+			. '<p style="margin:0 0 14px;">Prijava na izlet je zaprimljena, ali članstvo je uvjet za sudjelovanje. Pristupnica vrijedi tek kad je potvrdiš klikom na gumb:</p>'
+			. '<p style="margin:0 0 14px;text-align:center;"><a href="' . esc_url( $url ) . '" style="display:inline-block;padding:15px 30px;border-radius:12px;background:#1e9e4a;color:#ffffff;font-size:17px;font-weight:800;text-decoration:none;">Potvrđujem pristupnicu</a></p>'
+			. '<p style="margin:0;color:#5f6b77;font-size:13px;">Klikom potvrđuješ da si pristupnicu ispunio/la ti i da prihvaćaš Izjavu člana. Poveznica vrijedi ' . (int) $days . ' dana. Nakon potvrde stiže ti e-mail s 2D kodom za članarinu.</p>';
 	}
 
 	/** Narudžbe na koje se provjera ne odnosi (npr. rezervacija jedrenja). */
