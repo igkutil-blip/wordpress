@@ -45,9 +45,29 @@ final class Plan_A_Clanstvo_Sheets {
 				'headers'     => array( 'Content-Type' => 'application/json; charset=utf-8' ),
 				'body'        => wp_json_encode( $payload ),
 				'timeout'     => $timeout,
-				'redirection' => 5,
+				'redirection' => 0,
 			)
 		);
+		// Google izvrši skriptu na POST i odgovori preusmjeravanjem na adresu s rezultatom,
+		// koju treba otvoriti kao GET. (Automatsko praćenje bi ponovno poslalo cijeli paket
+		// kao POST, na što Google za veće pakete odgovara s HTTP 400.)
+		$code = (int) wp_remote_retrieve_response_code( $res );
+		if ( ! is_wp_error( $res ) && in_array( $code, array( 301, 302, 303, 307, 308 ), true ) ) {
+			$loc = (string) wp_remote_retrieve_header( $res, 'location' );
+			if ( ! preg_match( '#^https://[a-z0-9.-]*google(usercontent)?\.com/#i', $loc ) ) {
+				return array(
+					'ok'    => false,
+					'error' => 'Tablica je preusmjerila na neočekivanu adresu.',
+				);
+			}
+			$res = wp_remote_get(
+				$loc,
+				array(
+					'timeout'     => $timeout,
+					'redirection' => 3,
+				)
+			);
+		}
 		if ( is_wp_error( $res ) ) {
 			return array(
 				'ok'    => false,
