@@ -409,6 +409,10 @@ final class Plan_A_Clanstvo_Admin {
 					$msg = 'Veza ne radi: ' . ( $r['error'] ?? '' );
 				}
 				break;
+			case 'pull':
+				$r   = Plan_A_Clanstvo_Sheets::pull();
+				$msg = $r['ok'] ? 'Kvačice za članarine i iskaznice pročitane su iz tablice (članova: ' . $r['n'] . ').' : 'Čitanje tablice nije uspjelo: ' . $r['error'];
+				break;
 			case 'resync':
 				foreach ( get_posts( array( 'post_type' => Plan_A_Clanstvo_Data::CPT, 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids', 'no_found_rows' => true ) ) as $pid ) {
 					update_post_meta( (int) $pid, '_pac_sync', 'pending' );
@@ -576,6 +580,7 @@ final class Plan_A_Clanstvo_Admin {
 				<button type="button" class="button" onclick="var t=document.getElementById('pac-script');t.select();navigator.clipboard?navigator.clipboard.writeText(t.value):document.execCommand('copy');this.textContent='Kopirano ✔';">Kopiraj skriptu</button>
 				<a class="button" href="<?php echo esc_url( self::action_url( 'ping' ) ); ?>">Provjeri vezu</a>
 				<a class="button" href="<?php echo esc_url( self::action_url( 'resync' ) ); ?>">Pošalji sve članove u tablicu</a>
+				<a class="button" href="<?php echo esc_url( self::action_url( 'pull' ) ); ?>">Osvježi kvačice iz tablice</a>
 				<?php $paj_left = Plan_A_Clanstvo_Sheets::pending(); ?>
 				<a class="button" href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . Plan_A_Clanstvo_Data::CPT . '&page=' . self::SLUG . '-uvoz' ) ); ?>">Uvoz članova (CSV)</a>
 				<?php if ( $paj_left ) : ?>
@@ -583,6 +588,8 @@ final class Plan_A_Clanstvo_Admin {
 				<?php endif; ?>
 				<a class="button-link" style="margin-left:12px" href="<?php echo esc_url( self::action_url( 'secret' ) ); ?>" onclick="return confirm('Napraviti novi ključ? Poslije treba ponovno zalijepiti skriptu u tablicu.')">Novi ključ</a>
 			</p>
+			<?php $pac_pull = get_option( 'plan_a_clanstvo_pull' ); ?>
+			<p class="description">Kvačice „Članarina GGGG” i „Iskaznica uručena” stranica čita iz tablice svaki sat<?php echo is_array( $pac_pull ) ? ' (zadnje čitanje: ' . esc_html( Plan_A_Clanstvo_Data::hr_datetime( (string) $pac_pull['time'] ) ) . ')' : ''; ?>; nakon ručnog označavanja klikni „Osvježi kvačice iz tablice” ako ti treba odmah.</p>
 			<p class="description">Smjer je stranica → tablica: promjene u tablici (osim kvačica za članarinu) ne vraćaju se na stranicu. Stupce „Članarina GGGG” i „Iskaznica uručena” stranica ne dira (kvačice se označavaju ručno), a stupac za novu godinu dodaje se sam u siječnju, ispred stupca za iskaznicu. Stupac „Br.” ne briši.</p>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">

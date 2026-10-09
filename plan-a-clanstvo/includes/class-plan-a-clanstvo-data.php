@@ -431,6 +431,11 @@ final class Plan_A_Clanstvo_Data {
 	}
 
 	/** Je li e-mail potvrđenog člana. */
+	/** Je li članarina za godinu označena u tablici (prema zadnjem čitanju tablice). */
+	public static function fee_paid( int $id, int $year ): bool {
+		return in_array( $year, array_map( 'intval', (array) get_post_meta( $id, '_pac_placeno', true ) ), true );
+	}
+
 	public static function is_member( string $email ): bool {
 		$email = strtolower( trim( $email ) );
 		if ( ! is_email( $email ) ) {

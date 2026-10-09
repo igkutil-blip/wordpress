@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 4;
+var SCRIPT_VERSION = 5;
 var SHEET_NAME = 'Članovi';
 var HEAD = ['Br.', 'Datum prijave', 'Ime', 'Prezime', 'Datum rođenja', 'OIB', 'Adresa', 'Mjesto, poštanski broj', 'E-mail', 'Mobitel', 'Roditelj ili skrbnik', 'Status', 'Datum potvrde'];
 var KEYS = ['broj', 'prijava', 'ime', 'prezime', 'datum', 'oib', 'adresa', 'mjesto', 'email', 'mobitel', 'roditelj', 'status', 'potvrda'];
@@ -34,6 +34,8 @@ function doPost(e) {
         out = { ok: true };
       } else if (d.action === 'bulk') {
         out = { ok: true, n: upsertMany_(sh, d.rows || []) };
+      } else if (d.action === 'read') {
+        out = { ok: true, rows: read_(sh) };
       } else if (d.action === 'renumber') {
         out = { ok: true, n: renumber_(sh, d.map || {}) };
       } else if (d.action === 'delete') {
@@ -135,6 +137,28 @@ function noteCol_(sh) {
 function isBox_(h) {
   h = String(h);
   return h === CARD || h.indexOf(YEAR_PREFIX) === 0;
+}
+
+/** Kvačice iz tablice (stranica ih čita): za svaki broj označene godine i iskaznica. */
+function read_(sh) {
+  var last = sh.getLastRow(), lastCol = sh.getLastColumn();
+  if (last < 2) return [];
+  var heads = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(String);
+  var data = sh.getRange(2, 1, last - 1, lastCol).getValues();
+  var years = [];
+  heads.forEach(function (h, c) {
+    if (h.indexOf(YEAR_PREFIX) === 0) years.push([c, parseInt(h.replace(YEAR_PREFIX, ''), 10)]);
+  });
+  var cardC = heads.indexOf(CARD);
+  var out = [];
+  data.forEach(function (r) {
+    var b = parseInt(r[0], 10);
+    if (!b) return;
+    var y = [];
+    years.forEach(function (p) { if (r[p[0]] === true) y.push(p[1]); });
+    out.push({ b: b, y: y, k: cardC >= 0 && r[cardC] === true ? 1 : 0 });
+  });
+  return out;
 }
 
 /** Novi brojevi članova (stari → novi), pa redovi poredani po broju; kvačice idu s redom. */

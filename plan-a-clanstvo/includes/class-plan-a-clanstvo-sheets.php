@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 final class Plan_A_Clanstvo_Sheets {
 
 	/** Verzija skripte u google-tablica.gs (SCRIPT_VERSION). Starija skripta je spora za pakete. */
-	const SCRIPT_VERSION = 4;
+	const SCRIPT_VERSION = 5;
 
 	public static function init() {
 		add_action( 'plan_a_clanstvo_changed', array( __CLASS__, 'send' ) );
@@ -231,6 +231,49 @@ final class Plan_A_Clanstvo_Sheets {
 		);
 	}
 
+	/**
+	 * Čita kvačice „Članarina GGGG” i „Iskaznica uručena” iz tablice (tablica je jedino
+	 * mjesto gdje se označavaju) i sprema ih uz članove na stranici.
+	 *
+	 * @return array{ok: bool, n?: int, error?: string}
+	 */
+	public static function pull(): array {
+		if ( '' === self::url() ) {
+			return array(
+				'ok'    => false,
+				'error' => 'Adresa Google tablice nije upisana.',
+			);
+		}
+		$res = self::post( array( 'action' => 'read' ), 60 );
+		if ( ! $res['ok'] || ! isset( $res['rows'] ) || ! is_array( $res['rows'] ) ) {
+			return array(
+				'ok'    => false,
+				'error' => (int) ( $res['v'] ?? 0 ) < self::SCRIPT_VERSION && ( $res['ok'] || 'Nepoznata radnja.' === ( $res['error'] ?? '' ) ) ? 'u tablici je stara skripta – kopiraj novu i objavi je kao „New version”.' : (string) ( $res['error'] ?? 'nepoznata greška' ),
+			);
+		}
+		$by = array();
+		foreach ( get_posts( array( 'post_type' => Plan_A_Clanstvo_Data::CPT, 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids', 'no_found_rows' => true ) ) as $id ) {
+			$by[ (int) get_post_meta( $id, '_pac_broj', true ) ] = (int) $id;
+		}
+		$n = 0;
+		foreach ( $res['rows'] as $r ) {
+			$id = $by[ (int) ( $r['b'] ?? 0 ) ] ?? 0;
+			if ( ! $id ) {
+				continue;
+			}
+			$years = array_values( array_unique( array_filter( array_map( 'intval', (array) ( $r['y'] ?? array() ) ), static fn( $y ) => $y >= 2000 && $y <= 2100 ) ) );
+			sort( $years );
+			update_post_meta( $id, '_pac_placeno', $years );
+			update_post_meta( $id, '_pac_kartica', empty( $r['k'] ) ? 0 : 1 );
+			++$n;
+		}
+		update_option( 'plan_a_clanstvo_pull', array( 'time' => current_time( 'mysql' ), 'n' => $n ), false );
+		return array(
+			'ok' => true,
+			'n'  => $n,
+		);
+	}
+
 	/** Je li u tablici stara skripta (prema zadnjem odgovoru). */
 	public static function old_script(): bool {
 		return (bool) get_option( 'plan_a_clanstvo_script_old', 0 );
@@ -248,5 +291,6 @@ final class Plan_A_Clanstvo_Sheets {
 			}
 		}
 		self::bulk( true, 50, 120 );
+		self::pull();
 	}
 }
