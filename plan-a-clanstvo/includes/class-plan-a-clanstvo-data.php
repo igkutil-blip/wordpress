@@ -113,6 +113,10 @@ final class Plan_A_Clanstvo_Data {
 			'remind_days'   => 3,
 			'delete_days'   => 30,
 			'from_name'     => 'Plan A',
+			'naslov'        => 'Dobrodošli u zajednicu Plan A!',
+			'uvod'          => 'Plan A je zajednica ljubitelja prirode, planina i aktivnog boravka na otvorenom: mreža ljudi okupljenih oko planina, a ne samo popis imena onih koji dođu na isti izlet.',
+			'pogodnosti'    => "pripadnost zajednici koja se redovito okuplja i druži, dijeli iskustva i planove izvan same ture\npopust na opremu u Iglu sportu\npravovremene obavijesti o edukacijama, terminima i programima Plan A",
+			'kontakt'       => 'Igor, 095 90 60 556 · info@srd-plan-a.hr',
 		);
 	}
 

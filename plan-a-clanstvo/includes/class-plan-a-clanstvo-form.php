@@ -206,7 +206,8 @@ final class Plan_A_Clanstvo_Form {
 		return mb_substr( $parts[0], 0, 2 ) . str_repeat( '•', max( 1, min( 6, mb_strlen( $parts[0] ) - 2 ) ) ) . '@' . $parts[1];
 	}
 
-	public static function render(): string {
+	public static function render( $atts = array() ): string {
+		$atts = shortcode_atts( array( 'izgled' => 'stranica' ), $atts, self::TAG );
 		$post = get_post();
 		if ( $post && 'publish' === $post->post_status && (int) get_option( Plan_A_Clanstvo_Data::PAGE ) !== (int) $post->ID ) {
 			update_option( Plan_A_Clanstvo_Data::PAGE, (int) $post->ID, false );
@@ -226,7 +227,71 @@ final class Plan_A_Clanstvo_Form {
 		} elseif ( 'nova' === $state ) {
 			$html = self::box( 'info', 'mail', 'Poslali smo novu poveznicu', '<p>Otvori e-mail od Plan A i klikni <strong>Potvrđujem pristupnicu</strong>. Ako ga ne vidiš, pogledaj i mapu Neželjena pošta (Spam).</p>' );
 		}
-		return '<div class="pacl" data-pacl>' . ( '' !== $html ? $html : self::form() ) . '</div>';
+		if ( '' !== $html ) {
+			return '<div class="pacl" data-pacl>' . $html . '</div>';
+		}
+		if ( 'obrazac' === $atts['izgled'] ) {
+			return '<div class="pacl" data-pacl>' . self::form() . '</div>';
+		}
+		return self::page();
+	}
+
+	private static function sicon( string $name ): string {
+		$paths = array(
+			'users' => '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5a3 3 0 0 1 0 6M18 14.5c1.8.9 3 2.9 3 5.5"/>',
+			'tag'   => '<path d="M3 12V4h8l9 9-8 8z"/><circle cx="7.5" cy="8.5" r="1.4"/>',
+			'bell'  => '<path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+			'star'  => '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+			'form'  => '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>',
+			'mail'  => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',
+			'card'  => '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>',
+			'down'  => '<path d="M12 5v14M6 13l6 6 6-6"/>',
+		);
+		return '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $paths[ $name ] . '</svg>';
+	}
+
+	/**
+	 * Cijela stranica: uvod s pogodnostima i članarinom, "Kako postati član" i obrazac.
+	 */
+	private static function page(): string {
+		$s     = Plan_A_Clanstvo_Data::get();
+		$items = array_values( array_filter( array_map( 'trim', preg_split( '/\R/u', (string) $s['pogodnosti'] ) ) ) );
+		$icons = array( 'users', 'tag', 'bell', 'star' );
+		$ben   = '';
+		foreach ( $items as $i => $item ) {
+			$ben .= '<li><span class="pacl-ben__icon">' . self::sicon( $icons[ $i % 4 ] ) . '</span><span>' . esc_html( $item ) . '</span></li>';
+		}
+		$steps = array(
+			array( 'form', 'Ispuni pristupnicu', 'Osnovni podaci i prihvaćanje Izjave člana. Traje dvije minute.' ),
+			array( 'mail', 'Potvrdi e-mail', 'Klikni gumb Potvrđujem pristupnicu u e-mailu koji ti stigne.' ),
+			array( 'card', 'Uplati članarinu', 'Dobiješ 2D kod za uplatu. Člansku iskaznicu preuzimaš na prvom susretu.' ),
+		);
+		$how = '';
+		foreach ( $steps as $i => $st ) {
+			$how .= '<li><span class="pacl-how__num">' . ( $i + 1 ) . '</span><span class="pacl-how__icon">' . self::sicon( $st[0] ) . '</span><strong>' . esc_html( $st[1] ) . '</strong><small>' . esc_html( $st[2] ) . '</small></li>';
+		}
+		$fee = (float) $s['iznos'];
+		$fee = number_format( $fee, abs( $fee - round( $fee ) ) < 0.005 ? 0 : 2, ',', '.' );
+		return '<div class="pacl pacl--page" data-pacl><div class="pacl-layout">'
+			. '<div class="pacl-side">'
+			. '<section class="pacl-hero">'
+			. '<p class="pacl-kicker">Pristupnica</p>'
+			. '<h1 class="pacl-hero__title">' . esc_html( (string) $s['naslov'] ) . '</h1>'
+			. ( '' !== trim( (string) $s['uvod'] ) ? '<p class="pacl-hero__lead">' . esc_html( (string) $s['uvod'] ) . '</p>' : '' )
+			. ( $ben ? '<p class="pacl-hero__sub">Članstvo ti donosi:</p><ul class="pacl-ben">' . $ben . '</ul>' : '' )
+			. '<div class="pacl-fee"><span class="pacl-fee__amount">' . esc_html( $fee ) . ' €</span><span class="pacl-fee__text">godišnja članarina<br><small>vrijedi za kalendarsku godinu</small></span></div>'
+			. '<a class="pacl-btn pacl-hero__cta" href="#pristupnica">Ispuni pristupnicu ' . self::sicon( 'down' ) . '</a>'
+			. '</section>'
+			. '<section class="pacl-how" aria-labelledby="pacl-how-title"><h2 class="pacl-h2" id="pacl-how-title">Kako postati član</h2><ol>' . $how . '</ol></section>'
+			. '</div>'
+			. '<section class="pacl-formcard" id="pristupnica" aria-labelledby="pacl-form-title">'
+			. '<h2 class="pacl-h2" id="pacl-form-title">Ispuni pristupnicu</h2>'
+			. '<p class="pacl-muted pacl-formcard__lead">Polja su obavezna osim ako piše drukčije. Podatke koristimo samo za evidenciju članova udruge.</p>'
+			. self::form()
+			. '</section>'
+			. '</div>'
+			. ( '' !== trim( (string) $s['kontakt'] ) ? '<p class="pacl-contact">Pitanja? ' . esc_html( (string) $s['kontakt'] ) . '</p>' : '' )
+			. '</div>';
 	}
 
 	private static function sent_view(): string {

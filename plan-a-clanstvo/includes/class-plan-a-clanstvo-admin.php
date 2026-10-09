@@ -315,7 +315,7 @@ final class Plan_A_Clanstvo_Admin {
 	private static function save_settings() {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- provjereno u action().
 		$s = Plan_A_Clanstvo_Data::get();
-		foreach ( array( 'primatelj', 'adresa', 'mjesto', 'poziv', 'opis', 'from_name' ) as $k ) {
+		foreach ( array( 'primatelj', 'adresa', 'mjesto', 'poziv', 'opis', 'from_name', 'naslov', 'kontakt' ) as $k ) {
 			$s[ $k ] = sanitize_text_field( wp_unslash( $_POST[ $k ] ?? '' ) ) ?: Plan_A_Clanstvo_Data::defaults()[ $k ];
 		}
 		$url            = esc_url_raw( trim( wp_unslash( $_POST['sheet_url'] ?? '' ) ) );
@@ -327,6 +327,8 @@ final class Plan_A_Clanstvo_Admin {
 		$s['barcode']   = in_array( $_POST['barcode'] ?? '', array( 'osobni', 'slika', 'ne' ), true ) ? (string) $_POST['barcode'] : 'osobni'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 		$s['barcode_slika'] = esc_url_raw( wp_unslash( $_POST['barcode_slika'] ?? '' ) );
 		$s['izjava']        = sanitize_textarea_field( wp_unslash( $_POST['izjava'] ?? '' ) );
+		$s['uvod']          = sanitize_textarea_field( wp_unslash( $_POST['uvod'] ?? '' ) );
+		$s['pogodnosti']    = sanitize_textarea_field( wp_unslash( $_POST['pogodnosti'] ?? '' ) );
 		$s['provjera']      = empty( $_POST['provjera'] ) ? 0 : 1;
 		$s['valid_days']    = max( 1, min( 60, absint( $_POST['valid_days'] ?? 7 ) ) );
 		$s['remind_days']   = max( 1, min( 30, absint( $_POST['remind_days'] ?? 3 ) ) );
@@ -437,6 +439,10 @@ final class Plan_A_Clanstvo_Admin {
 
 				<h2>3. Pristupnica</h2>
 				<table class="form-table">
+					<?php $text( 'naslov', 'Naslov stranice', '', 'large-text' ); ?>
+					<tr><th><label for="pac-uvod">Uvod</label></th><td><textarea id="pac-uvod" name="uvod" class="large-text" rows="3"><?php echo esc_textarea( (string) $s['uvod'] ); ?></textarea></td></tr>
+					<tr><th><label for="pac-pogodnosti">Članstvo donosi</label></th><td><textarea id="pac-pogodnosti" name="pogodnosti" class="large-text" rows="4"><?php echo esc_textarea( (string) $s['pogodnosti'] ); ?></textarea><p class="description">Jedna pogodnost u retku.</p></td></tr>
+					<?php $text( 'kontakt', 'Kontakt na dnu', 'npr. Igor, 095 90 60 556 · info@srd-plan-a.hr', 'large-text' ); ?>
 					<tr><th><label for="pac-izjava">Izjava člana</label></th><td><textarea id="pac-izjava" name="izjava" class="large-text" rows="10"><?php echo esc_textarea( (string) $s['izjava'] ); ?></textarea><p class="description">Svaki odlomak u svom retku. Kratki redak bez točke na kraju prikazuje se kao podnaslov.</p></td></tr>
 					<tr><th>Prijava na izlet</th><td><label><input type="checkbox" name="provjera" value="1" <?php checked( (int) $s['provjera'], 1 ); ?>> Provjeri članstvo po e-mailu kupca (napomena na stranici „Hvala” i u e-mailu, stupac „Član” u narudžbama)</label></td></tr>
 					<tr><th>Rokovi (dana)</th><td>
