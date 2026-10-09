@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 8;
+var SCRIPT_VERSION = 9;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -44,7 +44,8 @@ function doPost(e) {
       } else if (d.action === 'ag_status') {
         out = { ok: true, n: agStatus_(agSheet_(d.ag), d.items || []) };
       } else if (d.action === 'ag_paid') {
-        out = { ok: true, orders: agPaid_(agSheet_(d.ag), null) };
+        var ash = agSheet_(d.ag);
+        out = { ok: true, orders: agPaid_(ash, null), local: agLocalRefresh_(ash) };
       } else if (d.action === 'read') {
         out = { ok: true, rows: read_(sh) };
       } else if (d.action === 'renumber') {
@@ -266,32 +267,51 @@ function upsertMany_(sh, items) {
  * Tablica za agenciju: "Prijave na izlete" (posebna Google tablica, list "Prijave").
  * Svaki izlet je blok (naslov, nazivi stupaca, osobe, prazan red); novi izlet ide na vrh.
  * Skriveni zadnji stupac "ključ" povezuje redove sa stranicom. Stranica upisuje svaku
- * osobu samo jednom; obrisani red se ne vraća. Kasnije mijenja samo stupce Uplaćeno,
- * Pristupnica, Članarina i Iskaznica. Napomena i sve što dopišete ostaje.
+ * osobu samo jednom; obrisani red se ne vraća.
+ * - Uplaćeno: kad su označene sve osobe iz narudžbe (osim otkazanih), narudžba postaje
+ *   "Završeno" i kupac dobiva e-mail.
+ * - Otkazao: red posivi; kad otkažu svi iz narudžbe, narudžba se otkazuje (e-mail ide
+ *   samo vama).
+ * - Ime i prezime: zamjena u istom redu ili nova osoba u novom redu. Ostali podaci
+ *   upisuju se iz tablice članova, a brojevi (Br.) se slože ispočetka.
+ * Napomena i sve što dopišete ostaje.
  * ======================================================================== */
 var AG_SHEET = 'Prijave';
-var AG_HEAD = ['Br.', 'Ime', 'Prezime', 'OIB', 'Datum rođenja', 'Adresa', 'Mjesto', 'Mobitel', 'E-mail', 'Prijavio/la', 'Iznos', 'Osiguranje', 'Uplaćeno', 'Pristupnica', 'Članarina', 'Iskaznica', 'Napomena', 'Narudžba', 'ključ'];
-var AG_KEYS = ['', 'ime', 'prezime', 'oib', 'datum', 'adresa', 'mjesto', 'mobitel', 'email', 'prijavio', 'iznos', 'osiguranje', 'uplaceno', 'pristupnica', 'clanarina', 'iskaznica', 'napomena', 'narudzba'];
-var AG_BOX = { osiguranje: 1, uplaceno: 1, clanarina: 1, iskaznica: 1 };
+var AG_HEAD = ['Br.', 'Ime', 'Prezime', 'OIB', 'Datum rođenja', 'Adresa', 'Mjesto', 'Mobitel', 'E-mail', 'Prijavio/la', 'Iznos', 'Osiguranje', 'Uplaćeno', 'Otkazao', 'Pristupnica', 'Članarina', 'Iskaznica', 'Napomena', 'Narudžba', 'ključ'];
+var AG_KEYS = ['', 'ime', 'prezime', 'oib', 'datum', 'adresa', 'mjesto', 'mobitel', 'email', 'prijavio', 'iznos', 'osiguranje', 'uplaceno', 'otkazao', 'pristupnica', 'clanarina', 'iskaznica', 'napomena', 'narudzba'];
+var AG_BOX = { osiguranje: 1, uplaceno: 1, otkazao: 1, clanarina: 1, iskaznica: 1 };
+var AG_PERSON = ['oib', 'datum', 'adresa', 'mjesto', 'mobitel', 'email']; // iz tablice članova
 var AG_KEY_COL = AG_HEAD.length; // skriveni stupac
 var AG_LAST = AG_HEAD.length - 1; // zadnji vidljivi stupac
+var AG_GREY = '#e6e6e6';
+var AG_AUTO = /^(nije član – |više članova s tim imenom|zamjena za )/; // napomene koje piše skripta
+
+/** Broj stupca za ključ iz AG_KEYS. */
+function agC_(k) {
+  return AG_KEYS.indexOf(k) + 1;
+}
 
 /**
- * Brzo osvježavanje: pokreni JEDNOM u uređivaču (Run) i dopusti pristup. Nakon toga, čim
- * netko označi kvačicu "Članarina GGGG" ili "Iskaznica uručena", tablica javi stranici
- * (a stranica osvježi tablicu za agenciju). Isto vrijedi za kvačicu "Uplaćeno" u tablici
- * za agenciju: kad su označene sve osobe iz narudžbe, narudžba postaje "Završeno".
+ * Brzo osvježavanje: pokreni JEDNOM u uređivaču (Run) i dopusti pristup. Nakon toga:
+ * - kvačice "Članarina GGGG" i "Iskaznica uručena" u tablici članova odmah idu na stranicu
+ *   i u tablicu za agenciju;
+ * - u tablici za agenciju kvačice "Uplaćeno" i "Otkazao" odmah mijenjaju narudžbu, a
+ *   upisano ime i prezime povlači ostale podatke iz tablice članova.
  * Ponovno pokretanje ne pravi duple okidače.
  */
 function ukljuciBrzoOsvjezavanje() {
   var ss = SpreadsheetApp.getActive();
+  PropertiesService.getScriptProperties().setProperty('MEM', ss.getId());
   ScriptApp.getProjectTriggers().forEach(function (t) {
-    if (t.getHandlerFunction() === 'naIzmjenu') ScriptApp.deleteTrigger(t);
+    var f = t.getHandlerFunction();
+    if (f === 'naIzmjenu' || f === 'naPromjenu') ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger('naIzmjenu').forSpreadsheet(ss).onEdit().create();
   var ag = agId_();
   if (!ag) return 'Brzo osvježavanje je uključeno za tablicu članova. Tablica za agenciju još nije poznata: na stranici klikni "Provjeri vezu" i ponovno pokreni ovu funkciju.';
   ScriptApp.newTrigger('naIzmjenu').forSpreadsheet(ag).onEdit().create();
+  ScriptApp.newTrigger('naPromjenu').forSpreadsheet(ag).onChange().create();
+  agSheet_(ag); // dodaje stupac "Otkazao" ako ga još nema
   return 'Brzo osvježavanje je uključeno (tablica članova i tablica za agenciju).';
 }
 
@@ -299,6 +319,8 @@ function agRemember_(id) {
   id = String(id);
   var p = PropertiesService.getScriptProperties();
   if (p.getProperty('AG') !== id) p.setProperty('AG', id);
+  var mem = SpreadsheetApp.getActive();
+  if (mem && p.getProperty('MEM') !== mem.getId()) p.setProperty('MEM', mem.getId());
 }
 
 function agId_() {
@@ -315,7 +337,7 @@ function post_(payload) {
   });
 }
 
-/** Okidač: promjena kvačica za članarinu ili iskaznicu → javi stranici za te retke. */
+/** Okidač za obje tablice (promjena ćelije). */
 function naIzmjenu(e) {
   try {
     if (!e || !e.range || !SITE || SITE.indexOf('{{') === 0) return;
@@ -345,6 +367,37 @@ function naIzmjenu(e) {
     });
     if (!rows.length) return;
     post_({ rows: rows });
+    // Ručno upisane osobe i zamjene u tablici za agenciju vodi skripta.
+    var ag = agId_();
+    if (ag) {
+      var lock = LockService.getScriptLock();
+      lock.waitLock(25000);
+      try {
+        agLocalRefresh_(agSheet_(ag));
+      } finally {
+        lock.releaseLock();
+      }
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+/** Okidač za tablicu za agenciju (dodan ili obrisan red): brojevi i zbrojevi ispočetka. */
+function naPromjenu(e) {
+  try {
+    if (!e || (e.changeType !== 'INSERT_ROW' && e.changeType !== 'REMOVE_ROW')) return;
+    var sh = e.source.getSheetByName(AG_SHEET);
+    if (!sh) return;
+    var lock = LockService.getScriptLock();
+    lock.waitLock(25000);
+    try {
+      agMigrate_(sh);
+      var ix = agIndex_(sh);
+      ix.blocks.forEach(function (b) { agNumber_(sh, ix, b); agCount_(sh, ix, b); });
+    } finally {
+      lock.releaseLock();
+    }
   } catch (err) {
     console.error(err);
   }
@@ -355,23 +408,52 @@ function ovlasti() {
   return SpreadsheetApp.getActive().getName();
 }
 
+function str_(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, Session.getScriptTimeZone(), 'd.M.yyyy.');
+  return v === null || v === undefined ? '' : String(v).trim();
+}
+
 function agSheet_(id) {
   if (!id) throw new Error('Tablica za agenciju nije upisana u postavkama.');
   var ss = SpreadsheetApp.openById(id);
   var sh = ss.getSheetByName(AG_SHEET);
   if (!sh) {
     sh = ss.insertSheet(AG_SHEET, 0);
-    sh.getRange(1, 1).setValue('Prijave na izlete – Plan A · novi izlet je na vrhu · Pristupnica, Članarina i Iskaznica puni stranica · Uplaćeno: kad su označene sve osobe iz narudžbe, kupac dobiva potvrdu prijave · Napomena je vaša');
+    sh.getRange(1, 1).setValue('Prijave na izlete – Plan A · novi izlet je na vrhu · Uplaćeno: kad su označene sve osobe iz narudžbe, kupac dobiva potvrdu · Otkazao: osoba ne ide (kad otkažu svi, narudžba se otkazuje) · zamjena: upišite novo ime i prezime u isti red, ostalo se upiše iz tablice članova · Napomena je vaša');
     sh.getRange(1, 1, 1, AG_LAST).merge().setFontStyle('italic').setFontColor('#5f6b77').setWrap(true);
     sh.setFrozenRows(1);
     sh.getRange(1, AG_KEY_COL).setValue('ključ');
     sh.hideColumns(AG_KEY_COL);
-    var w = [45, 110, 130, 105, 95, 170, 130, 115, 190, 140, 80, 85, 80, 115, 90, 85, 260, 80];
+    var w = [45, 110, 130, 105, 95, 170, 130, 115, 190, 140, 80, 85, 80, 80, 115, 90, 85, 260, 80];
     w.forEach(function (px, i) { sh.setColumnWidth(i + 1, px); });
     sh.getRange('D:D').setNumberFormat('@');
     sh.getRange('H:H').setNumberFormat('@');
   }
+  agMigrate_(sh);
   return sh;
+}
+
+/**
+ * Starija tablica (bez stupca "Otkazao"): umetni ga iza "Uplaćeno". Sivi (otkazani) redovi
+ * dobivaju kvačicu. Radi se samo jednom.
+ */
+function agMigrate_(sh) {
+  if (String(sh.getRange(1, AG_KEY_COL - 1).getValue()) !== 'ključ') return;
+  var oc = agC_('otkazao');
+  sh.insertColumnBefore(oc);
+  sh.getRange(1, oc, sh.getMaxRows(), 1).clearDataValidations().clearContent();
+  sh.setColumnWidth(oc, 80);
+  var ix = agIndex_(sh);
+  var bg = ix.last ? sh.getRange(1, 1, ix.last, 1).getBackgrounds() : [];
+  for (var r = 2; r <= ix.last; r++) {
+    var info = ix.info[r] || {};
+    if (info.kind === 'H') {
+      sh.getRange(r, oc).setValue('Otkazao');
+    } else if (info.kind !== 'T' && agIsPerson_(ix, r)) {
+      var grey = String(bg[r - 1][0]).toLowerCase() === AG_GREY;
+      sh.getRange(r, oc).insertCheckboxes().setValue(grey);
+    }
+  }
 }
 
 function agNorm_(t) {
@@ -379,29 +461,49 @@ function agNorm_(t) {
 }
 
 /**
- * Pregled lista: blokovi (naslovni redovi) i osobe (po ključu). Red osobe je i red koji ste
- * dodali ručno (ima ime ili prezime), pa se nove osobe upisuju ispod njega.
+ * Pregled lista: blokovi (naslovni redovi), osobe (po ključu) i vrsta svakog reda:
+ * T naslov, H nazivi stupaca, P osoba sa stranice (pkey, izvorno ime, narudžba),
+ * M osoba koju ste dodali ručno. Red s imenom bez ključa je također osoba.
  */
 function agIndex_(sh) {
   var last = sh.getLastRow();
   var data = last > 0 ? sh.getRange(1, 1, last, AG_HEAD.length).getValues() : [];
-  var blocks = [], persons = {};
+  var blocks = [], persons = {}, info = {};
   data.forEach(function (r, i) {
-    var k = String(r[AG_KEY_COL - 1] || '');
-    if (k.indexOf('T|') === 0) {
-      var p = k.split('|');
+    var k = String(r[AG_KEY_COL - 1] || ''), p = k.split('|');
+    if (p[0] === 'T' && p.length > 1) {
       blocks.push({ key: p[1], date: p[2] || '', title: p[3] || '', base: p.slice(4).join('|'), row: i + 1 });
-    } else if (k.indexOf('P|') === 0) {
-      persons[k.substring(2)] = i + 1;
+      info[i + 1] = { kind: 'T' };
+    } else if (p[0] === 'H' && p.length > 1) {
+      info[i + 1] = { kind: 'H' };
+    } else if (p[0] === 'P' && p.length > 1) {
+      persons[p[1]] = i + 1;
+      var m = /^o(\d+)-/.exec(p[1]);
+      info[i + 1] = { kind: 'P', pkey: p[1], orig: p.length > 2 ? p.slice(2).join('|') : undefined, o: m ? parseInt(m[1], 10) : 0 };
+    } else if (p[0] === 'M') {
+      info[i + 1] = { kind: 'M' };
     }
   });
-  return { last: last, data: data, blocks: blocks, persons: persons };
+  return { last: last, data: data, blocks: blocks, persons: persons, info: info };
 }
 
 function agIsPerson_(ix, r) {
-  var row = ix.data[r - 1] || [];
-  var k = String(row[AG_KEY_COL - 1] || '');
-  return k.indexOf('P|') === 0 || String(row[1] || '') + String(row[2] || '') !== '';
+  var row = ix.data[r - 1] || [], info = ix.info[r] || {};
+  if (info.kind === 'T' || info.kind === 'H') return false;
+  return info.kind === 'P' || info.kind === 'M' || String(row[1] || '') + String(row[2] || '') !== '';
+}
+
+function agName_(row) {
+  return (str_(row[1]) + ' ' + str_(row[2])).trim();
+}
+
+/** Red koji vodi skripta (ručno dodan ili zamjena): podaci i stanje iz tablice članova. */
+function agIsLocal_(ix, r) {
+  var info = ix.info[r] || {};
+  if (info.kind === 'M') return true;
+  if (!info.kind) return agIsPerson_(ix, r);
+  if (info.kind !== 'P' || info.orig === undefined) return false;
+  return info.orig === '?' || agNorm_(info.orig) !== agNorm_(agName_(ix.data[r - 1]));
 }
 
 /** Redovi osoba u bloku: [prvi, zadnji]; prazan blok: zadnji = red s nazivima stupaca. */
@@ -421,24 +523,56 @@ function agBlockOf_(ix, r) {
   return b;
 }
 
-function agTitleText_(base, n, paid) {
-  return base + ' · prijavljeno ' + n + ' · uplaćeno ' + paid;
+/** Godina izleta (za stupac "Članarina GGGG"). */
+function agYear_(b) {
+  var y = parseInt(String(b.date || '').substring(0, 4), 10);
+  return y > 2000 ? y : new Date().getFullYear();
 }
 
-/** Osvježi brojke u naslovu bloka. */
+function agTitleText_(base, n, paid, x) {
+  return base + ' · prijavljeno ' + n + ' · uplaćeno ' + paid + (x ? ' · otkazalo ' + x : '');
+}
+
+/** Osvježi brojke u naslovu bloka (otkazani se ne broje u prijavljene). */
 function agCount_(sh, ix, b) {
-  var br = agBlockRows_(ix, b), n = 0, paid = 0, pc = AG_KEYS.indexOf('uplaceno');
+  var br = agBlockRows_(ix, b), n = 0, paid = 0, x = 0, pc = agC_('uplaceno') - 1, xc = agC_('otkazao') - 1;
   for (var r = br.first; r <= br.end; r++) {
     if (!agIsPerson_(ix, r)) continue;
+    var row = ix.data[r - 1];
+    if (row[xc] === true) { x++; continue; }
     n++;
-    if (ix.data[r - 1][pc] === true) paid++;
+    if (row[pc] === true) paid++;
   }
-  sh.getRange(b.row, 1).setValue(agTitleText_(b.base, n, paid));
+  var text = agTitleText_(b.base, n, paid, x);
+  if (String(ix.data[b.row - 1][0]) !== text) {
+    sh.getRange(b.row, 1).setValue(text);
+    ix.data[b.row - 1][0] = text;
+  }
+}
+
+/** Brojevi osoba u bloku redom 1, 2, 3 … */
+function agNumber_(sh, ix, b) {
+  var br = agBlockRows_(ix, b);
+  if (br.end < br.first) return;
+  var vals = [], n = 0, changed = false;
+  for (var r = br.first; r <= br.end; r++) {
+    var cur = ix.data[r - 1][0];
+    if (agIsPerson_(ix, r)) {
+      n++;
+      if (Number(cur) !== n) changed = true;
+      vals.push([n]);
+    } else {
+      vals.push([cur]);
+    }
+  }
+  if (!changed) return;
+  sh.getRange(br.first, 1, vals.length, 1).setValues(vals);
+  vals.forEach(function (v, i) { ix.data[br.first + i - 1][0] = v[0]; });
 }
 
 function agRefresh_(sh, ix) {
   var nix = agIndex_(sh);
-  ix.last = nix.last; ix.data = nix.data; ix.blocks = nix.blocks; ix.persons = nix.persons;
+  ix.last = nix.last; ix.data = nix.data; ix.blocks = nix.blocks; ix.persons = nix.persons; ix.info = nix.info;
 }
 
 function agFind_(ix, key) {
@@ -470,7 +604,7 @@ function agBlock_(sh, ix, t) {
   if (b) return b;
   sh.insertRowsBefore(2, 3);
   sh.getRange(2, 1, 3, AG_HEAD.length).breakApart().clearContent().clearFormat().clearDataValidations();
-  sh.getRange(2, 1, 1, AG_LAST).merge().setValue(agTitleText_(t.base, 0, 0)).setFontWeight('bold').setFontSize(12).setBackground('#12304b').setFontColor('#ffffff').setVerticalAlignment('middle');
+  sh.getRange(2, 1, 1, AG_LAST).merge().setValue(agTitleText_(t.base, 0, 0, 0)).setFontWeight('bold').setFontSize(12).setBackground('#12304b').setFontColor('#ffffff').setVerticalAlignment('middle');
   sh.setRowHeight(2, 30);
   sh.getRange(2, AG_KEY_COL).setValue(['T', t.key, t.date, agNorm_(t.title), t.base].join('|'));
   var head = AG_HEAD.slice(0, AG_LAST).map(function (h) { return h === 'Članarina' && t.year ? 'Članarina ' + t.year : h; });
@@ -492,6 +626,10 @@ function agPristupnica_(cell, v) {
   cell.setValue(v).setFontColor(v ? c : null).setFontWeight(v ? 'bold' : 'normal');
 }
 
+function agGrey_(sh, r, on) {
+  sh.getRange(r, 1, 1, AG_LAST).setBackground(on ? AG_GREY : null).setFontColor(on ? '#777777' : null);
+}
+
 /** Nove osobe: rows [{tour: {...}, pkey, v: {ime, prezime, …}}]. Postojeći ključ se preskače. */
 function agAdd_(sh, rows) {
   var ix = agIndex_(sh), n = 0, done = {};
@@ -504,6 +642,7 @@ function agAdd_(sh, rows) {
     var br = agBlockRows_(ix, b);
     sh.insertRowAfter(br.end);
     var r = br.end + 1, v = it.v || {};
+    v.otkazao = !!(v.otkazao || v.otkazano);
     var line = AG_KEYS.map(function (k) {
       if (k === '') return br.n + 1;
       if (AG_BOX[k]) return !!v[k];
@@ -511,11 +650,12 @@ function agAdd_(sh, rows) {
       return /^[=+\-@]/.test(x) ? "'" + x : x;
     });
     sh.getRange(r, 1, 1, AG_HEAD.length).breakApart().clearFormat().clearDataValidations();
-    Object.keys(AG_BOX).forEach(function (k) { sh.getRange(r, AG_KEYS.indexOf(k) + 1).insertCheckboxes(); });
+    Object.keys(AG_BOX).forEach(function (k) { sh.getRange(r, agC_(k)).insertCheckboxes(); });
     sh.getRange(r, 1, 1, AG_LAST).setValues([line]);
-    agPristupnica_(sh.getRange(r, AG_KEYS.indexOf('pristupnica') + 1), v.pristupnica);
-    sh.getRange(r, AG_KEY_COL).setValue('P|' + it.pkey);
-    if (v.otkazano) sh.getRange(r, 1, 1, AG_LAST).setBackground('#e6e6e6').setFontColor('#777777');
+    agPristupnica_(sh.getRange(r, agC_('pristupnica')), v.pristupnica);
+    var orig = (String(v.ime || '') + ' ' + String(v.prezime || '')).trim().replace(/\|/g, ' ');
+    sh.getRange(r, AG_KEY_COL).setValue('P|' + it.pkey + '|' + orig);
+    if (v.otkazao) agGrey_(sh, r, true);
     n++;
     agRefresh_(sh, ix);
     done[b.key] = 1;
@@ -524,22 +664,30 @@ function agAdd_(sh, rows) {
   return n;
 }
 
-/** Osvježavanje: items [{k, u, p, c, i, x}] (null = ne mijenjaj). Obrisani redovi se preskaču. */
+/**
+ * Osvježavanje sa stranice: items [{k, u, p, c, i, x}] (null = ne mijenjaj). Obrisani redovi
+ * se preskaču, a zamjene (drugo ime nego na stranici) zadržavaju stanje iz tablice članova.
+ */
 function agStatus_(sh, items) {
   var ix = agIndex_(sh), n = 0, touched = {};
-  var col = function (k) { return AG_KEYS.indexOf(k); };
   items.forEach(function (it) {
     var r = ix.persons[String(it.k).replace(/\|/g, '_')];
     if (!r) return;
-    var row = ix.data[r - 1];
+    var row = ix.data[r - 1], local = agIsLocal_(ix, r);
     var set = function (k, val) {
-      if (val === null || val === undefined || row[col(k)] === !!val) return;
-      sh.getRange(r, col(k) + 1).setValue(!!val);
-      row[col(k)] = !!val;
+      if (val === null || val === undefined || row[agC_(k) - 1] === !!val) return;
+      sh.getRange(r, agC_(k)).setValue(!!val);
+      row[agC_(k) - 1] = !!val;
     };
-    set('uplaceno', it.u); set('clanarina', it.c); set('iskaznica', it.i);
-    if (it.p !== null && it.p !== undefined && String(row[col('pristupnica')]) !== String(it.p)) agPristupnica_(sh.getRange(r, col('pristupnica') + 1), it.p);
-    if (it.x) sh.getRange(r, 1, 1, AG_LAST).setBackground('#e6e6e6').setFontColor('#777777');
+    if (it.u === true) set('uplaceno', true);
+    if (!local) {
+      set('clanarina', it.c); set('iskaznica', it.i);
+      if (it.p !== null && it.p !== undefined && String(row[agC_('pristupnica') - 1]) !== String(it.p)) agPristupnica_(sh.getRange(r, agC_('pristupnica')), it.p);
+    }
+    if (it.x && row[agC_('otkazao') - 1] !== true) {
+      set('otkazao', true);
+      agGrey_(sh, r, true);
+    }
     n++;
     var b = agBlockOf_(ix, r);
     if (b) touched[b.key] = b;
@@ -548,44 +696,204 @@ function agStatus_(sh, items) {
   return n;
 }
 
-/** Narudžba iz ključa osobe (P|o123-…) ili 0. */
-function agOrder_(k) {
-  var m = /^P\|o(\d+)-/.exec(String(k || ''));
-  return m ? parseInt(m[1], 10) : 0;
+/* ---------- Tablica članova kao baza za tablicu agencije ---------- */
+
+function memSheet_() {
+  var id = PropertiesService.getScriptProperties().getProperty('MEM');
+  var ss = id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActive();
+  return ss ? ss.getSheetByName(SHEET_NAME) : null;
 }
 
-/** Stanje uplate po narudžbi: [{o, paid}] (paid = označene sve osobe). only = {id: 1} ili null. */
-function agPaid_(sh, only) {
-  var ix = agIndex_(sh), pc = AG_KEYS.indexOf('uplaceno'), by = {};
-  ix.data.forEach(function (r) {
-    var o = agOrder_(r[AG_KEY_COL - 1]);
-    if (!o || (only && !only[o])) return;
-    by[o] = (by[o] === undefined ? true : by[o]) && r[pc] === true;
+/** Članovi po imenu (popis), OIB-u i e-mailu. */
+function memIndex_() {
+  var out = { name: {}, oib: {}, email: {} };
+  var sh = memSheet_();
+  if (!sh || sh.getLastRow() < 2) return out;
+  var lastCol = sh.getLastColumn();
+  var heads = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(String);
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, lastCol).getValues();
+  var c = function (k) { return KEYS.indexOf(k); };
+  var cardC = heads.indexOf(CARD);
+  data.forEach(function (r) {
+    if (!parseInt(r[0], 10)) return;
+    var m = {
+      oib: str_(r[c('oib')]), datum: str_(r[c('datum')]), adresa: str_(r[c('adresa')]),
+      mjesto: str_(r[c('mjesto')]), mobitel: str_(r[c('mobitel')]), email: str_(r[c('email')]),
+      potvrdeno: str_(r[c('status')]) === 'Potvrđeno', iskaznica: cardC >= 0 && r[cardC] === true, godine: {}
+    };
+    heads.forEach(function (h, i) { if (h.indexOf(YEAR_PREFIX) === 0 && r[i] === true) m.godine[parseInt(h.replace(YEAR_PREFIX, ''), 10)] = 1; });
+    var n = agNorm_(str_(r[c('ime')]) + ' ' + str_(r[c('prezime')]));
+    if (n) (out.name[n] = out.name[n] || []).push(m);
+    var o = m.oib.replace(/\D/g, '');
+    if (o) out.oib[o] = m;
+    if (m.email) out.email[m.email.toLowerCase()] = m;
   });
-  return Object.keys(by).map(function (o) { return { o: parseInt(o, 10), paid: by[o] }; });
+  return out;
 }
 
-/** Okidač u tablici za agenciju: promjena kvačice "Uplaćeno" → javi stranici stanje tih narudžbi. */
-function agNaIzmjenu_(e, sh) {
-  var pc = AG_KEYS.indexOf('uplaceno') + 1;
-  if (e.range.getColumn() > pc || e.range.getLastColumn() < pc) return;
-  var ix = agIndex_(sh), only = {}, any = false, blocks = {};
-  var nc = AG_KEYS.indexOf('napomena') + 1;
-  for (var r = Math.max(2, e.range.getRow()); r <= e.range.getLastRow(); r++) {
-    var row = ix.data[r - 1];
-    if (!row) continue;
-    var b = agBlockOf_(ix, r);
-    if (b) blocks[b.key] = b;
-    var o = agOrder_(row[AG_KEY_COL - 1]);
-    if (!o) continue;
-    only[o] = 1;
-    any = true;
-    // Otkazana narudžba (sivi red): uplata se ne prenosi, samo napomena.
-    if (row[pc - 1] === true && sh.getRange(r, 1).getBackground() === '#e6e6e6') {
-      var note = String(row[nc - 1] || '');
-      if (note.indexOf('narudžba je otkazana') < 0) sh.getRange(r, nc).setValue(note ? note + ' · narudžba je otkazana' : 'narudžba je otkazana');
-    }
+/** Član po OIB-u, e-mailu ili imenu i prezimenu. byName = samo po imenu (zamjena). */
+function memFind_(mi, row, byName) {
+  if (!byName) {
+    var oib = str_(row[agC_('oib') - 1]).replace(/\D/g, ''), email = str_(row[agC_('email') - 1]).toLowerCase();
+    if (oib.length === 11 && mi.oib[oib]) return { m: mi.oib[oib] };
+    if (email && mi.email[email]) return { m: mi.email[email] };
   }
-  Object.keys(blocks).forEach(function (k) { agCount_(sh, ix, blocks[k]); });
-  if (any) post_({ ag: agPaid_(sh, only) });
+  var l = mi.name[agNorm_(agName_(row))] || [];
+  return l.length === 1 ? { m: l[0] } : { m: null, more: l.length > 1 };
+}
+
+/** Napomena: makni stare automatske dijelove (drop) i dodaj tekst. Ostalo ostaje. */
+function agNote_(sh, r, row, text, drop) {
+  var nc = agC_('napomena'), cur = str_(row[nc - 1]);
+  var parts = cur ? cur.split(' · ') : [];
+  if (drop) parts = parts.filter(function (p) { return !drop.test(p); });
+  if (text && parts.indexOf(text) < 0) parts.push(text);
+  var nv = parts.join(' · ');
+  if (nv === cur) return;
+  sh.getRange(r, nc).setValue(/^[=+\-@]/.test(nv) ? "'" + nv : nv);
+  row[nc - 1] = nv;
+}
+
+/** Kvačice u ručno dodanom redu (gdje ih još nema). */
+function agBoxes_(sh, r, row) {
+  Object.keys(AG_BOX).forEach(function (k) {
+    if (row[agC_(k) - 1] === '') {
+      sh.getRange(r, agC_(k)).insertCheckboxes();
+      row[agC_(k) - 1] = false;
+    }
+  });
+}
+
+function agBox_(sh, r, row, k, val) {
+  if (row[agC_(k) - 1] === val) return;
+  sh.getRange(r, agC_(k)).setValue(val);
+  row[agC_(k) - 1] = val;
+}
+
+/**
+ * Podaci iz tablice članova. overwrite: nova osoba u redu (zamjena), pa se prepišu i
+ * popunjena polja; inače se popunjavaju samo prazna. Pristupnica, Članarina i Iskaznica
+ * uvijek prema tablici članova.
+ */
+function agApply_(sh, r, row, f, year, overwrite) {
+  var m = f.m;
+  AG_PERSON.forEach(function (k) {
+    var c = agC_(k), cur = str_(row[c - 1]), nv = m ? m[k] : '';
+    if (overwrite ? cur === nv : (cur !== '' || nv === '')) return;
+    sh.getRange(r, c).setValue(/^[=+\-@]/.test(nv) ? "'" + nv : nv);
+    row[c - 1] = nv;
+  });
+  var p = m ? (m.potvrdeno ? 'potvrđena' : 'nije potvrđena') : 'nema';
+  if (str_(row[agC_('pristupnica') - 1]) !== p) {
+    agPristupnica_(sh.getRange(r, agC_('pristupnica')), p);
+    row[agC_('pristupnica') - 1] = p;
+  }
+  agBox_(sh, r, row, 'clanarina', !!(m && m.godine[year]));
+  agBox_(sh, r, row, 'iskaznica', !!(m && m.iskaznica));
+  var drop = /^(nije član – |više članova s tim imenom)/;
+  if (m) agNote_(sh, r, row, '', drop);
+  else agNote_(sh, r, row, f.more ? 'više članova s tim imenom – upiši OIB ili e-mail' : 'nije član – treba ispuniti pristupnicu', drop);
+}
+
+/** Promijenjeno ime ili prezime u redu: zamjena (red sa stranice) ili nova osoba (ručno). */
+function agRename_(sh, ix, r, mi, year, oldValue, col) {
+  var row = ix.data[r - 1], info = ix.info[r] || {}, name = agName_(row);
+  if (info.kind === 'P' && info.orig === undefined) {
+    // Stariji red bez zapisanog izvornog imena: iz prethodne vrijednosti ćelije.
+    info.orig = oldValue === undefined ? '?' : (col === agC_('ime') ? str_(oldValue) + ' ' + str_(row[2]) : str_(row[1]) + ' ' + str_(oldValue)).trim();
+    sh.getRange(r, AG_KEY_COL).setValue('P|' + info.pkey + '|' + info.orig.replace(/\|/g, ' '));
+  }
+  if (!info.kind) {
+    info = { kind: 'M' };
+    sh.getRange(r, AG_KEY_COL).setValue('M|');
+  }
+  ix.info[r] = info;
+  agBoxes_(sh, r, row);
+  var same = info.kind === 'P' && info.orig !== '?' && agNorm_(info.orig) === agNorm_(name);
+  var f = memFind_(mi, row, true);
+  if (!same || f.m) agApply_(sh, r, row, f, year, true);
+  if (info.kind === 'P') {
+    var ph = /^\d+\. osoba/.test(info.orig);
+    agNote_(sh, r, row, same || ph ? '' : 'zamjena za ' + (info.orig === '?' ? 'osobu s prijave' : info.orig), /^zamjena za /);
+  }
+}
+
+/** Stanje uplate i otkazivanja po narudžbi: [{o, paid, cancel, rows: [{k, n, f, x}]}]. */
+function agPaid_(sh, only, ix) {
+  ix = ix || agIndex_(sh);
+  var pc = agC_('uplaceno') - 1, xc = agC_('otkazao') - 1, by = {};
+  ix.data.forEach(function (row, i) {
+    var info = ix.info[i + 1];
+    if (!info || !info.o || (only && !only[info.o])) return;
+    var o = by[info.o] = by[info.o] || { o: info.o, paid: true, cancel: true, rows: [], n: 0 };
+    var x = row[xc] === true;
+    o.rows.push({ k: info.pkey, n: agName_(row), f: info.orig && info.orig !== '?' ? info.orig : '', x: x });
+    if (x) return;
+    o.cancel = false;
+    o.n++;
+    if (row[pc] !== true) o.paid = false;
+  });
+  return Object.keys(by).map(function (k) {
+    var o = by[k];
+    if (!o.n) o.paid = false;
+    delete o.n;
+    return o;
+  });
+}
+
+/** Ručno dodane osobe i zamjene u nadolazećim izletima: podaci i stanje iz tablice članova. */
+function agLocalRefresh_(sh, ix, mi) {
+  ix = ix || agIndex_(sh);
+  var from = new Date(Date.now() - 10 * 864e5).toISOString().substring(0, 10), n = 0;
+  ix.blocks.forEach(function (b) {
+    if (!b.date || b.date < from.substring(0, b.date.length)) return;
+    var br = agBlockRows_(ix, b), year = agYear_(b);
+    for (var r = br.first; r <= br.end; r++) {
+      if (!agIsLocal_(ix, r) || agName_(ix.data[r - 1]) === '') continue;
+      mi = mi || memIndex_();
+      agApply_(sh, r, ix.data[r - 1], memFind_(mi, ix.data[r - 1], false), year, false);
+      n++;
+    }
+  });
+  return n;
+}
+
+/**
+ * Okidač u tablici za agenciju: Ime/Prezime (zamjena ili nova osoba), OIB/E-mail (traži
+ * člana), Uplaćeno i Otkazao (javi stranici stanje tih narudžbi).
+ */
+function agNaIzmjenu_(e, sh) {
+  var c0 = e.range.getColumn(), c1 = e.range.getLastColumn();
+  var hit = function (k) { var c = agC_(k); return c >= c0 && c <= c1; };
+  var name = hit('ime') || hit('prezime'), ids = hit('oib') || hit('email'), pay = hit('uplaceno'), cx = hit('otkazao');
+  if (!name && !ids && !pay && !cx) return;
+  var lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  var list = [];
+  try {
+    agMigrate_(sh);
+    var ix = agIndex_(sh), mi = name || ids ? memIndex_() : null, blocks = {}, orders = {};
+    var r0 = Math.max(2, e.range.getRow()), r1 = Math.min(e.range.getLastRow(), ix.last);
+    var single = r0 === r1 && c0 === c1;
+    for (var r = r0; r <= r1; r++) {
+      var info = ix.info[r] || {};
+      if (info.kind === 'T' || info.kind === 'H' || !agIsPerson_(ix, r)) continue;
+      var b = agBlockOf_(ix, r);
+      if (!b) continue;
+      blocks[b.key] = b;
+      var row = ix.data[r - 1];
+      if (name && agName_(row) !== '') agRename_(sh, ix, r, mi, agYear_(b), single ? e.oldValue : undefined, c0);
+      else if (ids && agIsLocal_(ix, r)) agApply_(sh, r, row, memFind_(mi, row, false), agYear_(b), false);
+      var x = row[agC_('otkazao') - 1] === true;
+      if (cx) agGrey_(sh, r, x);
+      if (pay && x && row[agC_('uplaceno') - 1] === true) agNote_(sh, r, row, 'otkazano – uplata se ne računa', null);
+      info = ix.info[r] || {};
+      if (info.o) orders[info.o] = 1;
+    }
+    Object.keys(blocks).forEach(function (k) { agNumber_(sh, ix, blocks[k]); agCount_(sh, ix, blocks[k]); });
+    if (Object.keys(orders).length) list = agPaid_(sh, orders, ix);
+  } finally {
+    lock.releaseLock();
+  }
+  if (list.length) post_({ ag: list });
 }

@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 final class Plan_A_Clanstvo_Sheets {
 
 	/** Verzija skripte u google-tablica.gs (SCRIPT_VERSION). Starija skripta je spora za pakete. */
-	const SCRIPT_VERSION = 8;
+	const SCRIPT_VERSION = 9;
 
 	const ROUTE = 'plan-a-clanstvo/v1';
 
@@ -307,7 +307,7 @@ final class Plan_A_Clanstvo_Sheets {
 			return new WP_REST_Response( array( 'ok' => false ), 403 );
 		}
 		if ( isset( $d['ag'] ) ) {
-			$n = Plan_A_Clanstvo_Agency::apply_paid( (array) $d['ag'] );
+			$n = Plan_A_Clanstvo_Agency::apply_sheet( (array) $d['ag'] );
 			return new WP_REST_Response( array( 'ok' => true, 'n' => $n ), 200 );
 		}
 		$rows = array_slice( (array) ( $d['rows'] ?? array() ), 0, 500 );

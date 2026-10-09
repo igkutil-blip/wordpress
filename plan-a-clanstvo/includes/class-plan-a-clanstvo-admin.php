@@ -685,7 +685,7 @@ final class Plan_A_Clanstvo_Admin {
 				<?php wp_nonce_field( 'pac_admin_settings_0' ); ?>
 				<table class="form-table">
 					<?php $text( 'sheet_url', 'Web app URL tablice', 'npr. https://script.google.com/macros/s/…/exec', 'large-text' ); ?>
-					<?php $text( 'agency_url', 'Tablica za agenciju', 'Poveznica Google tablice „Prijave na izlete” (iz adresne trake, https://docs.google.com/spreadsheets/d/…). Tablicu mora moći uređivati isti Google račun koji je objavio skriptu. List „Prijave” napravi se sam. Kad agencija označi „Uplaćeno” kod svih osoba iz narudžbe, narudžba postaje „Završeno” i kupac dobiva e-mail; maknuta kvačica vraća je na čekanje bez e-maila (u Apps Scriptu jednom pokreni <code>ukljuciBrzoOsvjezavanje</code>).', 'large-text' ); ?>
+					<?php $text( 'agency_url', 'Tablica za agenciju', 'Poveznica Google tablice „Prijave na izlete” (iz adresne trake, https://docs.google.com/spreadsheets/d/…). Tablicu mora moći uređivati isti Google račun koji je objavio skriptu. List „Prijave” napravi se sam. U tablici agencija označava „Uplaćeno” (kad su označeni svi koji idu, narudžba postaje „Završeno” i kupac dobiva e-mail) i „Otkazao” (kad otkažu svi, narudžba se otkazuje, e-mail ide samo vama). Zamjena se upisuje u isti red, a nova osoba u novi red: ostali podaci upišu se iz tablice članova, a brojevi se slože ispočetka. Maknuta kvačica vraća narudžbu bez e-maila kupcu. U Apps Scriptu jednom pokreni <code>ukljuciBrzoOsvjezavanje</code>.', 'large-text' ); ?>
 				</table>
 
 				<h2>2. Članarina i 2D kod</h2>

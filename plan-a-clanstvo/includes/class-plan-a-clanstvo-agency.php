@@ -7,8 +7,8 @@
  *   se ne vraća.
  * - Uplaćeno, Pristupnica, Članarina (za godinu izleta) i Iskaznica osvježavaju se: uplata
  *   iz narudžbe, članarina i iskaznica iz tablice članova.
- * - Uplaćeno označava i agencija: kad su označene sve osobe iz narudžbe, narudžba postaje
- *   "Završeno" (kupac dobiva e-mail). Maknuta kvačica vraća narudžbu na čekanje bez e-maila.
+ * - Agencija označava Uplaćeno i Otkazao te upisuje zamjene (vidi apply_sheet). Podatke za
+ *   zamjene i ručno dodane osobe skripta uzima iz tablice članova.
  * - Rezervacije jedrenja se preskaču.
  *
  * Tablicu vodi ista skripta kao tablicu članova (SpreadsheetApp.openById).
@@ -25,6 +25,9 @@ final class Plan_A_Clanstvo_Agency {
 	const DIRTY = 'plan_a_clanstvo_ag_dirty'; // narudžbe kojima treba osvježiti stanje
 	const META  = '_pac_ag';                  // narudžba: pending | sent
 	const PAID  = '_pac_ag_paid';             // narudžba: završena kvačicom agencije
+	const PREV  = '_pac_ag_prev';             // narudžba: status prije otkazivanja iz tablice
+	const NAMES = '_pac_ag_names';            // narudžba: ključ osobe => zadnje ime u tablici
+	const GONE  = '_pac_ag_gone';             // narudžba: ključ osobe => ime (označeno Otkazao)
 
 	public static function init() {
 		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'queue' ), 30, 1 );
@@ -32,6 +35,9 @@ final class Plan_A_Clanstvo_Agency {
 		add_action( 'woocommerce_order_status_changed', array( __CLASS__, 'changed' ), 30, 1 );
 		add_action( 'transition_post_status', array( __CLASS__, 'tour_published' ), 20, 3 );
 		add_action( 'pac_ag_run', array( __CLASS__, 'run' ) );
+		foreach ( array( 'customer_on_hold_order', 'customer_processing_order', 'customer_completed_order', 'customer_cancelled_order' ) as $email ) {
+			add_filter( 'woocommerce_email_enabled_' . $email, array( __CLASS__, 'quiet' ), 99, 2 );
+		}
 	}
 
 	/** ID tablice za agenciju iz upisane poveznice (…/spreadsheets/d/ID/…). */
@@ -416,50 +422,139 @@ final class Plan_A_Clanstvo_Agency {
 		if ( ! self::enabled() ) {
 			return array( 'ok' => false, 'error' => 'Tablica za agenciju nije povezana.' );
 		}
-		self::pull_paid();
+		self::pull_sheet();
 		self::run();
 		return self::send_status();
 	}
 
 	/* ------------------------------------------------------------------ */
-	/* Uplata koju je označila agencija                                     */
+	/* Kvačice agencije: Uplaćeno, Otkazao, zamjena osobe                   */
 	/* ------------------------------------------------------------------ */
 
+	/** Narudžbe kojima se status mijenja bez e-maila kupcu. */
+	private static $quiet = array();
+
+	public static function quiet( $enabled, $order ) {
+		return $order instanceof WC_Order && isset( self::$quiet[ $order->get_id() ] ) ? false : $enabled;
+	}
+
+	private static function set_status( WC_Order $order, string $status, string $note, bool $quiet ) {
+		if ( $quiet ) {
+			self::$quiet[ $order->get_id() ] = 1;
+		}
+		$order->update_status( $status, $note );
+		unset( self::$quiet[ $order->get_id() ] );
+	}
+
 	/**
-	 * Kvačice „Uplaćeno” iz tablice: orders [{o: ID narudžbe, paid: označene sve osobe}].
-	 * Plaćena → "Završeno" (WooCommerce šalje kupcu e-mail). Maknuta kvačica → "Na čekanju",
-	 * ali samo ako je narudžbu završila agencija. Kartično plaćene i otkazane se ne diraju.
+	 * Stanje iz tablice: orders [{o: ID, paid: plaćeni svi koji idu, cancel: otkazali svi,
+	 * rows: [{k: ključ osobe, n: ime u tablici, f: ime s prijave, x: otkazao}]}].
+	 *
+	 * - Uplaćeno kod svih koji idu → "Završeno" (kupac dobiva e-mail). Maknuta kvačica →
+	 *   "Na čekanju" bez e-maila, samo ako je narudžbu završila agencija.
+	 * - Otkazali svi → "Otkazano" (e-mail samo vama). Maknuta kvačica → prijašnji status bez
+	 *   e-maila. Pojedinačna otkazivanja i zamjene zapisuju se u bilješke narudžbe.
+	 * - Kartično plaćene narudžbe ostaju kakve jesu, a otkazane na stranici se ne diraju.
 	 */
-	public static function apply_paid( array $orders ): int {
+	public static function apply_sheet( array $orders ): int {
 		$n = 0;
 		foreach ( array_slice( $orders, 0, 1000 ) as $it ) {
 			$order = is_array( $it ) ? wc_get_order( (int) ( $it['o'] ?? 0 ) ) : null;
-			if ( self::skip( $order ) || ! $order->get_meta( self::META ) || $order->has_status( array( 'cancelled', 'refunded', 'failed', 'checkout-draft', 'trash' ) ) ) {
+			if ( self::skip( $order ) || ! $order->get_meta( self::META ) || $order->has_status( array( 'failed', 'checkout-draft', 'trash' ) ) ) {
+				continue;
+			}
+			$done = self::sheet_people( $order, array_filter( (array) ( $it['rows'] ?? array() ), 'is_array' ), ! empty( $it['cancel'] ) );
+			if ( $order->has_status( array( 'cancelled', 'refunded' ) ) ) {
+				$n += $done ? 1 : 0;
 				continue;
 			}
 			if ( ! empty( $it['paid'] ) ) {
-				if ( $order->is_paid() ) {
-					continue;
+				if ( ! $order->is_paid() ) {
+					$order->update_meta_data( self::PAID, current_time( 'mysql' ) );
+					$order->update_status( 'completed', 'Uplatu je potvrdila agencija (kvačica „Uplaćeno” u tablici „Prijave na izlete”).' );
+					$done = true;
 				}
-				$order->update_meta_data( self::PAID, current_time( 'mysql' ) );
-				$order->update_status( 'completed', 'Uplatu je potvrdila agencija (kvačica „Uplaćeno” u tablici „Prijave na izlete”).' );
-				++$n;
 			} elseif ( '' !== (string) $order->get_meta( self::PAID ) && $order->has_status( 'completed' ) ) {
 				$order->delete_meta_data( self::PAID );
-				$order->update_status( 'on-hold', 'Agencija je maknula kvačicu „Uplaćeno” – narudžba je vraćena na čekanje (kupcu nije poslan e-mail).' );
-				++$n;
+				self::set_status( $order, 'on-hold', 'Agencija je maknula kvačicu „Uplaćeno” – narudžba je vraćena na čekanje (kupcu nije poslan e-mail).', true );
+				$done = true;
 			}
+			$n += $done ? 1 : 0;
 		}
 		return $n;
 	}
 
-	/** Svaki sat: pročitaj kvačice „Uplaćeno” (ako javljanje iz tablice nije stiglo). */
-	public static function pull_paid(): array {
+	/** Zamjene i otkazivanja osoba (bilješke) te otkazivanje cijele narudžbe. */
+	private static function sheet_people( WC_Order $order, array $rows, bool $all ): bool {
+		$names = $order->get_meta( self::NAMES );
+		$names = is_array( $names ) ? $names : array();
+		$was   = $order->get_meta( self::GONE );
+		$first = ! is_array( $was );
+		$was   = $first ? array() : $was;
+		$gone  = array();
+		$notes = array();
+		$new   = false;
+		foreach ( $rows as $r ) {
+			$k    = sanitize_key( (string) ( $r['k'] ?? '' ) );
+			$name = sanitize_text_field( (string) ( $r['n'] ?? '' ) );
+			if ( '' === $k ) {
+				continue;
+			}
+			$prev = (string) ( $names[ $k ] ?? sanitize_text_field( (string) ( $r['f'] ?? '' ) ) );
+			if ( '' !== $name && '' !== $prev && $prev !== $name ) {
+				$notes[] = preg_match( '/^\d+\. osoba/', $prev )
+					? sprintf( 'Upisan sudionik (tablica agencije): %s.', $name )
+					: sprintf( 'Zamjena (tablica agencije): %1$s umjesto %2$s.', $name, $prev );
+			}
+			if ( '' !== $name ) {
+				$names[ $k ] = $name;
+			}
+			if ( ! empty( $r['x'] ) ) {
+				$gone[ $k ] = $name;
+				// Prvi put: kod već otkazane narudžbe to nije novo otkazivanje.
+				if ( empty( $was[ $k ] ) && ! ( $first && $order->has_status( array( 'cancelled', 'refunded' ) ) ) ) {
+					$notes[] = sprintf( 'Otkazao/la (tablica agencije): %s.', $name );
+					$new     = true;
+				}
+			} elseif ( ! empty( $was[ $k ] ) ) {
+				$notes[] = sprintf( 'Više nije otkazan/a (tablica agencije): %s.', $name );
+			}
+		}
+		$order->update_meta_data( self::NAMES, $names );
+		$order->update_meta_data( self::GONE, $gone );
+		$order->save_meta_data();
+		foreach ( $notes as $note ) {
+			$order->add_order_note( $note );
+		}
+		$prev = (string) $order->get_meta( self::PREV );
+		if ( $all && $rows && $new && ! $order->has_status( array( 'cancelled', 'refunded' ) ) ) {
+			$from = $order->get_status();
+			$order->update_meta_data( self::PREV, $from );
+			self::set_status( $order, 'cancelled', 'Otkazali su svi sudionici (kvačica „Otkazao” u tablici agencije).', true );
+			// WooCommerce sam javlja vama samo za otkazivanje iz "Na čekanju" ili "U obradi".
+			if ( ! in_array( $from, array( 'pending', 'on-hold', 'processing' ), true ) ) {
+				$mails = WC()->mailer()->get_emails();
+				if ( isset( $mails['WC_Email_Cancelled_Order'] ) ) {
+					$mails['WC_Email_Cancelled_Order']->trigger( $order->get_id(), $order );
+				}
+			}
+			return true;
+		}
+		if ( ! $all && '' !== $prev && $order->has_status( 'cancelled' ) ) {
+			$order->delete_meta_data( self::PREV );
+			self::set_status( $order, $prev, 'Agencija je maknula kvačicu „Otkazao” – narudžba je vraćena (kupcu nije poslan e-mail).', true );
+			return true;
+		}
+		return (bool) $notes;
+	}
+
+	/** Svaki sat: pročitaj kvačice iz tablice (ako javljanje iz tablice nije stiglo). */
+	public static function pull_sheet(): array {
 		$res = self::post( array( 'action' => 'ag_paid' ) );
 		if ( ! $res['ok'] || ! isset( $res['orders'] ) || ! is_array( $res['orders'] ) ) {
 			return array( 'ok' => false, 'n' => 0, 'error' => $res['error'] ?? '' );
 		}
-		return array( 'ok' => true, 'n' => self::apply_paid( $res['orders'] ) );
+		return array( 'ok' => true, 'n' => self::apply_sheet( $res['orders'] ) );
 	}
 
 	/* ------------------------------------------------------------------ */
