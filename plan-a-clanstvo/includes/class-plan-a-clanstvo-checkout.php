@@ -258,7 +258,7 @@ final class Plan_A_Clanstvo_Checkout {
 				echo '<fieldset class="pac-person" data-pac-person>';
 				echo '<legend>' . esc_html( sprintf( /* translators: %d: redni broj osobe */ __( '%d. osoba', 'plan-a-clanstvo' ), $i ) ) . '</legend>';
 				echo self::input( $n . '[email]', __( 'E-mail', 'plan-a-clanstvo' ), 'email', array( 'maxlength' => 190, 'data-pac-email' => '', 'autocomplete' => 'off' ) ); // phpcs:ignore WordPress.Security.EscapeOutput
-				echo '<div class="pac-status" data-pac-status aria-live="polite"></div>';
+				echo '<div class="pac-status" data-pac-status aria-live="polite" hidden></div>';
 				echo '<div data-pac-name>';
 				echo self::input( $n . '[ime]', __( 'Ime', 'plan-a-clanstvo' ), 'text', array( 'maxlength' => 60 ) ); // phpcs:ignore WordPress.Security.EscapeOutput
 				echo self::input( $n . '[prezime]', __( 'Prezime', 'plan-a-clanstvo' ), 'text', array( 'maxlength' => 60 ) ); // phpcs:ignore WordPress.Security.EscapeOutput

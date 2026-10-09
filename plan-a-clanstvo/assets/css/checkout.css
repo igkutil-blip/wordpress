@@ -20,3 +20,4 @@
 .pac-others__tour { margin: 14px 0 6px; font-size: 15px; color: #12304b; }
 .pac-person { margin: 0 0 14px; padding: 12px 14px 4px; border: 1px solid #dfe6ee; border-radius: 12px; }
 .pac-person legend { padding: 0 6px; font-weight: 700; color: #12304b; }
+.pac-status:empty { display: none !important; }

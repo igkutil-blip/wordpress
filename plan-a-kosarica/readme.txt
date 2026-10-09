@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -83,6 +83,11 @@ filtra plan_a_kosarica_member_rows) i gumb "Otvori narudžbu". Naslov: "Nova pri
 
 Blok "Članstvo Plan A" (filtar plan_a_kosarica_member_rows, način 'thankyou'); podaci kupca upisani iz pristupnice
 ne prikazuju se (filtar plan_a_kosarica_hide_customer_details).
+
+== Isti izlet više puta (1.5.2) ==
+
+Izlet se može dodati u košaricu više puta (WooCommerce inače javlja "Ne možete dodati još jedan …");
+svaka prijava je zasebna stavka, a sudionici se zbrajaju.
 
 == Postavke ==
 

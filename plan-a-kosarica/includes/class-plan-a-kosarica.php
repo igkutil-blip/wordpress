@@ -40,6 +40,19 @@ final class Plan_A_Kosarica {
 		add_filter( 'gettext_woocommerce', array( __CLASS__, 'headings' ), 10, 2 );
 		add_filter( 'woocommerce_checkout_fields', array( __CLASS__, 'order_fields' ), 99 );
 		add_action( 'woocommerce_before_checkout_form', array( __CLASS__, 'coupon_toggle' ), 1 );
+		add_filter( 'woocommerce_add_cart_item_data', array( __CLASS__, 'unique_tour_item' ), 999 );
+	}
+
+	/**
+	 * Izlet je u WpTravellyju "prodaje se pojedinačno", pa WooCommerce ne da isti izlet dodati
+	 * drugi put ("Ne možete dodati još jedan …"). Svaka prijava je zasebna stavka košarice;
+	 * sudionici se zbrajaju (Plan A članstvo traži podatke za sve osobe).
+	 */
+	public static function unique_tour_item( $data ) {
+		if ( is_array( $data ) && ! empty( $data['ttbm_id'] ) ) {
+			$data['paka_item'] = wp_generate_uuid4();
+		}
+		return $data;
 	}
 
 	/**
