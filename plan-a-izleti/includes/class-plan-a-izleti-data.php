@@ -29,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
 final class Plan_A_Izleti_Data {
 
 	const CACHE_KEY     = 'plan_a_izleti_cache';
-	const CACHE_VERSION = 5;
+	const CACHE_VERSION = 6;
 
 	public static function init() {
 		add_action( 'save_post_' . self::post_type(), array( __CLASS__, 'flush_cache' ) );
