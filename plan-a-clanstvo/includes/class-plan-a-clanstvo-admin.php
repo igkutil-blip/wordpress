@@ -126,6 +126,20 @@ final class Plan_A_Clanstvo_Admin {
 			<?php if ( $left ) : ?>
 				<p><a class="button button-primary" href="<?php echo esc_url( self::action_url( 'pending' ) ); ?>">Pošalji neposlane u tablicu (<?php echo (int) $left; ?>)</a></p>
 			<?php endif; ?>
+			<h2>Tablica za agenciju: početni popis</h2>
+			<p>Jednom, za prijave koje su do sada vođene ručno: CSV sa stupcima <code>Ključ izleta, Izlet, Datum, Godina, Ime, Prezime, OIB, Datum rođenja, Adresa, Mjesto, Mobitel, E-mail, Prijavio/la, Iznos, Osiguranje, Uplaćeno, Otkazano, Napomena, Br. člana</code>. Prvi izlet u datoteci bit će na vrhu. Ponovni uvoz iste datoteke ne duplira redove.</p>
+			<?php if ( Plan_A_Clanstvo_Agency::enabled() ) : ?>
+				<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Upisujem… (može potrajati minutu)';">
+					<input type="hidden" name="action" value="pac_admin">
+					<input type="hidden" name="do" value="agency_import">
+					<input type="hidden" name="id" value="0">
+					<?php wp_nonce_field( 'pac_admin_agency_import_0' ); ?>
+					<input type="file" name="csv" accept=".csv,text/csv" required>
+					<button type="submit" class="button">Upiši u tablicu za agenciju</button>
+				</form>
+			<?php else : ?>
+				<p class="description">Najprije u Postavkama upiši poveznicu tablice za agenciju.</p>
+			<?php endif; ?>
 			<h2>Redoslijed brojeva</h2>
 			<p><a class="button" href="<?php echo esc_url( self::action_url( 'renumber' ) ); ?>" onclick="return confirm('Poredati brojeve članova (Br.) po datumu prijave, na stranici i u Google tablici?')">Poredaj brojeve po datumu prijave</a> <span class="description">Br. 1 dobiva član s najranijim datumom prijave. Redovi u tablici se poredaju po broju, a kvačice i napomene idu sa svojim redom.</span></p>
 			<?php endif; ?>
@@ -409,6 +423,22 @@ final class Plan_A_Clanstvo_Admin {
 					$msg = 'Veza ne radi: ' . ( $r['error'] ?? '' );
 				}
 				break;
+			case 'agency':
+				$r   = Plan_A_Clanstvo_Agency::cron();
+				$msg = $r['ok'] ? 'Tablica za agenciju je osvježena (redova: ' . $r['n'] . ').' : 'Tablica za agenciju: ' . ( $r['error'] ?? 'greška' );
+				break;
+			case 'agency_import':
+				$f = $_FILES['csv'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				if ( ! $f || UPLOAD_ERR_OK !== (int) $f['error'] || ! is_uploaded_file( (string) $f['tmp_name'] ) || ! preg_match( '/\.csv$/i', (string) $f['name'] ) ) {
+					$msg = 'Odaberi CSV datoteku.';
+					break;
+				}
+				if ( function_exists( 'set_time_limit' ) ) {
+					set_time_limit( 300 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions
+				}
+				$r   = Plan_A_Clanstvo_Agency::import( (string) $f['tmp_name'] );
+				$msg = $r['ok'] ? 'U tablicu za agenciju upisano je izleta: ' . $r['tours'] . ', osoba: ' . $r['n'] . '.' : 'Uvoz u tablicu za agenciju nije uspio: ' . ( $r['error'] ?? '' );
+				break;
 			case 'pull':
 				$r   = Plan_A_Clanstvo_Sheets::pull();
 				$msg = $r['ok'] ? 'Kvačice za članarine i iskaznice pročitane su iz tablice (članova: ' . $r['n'] . ').' : 'Čitanje tablice nije uspjelo: ' . $r['error'];
@@ -490,6 +520,8 @@ final class Plan_A_Clanstvo_Admin {
 		}
 		$url            = esc_url_raw( trim( wp_unslash( $_POST['sheet_url'] ?? '' ) ) );
 		$s['sheet_url'] = preg_match( '#^https://script\.google(usercontent)?\.com/#', $url ) ? $url : '';
+		$ag              = esc_url_raw( trim( wp_unslash( $_POST['agency_url'] ?? '' ) ) );
+		$s['agency_url'] = preg_match( '#^https://docs\.google\.com/spreadsheets/d/[A-Za-z0-9_-]{20,}#', $ag ) ? $ag : '';
 		$iban           = strtoupper( preg_replace( '/\s+/', '', sanitize_text_field( wp_unslash( $_POST['iban'] ?? '' ) ) ) );
 		$s['iban']      = preg_match( '/^HR\d{19}$/', $iban ) ? $iban : $s['iban'];
 		$s['model']     = preg_match( '/^\d{2}$/', (string) ( $_POST['model'] ?? '' ) ) ? (string) $_POST['model'] : '00'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
@@ -581,6 +613,9 @@ final class Plan_A_Clanstvo_Admin {
 				<a class="button" href="<?php echo esc_url( self::action_url( 'ping' ) ); ?>">Provjeri vezu</a>
 				<a class="button" href="<?php echo esc_url( self::action_url( 'resync' ) ); ?>">Pošalji sve članove u tablicu</a>
 				<a class="button" href="<?php echo esc_url( self::action_url( 'pull' ) ); ?>">Osvježi kvačice iz tablice</a>
+				<?php if ( Plan_A_Clanstvo_Agency::enabled() ) : ?>
+					<a class="button" href="<?php echo esc_url( self::action_url( 'agency' ) ); ?>">Osvježi tablicu za agenciju</a>
+				<?php endif; ?>
 				<?php $paj_left = Plan_A_Clanstvo_Sheets::pending(); ?>
 				<a class="button" href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . Plan_A_Clanstvo_Data::CPT . '&page=' . self::SLUG . '-uvoz' ) ); ?>">Uvoz članova (CSV)</a>
 				<?php if ( $paj_left ) : ?>
@@ -599,6 +634,7 @@ final class Plan_A_Clanstvo_Admin {
 				<?php wp_nonce_field( 'pac_admin_settings_0' ); ?>
 				<table class="form-table">
 					<?php $text( 'sheet_url', 'Web app URL tablice', 'npr. https://script.google.com/macros/s/…/exec', 'large-text' ); ?>
+					<?php $text( 'agency_url', 'Tablica za agenciju', 'Poveznica Google tablice „Prijave na izlete” (iz adresne trake, https://docs.google.com/spreadsheets/d/…). Tablicu mora moći uređivati isti Google račun koji je objavio skriptu. List „Prijave” napravi se sam.', 'large-text' ); ?>
 				</table>
 
 				<h2>2. Članarina i 2D kod</h2>

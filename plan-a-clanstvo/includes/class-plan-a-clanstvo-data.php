@@ -103,6 +103,7 @@ final class Plan_A_Clanstvo_Data {
 		return array(
 			'secret'        => '',
 			'sheet_url'     => '',
+			'agency_url'    => '',
 			'iznos'         => 15,
 			'primatelj'     => 'S.R.D. Plan A',
 			'adresa'        => 'Celovečka 60b',

@@ -27,6 +27,7 @@ require_once PLAN_A_CLANSTVO_DIR . 'includes/class-plan-a-clanstvo-form.php';
 require_once PLAN_A_CLANSTVO_DIR . 'includes/class-plan-a-clanstvo-woo.php';
 require_once PLAN_A_CLANSTVO_DIR . 'includes/class-plan-a-clanstvo-admin.php';
 require_once PLAN_A_CLANSTVO_DIR . 'includes/class-plan-a-clanstvo-import.php';
+require_once PLAN_A_CLANSTVO_DIR . 'includes/class-plan-a-clanstvo-agency.php';
 
 register_activation_hook(
 	__FILE__,
@@ -55,6 +56,7 @@ add_action(
 		Plan_A_Clanstvo_Form::init();
 		Plan_A_Clanstvo_Sheets::init();
 		Plan_A_Clanstvo_Woo::init();
+		Plan_A_Clanstvo_Agency::init();
 		if ( is_admin() ) {
 			Plan_A_Clanstvo_Admin::init();
 		}

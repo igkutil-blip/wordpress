@@ -292,5 +292,6 @@ final class Plan_A_Clanstvo_Sheets {
 		}
 		self::bulk( true, 50, 120 );
 		self::pull();
+		Plan_A_Clanstvo_Agency::cron();
 	}
 }
