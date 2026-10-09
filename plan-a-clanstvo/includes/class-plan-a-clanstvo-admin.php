@@ -61,6 +61,7 @@ final class Plan_A_Clanstvo_Admin {
 		?>
 		<div class="wrap">
 			<h1>Uvoz članova iz CSV-a</h1>
+			<?php self::message_box(); ?>
 			<p>Članova na stranici: <strong><?php echo (int) ( $count->publish ?? 0 ); ?></strong><?php echo $left ? ' · još nije poslano u Google tablicu: <strong>' . (int) $left . '</strong>' : ''; ?>.
 			<?php if ( is_array( $last ) ) : ?>
 				Zadnji uvoz: <?php echo esc_html( Plan_A_Clanstvo_Data::hr_datetime( (string) $last['time'] ) . sprintf( ' – novih %d, ažuriranih %d, preskočenih %d', $last['stats']['new'] ?? 0, $last['stats']['updated'] ?? 0, $last['stats']['skipped'] ?? 0 ) ); ?>.
@@ -308,7 +309,7 @@ final class Plan_A_Clanstvo_Admin {
 				$n++;
 			}
 		}
-		set_transient( 'pac_notice_' . get_current_user_id(), 'E-mail za potvrdu poslan je na ' . $n . ' adresa.', 60 );
+		self::flash( 'E-mail za potvrdu poslan je na ' . $n . ' adresa.' );
 		return $redirect;
 	}
 
@@ -499,15 +500,42 @@ final class Plan_A_Clanstvo_Admin {
 				self::export();
 				exit;
 		}
-		set_transient( 'pac_notice_' . get_current_user_id(), $msg, 60 );
+		self::flash( $msg );
 		wp_safe_redirect( $back );
 		exit;
 	}
 
+	/** Poruka nakon radnje (spremljena uz korisnika, ne kao privremeni podatak). */
+	private static function flash( string $msg ) {
+		if ( '' !== $msg ) {
+			update_user_meta( get_current_user_id(), '_pac_notice', $msg );
+		}
+	}
+
+	private static function take(): string {
+		$msg = (string) get_user_meta( get_current_user_id(), '_pac_notice', true );
+		if ( '' !== $msg ) {
+			delete_user_meta( get_current_user_id(), '_pac_notice' );
+		}
+		return $msg;
+	}
+
+	/** Poruka na vrhu stranica dodatka (vlastiti okvir, da je drugi dodaci ne sakriju). */
+	private static function message_box() {
+		$msg = self::take();
+		if ( '' !== $msg ) {
+			echo '<div class="pac-notice pac-msg" role="status" style="margin:14px 0;padding:12px 16px;background:#fff;border:1px solid #c3c4c7;border-left:4px solid #2271b1;font-size:14px;">' . esc_html( $msg ) . '</div>';
+		}
+	}
+
+	/** Ostale stranice (npr. popis članova nakon skupne radnje). */
 	public static function notices() {
-		$msg = get_transient( 'pac_notice_' . get_current_user_id() );
-		if ( $msg ) {
-			delete_transient( 'pac_notice_' . get_current_user_id() );
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( 0 === strpos( $page, self::SLUG ) ) {
+			return; // ispisuje se na samoj stranici
+		}
+		$msg = self::take();
+		if ( '' !== $msg ) {
 			echo '<div class="notice notice-info is-dismissible pac-notice"><p>' . esc_html( $msg ) . '</p></div>';
 		}
 	}
@@ -587,6 +615,7 @@ final class Plan_A_Clanstvo_Admin {
 		?>
 		<div class="wrap">
 			<h1>Plan A članstvo</h1>
+			<?php self::message_box(); ?>
 			<p>Pristupnica se prikazuje shortcodeom <code>[plan-a-pristupnica]</code> (u Flatsome HTML bloku). <?php echo $page ? 'Stranica: <a href="' . esc_url( get_permalink( $page ) ) . '" target="_blank">' . esc_html( get_the_title( $page ) ) . '</a>.' : 'Shortcode još nije ni na jednoj stranici.'; ?> Članova: <?php echo (int) ( $count->publish ?? 0 ); ?>.</p>
 			<p>
 				<a class="button" href="<?php echo esc_url( self::action_url( 'export' ) ); ?>">Preuzmi popis (CSV za Excel)</a>
