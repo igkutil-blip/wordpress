@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 9;
+var SCRIPT_VERSION = 10;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -46,6 +46,7 @@ function doPost(e) {
       } else if (d.action === 'ag_paid') {
         var ash = agSheet_(d.ag);
         out = { ok: true, orders: agPaid_(ash, null), local: agLocalRefresh_(ash) };
+        agLinks_(ash);
       } else if (d.action === 'read') {
         out = { ok: true, rows: read_(sh) };
       } else if (d.action === 'renumber') {
@@ -311,7 +312,7 @@ function ukljuciBrzoOsvjezavanje() {
   if (!ag) return 'Brzo osvježavanje je uključeno za tablicu članova. Tablica za agenciju još nije poznata: na stranici klikni "Provjeri vezu" i ponovno pokreni ovu funkciju.';
   ScriptApp.newTrigger('naIzmjenu').forSpreadsheet(ag).onEdit().create();
   ScriptApp.newTrigger('naPromjenu').forSpreadsheet(ag).onChange().create();
-  agSheet_(ag); // dodaje stupac "Otkazao" ako ga još nema
+  agLinks_(agSheet_(ag)); // dodaje stupac "Otkazao" i povezuje narudžbe
   return 'Brzo osvježavanje je uključeno (tablica članova i tablica za agenciju).';
 }
 
@@ -395,6 +396,7 @@ function naPromjenu(e) {
       agMigrate_(sh);
       var ix = agIndex_(sh);
       ix.blocks.forEach(function (b) { agNumber_(sh, ix, b); agCount_(sh, ix, b); });
+      agLinks_(sh);
     } finally {
       lock.releaseLock();
     }
@@ -661,6 +663,7 @@ function agAdd_(sh, rows) {
     done[b.key] = 1;
   });
   Object.keys(done).forEach(function (k) { var b = agFind_(ix, k); if (b) agCount_(sh, ix, b); });
+  if (n) agLinks_(sh);
   return n;
 }
 
@@ -693,6 +696,7 @@ function agStatus_(sh, items) {
     if (b) touched[b.key] = b;
   });
   Object.keys(touched).forEach(function (k) { agCount_(sh, ix, touched[k]); });
+  agLinks_(sh);
   return n;
 }
 
@@ -892,8 +896,81 @@ function agNaIzmjenu_(e, sh) {
     }
     Object.keys(blocks).forEach(function (k) { agNumber_(sh, ix, blocks[k]); agCount_(sh, ix, blocks[k]); });
     if (Object.keys(orders).length) list = agPaid_(sh, orders, ix);
+    if (name || cx) agLinks_(sh);
   } finally {
     lock.releaseLock();
   }
   if (list.length) post_({ ag: list });
+}
+
+/* ---------- Povezane osobe iz iste narudžbe ---------- */
+
+var AG_LINK_COLORS = ['#fff2cc', '#d9ead3', '#cfe2f3', '#f4cccc', '#d9d2e9', '#fce5cd', '#d0e0e3', '#ead1dc'];
+
+/** 1 osoba, 2 osobe, 5 osoba (hrvatska množina). */
+function agPl_(n, one, few, many) {
+  var d = n % 10, h = n % 100;
+  return n + ' ' + (d === 1 && h !== 11 ? one : (d >= 2 && d <= 4 && (h < 12 || h > 14) ? few : many));
+}
+
+function agMoney_(v) {
+  var t = String(v || '').replace(/[^0-9,.\-]/g, '');
+  if (!t) return null;
+  if (t.indexOf(',') >= 0) t = t.replace(/\./g, '').replace(',', '.');
+  var n = parseFloat(t);
+  return isNaN(n) ? null : n;
+}
+
+/**
+ * Narudžba s više osoba ili izleta: u stupcu "Narudžba" piše "#1234 · 3 osobe · 2 izleta",
+ * ćelija ima boju narudžbe (ista u svim izletima), a bilješka (prelazak mišem) pokazuje tko
+ * je platio, ukupni iznos i sve izlete s osobama. Mijenja se samo ono što nije isto.
+ */
+function agLinks_(sh) {
+  var ix = agIndex_(sh);
+  if (!ix.last) return;
+  var nc = agC_('narudzba'), xc = agC_('otkazao') - 1, ic = agC_('iznos') - 1, pc = agC_('prijavio') - 1;
+  var notes = sh.getRange(1, nc, ix.last, 1).getNotes();
+  var bgs = sh.getRange(1, nc, ix.last, 1).getBackgrounds();
+  var by = {};
+  for (var r = 2; r <= ix.last; r++) {
+    var info = ix.info[r];
+    if (!info || !info.o) continue;
+    var row = ix.data[r - 1], b = agBlockOf_(ix, r);
+    var o = by[info.o] = by[info.o] || { rows: [], tours: [], per: {}, sum: 0, money: false, payer: '', num: '' };
+    o.rows.push(r);
+    var tk = b ? b.key : '?';
+    if (!o.per[tk]) {
+      o.per[tk] = [];
+      o.tours.push({ key: tk, label: b ? b.base.split(' · ').slice(0, 2).join(' ') : '' });
+    }
+    o.per[tk].push(agName_(row) + (row[xc] === true ? ' (otkazao/la)' : ''));
+    var m = agMoney_(row[ic]);
+    if (m !== null) { o.sum += m; o.money = true; }
+    if (!o.payer && str_(row[pc]) === '') o.payer = info.orig && info.orig !== '?' ? info.orig : agName_(row);
+    if (!o.payer && str_(row[pc]) !== '') o.payer = str_(row[pc]);
+    if (!o.num) o.num = (str_(row[nc - 1]).split(' · ')[0] || '').trim() || '#' + info.o;
+  }
+  Object.keys(by).forEach(function (id) {
+    var o = by[id], many = o.rows.length > 1;
+    var text = o.num, note = '', color = null;
+    if (many) {
+      text += ' · ' + agPl_(o.rows.length, 'osoba', 'osobe', 'osoba');
+      if (o.tours.length > 1) text += ' · ' + agPl_(o.tours.length, 'izlet', 'izleta', 'izleta');
+      color = AG_LINK_COLORS[parseInt(id, 10) % AG_LINK_COLORS.length];
+      var lines = ['Narudžba ' + o.num + (o.payer ? ' · platio/la: ' + o.payer : '') + (o.money ? ' · ukupno ' + o.sum.toFixed(2).replace('.', ',') + ' €' : '')];
+      o.tours.forEach(function (t) { lines.push((t.label || 'izlet') + ': ' + o.per[t.key].join(', ')); });
+      lines.push('Narudžba je plaćena kad je „Uplaćeno” označeno kod svih osoba u svim izletima.');
+      note = lines.join('\n');
+    }
+    o.rows.forEach(function (r) {
+      var cell = null;
+      var get = function () { return cell || (cell = sh.getRange(r, nc)); };
+      if (str_(ix.data[r - 1][nc - 1]) !== text) get().setValue(text);
+      if (String(notes[r - 1][0] || '') !== note) get().setNote(note);
+      var bg = String(bgs[r - 1][0] || '').toLowerCase();
+      if (color && bg !== color) get().setBackground(color);
+      if (!color && AG_LINK_COLORS.indexOf(bg) >= 0) get().setBackground(ix.data[r - 1][xc] === true ? AG_GREY : null);
+    });
+  });
 }

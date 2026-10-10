@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.9.0
+Stable tag: 1.10.0
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.10.0 =
+* Tablica za agenciju – povezane osobe iz iste narudžbe (skripta v10): u stupcu Narudžba piše npr. „#1234 · 3 osobe · 2 izleta”, ćelija ima boju narudžbe (ista u svim izletima), a bilješka (prelazak mišem) pokazuje tko je platio, ukupni iznos i sve izlete s osobama.
 
 = 1.9.0 =
 * Tablica za agenciju – kvačice i upisi odmah mijenjaju narudžbe (skripta v9):
