@@ -141,8 +141,10 @@ final class Plan_A_Clanstvo_Ops {
 			return;
 		}
 		$paid = array( 'processing', 'completed' );
-		if ( in_array( $to, $paid, true ) && ! in_array( $from, $paid, true ) ) {
-			self::log( 'uplata', (int) $id, self::describe( $order ) );
+		if ( 'completed' === $to ) {
+			self::log( 'uplata', (int) $id, 'Cijelokupni iznos uplaćen: ' . self::describe( $order ) );
+		} elseif ( 'processing' === $to && ! in_array( $from, $paid, true ) ) {
+			self::log( 'uplata', (int) $id, ( Plan_A_Clanstvo_Agency::has_rate( $order ) ? 'Prva rata uplaćena: ' : 'Uplaćeno: ' ) . self::describe( $order ) );
 		} elseif ( 'cancelled' === $to ) {
 			self::log( 'otkaz', (int) $id, self::describe( $order ) );
 		}
@@ -308,6 +310,9 @@ final class Plan_A_Clanstvo_Ops {
 				if ( (int) $b['n'] > 0 && 0 === (int) $b['paid'] && $days < self::NOBODY_DAYS ) {
 					$flags[] = 'nitko nije platio';
 				}
+				if ( (int) ( $b['rate'] ?? 0 ) > (int) ( $b['rate2'] ?? 0 ) && $days <= 30 ) {
+					$flags[] = '2. rata nije uplaćena';
+				}
 				$tours[] = array( 'b' => $b, 'free' => $free, 'flags' => $flags, 'days' => $days );
 			}
 			usort( $tours, static fn( $a, $b ) => strcmp( (string) $a['b']['date'], (string) $b['b']['date'] ) );
@@ -317,7 +322,7 @@ final class Plan_A_Clanstvo_Ops {
 			return 0;
 		}
 		$to = $test ? array( self::admin_mail() ) : array_filter( array_unique( array( self::admin_mail(), self::mail( 'mail_agency' ), self::mail( 'mail_kreso' ) ) ) );
-		$html = self::summary_html( $events, $tours );
+		$html = self::summary_html( $events, $tours, self::rate_owed() );
 		$subj = ( $test ? 'PROBA – ' : '' ) . 'Plan A – pregled za ' . current_time( 'j.n.Y.' );
 		$n    = 0;
 		foreach ( $to as $mail ) {
@@ -326,10 +331,53 @@ final class Plan_A_Clanstvo_Ops {
 		return $n;
 	}
 
-	private static function summary_html( array $events, array $tours ): string {
+	/**
+	 * Narudžbe s uplaćenom prvom ratom kojima druga rata još nije uplaćena, a izlet nije prošao:
+	 * [name, izlet, datum, iznos, e-mail]. Iznos je ostatak (puna cijena minus prva rata).
+	 */
+	public static function rate_owed(): array {
+		$today = current_time( 'Y-m-d' );
+		$out   = array();
+		foreach ( wc_get_orders( array( 'status' => array( 'processing' ), 'limit' => 300 ) ) as $order ) {
+			if ( '' === (string) $order->get_meta( Plan_A_Clanstvo_Agency::R1 ) || ! $order->get_meta( Plan_A_Clanstvo_Agency::META ) ) {
+				continue;
+			}
+			$tour = Plan_A_Clanstvo_Agency::rate_tour_date( $order );
+			if ( '' === $tour || $tour < $today ) {
+				continue;
+			}
+			$title = '';
+			foreach ( $order->get_items() as $item ) {
+				if ( $item instanceof WC_Order_Item_Product && Plan_A_Clanstvo_Agency::first_rate( $item ) ) {
+					$title = wp_strip_all_tags( html_entity_decode( (string) $item->get_name(), ENT_QUOTES, 'UTF-8' ) );
+					break;
+				}
+			}
+			$out[] = array(
+				'name'  => trim( $order->get_formatted_billing_full_name() ),
+				'izlet' => $title,
+				'datum' => gmdate( 'j.n.Y.', strtotime( $tour ) ),
+				'iznos' => number_format( Plan_A_Clanstvo_Agency::balance( $order ), 2, ',', '.' ) . ' €',
+				'email' => (string) $order->get_billing_email(),
+				'nr'    => '#' . $order->get_order_number(),
+			);
+		}
+		usort( $out, static fn( $a, $b ) => strcmp( $a['datum'], $b['datum'] ) );
+		return $out;
+	}
+
+	private static function rates_table( array $rates ): string {
+		$t = '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:14px"><tr style="background:#e8eef4;color:#12304b"><th align="left" style="padding:6px">Narudžba</th><th align="left" style="padding:6px">Izlet</th><th align="left" style="padding:6px">Datum</th><th align="left" style="padding:6px">Druga rata</th></tr>';
+		foreach ( $rates as $r ) {
+			$t .= '<tr style="border-bottom:1px solid #e3e8ee"><td style="padding:6px">' . esc_html( $r['nr'] . ' ' . $r['name'] ) . '</td><td style="padding:6px">' . esc_html( $r['izlet'] ) . '</td><td style="padding:6px">' . esc_html( $r['datum'] ) . '</td><td style="padding:6px;font-weight:bold">' . esc_html( $r['iznos'] ) . '</td></tr>';
+		}
+		return $t . '</table>';
+	}
+
+	private static function summary_html( array $events, array $tours, array $rates = array() ): string {
 		$names = array(
 			'nova'       => 'Nove prijave',
-			'uplata'     => 'Uplate (narudžba završena)',
+			'uplata'     => 'Uplate (prva rata ili cijeli iznos)',
 			'otkaz'      => 'Otkazane narudžbe',
 			'osoba_x'    => 'Otkazali (pojedinačno)',
 			'zamjena'    => 'Zamjene',
@@ -353,6 +401,9 @@ final class Plan_A_Clanstvo_Ops {
 			}
 			$inner .= '</ul>';
 		}
+		if ( $rates ) {
+			$inner .= '<p style="margin:22px 0 8px;color:#12304b;font-size:17px;font-weight:bold">Druga rata još nije uplaćena (' . count( $rates ) . ')</p>' . self::rates_table( $rates );
+		}
 		if ( $tours ) {
 			$inner .= '<p style="margin:22px 0 8px;color:#12304b;font-size:17px;font-weight:bold">Izleti u sljedećih 30 dana</p>'
 				. '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:14px">'
@@ -363,7 +414,7 @@ final class Plan_A_Clanstvo_Ops {
 				$flag  = $t['flags'] ? ' <span style="display:inline-block;padding:1px 8px;border-radius:999px;background:#fdebd3;color:#b85c00;font-weight:bold;font-size:12px">' . esc_html( implode( ' · ', $t['flags'] ) ) . '</span>' : '';
 				$inner .= '<tr style="border-bottom:1px solid #e3e8ee"><td style="padding:6px">' . esc_html( $title ) . $flag . '</td>'
 					. '<td align="center" style="padding:6px">' . (int) $b['n'] . ( (int) $b['x'] ? ' <span style="color:#8a96a3">(+' . (int) $b['x'] . ' otk.)</span>' : '' ) . '</td>'
-					. '<td align="center" style="padding:6px">' . (int) $b['paid'] . '</td>'
+					. '<td align="center" style="padding:6px">' . (int) $b['paid'] . ( (int) ( $b['rate'] ?? 0 ) ? '<br><span style="font-size:12px;color:#5f6b77">2. rata: ' . (int) $b['rate2'] . ' od ' . (int) $b['rate'] . '</span>' : '' ) . '</td>'
 					. '<td align="center" style="padding:6px">' . ( null === $t['free'] ? '–' : (int) $t['free'] ) . '</td></tr>';
 			}
 			$inner .= '</table>';
@@ -435,7 +486,8 @@ final class Plan_A_Clanstvo_Ops {
 			$pris = 'potvrđena' === $r['pristupnica'] ? 'da' : ( $is ? 'nepotvrđena' : 'NE' );
 			$fee  = $r['clanarina'] ? 'da' : 'NE';
 			$name = trim( $r['ime'] . ' ' . $r['prezime'] );
-			$row  = array( $r['br'], $name, $r['mobitel'], $r['uplaceno'] ? 'da' : 'NE', $pris, $fee, $is ? ( ! empty( $r['iskaznica'] ) ? 'da' : 'ne' ) : '–', $r['osiguranje'] ? 'da' : '' );
+			$paidtxt = is_bool( $r['rata2'] ?? null ) ? ( $r['uplaceno'] ? ( true === $r['rata2'] ? 'da' : '1. rata' ) : 'NE' ) : ( $r['uplaceno'] ? 'da' : 'NE' );
+			$row  = array( $r['br'], $name, $r['mobitel'], $paidtxt, $pris, $fee, $is ? ( ! empty( $r['iskaznica'] ) ? 'da' : 'ne' ) : '–', $r['osiguranje'] ? 'da' : '' );
 			if ( $r['otkazao'] ) {
 				$gone[] = $row;
 				continue;
@@ -658,6 +710,7 @@ final class Plan_A_Clanstvo_Ops {
 		$t    .= '</table>';
 		$inner = Plan_A_Clanstvo_Mail::p( $rows ? 'Od članova koji su sada prijavljeni na izlete članarinu za ' . $year . '. još nije platilo njih <strong>' . count( $rows ) . '</strong>:' : 'Svi članovi koji su sada prijavljeni na izlete platili su članarinu za ' . $year . '.' )
 			. ( $rows ? $t : '' )
+			. ( self::rate_owed() ? Plan_A_Clanstvo_Mail::p( '<strong>Druga rata još nije uplaćena</strong> (prva rata uplaćena, izlet nije prošao):' ) . self::rates_table( self::rate_owed() ) : '' )
 			. Plan_A_Clanstvo_Mail::p( '<span style="color:#5f6b77;font-size:13px">Na popisu su samo članovi koji su prijavljeni na izlete od danas nadalje (bez otkazanih); plaćanje se čita iz kvačica „Članarina ' . $year . '” u tablici članova. Stiže prvog u mjesecu, od siječnja do travnja.</span>' );
 		return Plan_A_Clanstvo_Mail::send( $to, ( $test ? 'PROBA – ' : '' ) . 'Neplaćena članarina ' . $year . '. (prijavljeni na izlete) – ' . count( $rows ), Plan_A_Clanstvo_Mail::wrap( 'Neplaćena članarina ' . $year . '.', $inner, 'Plan A · članarina' ) ) ? 1 : 0;
 	}

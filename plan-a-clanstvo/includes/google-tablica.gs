@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 13;
+var SCRIPT_VERSION = 14;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -1020,15 +1020,16 @@ function agSummary_(sh, from, to) {
   var ix = agIndex_(sh), out = [], pc = agC_('uplaceno') - 1, xc = agC_('otkazao') - 1;
   ix.blocks.forEach(function (b) {
     if (!b.date || b.date < from || b.date > to) return;
-    var br = agBlockRows_(ix, b), n = 0, paid = 0, x = 0;
+    var br = agBlockRows_(ix, b), n = 0, paid = 0, x = 0, rate = 0, rate2 = 0, rc = agC_('rata2') - 1;
     for (var r = br.first; r <= br.end; r++) {
       if (!agIsPerson_(ix, r)) continue;
       var row = ix.data[r - 1];
       if (row[xc] === true) { x++; continue; }
       n++;
       if (row[pc] === true) paid++;
+      if (typeof row[rc] === 'boolean') { rate++; if (row[rc] === true) rate2++; }
     }
-    out.push({ key: b.key, date: b.date, base: b.base, n: n, paid: paid, x: x });
+    out.push({ key: b.key, date: b.date, base: b.base, n: n, paid: paid, x: x, rate: rate, rate2: rate2 });
   });
   return out;
 }

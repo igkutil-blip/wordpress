@@ -281,8 +281,18 @@ final class Plan_A_Clanstvo_Agency {
 		return round( $sum, 2 );
 	}
 
+	/** Narudžba ima stavku s prvom ratom. */
+	public static function has_rate( WC_Order $order ): bool {
+		foreach ( $order->get_items() as $item ) {
+			if ( $item instanceof WC_Order_Item_Product && self::first_rate( $item ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/** Najraniji datum izleta s prvom ratom (Y-m-d) ili ''. */
-	private static function rate_tour_date( WC_Order $order ): string {
+	public static function rate_tour_date( WC_Order $order ): string {
 		$first = '';
 		foreach ( $order->get_items() as $item ) {
 			if ( $item instanceof WC_Order_Item_Product && self::first_rate( $item ) ) {

@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.13.4
+Stable tag: 1.13.5
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,10 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.13.5 =
+* Dnevni pregled (vama, agenciji i blagajniku): uplate pišu „Prva rata uplaćena” ili „Cijelokupni iznos uplaćen”, u tablici izleta vidi se stanje 2. rate, a novi odjeljak „Druga rata još nije uplaćena” s iznosom ostatka.
+* Krešin mjesečni popis: isti odjeljak za drugu ratu. Popis za vodiča: „1. rata” za one koji nisu platili drugu ratu. Skripta v14.
 
 = 1.13.4 =
 * Mail o prvoj rati glasi „Uplaćena prva rata”. Mail o cijelom iznosu (uključujući završetak nakon druge rate) glasi „Cijelokupni iznos je uplaćen”. Zahtijeva plan-a-kosarica 1.5.5.
