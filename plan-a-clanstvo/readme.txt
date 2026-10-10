@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.12.0
+Stable tag: 1.12.1
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -36,9 +36,12 @@ botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisan
 
 == Promjene ==
 
+= 1.12.1 =
+* Siječanjski e-mail za članarinu ide svim potvrđenim članovima koji još nisu platili, s poveznicom za odjavu; odjavljeni ga više ne dobivaju (mogu se vratiti istom poveznicom). Broj odjavljenih je u okviru Stanje sustava.
+
 = 1.12.0 =
 * Popis za vodiča: novi stupac Iskaznica (uručena da/ne; – za one koji nisu članovi).
-* Siječanjski e-mail za članarinu dobivaju samo potvrđeni članovi koji su prijavljeni na izlete (od tog dana nadalje), a još nisu platili. Skripta v12.
+* Popis neplaćenih za blagajnika (siječanj–travanj) sadrži samo članove koji su prijavljeni na izlete. Skripta v12.
 
 = 1.11.1 =
 * Dnevni pregled i kopija svakog podsjetnika za uplatu idu i blagajniku. Upozorenja o vezi s tablicom idu samo vama.

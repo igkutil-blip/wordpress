@@ -4,8 +4,9 @@
  * - podsjetnik za uplatu narudžbe (5 dana bez uplate, ili 3 dana prije izleta);
  * - dnevni pregled u 7:00 (vama, agenciji i blagajniku; blagajnik dobiva i kopiju podsjetnika);
  * - popis sudionika vodičima dan prije izleta u 8:00 (PDF);
- * - siječanj: e-mail s uplatnicom za članarinu nove godine članovima prijavljenima na izlete i mjesečni popis
- *   neplaćenih za blagajnika (siječanj–travanj);
+ * - siječanj: e-mail s uplatnicom za članarinu nove godine svim potvrđenim članovima koji se nisu
+ *   odjavili (poveznica za odjavu je u e-mailu) i mjesečni popis neplaćenih za blagajnika
+ *   (siječanj–travanj, samo članovi na popisima izleta);
  * - upozorenje kad veza s Google tablicom ne radi.
  *
  * @package Plan_A_Clanstvo
@@ -19,6 +20,7 @@ final class Plan_A_Clanstvo_Ops {
 	const STATE  = 'plan_a_clanstvo_ops';    // što je već poslano (dan, mjesec, godina)
 	const HEALTH = 'plan_a_clanstvo_health'; // stanje veze s tablicom
 	const REMIND = '_pac_remind';            // narudžba: kad je poslan podsjetnik
+	const NO_JAN = '_pac_no_jan';            // član: odjavio se sa siječanjskog e-maila
 
 	const REMIND_DAYS = 5;  // podsjetnik nakon toliko dana bez uplate
 	const REMIND_TOUR = 3;  // … ili toliko dana prije izleta
@@ -37,6 +39,7 @@ final class Plan_A_Clanstvo_Ops {
 		add_filter( 'woocommerce_email_subject_customer_on_hold_order', array( __CLASS__, 'reminder_subject' ), 30, 2 );
 		add_filter( 'plan_a_kosarica_email_notice', array( __CLASS__, 'reminder_notice' ), 5, 3 );
 		add_filter( 'woocommerce_email_headers', array( __CLASS__, 'reminder_copy' ), 30, 3 );
+		add_action( 'template_redirect', array( __CLASS__, 'unsubscribe' ) );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -503,11 +506,8 @@ final class Plan_A_Clanstvo_Ops {
 		}
 		$sent = 0;
 		$left = 0;
-		foreach ( self::tour_member_ids() as $id ) {
-			if ( 'potvrdeno' !== get_post_meta( $id, '_pac_status', true ) ) {
-				continue;
-			}
-			if ( (int) get_post_meta( $id, '_pac_jan', true ) === $year ) {
+		foreach ( self::confirmed_ids() as $id ) {
+			if ( (int) get_post_meta( $id, '_pac_jan', true ) === $year || get_post_meta( $id, self::NO_JAN, true ) ) {
 				continue;
 			}
 			if ( $sent >= self::JAN_BATCH ) {
@@ -524,7 +524,7 @@ final class Plan_A_Clanstvo_Ops {
 		$s['jan_year'] = $year;
 		if ( ! $left ) {
 			$s['jan_done'] = $year;
-			Plan_A_Clanstvo_Mail::send( self::admin_mail(), 'Članarina ' . $year . '. – e-mailovi su poslani', Plan_A_Clanstvo_Mail::wrap( 'Članarina ' . $year . '.', Plan_A_Clanstvo_Mail::p( 'Članovima prijavljenima na izlete poslano je ' . (int) $s['jan_sent'] . ' e-mailova s uplatnicom i 2D kodom za članarinu ' . $year . '. (oni koji su već platili nisu dobili e-mail).' ), 'Plan A · članarina' ) );
+			Plan_A_Clanstvo_Mail::send( self::admin_mail(), 'Članarina ' . $year . '. – e-mailovi su poslani', Plan_A_Clanstvo_Mail::wrap( 'Članarina ' . $year . '.', Plan_A_Clanstvo_Mail::p( 'Članovima je poslano ' . (int) $s['jan_sent'] . ' e-mailova s uplatnicom i 2D kodom za članarinu ' . $year . '. Oni koji su već platili ili su se odjavili s popisa za ovaj e-mail nisu ga dobili.' ), 'Plan A · članarina' ) );
 		}
 		self::save_state( $s );
 	}
@@ -560,7 +560,39 @@ final class Plan_A_Clanstvo_Ops {
 		return array_values( $ids );
 	}
 
-	/** Siječanj–travanj, prvi dan u mjesecu: popis članova koji nisu platili tekuću godinu. */
+	/* ---------- Odjava sa siječanjskog e-maila ---------- */
+
+	private static function jan_key( int $id ): string {
+		return substr( hash_hmac( 'sha256', 'pac-jan|' . $id, wp_salt( 'auth' ) ), 0, 24 );
+	}
+
+	/** Poveznica za odjavu (ili ponovnu prijavu) za siječanjski e-mail. */
+	public static function jan_url( int $id, bool $back = false ): string {
+		return add_query_arg( array_filter( array( 'pac_odjava' => $id, 'k' => self::jan_key( $id ), 'natrag' => $back ? 1 : 0 ) ), home_url( '/' ) );
+	}
+
+	public static function unsubscribe() {
+		if ( ! isset( $_GET['pac_odjava'], $_GET['k'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+		$id = absint( $_GET['pac_odjava'] ); // phpcs:ignore WordPress.Security.NonceVerification
+		$ok = $id && Plan_A_Clanstvo_Data::CPT === get_post_type( $id ) && hash_equals( self::jan_key( $id ), sanitize_text_field( wp_unslash( $_GET['k'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		nocache_headers();
+		if ( ! $ok ) {
+			wp_die( 'Poveznica nije ispravna. Javite nam se na info@srd-plan-a.hr.', 'Plan A', array( 'response' => 400 ) );
+		}
+		$back = ! empty( $_GET['natrag'] ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( $back ) {
+			delete_post_meta( $id, self::NO_JAN );
+			$text = '<h1>Ponovno ste na popisu</h1><p>Početkom godine opet ćete dobiti e-mail s podacima za članarinu.</p>';
+		} else {
+			update_post_meta( $id, self::NO_JAN, current_time( 'mysql' ) );
+			$text = '<h1>Odjavljeni ste</h1><p>Više nećete dobivati e-mail s podacima za članarinu početkom godine. Članstvo i prijave na izlete ostaju kakvi jesu.</p><p><a href="' . esc_url( self::jan_url( $id, true ) ) . '">Predomislili ste se? Vratite se na popis.</a></p>';
+		}
+		wp_die( $text . '<p><a href="' . esc_url( home_url( '/' ) ) . '">Plan A</a></p>', 'Plan A', array( 'response' => 200 ) ); // phpcs:ignore WordPress.Security.EscapeOutput
+	}
+
+	/** Siječanj–travanj, prvi dan u mjesecu: članovi na popisima izleta koji nisu platili tekuću godinu. */
 	public static function treasurer( bool $test = false ): int {
 		$year  = (int) current_time( 'Y' );
 		$month = current_time( 'Y-m' );
@@ -573,7 +605,7 @@ final class Plan_A_Clanstvo_Ops {
 			self::save_state( $s );
 		}
 		$rows = array();
-		foreach ( self::confirmed_ids() as $id ) {
+		foreach ( self::tour_member_ids() as $id ) {
 			if ( Plan_A_Clanstvo_Data::fee_paid( (int) $id, $year ) ) {
 				continue;
 			}
@@ -589,10 +621,10 @@ final class Plan_A_Clanstvo_Ops {
 			$t .= '<tr style="border-bottom:1px solid #e3e8ee"><td style="padding:6px">' . (int) $m['broj'] . '</td><td style="padding:6px">' . esc_html( $m['ime'] . ' ' . $m['prezime'] ) . '</td><td style="padding:6px">' . esc_html( $m['email'] ) . '</td><td style="padding:6px">' . esc_html( $m['mobitel'] ) . '</td></tr>';
 		}
 		$t    .= '</table>';
-		$inner = Plan_A_Clanstvo_Mail::p( $rows ? 'Članarinu za ' . $year . '. još nije platilo <strong>' . count( $rows ) . '</strong> potvrđenih članova:' : 'Svi potvrđeni članovi platili su članarinu za ' . $year . '.' )
+		$inner = Plan_A_Clanstvo_Mail::p( $rows ? 'Od članova koji su sada prijavljeni na izlete članarinu za ' . $year . '. još nije platilo njih <strong>' . count( $rows ) . '</strong>:' : 'Svi članovi koji su sada prijavljeni na izlete platili su članarinu za ' . $year . '.' )
 			. ( $rows ? $t : '' )
-			. Plan_A_Clanstvo_Mail::p( '<span style="color:#5f6b77;font-size:13px">Popis je iz kvačica „Članarina ' . $year . '” u tablici članova. Stiže prvog u mjesecu, od siječnja do travnja.</span>' );
-		return Plan_A_Clanstvo_Mail::send( $to, ( $test ? 'PROBA – ' : '' ) . 'Neplaćena članarina ' . $year . '. – ' . count( $rows ) . ' članova', Plan_A_Clanstvo_Mail::wrap( 'Neplaćena članarina ' . $year . '.', $inner, 'Plan A · članarina' ) ) ? 1 : 0;
+			. Plan_A_Clanstvo_Mail::p( '<span style="color:#5f6b77;font-size:13px">Na popisu su samo članovi koji su prijavljeni na izlete od danas nadalje (bez otkazanih); plaćanje se čita iz kvačica „Članarina ' . $year . '” u tablici članova. Stiže prvog u mjesecu, od siječnja do travnja.</span>' );
+		return Plan_A_Clanstvo_Mail::send( $to, ( $test ? 'PROBA – ' : '' ) . 'Neplaćena članarina ' . $year . '. (prijavljeni na izlete) – ' . count( $rows ), Plan_A_Clanstvo_Mail::wrap( 'Neplaćena članarina ' . $year . '.', $inner, 'Plan A · članarina' ) ) ? 1 : 0;
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -653,6 +685,8 @@ final class Plan_A_Clanstvo_Ops {
 			'Dnevni pregled'       => ! empty( $s['daily'] ) ? 'zadnji ' . esc_html( Plan_A_Clanstvo_Data::hr_date( (string) $s['daily'] ) ) : 'još nije slan',
 			'Članarina u siječnju' => ! empty( $s['jan_year'] ) ? (int) $s['jan_year'] . ': poslano ' . (int) ( $s['jan_sent'] ?? 0 ) . ( (int) ( $s['jan_done'] ?? 0 ) === (int) $s['jan_year'] ? ' (gotovo)' : ' (u tijeku, ' . self::JAN_BATCH . ' na sat)' ) : 'šalje se ' . self::JAN_DAY . '. siječnja',
 		);
+		$off = get_posts( array( 'post_type' => Plan_A_Clanstvo_Data::CPT, 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids', 'no_found_rows' => true, 'meta_key' => self::NO_JAN ) ); // phpcs:ignore WordPress.DB.SlowDBQuery
+		$rows['Odjavljeni sa siječanjskog e-maila'] = (string) count( $off );
 		$err = (string) get_option( 'plan_a_clanstvo_ops_error', '' );
 		if ( '' !== $err ) {
 			$rows['Zadnja greška automatike'] = esc_html( $err );

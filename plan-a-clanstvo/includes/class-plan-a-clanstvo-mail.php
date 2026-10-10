@@ -46,11 +46,11 @@ final class Plan_A_Clanstvo_Mail {
 		);
 	}
 
-	public static function send( string $to, string $subject, string $html, array $attachments = array() ): bool {
+	public static function send( string $to, string $subject, string $html, array $attachments = array(), array $extra = array() ): bool {
 		if ( ! is_email( $to ) ) {
 			return false;
 		}
-		$ok = (bool) wp_mail( $to, $subject, $html, self::headers(), $attachments );
+		$ok = (bool) wp_mail( $to, $subject, $html, array_merge( self::headers(), $extra ), $attachments );
 		update_option( 'plan_a_clanstvo_last_mail', array( 'time' => current_time( 'mysql' ), 'to' => $to, 'ok' => $ok, 'error' => $ok ? '' : (string) get_option( 'plan_a_clanstvo_mail_error', '' ) ), false );
 		return $ok;
 	}
@@ -144,9 +144,10 @@ final class Plan_A_Clanstvo_Mail {
 			. self::payment_html( $id, 'display:block;width:100%;max-width:420px;height:auto;margin:0 auto 14px', $year )
 			. self::p( 'Članarina vrijedi do kraja kalendarske godine.' )
 			. self::button( 'Pogledaj izlete', home_url( '/izleti/' ) )
-			. self::p( '<span style="color:#5f6b77;font-size:14px">Ako si članarinu već platio/la, zanemari ovu poruku. Ako više ne želiš biti član, javi nam se na info@srd-plan-a.hr.</span>' );
+			. self::p( '<span style="color:#5f6b77;font-size:14px">Ako si članarinu već platio/la, zanemari ovu poruku. Ako više ne želiš biti član, javi nam se na info@srd-plan-a.hr.</span>' )
+			. self::p( '<span style="color:#5f6b77;font-size:13px">Ne želiš ovaj e-mail početkom godine? <a href="' . esc_url( Plan_A_Clanstvo_Ops::jan_url( $id ) ) . '" style="color:#5f6b77">Odjavi se s popisa za ovaj e-mail</a>.</span>' );
 		$files = $code && $code['path'] ? array( $code['path'] ) : array();
-		return self::send( $m['email'], 'Članarina Plan A za ' . (int) $year . '.', self::wrap( 'Članarina za ' . (int) $year . '.', $inner, 'Plan A · članarina' ), $files );
+		return self::send( $m['email'], 'Članarina Plan A za ' . (int) $year . '.', self::wrap( 'Članarina za ' . (int) $year . '.', $inner, 'Plan A · članarina' ), $files, array( 'List-Unsubscribe: <' . Plan_A_Clanstvo_Ops::jan_url( $id ) . '>' ) );
 	}
 
 	public static function confirmed( int $id ): bool {
