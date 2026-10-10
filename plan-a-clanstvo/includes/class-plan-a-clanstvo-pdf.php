@@ -28,7 +28,7 @@ final class Plan_A_Clanstvo_Pdf {
 	 * $cols: [[naslov, širina u px, poravnanje 'left'|'center'], …]; $rows: [[ćelije…], …];
 	 * $gone: otkazani (precrtani, na dnu). Vraća sadržaj PDF-a ili '' ako GD nije dostupan.
 	 */
-	public static function table( string $title, string $subtitle, array $cols, array $rows, array $gone = array(), string $foot = '' ): string {
+	public static function table( string $title, string $subtitle, array $cols, array $rows, array $gone = array(), string $foot = '', array $todo = array() ): string {
 		if ( ! self::available() ) {
 			return '';
 		}
@@ -49,6 +49,8 @@ final class Plan_A_Clanstvo_Pdf {
 				'line'  => imagecolorallocate( $im, 215, 222, 229 ),
 				'head'  => imagecolorallocate( $im, 232, 238, 244 ),
 				'zebra' => imagecolorallocate( $im, 247, 249, 251 ),
+				'red'   => imagecolorallocate( $im, 179, 45, 46 ),
+				'amber' => imagecolorallocate( $im, 178, 98, 0 ),
 			);
 			imagefilledrectangle( $im, 0, 0, self::W, self::H, $c['bg'] );
 			$y = self::MARGIN;
@@ -78,7 +80,9 @@ final class Plan_A_Clanstvo_Pdf {
 				}
 				$x = self::MARGIN;
 				foreach ( $cols as $k => $col ) {
-					$w = self::cell( $im, 22, $x, $y + 12, (int) $col[1], $it['x'] ? $c['muted'] : $c['text'], 0 === $k ? false : 1 === $k, (string) ( $it['r'][ $k ] ?? '' ), $col[2] ?? 'left' );
+					$v     = (string) ( $it['r'][ $k ] ?? '' );
+					$color = $it['x'] ? $c['muted'] : ( 'NE' === $v ? $c['red'] : ( 'nepotvrđena' === $v ? $c['amber'] : $c['text'] ) );
+					$w     = self::cell( $im, 22, $x, $y + 12, (int) $col[1], $color, 1 === $k || ( ! $it['x'] && in_array( $v, array( 'NE', 'nepotvrđena' ), true ) ), $v, $col[2] ?? 'left' );
 					if ( $it['x'] && 1 === $k && $w > 0 ) {
 						imagefilledrectangle( $im, $x + 8, $y + 24, $x + 8 + $w, $y + 25, $c['muted'] );
 					}
@@ -89,8 +93,22 @@ final class Plan_A_Clanstvo_Pdf {
 				++$n;
 			}
 			$pages[] = $im;
-			if ( $i >= count( $all ) && '' !== $foot ) {
-				self::text( $im, 20, self::MARGIN, min( $y + 30, self::H - self::MARGIN - 30 ), $c['muted'], false, $foot, self::W - 2 * self::MARGIN );
+			if ( $i >= count( $all ) ) {
+				$y += 30;
+				if ( $todo ) {
+					$y = self::text( $im, 26, self::MARGIN, $y, $c['amber'], true, 'Na izletu treba riješiti', self::W - 2 * self::MARGIN ) + 6;
+					foreach ( $todo as $line ) {
+						if ( $y > self::H - self::MARGIN - 90 ) {
+							$y = self::text( $im, 22, self::MARGIN + 10, $y, $c['muted'], false, '… ostali su navedeni u e-mailu.', self::W - 2 * self::MARGIN - 10 );
+							break;
+						}
+						$y = self::text( $im, 22, self::MARGIN + 10, $y, $c['text'], false, '• ' . $line, self::W - 2 * self::MARGIN - 10 ) + 2;
+					}
+					$y += 20;
+				}
+				if ( '' !== $foot ) {
+					self::text( $im, 20, self::MARGIN, min( $y, self::H - self::MARGIN - 30 ), $c['muted'], false, $foot, self::W - 2 * self::MARGIN );
+				}
 			}
 		} while ( $i < count( $all ) && count( $pages ) < 20 );
 

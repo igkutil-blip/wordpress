@@ -423,21 +423,38 @@ final class Plan_A_Clanstvo_Ops {
 		$title = implode( ' · ', array_slice( explode( ' · ', (string) $b['base'] ), 0, 2 ) );
 		$go    = array();
 		$gone  = array();
+		$todo  = array();
 		foreach ( (array) $b['rows'] as $r ) {
-			$is     = ! ( 'nema' === $r['pristupnica'] || '' === $r['pristupnica'] );
-			$member = 'potvrđena' === $r['pristupnica'] ? ( $r['clanarina'] ? 'član' : 'član, neplaćeno' ) : ( $is ? 'nepotvrđena' : 'nije član' );
-			$row    = array( $r['br'], trim( $r['ime'] . ' ' . $r['prezime'] ), $r['mobitel'], $r['uplaceno'] ? 'da' : 'NE', $member, $is ? ( ! empty( $r['iskaznica'] ) ? 'da' : 'ne' ) : '–', $r['osiguranje'] ? 'da' : '' );
+			$is   = ! ( 'nema' === $r['pristupnica'] || '' === $r['pristupnica'] );
+			$pris = 'potvrđena' === $r['pristupnica'] ? 'da' : ( $is ? 'nepotvrđena' : 'NE' );
+			$fee  = $r['clanarina'] ? 'da' : 'NE';
+			$name = trim( $r['ime'] . ' ' . $r['prezime'] );
+			$row  = array( $r['br'], $name, $r['mobitel'], $r['uplaceno'] ? 'da' : 'NE', $pris, $fee, $is ? ( ! empty( $r['iskaznica'] ) ? 'da' : 'ne' ) : '–', $r['osiguranje'] ? 'da' : '' );
 			if ( $r['otkazao'] ) {
 				$gone[] = $row;
-			} else {
-				$go[] = $row;
+				continue;
+			}
+			$go[]  = $row;
+			$need  = array();
+			if ( 'NE' === $pris ) {
+				$need[] = 'ispuniti pristupnicu';
+			} elseif ( 'nepotvrđena' === $pris ) {
+				$need[] = 'potvrditi pristupnicu (poveznica u e-mailu)';
+			}
+			if ( 'NE' === $fee ) {
+				$need[] = 'platiti članarinu';
+			}
+			if ( $need ) {
+				$todo[] = $name . ' – ' . implode( ' i ', $need );
 			}
 		}
 		$unpaid = count( array_filter( $go, static fn( $r ) => 'NE' === $r[3] ) );
-		$sub    = 'Vodiči: ' . ( '' !== $guides ? $guides : '–' ) . ' · sudionika: ' . count( $go ) . ( $unpaid ? ' · nije platilo: ' . $unpaid : '' ) . ' · stanje ' . current_time( 'j.n.Y. H:i' );
-		$cols   = array( array( 'Br.', 60, 'center' ), array( 'Ime i prezime', 300, 'left' ), array( 'Mobitel', 185, 'left' ), array( 'Uplaćeno', 120, 'center' ), array( 'Članstvo', 195, 'left' ), array( 'Iskaznica', 125, 'center' ), array( 'Osig.', 95, 'center' ) );
+		$nopris = count( array_filter( $go, static fn( $r ) => 'da' !== $r[4] ) );
+		$nofee  = count( array_filter( $go, static fn( $r ) => 'NE' === $r[5] ) );
+		$sub    = 'Vodiči: ' . ( '' !== $guides ? $guides : '–' ) . ' · sudionika: ' . count( $go ) . ( $unpaid ? ' · nije platilo izlet: ' . $unpaid : '' ) . ( $nopris ? ' · bez pristupnice: ' . $nopris : '' ) . ( $nofee ? ' · bez članarine: ' . $nofee : '' ) . ' · stanje ' . current_time( 'j.n.Y. H:i' );
+		$cols   = array( array( 'Br.', 55, 'center' ), array( 'Ime i prezime', 260, 'left' ), array( 'Mobitel', 170, 'left' ), array( 'Uplaćeno', 110, 'center' ), array( 'Pristupnica', 150, 'center' ), array( 'Članarina', 120, 'center' ), array( 'Iskaznica', 120, 'center' ), array( 'Osig.', 95, 'center' ) );
 		$files  = array();
-		$pdf    = Plan_A_Clanstvo_Pdf::table( $title, $sub, $cols, $go, $gone, 'Popis je iz tablice „Prijave na izlete”. Za promjene se javite agenciji.' );
+		$pdf    = Plan_A_Clanstvo_Pdf::table( $title, $sub, $cols, $go, $gone, 'Popis je iz tablice „Prijave na izlete”. Za promjene se javite agenciji.', $todo );
 		if ( '' !== $pdf ) {
 			$dir  = trailingslashit( get_temp_dir() );
 			$file = $dir . 'popis-' . sanitize_file_name( remove_accents( strtolower( (string) preg_replace( '/\s+/', '-', explode( ' · ', (string) $b['base'] )[0] ) ) ) ) . '-' . $date . '.pdf';
@@ -455,12 +472,21 @@ final class Plan_A_Clanstvo_Ops {
 			$table .= '<tr style="border-bottom:1px solid #e3e8ee;' . ( $x ? 'color:#8a96a3;text-decoration:line-through' : '' ) . '">';
 			foreach ( $r as $k => $v ) {
 				$v      = 2 === $k && '' !== $v && ! $x ? '<a href="tel:' . esc_attr( preg_replace( '/[^0-9+]/', '', $v ) ) . '" style="color:#1a73b8">' . esc_html( $v ) . '</a>' : esc_html( $v );
-				$table .= '<td style="padding:6px' . ( 2 === $k ? ';white-space:nowrap' : '' ) . ( 3 === $k && 'NE' === $r[3] && ! $x ? ';color:#b32d2e;font-weight:bold' : '' ) . '">' . $v . '</td>';
+				$table .= '<td style="padding:6px' . ( 2 === $k ? ';white-space:nowrap' : '' ) . ( $k >= 3 && $k <= 5 && ! $x && 'NE' === $r[ $k ] ? ';color:#b32d2e;font-weight:bold' : '' ) . ( 4 === $k && ! $x && 'nepotvrđena' === $r[4] ? ';color:#b26200;font-weight:bold' : '' ) . '">' . $v . '</td>';
 			}
 			$table .= '</tr>';
 		}
 		$table .= '</table>';
+		$fix = '';
+		if ( $todo ) {
+			$fix = '<div style="background:#fff4e8;border:2px solid #e8862a;border-radius:12px;padding:14px 16px;margin:16px 0"><p style="margin:0 0 6px;color:#b85c00;font-size:16px;font-weight:bold">Na izletu treba riješiti</p><ul style="margin:0;padding-left:20px;font-size:15px;line-height:1.5">';
+			foreach ( $todo as $t ) {
+				$fix .= '<li>' . esc_html( $t ) . '</li>';
+			}
+			$fix .= '</ul><p style="margin:8px 0 0;font-size:13px;color:#5f6b77">Pristupnica: srd-plan-a.hr/pristupnica · članarina se uplaćuje na račun udruge.</p></div>';
+		}
 		$inner  = Plan_A_Clanstvo_Mail::p( esc_html( $sub ) )
+			. $fix
 			. $table
 			. Plan_A_Clanstvo_Mail::p( '<span style="color:#5f6b77;font-size:13px">' . ( $files ? 'Popis za print je u privitku (PDF). ' : '' ) . 'Precrtani su otkazali. Popis je iz tablice „Prijave na izlete”; za promjene se javite agenciji.</span>' );
 		return array(
