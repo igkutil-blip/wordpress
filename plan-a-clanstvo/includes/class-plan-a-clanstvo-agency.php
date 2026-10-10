@@ -30,6 +30,8 @@ final class Plan_A_Clanstvo_Agency {
 	const GONE  = '_pac_ag_gone';             // narudžba: ključ osobe => ime (označeno Otkazao)
 	const R1    = '_pac_ag_r1';               // narudžba: prva rata potvrđena, poslan mail s ostatkom
 	const R2    = '_pac_ag_r2';               // narudžba: poslan podsjetnik za drugu ratu
+	const R1T   = '_pac_ag_r1t';              // narudžba: kad je označena prva rata
+	const R1S   = '_pac_ag_r1s';              // narudžba: poslan mail s ostatkom (nakon sat vremena)
 
 	public static function init() {
 		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'queue' ), 30, 1 );
@@ -350,12 +352,30 @@ final class Plan_A_Clanstvo_Agency {
 		return $ok;
 	}
 
-	/** Svaki sat: podsjetnik za drugu ratu 35 dana prije izleta (rok je 30 dana prije), ako prva rata jest a druga nije. */
-	public static function rate_reminders(): int {
-		$today = current_time( 'Y-m-d' );
-		$n     = 0;
+	/**
+	 * Mail s ostatkom za prvu ratu: nakon sat vremena od kvačice „Uplaćeno”, ako u tom roku nije
+	 * stigla i „2. rata” (tada je narudžba već završena i mail je o završetku).
+	 */
+	public static function rate_first_due(): int {
+		$n = 0;
 		foreach ( wc_get_orders( array( 'status' => array( 'processing' ), 'limit' => 200 ) ) as $order ) {
-			if ( '' === (string) $order->get_meta( self::R1 ) || '' !== (string) $order->get_meta( self::R2 ) || ! $order->get_meta( self::META ) ) {
+			$t = (int) $order->get_meta( self::R1T );
+			if ( ! $t || '' !== (string) $order->get_meta( self::R1S ) || time() - $t < HOUR_IN_SECONDS ) {
+				continue;
+			}
+			$order->update_meta_data( self::R1S, current_time( 'mysql' ) );
+			$order->save_meta_data();
+			$n += self::rate_mail( $order, 'first' ) ? 1 : 0;
+		}
+		return $n;
+	}
+
+	/** Svaki sat: mail s ostatkom za prvu ratu (nakon sat vremena) i podsjetnik za drugu ratu 35 dana prije izleta. */
+	public static function rate_reminders(): int {
+		$n     = self::rate_first_due();
+		$today = current_time( 'Y-m-d' );
+		foreach ( wc_get_orders( array( 'status' => array( 'processing' ), 'limit' => 200 ) ) as $order ) {
+			if ( '' === (string) $order->get_meta( self::R1S ) || '' !== (string) $order->get_meta( self::R2 ) || ! $order->get_meta( self::META ) ) {
 				continue;
 			}
 			$tour = self::rate_tour_date( $order );
@@ -646,11 +666,12 @@ final class Plan_A_Clanstvo_Agency {
 				}
 			} elseif ( $paid && $rate ) {
 				// Prva rata: narudžba je u obradi, a kupcu ide mail s ostatkom (jednom).
+				// Mail s ostatkom šalje se tek nakon sat vremena (rate_first_due), da stigne i kvačica „2. rata”.
 				if ( '' === (string) $order->get_meta( self::R1 ) && ! $order->has_status( array( 'processing', 'completed' ) ) ) {
 					$order->update_meta_data( self::R1, current_time( 'mysql' ) );
+					$order->update_meta_data( self::R1T, time() );
 					$order->save_meta_data();
 					self::set_status( $order, 'processing', 'Prvu ratu je potvrdila agencija (kvačica „Uplaćeno”). Druga rata se uplaćuje 30 dana prije izleta.', true );
-					self::rate_mail( $order, 'first' );
 					$done = true;
 				}
 			} elseif ( ! $paid && $order->has_status( 'completed' ) && '' !== (string) $order->get_meta( self::PAID ) ) {

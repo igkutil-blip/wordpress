@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A članstvo
  * Description:       Pristupnica za članstvo u udruzi: obrazac na stranici, potvrda klikom u e-mailu, 2D kod za članarinu, automatski upis u Google tablicu i provjera članstva pri prijavi na izlet.
- * Version:           1.13.2
+ * Version:           1.13.3
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_CLANSTVO_VERSION', '1.13.2' );
+define( 'PLAN_A_CLANSTVO_VERSION', '1.13.3' );
 define( 'PLAN_A_CLANSTVO_FILE', __FILE__ );
 define( 'PLAN_A_CLANSTVO_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PLAN_A_CLANSTVO_URL', plugin_dir_url( __FILE__ ) );
