@@ -28,6 +28,8 @@ final class Plan_A_Clanstvo_Agency {
 	const PREV  = '_pac_ag_prev';             // narudžba: status prije otkazivanja iz tablice
 	const NAMES = '_pac_ag_names';            // narudžba: ključ osobe => zadnje ime u tablici
 	const GONE  = '_pac_ag_gone';             // narudžba: ključ osobe => ime (označeno Otkazao)
+	const R1    = '_pac_ag_r1';               // narudžba: prva rata potvrđena, poslan mail s ostatkom
+	const R2    = '_pac_ag_r2';               // narudžba: poslan podsjetnik za drugu ratu
 
 	public static function init() {
 		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'queue' ), 30, 1 );
@@ -235,6 +237,129 @@ final class Plan_A_Clanstvo_Agency {
 		return $list;
 	}
 
+	/** Stavka je prva rata (naziv karte „Uplata prve rate”). */
+	public static function first_rate( WC_Order_Item_Product $item ): bool {
+		foreach ( (array) $item->get_meta( '_ttbm_ticket_info' ) as $t ) {
+			$name = (string) ( $t['ticket_name'] ?? $t['ticket_type_name'] ?? '' );
+			if ( preg_match( '/prve\s+rate/iu', $name ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Puna cijena po osobi za izlet (prva karta koja nije prva rata). */
+	private static function full_price( int $tour_id ): float {
+		if ( ! class_exists( 'TTBM_Function' ) || ! method_exists( 'TTBM_Function', 'get_ticket_type' ) ) {
+			return 0.0;
+		}
+		foreach ( (array) TTBM_Function::get_ticket_type( $tour_id ) as $t ) {
+			if ( ! preg_match( '/prve\s+rate/iu', (string) ( $t['ticket_type_name'] ?? '' ) ) ) {
+				return (float) ( $t['ticket_price'] ?? 0 );
+			}
+		}
+		return 0.0;
+	}
+
+	/** Ostatak za drugu ratu: puna cijena (po osobi × osobe) minus uplaćena prva rata. */
+	public static function balance( WC_Order $order ): float {
+		$sum = 0.0;
+		foreach ( $order->get_items() as $item ) {
+			if ( ! $item instanceof WC_Order_Item_Product || ! self::first_rate( $item ) ) {
+				continue;
+			}
+			$qty = 0;
+			foreach ( (array) $item->get_meta( '_ttbm_ticket_info' ) as $t ) {
+				$qty += (int) ( $t['ticket_qty'] ?? 0 );
+			}
+			$qty  = max( 1, $qty ?: (int) $item->get_quantity() );
+			$paid = (float) $item->get_total() + (float) $item->get_total_tax();
+			$sum += max( 0.0, self::full_price( (int) $item->get_meta( '_ttbm_id' ) ) * $qty - $paid );
+		}
+		return round( $sum, 2 );
+	}
+
+	/** Najraniji datum izleta s prvom ratom (Y-m-d) ili ''. */
+	private static function rate_tour_date( WC_Order $order ): string {
+		$first = '';
+		foreach ( $order->get_items() as $item ) {
+			if ( $item instanceof WC_Order_Item_Product && self::first_rate( $item ) ) {
+				$ts = strtotime( (string) $item->get_meta( '_ttbm_date' ) );
+				if ( $ts && ( '' === $first || gmdate( 'Y-m-d', $ts ) < $first ) ) {
+					$first = gmdate( 'Y-m-d', $ts );
+				}
+			}
+		}
+		return $first;
+	}
+
+	/**
+	 * Mail s ostatkom za drugu ratu i uplatnicom. $kind: first (nakon prve rate) ili reminder
+	 * (30 dana prije izleta).
+	 */
+	public static function rate_mail( WC_Order $order, string $kind ): bool {
+		$to = sanitize_email( (string) $order->get_billing_email() );
+		$amount = self::balance( $order );
+		if ( ! is_email( $to ) || $amount <= 0 ) {
+			return false;
+		}
+		$tour  = self::rate_tour_date( $order );
+		$due   = '' !== $tour ? strtotime( $tour ) - 30 * DAY_IN_SECONDS : 0;
+		$when  = $due ? 'do ' . gmdate( 'j.n.Y.', $due ) : 'što prije';
+		$code  = Plan_A_Clanstvo_Hub3::for_order( $order, $amount );
+		$name  = trim( $order->get_billing_first_name() ) ?: 'poštovani';
+		$money = number_format( $amount, 2, ',', '.' ) . ' €';
+		$rows  = array(
+			'Iznos'         => $money,
+			'Primatelj'     => Plan_A_Clanstvo_Data::value( 'primatelj' ) . ', ' . Plan_A_Clanstvo_Data::value( 'adresa' ) . ', ' . Plan_A_Clanstvo_Data::value( 'mjesto' ),
+			'IBAN'          => Plan_A_Clanstvo_Data::value( 'iban' ),
+			'Poziv na broj' => (string) $order->get_order_number(),
+			'Opis plaćanja' => 'Druga rata, narudžba ' . $order->get_order_number(),
+		);
+		$table = '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:15px">';
+		foreach ( $rows as $k => $v ) {
+			$table .= '<tr><td style="padding:5px 10px 5px 0;color:#5f6b77;white-space:nowrap">' . esc_html( $k ) . '</td><td style="padding:5px 0;font-weight:bold">' . esc_html( $v ) . '</td></tr>';
+		}
+		$table .= '</table>';
+		$img    = $code && $code['url'] ? '<img src="' . esc_url( $code['url'] ) . '" alt="2D kod za uplatu druge rate" style="display:block;width:100%;max-width:420px;height:auto;margin:0 auto 14px">' : '';
+		$intro  = 'first' === $kind
+			? 'Primili smo <strong>prvu ratu</strong> za tvoju prijavu. Hvala!'
+			: 'podsjećamo te da <strong>druga rata</strong> za tvoj izlet još nije uplaćena.';
+		$inner  = Plan_A_Clanstvo_Mail::p( 'Pozdrav ' . esc_html( $name ) . ',' )
+			. Plan_A_Clanstvo_Mail::p( $intro . ' Ostatak uplate je <strong>' . esc_html( $money ) . '</strong>, a treba biti uplaćen ' . esc_html( $when ) . ' (30 dana prije izleta).' )
+			. '<div style="background:#f3f8fc;border-radius:14px;padding:18px 18px 10px;margin:6px 0 16px">' . $img . $table . '</div>'
+			. Plan_A_Clanstvo_Mail::p( '<span style="color:#5f6b77;font-size:14px">Ako si ostatak već uplatio/la, zanemari ovu poruku. Pitanja: info@srd-plan-a.hr.</span>' );
+		$subj   = 'first' === $kind ? 'Prva rata je primljena – druga rata ' . $when : 'Podsjetnik: druga rata ' . $when;
+		$files  = $code && $code['path'] ? array( $code['path'] ) : array();
+		$ok     = Plan_A_Clanstvo_Mail::send( $to, $subj, Plan_A_Clanstvo_Mail::wrap( 'Druga rata', $inner, 'Plan A · uplata' ), $files );
+		foreach ( $files as $f ) {
+			wp_delete_file( $f );
+		}
+		if ( $ok ) {
+			$order->add_order_note( ( 'first' === $kind ? 'Kupcu je poslan mail s ostatkom za drugu ratu' : 'Kupcu je poslan podsjetnik za drugu ratu' ) . ' (' . $money . ').' );
+		}
+		return $ok;
+	}
+
+	/** Svaki sat: podsjetnik za drugu ratu 30 dana prije izleta, ako prva rata jest a druga nije. */
+	public static function rate_reminders(): int {
+		$today = current_time( 'Y-m-d' );
+		$n     = 0;
+		foreach ( wc_get_orders( array( 'status' => array( 'processing' ), 'limit' => 200 ) ) as $order ) {
+			if ( '' === (string) $order->get_meta( self::R1 ) || '' !== (string) $order->get_meta( self::R2 ) || ! $order->get_meta( self::META ) ) {
+				continue;
+			}
+			$tour = self::rate_tour_date( $order );
+			if ( '' === $tour || $tour < $today || gmdate( 'Y-m-d', strtotime( $tour ) - 30 * DAY_IN_SECONDS ) > $today ) {
+				continue;
+			}
+			$order->update_meta_data( self::R2, current_time( 'mysql' ) );
+			$order->save_meta_data();
+			$n += self::rate_mail( $order, 'reminder' ) ? 1 : 0;
+		}
+		return $n;
+	}
+
 	/** Retci za tablicu iz jedne narudžbe. */
 	public static function order_rows( WC_Order $order ): array {
 		$rows = array();
@@ -248,6 +373,7 @@ final class Plan_A_Clanstvo_Agency {
 			if ( self::is_sailing( $tour_id, $tour['title'] ) ) {
 				continue;
 			}
+			$rate = self::first_rate( $item );
 			$count = 0;
 			foreach ( (array) $item->get_meta( '_ttbm_ticket_info' ) as $t ) {
 				$count += (int) ( $t['ticket_qty'] ?? 0 );
@@ -276,6 +402,8 @@ final class Plan_A_Clanstvo_Agency {
 					'uplaceno'   => $order->is_paid(),
 					'narudzba'   => '#' . $order->get_order_number(),
 					'otkazano'   => $order->has_status( array( 'cancelled', 'refunded', 'failed' ) ),
+					'rate'       => $rate,
+					'rata2'      => false,
 				);
 				$rows[]       = array(
 					'tour' => $tour,
@@ -283,9 +411,10 @@ final class Plan_A_Clanstvo_Agency {
 					'v'    => $v,
 				);
 				$map[ $pkey ] = array(
-					'b' => $m ? (int) $m['broj'] : 0,
-					'e' => $m ? '' : strtolower( (string) ( $p['email'] ?? '' ) ),
-					'h' => empty( $p['ph'] ) ? 0 : 1,
+					'b'  => $m ? (int) $m['broj'] : 0,
+					'e'  => $m ? '' : strtolower( (string) ( $p['email'] ?? '' ) ),
+					'h'  => empty( $p['ph'] ) ? 0 : 1,
+					'rt' => $rate ? 1 : 0,
 					'o' => $order->get_id(),
 					'y' => $tour['year'],
 					'd' => $tour['date'],
@@ -377,7 +506,8 @@ final class Plan_A_Clanstvo_Agency {
 			}
 			$st   = self::status( $m, (int) $r['y'] );
 			$it   = array(
-				'k' => $pkey,
+				'k'  => $pkey,
+				'rt' => ! empty( $r['rt'] ),
 				'u' => null,
 				'p' => ! empty( $r['h'] ) ? null : ( $m || ! empty( $r['e'] ) || ! empty( $r['o'] ) ? $st['pristupnica'] : null ),
 				'c' => $m ? $st['clanarina'] : null,
@@ -476,15 +606,31 @@ final class Plan_A_Clanstvo_Agency {
 				$n += $done ? 1 : 0;
 				continue;
 			}
-			if ( ! empty( $it['paid'] ) ) {
-				if ( ! $order->is_paid() ) {
+			$paid  = ! empty( $it['paid'] );
+			$rate  = ! empty( $it['rate'] );
+			$rate2 = ! $rate || ! empty( $it['rate2'] ); // druga rata uplaćena (ili nema rata)
+			if ( $paid && $rate2 ) {
+				if ( ! $order->has_status( 'completed' ) ) {
 					$order->update_meta_data( self::PAID, current_time( 'mysql' ) );
-					$order->update_status( 'completed', 'Uplatu je potvrdila agencija (kvačica „Uplaćeno” u tablici „Prijave na izlete”).' );
+					$order->update_status( 'completed', 'Uplatu je potvrdila agencija (kvačica „Uplaćeno” i „2. rata” u tablici „Prijave na izlete”).' );
 					$done = true;
 				}
-			} elseif ( '' !== (string) $order->get_meta( self::PAID ) && $order->has_status( 'completed' ) ) {
+			} elseif ( $paid && $rate ) {
+				// Prva rata: narudžba je u obradi, a kupcu ide mail s ostatkom (jednom).
+				if ( '' === (string) $order->get_meta( self::R1 ) && ! $order->has_status( array( 'processing', 'completed' ) ) ) {
+					$order->update_meta_data( self::R1, current_time( 'mysql' ) );
+					$order->save_meta_data();
+					self::set_status( $order, 'processing', 'Prvu ratu je potvrdila agencija (kvačica „Uplaćeno”). Druga rata se uplaćuje 30 dana prije izleta.', true );
+					self::rate_mail( $order, 'first' );
+					$done = true;
+				}
+			} elseif ( ! $paid && $order->has_status( 'completed' ) && '' !== (string) $order->get_meta( self::PAID ) ) {
 				$order->delete_meta_data( self::PAID );
-				self::set_status( $order, 'on-hold', 'Agencija je maknula kvačicu „Uplaćeno” – narudžba je vraćena na čekanje (kupcu nije poslan e-mail).', true );
+				self::set_status( $order, $rate ? 'processing' : 'on-hold', $rate ? 'Agencija je maknula kvačicu „Uplaćeno” ili „2. rata” – narudžba je vraćena (kupcu nije poslan e-mail).' : 'Agencija je maknula kvačicu „Uplaćeno” – narudžba je vraćena na čekanje (kupcu nije poslan e-mail).', true );
+				$done = true;
+			} elseif ( ! $paid && '' !== (string) $order->get_meta( self::R1 ) && $order->has_status( 'processing' ) ) {
+				$order->delete_meta_data( self::R1 );
+				self::set_status( $order, 'on-hold', 'Agencija je maknula kvačicu „Uplaćeno” (prva rata) – narudžba je vraćena na čekanje (kupcu nije poslan e-mail).', true );
 				$done = true;
 			}
 			$n += $done ? 1 : 0;

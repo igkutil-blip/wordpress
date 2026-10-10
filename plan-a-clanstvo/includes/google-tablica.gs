@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 12;
+var SCRIPT_VERSION = 13;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -288,9 +288,9 @@ function upsertMany_(sh, items) {
  * Napomena i sve što dopišete ostaje.
  * ======================================================================== */
 var AG_SHEET = 'Prijave';
-var AG_HEAD = ['Br.', 'Ime', 'Prezime', 'OIB', 'Datum rođenja', 'Adresa', 'Mjesto', 'Mobitel', 'E-mail', 'Prijavio/la', 'Iznos', 'Osiguranje', 'Uplaćeno', 'Otkazao', 'Pristupnica', 'Članarina', 'Iskaznica', 'Napomena', 'Narudžba', 'ključ'];
-var AG_KEYS = ['', 'ime', 'prezime', 'oib', 'datum', 'adresa', 'mjesto', 'mobitel', 'email', 'prijavio', 'iznos', 'osiguranje', 'uplaceno', 'otkazao', 'pristupnica', 'clanarina', 'iskaznica', 'napomena', 'narudzba'];
-var AG_BOX = { osiguranje: 1, uplaceno: 1, otkazao: 1, clanarina: 1, iskaznica: 1 };
+var AG_HEAD = ['Br.', 'Ime', 'Prezime', 'OIB', 'Datum rođenja', 'Adresa', 'Mjesto', 'Mobitel', 'E-mail', 'Prijavio/la', 'Iznos', 'Osiguranje', 'Uplaćeno', '2. rata', 'Otkazao', 'Pristupnica', 'Članarina', 'Iskaznica', 'Napomena', 'Narudžba', 'ključ'];
+var AG_KEYS = ['', 'ime', 'prezime', 'oib', 'datum', 'adresa', 'mjesto', 'mobitel', 'email', 'prijavio', 'iznos', 'osiguranje', 'uplaceno', 'rata2', 'otkazao', 'pristupnica', 'clanarina', 'iskaznica', 'napomena', 'narudzba'];
+var AG_BOX = { osiguranje: 1, uplaceno: 1, rata2: 1, otkazao: 1, clanarina: 1, iskaznica: 1 };
 var AG_PERSON = ['oib', 'datum', 'adresa', 'mjesto', 'mobitel', 'email']; // iz tablice članova
 var AG_KEY_COL = AG_HEAD.length; // skriveni stupac
 var AG_LAST = AG_HEAD.length - 1; // zadnji vidljivi stupac
@@ -438,7 +438,7 @@ function agSheet_(id) {
     sh.setFrozenRows(1);
     sh.getRange(1, AG_KEY_COL).setValue('ključ');
     sh.hideColumns(AG_KEY_COL);
-    var w = [45, 110, 130, 105, 95, 170, 130, 115, 190, 140, 80, 85, 80, 80, 115, 90, 85, 260, 80];
+    var w = [45, 110, 130, 105, 95, 170, 130, 115, 190, 140, 80, 85, 80, 80, 80, 115, 90, 85, 260, 80];
     w.forEach(function (px, i) { sh.setColumnWidth(i + 1, px); });
     sh.getRange('D:D').setNumberFormat('@');
     sh.getRange('H:H').setNumberFormat('@');
@@ -448,25 +448,19 @@ function agSheet_(id) {
 }
 
 /**
- * Starija tablica (bez stupca "Otkazao"): umetni ga iza "Uplaćeno". Sivi (otkazani) redovi
- * dobivaju kvačicu. Radi se samo jednom.
+ * Starija tablica (bez stupca "2. rata"): umetni ga ispred "Otkazao". Redovi se ne mijenjaju,
+ * a zaglavlja blokova dobivaju naziv. Radi se samo jednom.
  */
 function agMigrate_(sh) {
+  if (String(sh.getRange(1, AG_KEY_COL).getValue()) === 'ključ') return;   // novi raspored
   if (String(sh.getRange(1, AG_KEY_COL - 1).getValue()) !== 'ključ') return;
-  var oc = agC_('otkazao');
-  sh.insertColumnBefore(oc);
-  sh.getRange(1, oc, sh.getMaxRows(), 1).clearDataValidations().clearContent();
-  sh.setColumnWidth(oc, 80);
+  var rc = agC_('rata2');
+  sh.insertColumnBefore(rc);
+  sh.setColumnWidth(rc, 80);
   var ix = agIndex_(sh);
-  var bg = ix.last ? sh.getRange(1, 1, ix.last, 1).getBackgrounds() : [];
   for (var r = 2; r <= ix.last; r++) {
     var info = ix.info[r] || {};
-    if (info.kind === 'H') {
-      sh.getRange(r, oc).setValue('Otkazao');
-    } else if (info.kind !== 'T' && agIsPerson_(ix, r)) {
-      var grey = String(bg[r - 1][0]).toLowerCase() === AG_GREY;
-      sh.getRange(r, oc).insertCheckboxes().setValue(grey);
-    }
+    if (info.kind === 'H') sh.getRange(r, rc).setValue('2. rata');
   }
 }
 
@@ -659,12 +653,13 @@ function agAdd_(sh, rows) {
     v.otkazao = !!(v.otkazao || v.otkazano);
     var line = AG_KEYS.map(function (k) {
       if (k === '') return br.n + 1;
+      if (k === 'rata2') return v.rate ? !!v.rata2 : '';
       if (AG_BOX[k]) return !!v[k];
       var x = v[k] === undefined || v[k] === null ? '' : String(v[k]);
       return /^[=+\-@]/.test(x) ? "'" + x : x;
     });
     sh.getRange(r, 1, 1, AG_HEAD.length).breakApart().clearFormat().clearDataValidations();
-    Object.keys(AG_BOX).forEach(function (k) { sh.getRange(r, agC_(k)).insertCheckboxes(); });
+    Object.keys(AG_BOX).forEach(function (k) { if (k !== 'rata2' || v.rate) sh.getRange(r, agC_(k)).insertCheckboxes(); });
     sh.getRange(r, 1, 1, AG_LAST).setValues([line]);
     agPristupnica_(sh.getRange(r, agC_('pristupnica')), v.pristupnica);
     var orig = (String(v.ime || '') + ' ' + String(v.prezime || '')).trim().replace(/\|/g, ' ');
@@ -695,6 +690,10 @@ function agStatus_(sh, items) {
       row[agC_(k) - 1] = !!val;
     };
     if (it.u === true) set('uplaceno', true);
+    if (it.rt && typeof row[agC_('rata2') - 1] !== 'boolean') {
+      sh.getRange(r, agC_('rata2')).insertCheckboxes().setValue(false);
+      row[agC_('rata2') - 1] = false;
+    }
     if (!local) {
       set('clanarina', it.c); set('iskaznica', it.i);
       if (it.p !== null && it.p !== undefined && String(row[agC_('pristupnica') - 1]) !== String(it.p)) agPristupnica_(sh.getRange(r, agC_('pristupnica')), it.p);
@@ -834,24 +833,32 @@ function agRename_(sh, ix, r, mi, year, oldValue, col) {
   }
 }
 
-/** Stanje uplate i otkazivanja po narudžbi: [{o, paid, cancel, rows: [{k, n, f, x}]}]. */
+/**
+ * Stanje po narudžbi: paid = sve označeno Uplaćeno (prva rata kod rata), rate = ima dvije rate,
+ * rate2 = sve druge rate označene (null ako nema rata). Otkazane osobe se ne računaju.
+ */
 function agPaid_(sh, only, ix) {
   ix = ix || agIndex_(sh);
-  var pc = agC_('uplaceno') - 1, xc = agC_('otkazao') - 1, by = {};
+  var pc = agC_('uplaceno') - 1, xc = agC_('otkazao') - 1, rc = agC_('rata2') - 1, by = {};
   ix.data.forEach(function (row, i) {
     var info = ix.info[i + 1];
     if (!info || !info.o || (only && !only[info.o])) return;
-    var o = by[info.o] = by[info.o] || { o: info.o, paid: true, cancel: true, rows: [], n: 0 };
-    var x = row[xc] === true;
-    o.rows.push({ k: info.pkey, n: agName_(row), f: info.orig && info.orig !== '?' ? info.orig : '', x: x });
+    var o = by[info.o] = by[info.o] || { o: info.o, paid: true, cancel: true, rate: false, rate2: true, rows: [], n: 0 };
+    var x = row[xc] === true, rt = typeof row[rc] === 'boolean';
+    o.rows.push({ k: info.pkey, n: agName_(row), f: info.orig && info.orig !== '?' ? info.orig : '', x: x, rt: rt });
     if (x) return;
     o.cancel = false;
     o.n++;
     if (row[pc] !== true) o.paid = false;
+    if (rt) {
+      o.rate = true;
+      if (row[rc] !== true) o.rate2 = false;
+    }
   });
   return Object.keys(by).map(function (k) {
     var o = by[k];
     if (!o.n) o.paid = false;
+    if (!o.rate) o.rate2 = null;
     delete o.n;
     return o;
   });
@@ -881,7 +888,7 @@ function agLocalRefresh_(sh, ix, mi) {
 function agNaIzmjenu_(e, sh) {
   var c0 = e.range.getColumn(), c1 = e.range.getLastColumn();
   var hit = function (k) { var c = agC_(k); return c >= c0 && c <= c1; };
-  var name = hit('ime') || hit('prezime'), ids = hit('oib') || hit('email'), pay = hit('uplaceno'), cx = hit('otkazao');
+  var name = hit('ime') || hit('prezime'), ids = hit('oib') || hit('email'), pay = hit('uplaceno') || hit('rata2'), cx = hit('otkazao');
   if (!name && !ids && !pay && !cx) return;
   var lock = LockService.getScriptLock();
   lock.waitLock(25000);
@@ -998,7 +1005,7 @@ function agList_(sh, date) {
     for (var r = br.first; r <= br.end; r++) {
       if (!agIsPerson_(ix, r)) continue;
       var row = ix.data[r - 1], v = {};
-      AG_KEYS.forEach(function (k, i) { if (k) v[k] = AG_BOX[k] ? row[i] === true : str_(row[i]); });
+      AG_KEYS.forEach(function (k, i) { if (k) v[k] = k === 'rata2' ? (typeof row[i] === 'boolean' ? row[i] : null) : AG_BOX[k] ? row[i] === true : str_(row[i]); });
       v.br = str_(row[0]);
       v.narudzba = (v.narudzba.split(' · ')[0] || '').trim();
       rows.push(v);

@@ -46,6 +46,76 @@ final class Plan_A_Clanstvo_Hub3 {
 	}
 
 	/**
+	 * 2D kod za ostatak narudžbe (druga rata): iznos po narudžbi, poziv na broj = broj narudžbe.
+	 *
+	 * @return array{url: string, path: string}|null
+	 */
+	public static function for_order( WC_Order $order, float $amount ): ?array {
+		$s = Plan_A_Clanstvo_Data::get();
+		if ( 'ne' === $s['barcode'] || $amount <= 0 ) {
+			return null;
+		}
+		if ( 'slika' === $s['barcode'] ) {
+			$url = esc_url_raw( (string) $s['barcode_slika'] );
+			return $url ? array(
+				'url'  => $url,
+				'path' => '',
+			) : null;
+		}
+		list( $dir, $base ) = self::dir();
+		$body = array(
+			'renderer' => 'image',
+			'options'  => array(
+				'format'  => 'png',
+				'color'   => '#000000',
+				'padding' => 10,
+				'scale'   => 3,
+				'ratio'   => 3,
+			),
+			'data'     => array(
+				'amount'      => (int) round( $amount * 100 ),
+				'currency'    => 'EUR',
+				'sender'      => array(
+					'name'   => self::cut( trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ), 30 ),
+					'street' => self::cut( trim( $order->get_billing_address_1() ), 27 ),
+					'place'  => self::cut( trim( $order->get_billing_postcode() . ' ' . $order->get_billing_city() ), 27 ),
+				),
+				'receiver'    => array(
+					'name'      => self::cut( $s['primatelj'], 25 ),
+					'street'    => self::cut( $s['adresa'], 25 ),
+					'place'     => self::cut( $s['mjesto'], 27 ),
+					'iban'      => preg_replace( '/\s+/', '', (string) $s['iban'] ),
+					'model'     => preg_replace( '/\D/', '', (string) $s['model'] ),
+					'reference' => self::cut( (string) $order->get_order_number(), 22 ),
+				),
+				'purpose'     => 'OTHR',
+				'description' => self::cut( 'Druga rata ' . $order->get_order_number(), 35 ),
+			),
+		);
+		$res = wp_remote_post(
+			self::API,
+			array(
+				'headers' => array( 'Content-Type' => 'application/json; charset=utf-8' ),
+				'body'    => wp_json_encode( $body ),
+				'timeout' => 15,
+			)
+		);
+		if ( is_wp_error( $res ) || 200 !== (int) wp_remote_retrieve_response_code( $res ) || '' === wp_remote_retrieve_body( $res ) ) {
+			$url = esc_url_raw( (string) $s['barcode_slika'] );
+			return $url ? array(
+				'url'  => $url,
+				'path' => '',
+			) : null;
+		}
+		$file = 'druga-rata-' . $order->get_order_number() . '-' . wp_generate_password( 12, false ) . '.png';
+		file_put_contents( $dir . '/' . $file, wp_remote_retrieve_body( $res ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		return array(
+			'url'  => $base . '/' . $file,
+			'path' => $dir . '/' . $file,
+		);
+	}
+
+	/**
 	 * URL i putanja 2D koda za člana (izrađuje ga ako ga još nema za tu godinu).
 	 *
 	 * @return array{url: string, path: string}|null

@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.12.2
+Stable tag: 1.13.0
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,12 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.13.0 =
+* Izleti s dvije rate: prva rata prepoznaje se po karti „Uplata prve rate” u narudžbi. U tablici agencije novi stupac „2. rata” (samo za te izlete). „Uplaćeno” znači prvu ratu, a narudžba je završena kad su označene obje rate.
+* Nakon prve rate kupac dobiva mail s ostatkom (puna cijena minus prva rata), rokom (30 dana prije izleta) i uplatnicom s iznosom ostatka i brojem narudžbe kao pozivom na broj.
+* Podsjetnik za drugu ratu 30 dana prije izleta (jednom), s uplatnicom za ostatak.
+* Narudžba je „U obradi” nakon prve rate, a „Završeno” kad je i druga rata označena. Skripta v13.
 
 = 1.12.2 =
 * Popis za vodiča: posebni stupci Pristupnica (da / nepotvrđena / NE) i Članarina (da / NE), crveno označeno što nedostaje, te okvir „Na izletu treba riješiti” (tko treba ispuniti ili potvrditi pristupnicu i platiti članarinu), i u e-mailu i u PDF-u.

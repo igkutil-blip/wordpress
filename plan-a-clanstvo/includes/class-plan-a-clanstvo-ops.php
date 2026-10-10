@@ -153,7 +153,7 @@ final class Plan_A_Clanstvo_Ops {
 	/* ------------------------------------------------------------------ */
 
 	public static function hourly() {
-		foreach ( array( 'reminders', 'daily', 'guide_lists', 'january', 'treasurer' ) as $job ) {
+		foreach ( array( 'reminders', 'rate_reminders', 'daily', 'guide_lists', 'january', 'treasurer' ) as $job ) {
 			try {
 				self::$job();
 			} catch ( Throwable $e ) {
@@ -222,6 +222,12 @@ final class Plan_A_Clanstvo_Ops {
 			Plan_A_Clanstvo_Agency::call( array( 'action' => 'ag_note', 'items' => $notes ) );
 		}
 		return $n;
+	}
+
+	public static function rate_reminders() {
+		if ( Plan_A_Clanstvo_Agency::enabled() ) {
+			Plan_A_Clanstvo_Agency::rate_reminders();
+		}
 	}
 
 	public static function reminder_subject( $subject, $order ) {
@@ -443,6 +449,9 @@ final class Plan_A_Clanstvo_Ops {
 			}
 			if ( 'NE' === $fee ) {
 				$need[] = 'platiti članarinu';
+			}
+			if ( is_bool( $r['rata2'] ?? null ) && false === $r['rata2'] ) {
+				$need[] = 'platiti drugu ratu';
 			}
 			if ( $need ) {
 				$todo[] = $name . ' – ' . implode( ' i ', $need );
