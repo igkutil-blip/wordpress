@@ -490,6 +490,15 @@ final class Plan_A_Clanstvo_Admin {
 				Plan_A_Clanstvo_Data::set( $s );
 				$msg = 'Napravljen je novi ključ. Kopiraj novu skriptu u tablicu i ponovno je objavi (Deploy → Manage deployments → Edit → New version).';
 				break;
+			case 'test_summary':
+				$msg = Plan_A_Clanstvo_Ops::summary( true ) ? 'Probni dnevni pregled je poslan na ' . Plan_A_Clanstvo_Ops::admin_mail() . '.' : 'Pregled nije poslan.';
+				break;
+			case 'test_list':
+				$msg = Plan_A_Clanstvo_Ops::test_list() ? 'Probni popis za vodiča je poslan na ' . Plan_A_Clanstvo_Ops::admin_mail() . '.' : 'Popis nije poslan (nema nadolazećeg izleta u tablici agencije ili tablica nije povezana).';
+				break;
+			case 'test_treasurer':
+				$msg = Plan_A_Clanstvo_Ops::treasurer( true ) ? 'Probni popis neplaćenih je poslan na ' . Plan_A_Clanstvo_Ops::admin_mail() . '.' : 'Popis nije poslan.';
+				break;
 			case 'testmail':
 				$to  = wp_get_current_user()->user_email;
 				$ok  = Plan_A_Clanstvo_Mail::send( $to, 'Plan A – probni e-mail pristupnice', Plan_A_Clanstvo_Mail::wrap( 'Probni e-mail', Plan_A_Clanstvo_Mail::p( 'Ako čitaš ovo, e-mailovi pristupnice stižu.' ) ) );
@@ -584,6 +593,12 @@ final class Plan_A_Clanstvo_Admin {
 		$s['provjera']      = empty( $_POST['provjera'] ) ? 0 : 1;
 		$s['valid_days']    = max( 1, min( 60, absint( $_POST['valid_days'] ?? 7 ) ) );
 		$s['remind_days']   = min( 30, absint( $_POST['remind_days'] ?? 3 ) );
+		foreach ( array( 'mail_admin', 'mail_agency', 'mail_kreso' ) as $k ) {
+			$m       = sanitize_email( wp_unslash( $_POST[ $k ] ?? '' ) );
+			$s[ $k ] = is_email( $m ) ? $m : '';
+		}
+		$s['guides']  = sanitize_textarea_field( wp_unslash( $_POST['guides'] ?? '' ) );
+		$s['jan_fee'] = empty( $_POST['jan_fee'] ) ? 0 : 1;
 		// phpcs:enable
 		Plan_A_Clanstvo_Data::set( $s );
 	}
@@ -722,8 +737,28 @@ final class Plan_A_Clanstvo_Admin {
 						<p class="description">Nepotvrđene pristupnice se nikad ne brišu same; ostaju sa statusom „Čeka potvrdu”.</p>
 					</td></tr>
 				</table>
+				<h2>4. Obavijesti i automatika</h2>
+				<table class="form-table">
+					<?php
+					$text( 'mail_admin', 'Vaš e-mail', 'Dnevni pregled, kopija popisa za vodiča, upozorenja kad veza s tablicom ne radi. Prazno = adresa trgovine.' );
+					$text( 'mail_agency', 'E-mail agencije', 'Dnevni pregled u 7 sati.' );
+					$text( 'mail_kreso', 'E-mail blagajnika', 'Popis članova koji nisu platili članarinu, prvog u mjesecu od siječnja do travnja.' );
+					?>
+					<tr><th><label for="pac-guides">Vodiči</label></th><td><textarea id="pac-guides" name="guides" class="large-text code" rows="5" placeholder="Igor = ime@primjer.hr&#10;Krešimir, Krešo = ime@primjer.hr"><?php echo esc_textarea( (string) $s['guides'] ); ?></textarea><p class="description">Jedan vodič u retku: ime (i nadimci, odvojeni zarezom) = e-mail. Imena se uspoređuju s poljem „Vodiči” u Planu izleta (npr. „Igor + Krešo”); dan prije izleta u 8 sati vodiči dobiju popis sudionika (PDF), a vi kopiju.</p></td></tr>
+					<tr><th>Članarina u siječnju</th><td><label><input type="checkbox" name="jan_fee" value="1" <?php checked( (int) $s['jan_fee'], 1 ); ?>> <?php echo (int) Plan_A_Clanstvo_Ops::JAN_DAY; ?>. siječnja svi potvrđeni članovi koji još nisu platili novu godinu dobiju e-mail s uplatnicom i 2D kodom (<?php echo (int) Plan_A_Clanstvo_Ops::JAN_BATCH; ?> e-mailova na sat).</label></td></tr>
+				</table>
+				<p class="description">Uz to: kupac s uplatnicom dobije jedan podsjetnik <?php echo (int) Plan_A_Clanstvo_Ops::REMIND_DAYS; ?> dana nakon narudžbe bez uplate (ili <?php echo (int) Plan_A_Clanstvo_Ops::REMIND_TOUR; ?> dana prije izleta); izleti stariji od 30 dana sele na list „Arhiva”, a 12 mjeseci nakon izleta brišu se OIB, datum rođenja, adresa i mobitel.</p>
 				<p><button type="submit" class="button button-primary">Spremi postavke</button></p>
 			</form>
+
+			<h2>Stanje sustava</h2>
+			<?php echo Plan_A_Clanstvo_Ops::status_html(); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+			<p>
+				<a class="button" href="<?php echo esc_url( self::action_url( 'test_summary' ) ); ?>">Pošalji mi probni dnevni pregled</a>
+				<a class="button" href="<?php echo esc_url( self::action_url( 'test_list' ) ); ?>">Pošalji mi probni popis za vodiča</a>
+				<a class="button" href="<?php echo esc_url( self::action_url( 'test_treasurer' ) ); ?>">Pošalji mi probni popis neplaćenih</a>
+			</p>
+			<p class="description">Probe idu samo na vaš e-mail i ništa ne mijenjaju. Popis za vodiča je za prvi sljedeći izlet iz tablice agencije.</p>
 
 		</div>
 		<?php

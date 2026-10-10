@@ -104,6 +104,11 @@ final class Plan_A_Clanstvo_Data {
 			'secret'        => '',
 			'sheet_url'     => '',
 			'agency_url'    => '',
+			'mail_admin'    => '',
+			'mail_agency'   => '',
+			'mail_kreso'    => '',
+			'guides'        => '',
+			'jan_fee'       => 1,
 			'iznos'         => 15,
 			'primatelj'     => 'S.R.D. Plan A',
 			'adresa'        => 'Celovečka 60b',
@@ -540,6 +545,7 @@ final class Plan_A_Clanstvo_Data {
 			}
 		}
 		Plan_A_Clanstvo_Sheets::retry();
+		Plan_A_Clanstvo_Ops::hourly();
 	}
 
 	public static function delete( int $id ) {

@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 final class Plan_A_Clanstvo_Sheets {
 
 	/** Verzija skripte u google-tablica.gs (SCRIPT_VERSION). Starija skripta je spora za pakete. */
-	const SCRIPT_VERSION = 10;
+	const SCRIPT_VERSION = 11;
 
 	const ROUTE = 'plan-a-clanstvo/v1';
 
@@ -34,6 +34,12 @@ final class Plan_A_Clanstvo_Sheets {
 	 * @return array{ok: bool, error?: string, name?: string, n?: int}
 	 */
 	public static function post( array $payload, int $timeout = 20 ): array {
+		$res = self::request( $payload, $timeout );
+		Plan_A_Clanstvo_Ops::health( $res );
+		return $res;
+	}
+
+	private static function request( array $payload, int $timeout ): array {
 		$url = self::url();
 		if ( '' === $url ) {
 			return array(

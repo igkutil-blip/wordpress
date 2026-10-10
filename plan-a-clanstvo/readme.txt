@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.10.0
+Stable tag: 1.11.0
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,14 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.11.0 =
+* Podsjetnik za uplatu: kupac s uplatnicom dobije jedan podsjetnik (isti podaci i 2D kod) 5 dana nakon narudžbe bez uplate ili 3 dana prije izleta; u tablici agencije u Napomeni piše „podsjetnik poslan”.
+* Dnevni pregled u 7 sati (vama i agenciji): nove prijave, uplate, otkazivanja, zamjene, podsjetnici i izleti u sljedećih 30 dana (skoro pun, nitko nije platio).
+* Popis sudionika vodičima dan prije izleta u 8 sati (PDF za print), prema polju Vodiči u Planu izleta; vama kopija.
+* Siječanj: e-mail s uplatnicom i 2D kodom za članarinu nove godine (2. siječnja, 50 na sat) i popis neplaćenih blagajniku prvog u mjesecu (siječanj–travanj).
+* Tablica agencije: izleti stariji od 30 dana sele na list „Arhiva”, a 12 mjeseci nakon izleta brišu se OIB, datum rođenja, adresa i mobitel; stupci koje puni web zaštićeni su upozorenjem (i u tablici članova).
+* Upozorenje e-mailom kad veza s Google tablicom ne radi (i kad opet proradi ili je skripta stara) te okvir „Stanje sustava” u postavkama. Skripta v11.
 
 = 1.10.0 =
 * Tablica za agenciju – povezane osobe iz iste narudžbe (skripta v10): u stupcu Narudžba piše npr. „#1234 · 3 osobe · 2 izleta”, ćelija ima boju narudžbe (ista u svim izletima), a bilješka (prelazak mišem) pokazuje tko je platio, ukupni iznos i sve izlete s osobama.

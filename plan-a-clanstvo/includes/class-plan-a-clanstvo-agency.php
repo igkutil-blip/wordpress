@@ -55,6 +55,11 @@ final class Plan_A_Clanstvo_Agency {
 		return Plan_A_Clanstvo_Sheets::post( $payload, 90 );
 	}
 
+	/** Poziv skripte za tablicu agencije (popis za vodiča, pregled, bilješke). */
+	public static function call( array $payload ): array {
+		return self::enabled() ? self::post( $payload ) : array( 'ok' => false, 'error' => 'Tablica za agenciju nije povezana.' );
+	}
+
 	private static function soon() {
 		if ( self::enabled() && ! wp_next_scheduled( 'pac_ag_run' ) ) {
 			wp_schedule_single_event( time() + 5, 'pac_ag_run' );
@@ -296,6 +301,9 @@ final class Plan_A_Clanstvo_Agency {
 		if ( self::skip( $order ) ) {
 			return;
 		}
+		if ( ! $order->get_meta( self::META ) ) {
+			Plan_A_Clanstvo_Ops::log( 'nova', $order->get_id(), Plan_A_Clanstvo_Ops::describe( $order ) );
+		}
 		$order->update_meta_data( self::META, 'pending' );
 		$order->save_meta_data();
 		self::soon();
@@ -505,6 +513,9 @@ final class Plan_A_Clanstvo_Agency {
 				$notes[] = preg_match( '/^\d+\. osoba/', $prev )
 					? sprintf( 'Upisan sudionik (tablica agencije): %s.', $name )
 					: sprintf( 'Zamjena (tablica agencije): %1$s umjesto %2$s.', $name, $prev );
+				if ( ! preg_match( '/^\d+\. osoba/', $prev ) ) {
+					Plan_A_Clanstvo_Ops::log( 'zamjena', $order->get_id(), '#' . $order->get_order_number() . ': ' . $name . ' umjesto ' . $prev );
+				}
 			}
 			if ( '' !== $name ) {
 				$names[ $k ] = $name;
@@ -514,6 +525,7 @@ final class Plan_A_Clanstvo_Agency {
 				// Prvi put: kod već otkazane narudžbe to nije novo otkazivanje.
 				if ( empty( $was[ $k ] ) && ! ( $first && $order->has_status( array( 'cancelled', 'refunded' ) ) ) ) {
 					$notes[] = sprintf( 'Otkazao/la (tablica agencije): %s.', $name );
+					Plan_A_Clanstvo_Ops::log( 'osoba_x', $order->get_id(), '#' . $order->get_order_number() . ': ' . $name );
 					$new     = true;
 				}
 			} elseif ( ! empty( $was[ $k ] ) ) {

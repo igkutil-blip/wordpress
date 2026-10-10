@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 10;
+var SCRIPT_VERSION = 11;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -47,6 +47,14 @@ function doPost(e) {
         var ash = agSheet_(d.ag);
         out = { ok: true, orders: agPaid_(ash, null), local: agLocalRefresh_(ash) };
         agLinks_(ash);
+        out.archived = agArchive_(ash);
+        out.cleaned = agGdpr_(agArhSheet_(ash.getParent()));
+      } else if (d.action === 'ag_list') {
+        out = { ok: true, blocks: agList_(agSheet_(d.ag), String(d.date || '')) };
+      } else if (d.action === 'ag_summary') {
+        out = { ok: true, blocks: agSummary_(agSheet_(d.ag), String(d.from || ''), String(d.to || '')) };
+      } else if (d.action === 'ag_note') {
+        out = { ok: true, n: agNoteOrders_(agSheet_(d.ag), d.items || []) };
       } else if (d.action === 'read') {
         out = { ok: true, rows: read_(sh) };
       } else if (d.action === 'renumber') {
@@ -312,8 +320,10 @@ function ukljuciBrzoOsvjezavanje() {
   if (!ag) return 'Brzo osvježavanje je uključeno za tablicu članova. Tablica za agenciju još nije poznata: na stranici klikni "Provjeri vezu" i ponovno pokreni ovu funkciju.';
   ScriptApp.newTrigger('naIzmjenu').forSpreadsheet(ag).onEdit().create();
   ScriptApp.newTrigger('naPromjenu').forSpreadsheet(ag).onChange().create();
-  agLinks_(agSheet_(ag)); // dodaje stupac "Otkazao" i povezuje narudžbe
-  return 'Brzo osvježavanje je uključeno (tablica članova i tablica za agenciju).';
+  var ash = agSheet_(ag); // dodaje stupac "Otkazao" ako ga još nema
+  agLinks_(ash);
+  zastiti_(ss, ash);
+  return 'Brzo osvježavanje je uključeno (tablica članova i tablica za agenciju), stupci koje puni web su zaštićeni.';
 }
 
 function agRemember_(id) {
@@ -973,4 +983,158 @@ function agLinks_(sh) {
       if (!color && AG_LINK_COLORS.indexOf(bg) >= 0) get().setBackground(ix.data[r - 1][xc] === true ? AG_GREY : null);
     });
   });
+}
+
+/* ---------- Popis za vodiča, dnevni sažetak, bilješke ---------- */
+
+/** Osobe iz blokova izleta s datumom date (YYYY-MM-DD): za popis vodiču. */
+function agList_(sh, date) {
+  var ix = agIndex_(sh), out = [];
+  ix.blocks.forEach(function (b) {
+    if (!date || b.date !== date) return;
+    var br = agBlockRows_(ix, b), rows = [];
+    for (var r = br.first; r <= br.end; r++) {
+      if (!agIsPerson_(ix, r)) continue;
+      var row = ix.data[r - 1], v = {};
+      AG_KEYS.forEach(function (k, i) { if (k) v[k] = AG_BOX[k] ? row[i] === true : str_(row[i]); });
+      v.br = str_(row[0]);
+      v.narudzba = (v.narudzba.split(' · ')[0] || '').trim();
+      rows.push(v);
+    }
+    out.push({ key: b.key, date: b.date, base: b.base, rows: rows });
+  });
+  return out;
+}
+
+/** Brojke blokova s datumom od from do to: prijavljeno (bez otkazanih), uplaćeno, otkazalo. */
+function agSummary_(sh, from, to) {
+  var ix = agIndex_(sh), out = [], pc = agC_('uplaceno') - 1, xc = agC_('otkazao') - 1;
+  ix.blocks.forEach(function (b) {
+    if (!b.date || b.date < from || b.date > to) return;
+    var br = agBlockRows_(ix, b), n = 0, paid = 0, x = 0;
+    for (var r = br.first; r <= br.end; r++) {
+      if (!agIsPerson_(ix, r)) continue;
+      var row = ix.data[r - 1];
+      if (row[xc] === true) { x++; continue; }
+      n++;
+      if (row[pc] === true) paid++;
+    }
+    out.push({ key: b.key, date: b.date, base: b.base, n: n, paid: paid, x: x });
+  });
+  return out;
+}
+
+/** Napomena kod svih osoba narudžbe: items [{o, t}] (npr. "podsjetnik poslan 12.10."). */
+function agNoteOrders_(sh, items) {
+  var ix = agIndex_(sh), n = 0, by = {};
+  items.forEach(function (it) { if (it && it.o && it.t) by[parseInt(it.o, 10)] = String(it.t); });
+  for (var r = 2; r <= ix.last; r++) {
+    var info = ix.info[r];
+    if (!info || !info.o || !by[info.o]) continue;
+    agNote_(sh, r, ix.data[r - 1], by[info.o], /^podsjetnik poslan/);
+    n++;
+  }
+  return n;
+}
+
+/* ---------- Arhiva i brisanje osobnih podataka ---------- */
+
+var ARH_SHEET = 'Arhiva';
+var AG_GDPR = ['oib', 'datum', 'adresa', 'mobitel']; // brišu se 12 mjeseci nakon izleta
+var AG_PROTECT = 'Plan A: stupce puni web';
+
+/** Datum za n dana od danas (YYYY-MM-DD). */
+function agDay_(n) {
+  return new Date(Date.now() + n * 864e5).toISOString().substring(0, 10);
+}
+
+/** Je li datum bloka (YYYY-MM-DD ili YYYY-MM iz staroga popisa) prije cut. */
+function agBefore_(date, cut) {
+  var d = String(date || '');
+  if (!/^\d{4}/.test(d)) return false;
+  if (d.length === 4) d += '-12-31';
+  else if (d.length === 7) d += '-31';
+  return d < cut;
+}
+
+function agArhSheet_(ss) {
+  var a = ss.getSheetByName(ARH_SHEET);
+  if (a) return a;
+  a = ss.insertSheet(ARH_SHEET);
+  a.getRange(1, 1).setValue('Arhiva – izleti stariji od 30 dana (najnoviji na vrhu) · 12 mjeseci nakon izleta brišu se OIB, datum rođenja, adresa i mobitel');
+  a.getRange(1, 1, 1, AG_LAST).merge().setFontStyle('italic').setFontColor('#5f6b77').setWrap(true);
+  a.setFrozenRows(1);
+  a.getRange(1, AG_KEY_COL).setValue('ključ');
+  a.hideColumns(AG_KEY_COL);
+  var w = [45, 110, 130, 105, 95, 170, 130, 115, 190, 140, 80, 85, 80, 80, 115, 90, 85, 260, 80];
+  w.forEach(function (px, i) { a.setColumnWidth(i + 1, px); });
+  a.getRange('D:D').setNumberFormat('@');
+  a.getRange('H:H').setNumberFormat('@');
+  a.protect().setDescription(AG_PROTECT).setWarningOnly(true);
+  return a;
+}
+
+/** Blokovi izleta starijih od 30 dana sele na list "Arhiva" (najnoviji na vrh). */
+function agArchive_(sh) {
+  var ix = agIndex_(sh), cut = agDay_(-30);
+  var old = ix.blocks.filter(function (b) { return agBefore_(b.date, cut); });
+  if (!old.length) return 0;
+  var arh = agArhSheet_(sh.getParent());
+  old.sort(function (a, b) { return b.row - a.row; }); // odozdo: brojevi redova iznad se ne mijenjaju
+  old.forEach(function (b) {
+    var next = ix.last + 1;
+    ix.blocks.forEach(function (o) { if (o.row > b.row && o.row < next) next = o.row; });
+    var n = next - b.row;
+    if (n < 1) return;
+    arh.insertRowsBefore(2, n);
+    sh.getRange(b.row, 1, n, AG_HEAD.length).copyTo(arh.getRange(2, 1, n, AG_HEAD.length));
+    if (sh.getMaxRows() - n < 2) sh.insertRowsAfter(sh.getMaxRows(), 1);
+    sh.deleteRows(b.row, n);
+  });
+  return old.length;
+}
+
+/** U arhivi: 12 mjeseci nakon izleta obriši OIB, datum rođenja, adresu i mobitel. */
+function agGdpr_(arh) {
+  var ix = agIndex_(arh), cut = agDay_(-365), n = 0;
+  ix.blocks.forEach(function (b) {
+    if (!agBefore_(b.date, cut)) return;
+    var br = agBlockRows_(ix, b);
+    for (var r = br.first; r <= br.end; r++) {
+      if (!agIsPerson_(ix, r)) continue;
+      AG_GDPR.forEach(function (k) {
+        if (str_(ix.data[r - 1][agC_(k) - 1]) === '') return;
+        arh.getRange(r, agC_(k)).clearContent();
+        ix.data[r - 1][agC_(k) - 1] = '';
+        n++;
+      });
+    }
+  });
+  return n;
+}
+
+/* ---------- Zaštita stupaca (samo upozorenje) ---------- */
+
+function colA1_(c) {
+  var s = '';
+  for (; c > 0; c = Math.floor((c - 1) / 26)) s = String.fromCharCode(65 + (c - 1) % 26) + s;
+  return s;
+}
+
+function protect_(sh, ranges) {
+  sh.getProtections(SpreadsheetApp.ProtectionType.RANGE).forEach(function (p) {
+    if (p.getDescription() === AG_PROTECT) p.remove();
+  });
+  ranges.forEach(function (a1) { sh.getRange(a1).protect().setDescription(AG_PROTECT).setWarningOnly(true); });
+}
+
+/**
+ * Stupci koje puni web: kod promjene Google pita "jeste li sigurni" (promjena je i dalje
+ * moguća). Tablica članova: Br. i osobni podaci. Tablica za agenciju: podaci osobe, Prijavio/la,
+ * Iznos, Narudžba i skriveni ključ. Ime, Prezime, kvačice i Napomena ostaju slobodni.
+ */
+function zastiti_(ss, ash) {
+  var mem = ss.getSheetByName(SHEET_NAME);
+  if (mem) protect_(mem, ['A:' + colA1_(HEAD.length)]);
+  protect_(ash, [colA1_(agC_('oib')) + ':' + colA1_(agC_('iznos')), colA1_(agC_('narudzba')) + ':' + colA1_(AG_KEY_COL)]);
 }

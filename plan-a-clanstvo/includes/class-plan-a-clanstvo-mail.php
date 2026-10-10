@@ -9,11 +9,11 @@ defined( 'ABSPATH' ) || exit;
 
 final class Plan_A_Clanstvo_Mail {
 
-	public static function wrap( string $title, string $inner ): string {
+	public static function wrap( string $title, string $inner, string $label = 'Plan A · pristupnica' ): string {
 		return '<!doctype html><html lang="hr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>'
 			. '<body style="margin:0;padding:24px 12px;background:#f3f6f9;font-family:Arial,Helvetica,sans-serif;color:#24323f">'
 			. '<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:16px;padding:28px 24px">'
-			. '<p style="margin:0 0 6px;color:#c96a12;font-size:12px;font-weight:bold;letter-spacing:2px;text-transform:uppercase">Plan A · pristupnica</p>'
+			. '<p style="margin:0 0 6px;color:#c96a12;font-size:12px;font-weight:bold;letter-spacing:2px;text-transform:uppercase">' . esc_html( $label ) . '</p>'
 			. '<h1 style="margin:0 0 16px;color:#12304b;font-size:24px;line-height:1.25">' . esc_html( $title ) . '</h1>'
 			. $inner
 			. '<p style="margin:24px 0 0;color:#8a96a3;font-size:12px;line-height:1.5">S.R.D. Plan A · Celovečka 60b, Zagreb · info@srd-plan-a.hr · 095 90 60 556</p>'
@@ -128,6 +128,25 @@ final class Plan_A_Clanstvo_Mail {
 			. self::p( '<span style="color:#5f6b77;font-size:14px">Članarina vrijedi kalendarsku godinu. Ako si je već platio/la, zanemari ovu poruku.</span>' );
 		$files = $code && $code['path'] ? array( $code['path'] ) : array();
 		return self::send( $m['email'], 'Članarina Plan A za ' . (int) $year . '.', self::wrap( 'Članarina za ' . (int) $year . '.', $inner ), $files );
+	}
+
+	/**
+	 * Siječanj: članarina za novu godinu (svim potvrđenim članovima koji je još nisu platili).
+	 */
+	public static function new_year_fee( int $id, int $year ): bool {
+		$m = Plan_A_Clanstvo_Data::get_member( $id );
+		if ( ! $m || ! is_email( $m['email'] ) ) {
+			return false;
+		}
+		$code  = Plan_A_Clanstvo_Hub3::for_member( $id, $year );
+		$inner = self::p( 'Pozdrav ' . esc_html( $m['ime'] ) . ',' )
+			. self::p( 'sretna nova ' . (int) $year . '. i hvala što si s nama! Počela je nova godina članstva u udruzi Plan A, pa ti šaljemo podatke za članarinu za <strong>' . (int) $year . '.</strong> Najjednostavnije je skenirati 2D kod:' )
+			. self::payment_html( $id, 'display:block;width:100%;max-width:420px;height:auto;margin:0 auto 14px', $year )
+			. self::p( 'Članarina vrijedi do kraja kalendarske godine.' )
+			. self::button( 'Pogledaj izlete', home_url( '/izleti/' ) )
+			. self::p( '<span style="color:#5f6b77;font-size:14px">Ako si članarinu već platio/la, zanemari ovu poruku. Ako više ne želiš biti član, javi nam se na info@srd-plan-a.hr.</span>' );
+		$files = $code && $code['path'] ? array( $code['path'] ) : array();
+		return self::send( $m['email'], 'Članarina Plan A za ' . (int) $year . '.', self::wrap( 'Članarina za ' . (int) $year . '.', $inner, 'Plan A · članarina' ), $files );
 	}
 
 	public static function confirmed( int $id ): bool {
