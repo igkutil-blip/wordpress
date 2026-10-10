@@ -427,6 +427,12 @@ final class Plan_A_Clanstvo_Admin {
 			case 'agency':
 				$r   = Plan_A_Clanstvo_Agency::cron();
 				$msg = $r['ok'] ? 'Tablica za agenciju je osvježena (redova: ' . $r['n'] . ').' : 'Tablica za agenciju: ' . ( $r['error'] ?? 'greška' );
+				if ( isset( $r['rates'] ) ) {
+					$rt   = (array) $r['rates'];
+					$msg .= ! empty( $rt['ok'] )
+						? ' Izleti s dvije rate: ' . ( empty( $rt['tours'] ) ? 'nijedan' : implode( ', ', array_unique( $rt['tours'] ) ) ) . '. Ćelija „2. rata” promijenjeno: ' . (int) ( $rt['n'] ?? 0 ) . '.'
+						: ' Kućice „2. rata” nisu osvježene: ' . ( $rt['error'] ?? 'greška' ) . '.';
+				}
 				break;
 			case 'agency_import':
 				$f = $_FILES['csv'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput

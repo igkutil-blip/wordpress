@@ -326,10 +326,12 @@ function ukljuciBrzoOsvjezavanje() {
   ScriptApp.newTrigger('naPromjenu').forSpreadsheet(ag).onChange().create();
   var ash = agSheet_(ag); // dodaje stupce ako ih još nema
   agPolicyRule_(ash);
-  if (PropertiesService.getScriptProperties().getProperty('AGRATES')) agFixRates_(ash); // popis rata šalje stranica
+  var rates = !!PropertiesService.getScriptProperties().getProperty('AGRATES'); // popis rata šalje stranica
+  if (rates) agFixRates_(ash);
   agLinks_(ash);
   zastiti_(ss, ash);
-  return 'Brzo osvježavanje je uključeno (tablica članova i tablica za agenciju), stupci koje puni web su zaštićeni.';
+  return 'Brzo osvježavanje je uključeno (tablica članova i tablica za agenciju), stupci koje puni web su zaštićeni.' +
+    (rates ? '' : ' Kućice „2. rata” stranica uredi u roku od sat vremena (ili odmah: na stranici gumb „Osvježi tablicu za agenciju”).');
 }
 
 function agRemember_(id) {

@@ -314,7 +314,9 @@ final class Plan_A_Clanstvo_Agency {
 				$rt[] = (string) $pkey;
 			}
 		}
-		return self::post( array( 'action' => 'ag_rates', 'ids' => $ids, 'rt' => $rt ) );
+		$res          = self::post( array( 'action' => 'ag_rates', 'ids' => $ids, 'rt' => $rt ) );
+		$res['tours'] = array_map( static fn( $id ) => wp_strip_all_tags( html_entity_decode( get_the_title( $id ), ENT_QUOTES, 'UTF-8' ) ), $ids );
+		return $res;
 	}
 
 	/** Narudžba ima stavku s prvom ratom. */
@@ -637,10 +639,10 @@ final class Plan_A_Clanstvo_Agency {
 			return array( 'ok' => false, 'error' => 'Tablica za agenciju nije povezana.' );
 		}
 		self::refresh_rates_once();
-		self::sync_rates();
+		$rates = self::sync_rates();
 		self::pull_sheet();
 		self::run();
-		return self::send_status();
+		return self::send_status() + array( 'rates' => $rates );
 	}
 
 	/**
