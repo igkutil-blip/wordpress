@@ -2,7 +2,7 @@
 /**
  * Automatika koja radi sama (svaki sat, uz ostale poslove dodatka):
  * - podsjetnik za uplatu narudžbe (5 dana bez uplate, ili 3 dana prije izleta);
- * - dnevni pregled u 7:00 (vama i agenciji);
+ * - dnevni pregled u 7:00 (vama, agenciji i blagajniku; blagajnik dobiva i kopiju podsjetnika);
  * - popis sudionika vodičima dan prije izleta u 8:00 (PDF);
  * - siječanj: e-mail s uplatnicom za članarinu nove godine (u obrocima) i mjesečni popis
  *   neplaćenih za blagajnika (siječanj–travanj);
@@ -36,6 +36,7 @@ final class Plan_A_Clanstvo_Ops {
 		add_action( 'woocommerce_order_status_changed', array( __CLASS__, 'status_changed' ), 40, 4 );
 		add_filter( 'woocommerce_email_subject_customer_on_hold_order', array( __CLASS__, 'reminder_subject' ), 30, 2 );
 		add_filter( 'plan_a_kosarica_email_notice', array( __CLASS__, 'reminder_notice' ), 5, 3 );
+		add_filter( 'woocommerce_email_headers', array( __CLASS__, 'reminder_copy' ), 30, 3 );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -227,6 +228,15 @@ final class Plan_A_Clanstvo_Ops {
 			: $subject;
 	}
 
+	/** Kopija podsjetnika blagajniku (skrivena kopija). */
+	public static function reminder_copy( $headers, $id, $order ) {
+		$copy = self::mail( 'mail_kreso' );
+		if ( 'customer_on_hold_order' !== $id || '' === $copy || ! self::$reminding || ! $order instanceof WC_Order || $order->get_id() !== self::$reminding ) {
+			return $headers;
+		}
+		return rtrim( (string) $headers ) . "\r\nBcc: " . $copy . "\r\n";
+	}
+
 	public static function reminder_notice( $html, $order, $mode ) {
 		if ( ! self::$reminding || ! $order instanceof WC_Order || $order->get_id() !== self::$reminding ) {
 			return $html;
@@ -297,7 +307,7 @@ final class Plan_A_Clanstvo_Ops {
 		if ( ! $test && ! $events && ! $flagged ) {
 			return 0;
 		}
-		$to = $test ? array( self::admin_mail() ) : array_filter( array_unique( array( self::admin_mail(), self::mail( 'mail_agency' ) ) ) );
+		$to = $test ? array( self::admin_mail() ) : array_filter( array_unique( array( self::admin_mail(), self::mail( 'mail_agency' ), self::mail( 'mail_kreso' ) ) ) );
 		$html = self::summary_html( $events, $tours );
 		$subj = ( $test ? 'PROBA – ' : '' ) . 'Plan A – pregled za ' . current_time( 'j.n.Y.' );
 		$n    = 0;

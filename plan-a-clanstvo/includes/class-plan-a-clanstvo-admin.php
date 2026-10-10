@@ -740,9 +740,9 @@ final class Plan_A_Clanstvo_Admin {
 				<h2>4. Obavijesti i automatika</h2>
 				<table class="form-table">
 					<?php
-					$text( 'mail_admin', 'Vaš e-mail', 'Dnevni pregled, kopija popisa za vodiča, upozorenja kad veza s tablicom ne radi. Prazno = adresa trgovine.' );
+					$text( 'mail_admin', 'Vaš e-mail', 'Dnevni pregled, kopija popisa za vodiča i upozorenja kad veza s tablicom ne radi (upozorenja idu samo ovdje). Prazno = adresa trgovine.' );
 					$text( 'mail_agency', 'E-mail agencije', 'Dnevni pregled u 7 sati.' );
-					$text( 'mail_kreso', 'E-mail blagajnika', 'Popis članova koji nisu platili članarinu, prvog u mjesecu od siječnja do travnja.' );
+					$text( 'mail_kreso', 'E-mail blagajnika', 'Dnevni pregled u 7 sati, kopija svakog podsjetnika za uplatu i popis članova koji nisu platili članarinu (prvog u mjesecu, siječanj–travanj).' );
 					?>
 					<tr><th><label for="pac-guides">Vodiči</label></th><td><textarea id="pac-guides" name="guides" class="large-text code" rows="5" placeholder="Igor = ime@primjer.hr&#10;Krešimir, Krešo = ime@primjer.hr"><?php echo esc_textarea( (string) $s['guides'] ); ?></textarea><p class="description">Jedan vodič u retku: ime (i nadimci, odvojeni zarezom) = e-mail. Imena se uspoređuju s poljem „Vodiči” u Planu izleta (npr. „Igor + Krešo”); dan prije izleta u 8 sati vodiči dobiju popis sudionika (PDF), a vi kopiju.</p></td></tr>
 					<tr><th>Članarina u siječnju</th><td><label><input type="checkbox" name="jan_fee" value="1" <?php checked( (int) $s['jan_fee'], 1 ); ?>> <?php echo (int) Plan_A_Clanstvo_Ops::JAN_DAY; ?>. siječnja svi potvrđeni članovi koji još nisu platili novu godinu dobiju e-mail s uplatnicom i 2D kodom (<?php echo (int) Plan_A_Clanstvo_Ops::JAN_BATCH; ?> e-mailova na sat).</label></td></tr>

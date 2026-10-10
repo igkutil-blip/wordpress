@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.11.0
+Stable tag: 1.11.1
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.11.1 =
+* Dnevni pregled i kopija svakog podsjetnika za uplatu idu i blagajniku. Upozorenja o vezi s tablicom idu samo vama.
 
 = 1.11.0 =
 * Podsjetnik za uplatu: kupac s uplatnicom dobije jedan podsjetnik (isti podaci i 2D kod) 5 dana nakon narudžbe bez uplate ili 3 dana prije izleta; u tablici agencije u Napomeni piše „podsjetnik poslan”.
