@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 15;
+var SCRIPT_VERSION = 16;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -55,6 +55,8 @@ function doPost(e) {
         out = { ok: true, blocks: agSummary_(agSheet_(d.ag), String(d.from || ''), String(d.to || '')) };
       } else if (d.action === 'ag_people') {
         out = { ok: true, people: agPeople_(agSheet_(d.ag), String(d.from || '')) };
+      } else if (d.action === 'ag_rates') {
+        out = { ok: true, n: agRates_(agSheet_(d.ag), d.ids || [], d.rt || []) };
       } else if (d.action === 'ag_note') {
         out = { ok: true, n: agNoteOrders_(agSheet_(d.ag), d.items || []) };
       } else if (d.action === 'read') {
@@ -324,6 +326,7 @@ function ukljuciBrzoOsvjezavanje() {
   ScriptApp.newTrigger('naPromjenu').forSpreadsheet(ag).onChange().create();
   var ash = agSheet_(ag); // dodaje stupce ako ih još nema
   agPolicyRule_(ash);
+  agFixRates_(ash);
   agLinks_(ash);
   zastiti_(ss, ash);
   return 'Brzo osvježavanje je uključeno (tablica članova i tablica za agenciju), stupci koje puni web su zaštićeni.';
@@ -459,10 +462,13 @@ function agMigrate_(sh) {
   if (!kc) return;
   var missing = AG_KEY_COL - kc;                  // koliko stupaca fali
   var rc = agC_('rata2');
-  if (missing >= 3) { sh.insertColumnBefore(rc); sh.setColumnWidth(rc, 80); }
+  var rows = Math.max(sh.getMaxRows() - 1, 1);
+  // Novi stupac preuzima kvačice susjednog stupca – makni ih, kućice se dodaju samo gdje trebaju.
+  if (missing >= 3) { sh.insertColumnBefore(rc); sh.setColumnWidth(rc, 80); sh.getRange(2, rc, rows, 1).clearDataValidations().clearContent(); }
   var uc = agC_('ugovor');
   sh.insertColumnsBefore(uc, 2);
   sh.setColumnWidth(uc, 80); sh.setColumnWidth(uc + 1, 80);
+  sh.getRange(2, uc, rows, 2).clearDataValidations().clearContent();
   var last = sh.getLastRow();
   var data = last > 0 ? sh.getRange(1, 1, last, AG_KEY_COL).getValues() : [];
   data.forEach(function (row, i) {
@@ -497,6 +503,101 @@ function agPolicyRule_(sh) {
     .setRanges([range])
     .build());
   sh.setConditionalFormatRules(rules);
+}
+
+/* ---------- Druga rata samo na izletima s dvije rate ---------- */
+
+var AG_BLACK = '#000000';
+
+/** Kućica „2. rata” isključena: prazno, crno, ne prima upis. */
+function agRateOff_(cell) {
+  cell.clearDataValidations().clearContent().setBackground(AG_BLACK)
+    .setDataValidation(SpreadsheetApp.newDataValidation().requireFormulaSatisfied('=FALSE').setAllowInvalid(false)
+      .setHelpText('Ovaj izlet nema drugu ratu.').build());
+}
+
+function agRateOn_(cell) {
+  cell.clearDataValidations().setBackground(null).insertCheckboxes().setValue(false);
+}
+
+/** ID-jevi izleta s dvije rate (zadnje poslano sa stranice). */
+function agRateIds_() {
+  try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('AGRATES') || '[]'); } catch (e) { return []; }
+}
+
+/** Blok (ključ datum_ID) pripada izletu s dvije rate. */
+function agRateBlock_(b, ids) {
+  var id = String(b.key).split('_').pop();
+  return ids.map(String).indexOf(id) >= 0;
+}
+
+function agIsBox_(dv) {
+  return !!dv && dv.getCriteriaType() === SpreadsheetApp.DataValidationCriteria.CHECKBOX;
+}
+
+/** Sa stranice: ids = izleti s dvije rate, rt = osobe koje su platile prvu ratu. */
+function agRates_(sh, ids, rt) {
+  PropertiesService.getScriptProperties().setProperty('AGRATES', JSON.stringify(ids.map(String)));
+  return agFixRates_(sh, rt);
+}
+
+/**
+ * Stupci „2. rata”, „Ugovor” i „Polica”: u nazivima stupaca i praznim redovima bez kućica,
+ * „Ugovor” i „Polica” kućica kod svake osobe, a „2. rata” samo na izletima s dvije rate
+ * (osobe s prvom ratom i ručno dodani) – inače je ćelija crna i zaključana. Piše samo promjene.
+ */
+function agFixRates_(sh, rt) {
+  var ix = agIndex_(sh), ids = agRateIds_(), n = 0;
+  if (ix.last < 2) return 0;
+  var rc = agC_('rata2'), uc = agC_('ugovor'), pc = agC_('polica');
+  var rtSet = {};
+  (rt || []).forEach(function (k) { rtSet[String(k).replace(/\|/g, '_')] = 1; });
+  var dv = sh.getRange(1, rc, ix.last, 1).getDataValidations();
+  var dvU = sh.getRange(1, uc, ix.last, 2).getDataValidations();
+  var bg = sh.getRange(1, rc, ix.last, 1).getBackgrounds();
+  var heads = { rata2: '2. rata', ugovor: 'Ugovor', polica: 'Polica' };
+  for (var r = 2; r <= ix.last; r++) {
+    var row = ix.data[r - 1], info = ix.info[r] || {};
+    if (info.kind === 'T') continue;
+    var cells = [[rc, dv[r - 1][0], 'rata2'], [uc, dvU[r - 1][0], 'ugovor'], [pc, dvU[r - 1][1], 'polica']];
+    if (info.kind === 'H') {
+      cells.forEach(function (c) {
+        if (agIsBox_(c[1])) { sh.getRange(r, c[0]).clearDataValidations(); n++; }
+        if (str_(row[c[0] - 1]) !== heads[c[2]]) { sh.getRange(r, c[0]).setValue(heads[c[2]]); n++; }
+      });
+      continue;
+    }
+    if (!agIsPerson_(ix, r)) {
+      cells.forEach(function (c) {
+        if (agIsBox_(c[1]) || typeof row[c[0] - 1] === 'boolean' || (c[2] === 'rata2' && bg[r - 1][0] === AG_BLACK)) {
+          sh.getRange(r, c[0]).clearDataValidations().clearContent();
+          if (c[2] === 'rata2') sh.getRange(r, c[0]).setBackground(null);
+          n++;
+        }
+      });
+      continue;
+    }
+    [[uc, dvU[r - 1][0]], [pc, dvU[r - 1][1]]].forEach(function (c) {
+      if (!agIsBox_(c[1]) || typeof row[c[0] - 1] !== 'boolean') {
+        sh.getRange(r, c[0]).insertCheckboxes().setValue(row[c[0] - 1] === true);
+        n++;
+      }
+    });
+    var b = agBlockOf_(ix, r);
+    var on = info.kind === 'P' ? !!rtSet[info.pkey] : !!b && agRateBlock_(b, ids);
+    if (on) {
+      if (!agIsBox_(dv[r - 1][0]) || typeof row[rc - 1] !== 'boolean' || bg[r - 1][0] === AG_BLACK) {
+        var was = row[rc - 1] === true;
+        agRateOn_(sh.getRange(r, rc));
+        if (was) sh.getRange(r, rc).setValue(true);
+        n++;
+      }
+    } else if (bg[r - 1][0] !== AG_BLACK || agIsBox_(dv[r - 1][0]) || row[rc - 1] !== '') {
+      agRateOff_(sh.getRange(r, rc));
+      n++;
+    }
+  }
+  return n;
 }
 
 function agNorm_(t) {
@@ -670,7 +771,9 @@ function agPristupnica_(cell, v) {
 }
 
 function agGrey_(sh, r, on) {
+  var bg = sh.getRange(r, agC_('rata2')).getBackground();
   sh.getRange(r, 1, 1, AG_LAST).setBackground(on ? AG_GREY : null).setFontColor(on ? '#777777' : null);
+  if (bg === AG_BLACK) sh.getRange(r, agC_('rata2')).setBackground(AG_BLACK); // isključena „2. rata” ostaje crna
 }
 
 /** Nove osobe: rows [{tour: {...}, pkey, v: {ime, prezime, …}}]. Postojeći ključ se preskače. */
@@ -696,6 +799,7 @@ function agAdd_(sh, rows) {
     sh.getRange(r, 1, 1, AG_HEAD.length).breakApart().clearFormat().clearDataValidations();
     Object.keys(AG_BOX).forEach(function (k) { if (k !== 'rata2' || v.rate) sh.getRange(r, agC_(k)).insertCheckboxes(); });
     sh.getRange(r, 1, 1, AG_LAST).setValues([line]);
+    if (!v.rate) agRateOff_(sh.getRange(r, agC_('rata2')));
     agPristupnica_(sh.getRange(r, agC_('pristupnica')), v.pristupnica);
     var orig = (String(v.ime || '') + ' ' + String(v.prezime || '')).trim().replace(/\|/g, ' ');
     sh.getRange(r, AG_KEY_COL).setValue('P|' + it.pkey + '|' + orig);
@@ -726,7 +830,7 @@ function agStatus_(sh, items) {
     };
     if (it.u === true) set('uplaceno', true);
     if (it.rt && typeof row[agC_('rata2') - 1] !== 'boolean') {
-      sh.getRange(r, agC_('rata2')).insertCheckboxes().setValue(false);
+      agRateOn_(sh.getRange(r, agC_('rata2')));
       row[agC_('rata2') - 1] = false;
     }
     if (!local) {
@@ -805,8 +909,13 @@ function agNote_(sh, r, row, text, drop) {
 }
 
 /** Kvačice u ručno dodanom redu (gdje ih još nema). */
-function agBoxes_(sh, r, row) {
+function agBoxes_(sh, r, row, rate) {
   Object.keys(AG_BOX).forEach(function (k) {
+    if (k === 'rata2' && !rate) {
+      if (sh.getRange(r, agC_(k)).getBackground() !== AG_BLACK || row[agC_(k) - 1] !== '') agRateOff_(sh.getRange(r, agC_(k)));
+      row[agC_(k) - 1] = '';
+      return;
+    }
     if (row[agC_(k) - 1] === '') {
       sh.getRange(r, agC_(k)).insertCheckboxes();
       row[agC_(k) - 1] = false;
@@ -858,7 +967,8 @@ function agRename_(sh, ix, r, mi, year, oldValue, col) {
     sh.getRange(r, AG_KEY_COL).setValue('M|');
   }
   ix.info[r] = info;
-  agBoxes_(sh, r, row);
+  var b = agBlockOf_(ix, r);
+  agBoxes_(sh, r, row, !!(b && agRateBlock_(b, agRateIds_())));
   var same = info.kind === 'P' && info.orig !== '?' && agNorm_(info.orig) === agNorm_(name);
   var f = memFind_(mi, row, true);
   if (!same || f.m) agApply_(sh, r, row, f, year, true);

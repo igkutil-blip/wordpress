@@ -281,6 +281,42 @@ final class Plan_A_Clanstvo_Agency {
 		return round( $sum, 2 );
 	}
 
+	/** Izlet ima kartu „Uplata prve rate” (plaća se u dvije rate). */
+	public static function tour_has_rates( int $tour_id ): bool {
+		if ( ! class_exists( 'TTBM_Function' ) || ! method_exists( 'TTBM_Function', 'get_ticket_type' ) ) {
+			return false;
+		}
+		foreach ( (array) TTBM_Function::get_ticket_type( $tour_id ) as $t ) {
+			if ( preg_match( '/prve\s+rate/iu', (string) ( $t['ticket_type_name'] ?? '' ) ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Tablici javi koji izleti imaju dvije rate i koje osobe su platile prvu ratu: samo tamo je
+	 * kućica „2. rata”, ostale su crne. Bez podataka o kartama ne šalje ništa.
+	 */
+	public static function sync_rates(): array {
+		if ( ! class_exists( 'TTBM_Function' ) || ! method_exists( 'TTBM_Function', 'get_ticket_type' ) ) {
+			return array( 'ok' => false, 'error' => 'WpTravelly nije aktivan.' );
+		}
+		$ids = array();
+		foreach ( get_posts( array( 'post_type' => 'ttbm_tour', 'post_status' => array( 'publish', 'future', 'private', 'draft' ), 'numberposts' => -1, 'fields' => 'ids' ) ) as $id ) {
+			if ( self::tour_has_rates( (int) $id ) ) {
+				$ids[] = (int) $id;
+			}
+		}
+		$rt = array();
+		foreach ( (array) get_option( self::ROWS, array() ) as $pkey => $r ) {
+			if ( ! empty( $r['rt'] ) ) {
+				$rt[] = (string) $pkey;
+			}
+		}
+		return self::post( array( 'action' => 'ag_rates', 'ids' => $ids, 'rt' => $rt ) );
+	}
+
 	/** Narudžba ima stavku s prvom ratom. */
 	public static function has_rate( WC_Order $order ): bool {
 		foreach ( $order->get_items() as $item ) {
@@ -601,6 +637,7 @@ final class Plan_A_Clanstvo_Agency {
 			return array( 'ok' => false, 'error' => 'Tablica za agenciju nije povezana.' );
 		}
 		self::refresh_rates_once();
+		self::sync_rates();
 		self::pull_sheet();
 		self::run();
 		return self::send_status();
@@ -667,7 +704,7 @@ final class Plan_A_Clanstvo_Agency {
 				continue;
 			}
 			$paid  = ! empty( $it['paid'] );
-			$rate  = ! empty( $it['rate'] );
+			$rate  = ! empty( $it['rate'] ) && self::has_rate( $order ); // samo narudžba s prvom ratom
 			$rate2 = ! $rate || ! empty( $it['rate2'] ); // druga rata uplaćena (ili nema rata)
 			if ( $paid && $rate2 ) {
 				if ( ! $order->has_status( 'completed' ) ) {

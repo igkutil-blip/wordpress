@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.14.1
+Stable tag: 1.14.2
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,12 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.14.2 =
+* Popravak: kućica „2. rata” bila je kod svih izleta jer je Google pri umetanju stupca kopirao kvačice iz susjednog stupca „Uplaćeno”. Sada je kućica samo na izletima s kartom „Uplata prve rate” (osobe koje su platile prvu ratu). Na ostalim izletima ćelija je crna i ne prima upis.
+* Iz naziva stupaca i praznih redova maknute su naslijeđene kućice („2. rata”, „Ugovor”, „Polica”).
+* Stranica dvije rate prepoznaje samo kod narudžbi s prvom ratom. Obične narudžbe s kvačicom „Uplaćeno” koje su zbog greške ostale „U obradi” same prelaze u „Završeno” (kupac dobiva uobičajeni e-mail).
+* Skripta v16.
 
 = 1.14.1 =
 * Kućica „Polica” je aktivna (bijela) kad je u stupcu „Osiguranje” označeno, inače siva. Osiguranje ostaje kako je bilo i može se označiti i ručno.

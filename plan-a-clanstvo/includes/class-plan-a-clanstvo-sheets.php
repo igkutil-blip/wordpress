@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 final class Plan_A_Clanstvo_Sheets {
 
 	/** Verzija skripte u google-tablica.gs (SCRIPT_VERSION). Starija skripta je spora za pakete. */
-	const SCRIPT_VERSION = 15;
+	const SCRIPT_VERSION = 16;
 
 	const ROUTE = 'plan-a-clanstvo/v1';
 
