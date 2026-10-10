@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.14.0
+Stable tag: 1.14.1
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.14.1 =
+* Kućica „Polica” je aktivna (bijela) kad je u stupcu „Osiguranje” označeno, inače siva. Osiguranje ostaje kako je bilo i može se označiti i ručno.
 
 = 1.14.0 =
 * Tablica agencije: dva nova stupca, „Ugovor” (po osobi) i „Polica” (samo za osobe s osiguranjem). Kad su gotovi, cure ih označe.

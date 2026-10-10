@@ -322,7 +322,8 @@ function ukljuciBrzoOsvjezavanje() {
   if (!ag) return 'Brzo osvježavanje je uključeno za tablicu članova. Tablica za agenciju još nije poznata: na stranici klikni "Provjeri vezu" i ponovno pokreni ovu funkciju.';
   ScriptApp.newTrigger('naIzmjenu').forSpreadsheet(ag).onEdit().create();
   ScriptApp.newTrigger('naPromjenu').forSpreadsheet(ag).onChange().create();
-  var ash = agSheet_(ag); // dodaje stupac "Otkazao" ako ga još nema
+  var ash = agSheet_(ag); // dodaje stupce ako ih još nema
+  agPolicyRule_(ash);
   agLinks_(ash);
   zastiti_(ss, ash);
   return 'Brzo osvježavanje je uključeno (tablica članova i tablica za agenciju), stupci koje puni web su zaštićeni.';
@@ -464,7 +465,6 @@ function agMigrate_(sh) {
   sh.setColumnWidth(uc, 80); sh.setColumnWidth(uc + 1, 80);
   var last = sh.getLastRow();
   var data = last > 0 ? sh.getRange(1, 1, last, AG_KEY_COL).getValues() : [];
-  var oc = agC_('osiguranje');
   data.forEach(function (row, i) {
     var r = i + 1, k = String(row[AG_KEY_COL - 1] || '');
     if (r < 2) return;
@@ -474,9 +474,29 @@ function agMigrate_(sh) {
       sh.getRange(r, uc + 1).setValue('Polica');
     } else if (k.indexOf('P|') === 0 || k.indexOf('M|') === 0) {
       sh.getRange(r, uc).insertCheckboxes().setValue(false);
-      if (row[oc - 1] === true) sh.getRange(r, uc + 1).insertCheckboxes().setValue(false);
+      sh.getRange(r, uc + 1).insertCheckboxes().setValue(false);
     }
   });
+  agPolicyRule_(sh);
+}
+
+/**
+ * Kućica „Polica” je aktivna (bijela) samo kad je u stupcu „Osiguranje” označeno; inače je siva.
+ * Pravilo se osvježava pri svakom pokretanju, pa radi i kad se osiguranje označi ručno.
+ */
+function agPolicyRule_(sh) {
+  var pc = agC_('polica'), last = Math.max(sh.getMaxRows(), 2);
+  var range = sh.getRange(2, pc, last - 1, 1);
+  var rules = sh.getConditionalFormatRules().filter(function (rule) {
+    return !rule.getRanges().some(function (rg) { return rg.getColumn() === pc && rg.getNumColumns() === 1; });
+  });
+  var oc = colA1_(agC_('osiguranje')), br = colA1_(1);
+  rules.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=AND(NOT($' + oc + '2=TRUE),ISNUMBER($' + br + '2))')
+    .setBackground('#e6e6e6')
+    .setRanges([range])
+    .build());
+  sh.setConditionalFormatRules(rules);
 }
 
 function agNorm_(t) {
@@ -669,13 +689,12 @@ function agAdd_(sh, rows) {
     var line = AG_KEYS.map(function (k) {
       if (k === '') return br.n + 1;
       if (k === 'rata2') return v.rate ? !!v.rata2 : '';
-      if (k === 'polica') return v.osiguranje ? !!v.polica : '';
       if (AG_BOX[k]) return !!v[k];
       var x = v[k] === undefined || v[k] === null ? '' : String(v[k]);
       return /^[=+\-@]/.test(x) ? "'" + x : x;
     });
     sh.getRange(r, 1, 1, AG_HEAD.length).breakApart().clearFormat().clearDataValidations();
-    Object.keys(AG_BOX).forEach(function (k) { if ((k !== 'rata2' || v.rate) && (k !== 'polica' || v.osiguranje)) sh.getRange(r, agC_(k)).insertCheckboxes(); });
+    Object.keys(AG_BOX).forEach(function (k) { if (k !== 'rata2' || v.rate) sh.getRange(r, agC_(k)).insertCheckboxes(); });
     sh.getRange(r, 1, 1, AG_LAST).setValues([line]);
     agPristupnica_(sh.getRange(r, agC_('pristupnica')), v.pristupnica);
     var orig = (String(v.ime || '') + ' ' + String(v.prezime || '')).trim().replace(/\|/g, ' ');
