@@ -329,15 +329,16 @@ final class Plan_A_Clanstvo_Agency {
 		$table .= '</table>';
 		$img    = $code && $code['url'] ? '<img src="' . esc_url( $code['url'] ) . '" alt="2D kod za uplatu druge rate" style="display:block;width:100%;max-width:420px;height:auto;margin:0 auto 14px">' : '';
 		$intro  = 'first' === $kind
-			? 'Primili smo <strong>prvu ratu</strong> za tvoju prijavu. Hvala!'
+			? 'Primili smo <strong>uplatu prve rate</strong> za tvoju prijavu. Hvala!'
 			: 'podsjećamo te da <strong>druga rata</strong> za tvoj izlet još nije uplaćena.';
 		$inner  = Plan_A_Clanstvo_Mail::p( 'Pozdrav ' . esc_html( $name ) . ',' )
 			. Plan_A_Clanstvo_Mail::p( $intro . ' Ostatak uplate je <strong>' . esc_html( $money ) . '</strong>, a treba biti uplaćen ' . esc_html( $when ) . ' (30 dana prije izleta).' )
 			. '<div style="background:#f3f8fc;border-radius:14px;padding:18px 18px 10px;margin:6px 0 16px">' . $img . $table . '</div>'
 			. Plan_A_Clanstvo_Mail::p( '<span style="color:#5f6b77;font-size:14px">Ako si ostatak već uplatio/la, zanemari ovu poruku. Pitanja: info@srd-plan-a.hr.</span>' );
-		$subj   = 'first' === $kind ? 'Prva rata je primljena – druga rata ' . $when : 'Podsjetnik: druga rata ' . $when;
+		$subj   = 'first' === $kind ? 'Uplaćena prva rata – druga rata ' . $when : 'Podsjetnik: druga rata ' . $when;
+		$title  = 'first' === $kind ? 'Uplaćena prva rata' : 'Druga rata';
 		$files  = $code && $code['path'] ? array( $code['path'] ) : array();
-		$ok     = Plan_A_Clanstvo_Mail::send( $to, $subj, Plan_A_Clanstvo_Mail::wrap( 'Druga rata', $inner, 'Plan A · uplata' ), $files );
+		$ok     = Plan_A_Clanstvo_Mail::send( $to, $subj, Plan_A_Clanstvo_Mail::wrap( $title, $inner, 'Plan A · uplata' ), $files );
 		foreach ( $files as $f ) {
 			wp_delete_file( $f );
 		}

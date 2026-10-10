@@ -78,7 +78,7 @@ if ( $paka_admin ) {
 	/* translators: %s: broj narudžbe */
 	$paka_heading = sprintf( __( 'Nova prijava #%s', 'plan-a-kosarica' ), $order->get_order_number() );
 } elseif ( $paka_paid ) {
-	$paka_heading = __( 'Uplata je zaprimljena, vidimo se na izletu', 'plan-a-kosarica' );
+	$paka_heading = __( 'Cijelokupni iznos je uplaćen, vidimo se na izletu', 'plan-a-kosarica' );
 } else {
 	$paka_heading = '' !== $paka_first
 		/* translators: %s: ime kupca */

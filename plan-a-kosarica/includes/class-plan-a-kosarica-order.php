@@ -155,7 +155,7 @@ final class Plan_A_Kosarica_Order {
 	}
 
 	public static function subject_paid( $subject, $order ) {
-		return $order instanceof WC_Order ? __( 'Uplata je zaprimljena, vidimo se na izletu', 'plan-a-kosarica' ) : $subject;
+		return $order instanceof WC_Order ? __( 'Cijelokupni iznos je uplaćen, vidimo se na izletu', 'plan-a-kosarica' ) : $subject;
 	}
 
 	/* ------------------------------------------------------------------ */
