@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.14.3
+Stable tag: 1.14.4
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,11 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.14.4 =
+* Popravak: kućica „2. rata” ide po izletu, ne po osobi. Na izletu s dvije rate ima je svaka osoba (i oni koji su odmah platili sve, njima cure označe obje kvačice), na ostalim izletima ćelija je crna.
+* Izlet s dvije rate prepoznaje se po karti „Uplata prve rate” na izletu i po narudžbama s prvom ratom.
+* Skripta v17.
 
 = 1.14.3 =
 * Gumb „Osvježi tablicu za agenciju” odmah uredi kućice „2. rata” i javi koje izlete s dvije rate je prepoznao.

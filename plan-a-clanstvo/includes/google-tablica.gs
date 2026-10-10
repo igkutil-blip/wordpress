@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 16;
+var SCRIPT_VERSION = 17;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -547,8 +547,8 @@ function agRates_(sh, ids, rt) {
 
 /**
  * Stupci „2. rata”, „Ugovor” i „Polica”: u nazivima stupaca i praznim redovima bez kućica,
- * „Ugovor” i „Polica” kućica kod svake osobe, a „2. rata” samo na izletima s dvije rate
- * (osobe s prvom ratom i ručno dodani) – inače je ćelija crna i zaključana. Piše samo promjene.
+ * „Ugovor” i „Polica” kućica kod svake osobe, a „2. rata” kod svih osoba na izletima s dvije
+ * rate – inače je ćelija crna i zaključana. Piše samo promjene.
  */
 function agFixRates_(sh, rt) {
   var ix = agIndex_(sh), ids = agRateIds_(), n = 0;
@@ -589,7 +589,7 @@ function agFixRates_(sh, rt) {
       }
     });
     var b = agBlockOf_(ix, r);
-    var on = info.kind === 'P' ? !!rtSet[info.pkey] : !!b && agRateBlock_(b, ids);
+    var on = (!!b && agRateBlock_(b, ids)) || (info.kind === 'P' && !!rtSet[info.pkey]); // cijeli izlet s ratama
     if (on) {
       if (!agIsBox_(dv[r - 1][0]) || typeof row[rc - 1] !== 'boolean' || bg[r - 1][0] === AG_BLACK) {
         var was = row[rc - 1] === true;
@@ -794,17 +794,18 @@ function agAdd_(sh, rows) {
     sh.insertRowAfter(br.end);
     var r = br.end + 1, v = it.v || {};
     v.otkazao = !!(v.otkazao || v.otkazano);
+    var rate = !!v.rate || agRateBlock_(b, agRateIds_()); // izlet s dvije rate: kućica kod svih
     var line = AG_KEYS.map(function (k) {
       if (k === '') return br.n + 1;
-      if (k === 'rata2') return v.rate ? !!v.rata2 : '';
+      if (k === 'rata2') return rate ? !!v.rata2 : '';
       if (AG_BOX[k]) return !!v[k];
       var x = v[k] === undefined || v[k] === null ? '' : String(v[k]);
       return /^[=+\-@]/.test(x) ? "'" + x : x;
     });
     sh.getRange(r, 1, 1, AG_HEAD.length).breakApart().clearFormat().clearDataValidations();
-    Object.keys(AG_BOX).forEach(function (k) { if (k !== 'rata2' || v.rate) sh.getRange(r, agC_(k)).insertCheckboxes(); });
+    Object.keys(AG_BOX).forEach(function (k) { if (k !== 'rata2' || rate) sh.getRange(r, agC_(k)).insertCheckboxes(); });
     sh.getRange(r, 1, 1, AG_LAST).setValues([line]);
-    if (!v.rate) agRateOff_(sh.getRange(r, agC_('rata2')));
+    if (!rate) agRateOff_(sh.getRange(r, agC_('rata2')));
     agPristupnica_(sh.getRange(r, agC_('pristupnica')), v.pristupnica);
     var orig = (String(v.ime || '') + ' ' + String(v.prezime || '')).trim().replace(/\|/g, ' ');
     sh.getRange(r, AG_KEY_COL).setValue('P|' + it.pkey + '|' + orig);

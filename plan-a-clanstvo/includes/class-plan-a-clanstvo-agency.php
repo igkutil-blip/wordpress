@@ -308,12 +308,26 @@ final class Plan_A_Clanstvo_Agency {
 				$ids[] = (int) $id;
 			}
 		}
-		$rt = array();
+		$rt   = array();
+		$seen = array();
 		foreach ( (array) get_option( self::ROWS, array() ) as $pkey => $r ) {
-			if ( ! empty( $r['rt'] ) ) {
-				$rt[] = (string) $pkey;
+			if ( empty( $r['rt'] ) ) {
+				continue;
+			}
+			$rt[] = (string) $pkey;
+			// Izlet iz narudžbe s prvom ratom je izlet s dvije rate i kad mu se karta drugačije zove.
+			$oid = (int) ( $r['o'] ?? 0 );
+			if ( $oid && ! isset( $seen[ $oid ] ) ) {
+				$seen[ $oid ] = 1;
+				$order        = wc_get_order( $oid );
+				foreach ( $order ? $order->get_items() : array() as $item ) {
+					if ( $item instanceof WC_Order_Item_Product && self::first_rate( $item ) ) {
+						$ids[] = (int) $item->get_meta( '_ttbm_id' );
+					}
+				}
 			}
 		}
+		$ids = array_values( array_unique( array_filter( $ids ) ) );
 		$res          = self::post( array( 'action' => 'ag_rates', 'ids' => $ids, 'rt' => $rt ) );
 		$res['tours'] = array_map( static fn( $id ) => wp_strip_all_tags( html_entity_decode( get_the_title( $id ), ENT_QUOTES, 'UTF-8' ) ), $ids );
 		return $res;
