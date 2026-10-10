@@ -509,7 +509,7 @@ function agPolicyRule_(sh) {
 
 /* ---------- Druga rata samo na izletima s dvije rate ---------- */
 
-var AG_BLACK = '#000000';
+var AG_BLACK = '#efefef'; // isključena „2. rata”: diskretno svijetlo siva (prije crna)
 
 /** Kućica „2. rata” isključena: prazno, crno, ne prima upis. */
 function agRateOff_(cell) {
