@@ -326,7 +326,7 @@ function ukljuciBrzoOsvjezavanje() {
   ScriptApp.newTrigger('naPromjenu').forSpreadsheet(ag).onChange().create();
   var ash = agSheet_(ag); // dodaje stupce ako ih još nema
   agPolicyRule_(ash);
-  agFixRates_(ash);
+  if (PropertiesService.getScriptProperties().getProperty('AGRATES')) agFixRates_(ash); // popis rata šalje stranica
   agLinks_(ash);
   zastiti_(ss, ash);
   return 'Brzo osvježavanje je uključeno (tablica članova i tablica za agenciju), stupci koje puni web su zaštićeni.';
@@ -537,7 +537,9 @@ function agIsBox_(dv) {
 
 /** Sa stranice: ids = izleti s dvije rate, rt = osobe koje su platile prvu ratu. */
 function agRates_(sh, ids, rt) {
-  PropertiesService.getScriptProperties().setProperty('AGRATES', JSON.stringify(ids.map(String)));
+  var p = PropertiesService.getScriptProperties();
+  p.setProperty('AGRATES', JSON.stringify(ids.map(String)));
+  p.setProperty('AGRT', JSON.stringify(rt.map(String)));
   return agFixRates_(sh, rt);
 }
 
@@ -551,7 +553,8 @@ function agFixRates_(sh, rt) {
   if (ix.last < 2) return 0;
   var rc = agC_('rata2'), uc = agC_('ugovor'), pc = agC_('polica');
   var rtSet = {};
-  (rt || []).forEach(function (k) { rtSet[String(k).replace(/\|/g, '_')] = 1; });
+  if (!rt) { try { rt = JSON.parse(PropertiesService.getScriptProperties().getProperty('AGRT') || '[]'); } catch (e) { rt = []; } }
+  rt.forEach(function (k) { rtSet[String(k).replace(/\|/g, '_')] = 1; });
   var dv = sh.getRange(1, rc, ix.last, 1).getDataValidations();
   var dvU = sh.getRange(1, uc, ix.last, 2).getDataValidations();
   var bg = sh.getRange(1, rc, ix.last, 1).getBackgrounds();
