@@ -52,15 +52,9 @@ final class Plan_A_Clanstvo_Hub3 {
 	 */
 	public static function for_order( WC_Order $order, float $amount ): ?array {
 		$s = Plan_A_Clanstvo_Data::get();
-		if ( 'ne' === $s['barcode'] || $amount <= 0 ) {
+		// Nikad ne šalje zajednički kod (slika ili rezerva): on nosi iznos članarine, ne ostatka.
+		if ( 'ne' === $s['barcode'] || 'slika' === $s['barcode'] || $amount <= 0 ) {
 			return null;
-		}
-		if ( 'slika' === $s['barcode'] ) {
-			$url = esc_url_raw( (string) $s['barcode_slika'] );
-			return $url ? array(
-				'url'  => $url,
-				'path' => '',
-			) : null;
 		}
 		list( $dir, $base ) = self::dir();
 		$body = array(
@@ -101,11 +95,7 @@ final class Plan_A_Clanstvo_Hub3 {
 			)
 		);
 		if ( is_wp_error( $res ) || 200 !== (int) wp_remote_retrieve_response_code( $res ) || '' === wp_remote_retrieve_body( $res ) ) {
-			$url = esc_url_raw( (string) $s['barcode_slika'] );
-			return $url ? array(
-				'url'  => $url,
-				'path' => '',
-			) : null;
+			return null;
 		}
 		$file = 'druga-rata-' . $order->get_order_number() . '-' . wp_generate_password( 12, false ) . '.png';
 		file_put_contents( $dir . '/' . $file, wp_remote_retrieve_body( $res ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions

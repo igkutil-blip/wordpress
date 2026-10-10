@@ -307,6 +307,10 @@ final class Plan_A_Clanstvo_Agency {
 		$due   = '' !== $tour ? strtotime( $tour ) - 30 * DAY_IN_SECONDS : 0;
 		$when  = $due ? 'do ' . gmdate( 'j.n.Y.', $due ) : 'što prije';
 		$code  = Plan_A_Clanstvo_Hub3::for_order( $order, $amount );
+		if ( ! $code ) {
+			// Bez točnog koda kupac dobiva iznos i poziv na broj, bez 2D koda.
+			$code = null;
+		}
 		$name  = trim( $order->get_billing_first_name() ) ?: 'poštovani';
 		$money = number_format( $amount, 2, ',', '.' ) . ' €';
 		$rows  = array(
@@ -337,11 +341,16 @@ final class Plan_A_Clanstvo_Agency {
 		}
 		if ( $ok ) {
 			$order->add_order_note( ( 'first' === $kind ? 'Kupcu je poslan mail s ostatkom za drugu ratu' : 'Kupcu je poslan podsjetnik za drugu ratu' ) . ' (' . $money . ').' );
+			// Ako je prva rata uplaćena u zadnjih 35 dana prije izleta, podsjetnik nije potreban.
+			if ( 'first' === $kind && '' !== $tour && current_time( 'Y-m-d' ) >= gmdate( 'Y-m-d', strtotime( $tour ) - 35 * DAY_IN_SECONDS ) ) {
+				$order->update_meta_data( self::R2, current_time( 'mysql' ) );
+				$order->save_meta_data();
+			}
 		}
 		return $ok;
 	}
 
-	/** Svaki sat: podsjetnik za drugu ratu 30 dana prije izleta, ako prva rata jest a druga nije. */
+	/** Svaki sat: podsjetnik za drugu ratu 35 dana prije izleta (rok je 30 dana prije), ako prva rata jest a druga nije. */
 	public static function rate_reminders(): int {
 		$today = current_time( 'Y-m-d' );
 		$n     = 0;
@@ -350,7 +359,7 @@ final class Plan_A_Clanstvo_Agency {
 				continue;
 			}
 			$tour = self::rate_tour_date( $order );
-			if ( '' === $tour || $tour < $today || gmdate( 'Y-m-d', strtotime( $tour ) - 30 * DAY_IN_SECONDS ) > $today ) {
+			if ( '' === $tour || $tour < $today || gmdate( 'Y-m-d', strtotime( $tour ) - 35 * DAY_IN_SECONDS ) > $today ) {
 				continue;
 			}
 			$order->update_meta_data( self::R2, current_time( 'mysql' ) );
