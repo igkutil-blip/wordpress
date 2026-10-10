@@ -560,9 +560,29 @@ final class Plan_A_Clanstvo_Agency {
 		if ( ! self::enabled() ) {
 			return array( 'ok' => false, 'error' => 'Tablica za agenciju nije povezana.' );
 		}
+		self::refresh_rates_once();
 		self::pull_sheet();
 		self::run();
 		return self::send_status();
+	}
+
+	/**
+	 * Jednokratno (verzija 1.13): otvorene narudžbe s prvom ratom dobiju oznaku izleta s dvije
+	 * rate, pa tablica doda stupac „2. rata” za njih.
+	 */
+	public static function refresh_rates_once() {
+		if ( get_option( 'plan_a_clanstvo_rates_v13' ) ) {
+			return;
+		}
+		foreach ( wc_get_orders( array( 'limit' => 500, 'meta_key' => self::META, 'meta_value' => 'sent', 'status' => array( 'pending', 'on-hold', 'processing' ) ) ) as $order ) { // phpcs:ignore WordPress.DB.SlowDBQuery
+			foreach ( $order->get_items() as $item ) {
+				if ( $item instanceof WC_Order_Item_Product && self::first_rate( $item ) ) {
+					self::order_rows( $order );
+					break;
+				}
+			}
+		}
+		update_option( 'plan_a_clanstvo_rates_v13', 1, false );
 	}
 
 	/* ------------------------------------------------------------------ */
