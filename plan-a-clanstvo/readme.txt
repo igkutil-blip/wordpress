@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.13.5
+Stable tag: 1.14.0
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,11 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.14.0 =
+* Tablica agencije: dva nova stupca, „Ugovor” (po osobi) i „Polica” (samo za osobe s osiguranjem). Kad su gotovi, cure ih označe.
+* Dnevni pregled (vama, agenciji i blagajniku): za izlete u sljedećih 30 dana stupci „ugovor X od Y” i „polica X od Y”, te oznake „ugovor nije poslan” i „polica nije izdana”.
+* Stara tablica se sama nadopuni novim stupcima. Skripta v15.
 
 = 1.13.5 =
 * Dnevni pregled (vama, agenciji i blagajniku): uplate pišu „Prva rata uplaćena” ili „Cijelokupni iznos uplaćen”, u tablici izleta vidi se stanje 2. rate, a novi odjeljak „Druga rata još nije uplaćena” s iznosom ostatka.

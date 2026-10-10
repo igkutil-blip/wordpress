@@ -313,6 +313,12 @@ final class Plan_A_Clanstvo_Ops {
 				if ( (int) ( $b['rate'] ?? 0 ) > (int) ( $b['rate2'] ?? 0 ) && $days <= 30 ) {
 					$flags[] = '2. rata nije uplaćena';
 				}
+				if ( (int) $b['n'] > (int) ( $b['ug'] ?? 0 ) && $days <= 30 ) {
+					$flags[] = 'ugovor nije poslan';
+				}
+				if ( (int) ( $b['polN'] ?? 0 ) > (int) ( $b['pol'] ?? 0 ) && $days <= 30 ) {
+					$flags[] = 'polica nije izdana';
+				}
 				$tours[] = array( 'b' => $b, 'free' => $free, 'flags' => $flags, 'days' => $days );
 			}
 			usort( $tours, static fn( $a, $b ) => strcmp( (string) $a['b']['date'], (string) $b['b']['date'] ) );
@@ -413,7 +419,7 @@ final class Plan_A_Clanstvo_Ops {
 				$title = implode( ' · ', array_slice( explode( ' · ', (string) $b['base'] ), 0, 2 ) );
 				$flag  = $t['flags'] ? ' <span style="display:inline-block;padding:1px 8px;border-radius:999px;background:#fdebd3;color:#b85c00;font-weight:bold;font-size:12px">' . esc_html( implode( ' · ', $t['flags'] ) ) . '</span>' : '';
 				$inner .= '<tr style="border-bottom:1px solid #e3e8ee"><td style="padding:6px">' . esc_html( $title ) . $flag . '</td>'
-					. '<td align="center" style="padding:6px">' . (int) $b['n'] . ( (int) $b['x'] ? ' <span style="color:#8a96a3">(+' . (int) $b['x'] . ' otk.)</span>' : '' ) . '</td>'
+					. '<td align="center" style="padding:6px">' . (int) $b['n'] . ( (int) $b['x'] ? ' <span style="color:#8a96a3">(+' . (int) $b['x'] . ' otk.)</span>' : '' ) . '<br><span style="font-size:12px;color:#5f6b77">ugovor ' . (int) ( $b['ug'] ?? 0 ) . ' od ' . (int) $b['n'] . ( (int) ( $b['polN'] ?? 0 ) ? ' · polica ' . (int) ( $b['pol'] ?? 0 ) . ' od ' . (int) $b['polN'] : '' ) . '</span></td>'
 					. '<td align="center" style="padding:6px">' . (int) $b['paid'] . ( (int) ( $b['rate'] ?? 0 ) ? '<br><span style="font-size:12px;color:#5f6b77">2. rata: ' . (int) $b['rate2'] . ' od ' . (int) $b['rate'] . '</span>' : '' ) . '</td>'
 					. '<td align="center" style="padding:6px">' . ( null === $t['free'] ? '–' : (int) $t['free'] ) . '</td></tr>';
 			}

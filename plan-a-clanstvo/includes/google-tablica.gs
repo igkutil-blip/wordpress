@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 14;
+var SCRIPT_VERSION = 15;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -288,9 +288,9 @@ function upsertMany_(sh, items) {
  * Napomena i sve što dopišete ostaje.
  * ======================================================================== */
 var AG_SHEET = 'Prijave';
-var AG_HEAD = ['Br.', 'Ime', 'Prezime', 'OIB', 'Datum rođenja', 'Adresa', 'Mjesto', 'Mobitel', 'E-mail', 'Prijavio/la', 'Iznos', 'Osiguranje', 'Uplaćeno', '2. rata', 'Otkazao', 'Pristupnica', 'Članarina', 'Iskaznica', 'Napomena', 'Narudžba', 'ključ'];
-var AG_KEYS = ['', 'ime', 'prezime', 'oib', 'datum', 'adresa', 'mjesto', 'mobitel', 'email', 'prijavio', 'iznos', 'osiguranje', 'uplaceno', 'rata2', 'otkazao', 'pristupnica', 'clanarina', 'iskaznica', 'napomena', 'narudzba'];
-var AG_BOX = { osiguranje: 1, uplaceno: 1, rata2: 1, otkazao: 1, clanarina: 1, iskaznica: 1 };
+var AG_HEAD = ['Br.', 'Ime', 'Prezime', 'OIB', 'Datum rođenja', 'Adresa', 'Mjesto', 'Mobitel', 'E-mail', 'Prijavio/la', 'Iznos', 'Osiguranje', 'Uplaćeno', '2. rata', 'Otkazao', 'Ugovor', 'Polica', 'Pristupnica', 'Članarina', 'Iskaznica', 'Napomena', 'Narudžba', 'ključ'];
+var AG_KEYS = ['', 'ime', 'prezime', 'oib', 'datum', 'adresa', 'mjesto', 'mobitel', 'email', 'prijavio', 'iznos', 'osiguranje', 'uplaceno', 'rata2', 'otkazao', 'ugovor', 'polica', 'pristupnica', 'clanarina', 'iskaznica', 'napomena', 'narudzba'];
+var AG_BOX = { osiguranje: 1, uplaceno: 1, rata2: 1, otkazao: 1, ugovor: 1, polica: 1, clanarina: 1, iskaznica: 1 };
 var AG_PERSON = ['oib', 'datum', 'adresa', 'mjesto', 'mobitel', 'email']; // iz tablice članova
 var AG_KEY_COL = AG_HEAD.length; // skriveni stupac
 var AG_LAST = AG_HEAD.length - 1; // zadnji vidljivi stupac
@@ -438,7 +438,7 @@ function agSheet_(id) {
     sh.setFrozenRows(1);
     sh.getRange(1, AG_KEY_COL).setValue('ključ');
     sh.hideColumns(AG_KEY_COL);
-    var w = [45, 110, 130, 105, 95, 170, 130, 115, 190, 140, 80, 85, 80, 80, 80, 115, 90, 85, 260, 80];
+    var w = [45, 110, 130, 105, 95, 170, 130, 115, 190, 140, 80, 85, 80, 80, 80, 80, 80, 115, 90, 85, 260, 80];
     w.forEach(function (px, i) { sh.setColumnWidth(i + 1, px); });
     sh.getRange('D:D').setNumberFormat('@');
     sh.getRange('H:H').setNumberFormat('@');
@@ -453,15 +453,30 @@ function agSheet_(id) {
  */
 function agMigrate_(sh) {
   if (String(sh.getRange(1, AG_KEY_COL).getValue()) === 'ključ') return;   // novi raspored
-  if (String(sh.getRange(1, AG_KEY_COL - 1).getValue()) !== 'ključ') return;
+  var kc = 0;
+  for (var c = 1; c <= AG_KEY_COL; c++) { if (String(sh.getRange(1, c).getValue()) === 'ključ') { kc = c; break; } }
+  if (!kc) return;
+  var missing = AG_KEY_COL - kc;                  // koliko stupaca fali
   var rc = agC_('rata2');
-  sh.insertColumnBefore(rc);
-  sh.setColumnWidth(rc, 80);
-  var ix = agIndex_(sh);
-  for (var r = 2; r <= ix.last; r++) {
-    var info = ix.info[r] || {};
-    if (info.kind === 'H') sh.getRange(r, rc).setValue('2. rata');
-  }
+  if (missing >= 3) { sh.insertColumnBefore(rc); sh.setColumnWidth(rc, 80); }
+  var uc = agC_('ugovor');
+  sh.insertColumnsBefore(uc, 2);
+  sh.setColumnWidth(uc, 80); sh.setColumnWidth(uc + 1, 80);
+  var last = sh.getLastRow();
+  var data = last > 0 ? sh.getRange(1, 1, last, AG_KEY_COL).getValues() : [];
+  var oc = agC_('osiguranje');
+  data.forEach(function (row, i) {
+    var r = i + 1, k = String(row[AG_KEY_COL - 1] || '');
+    if (r < 2) return;
+    if (k.indexOf('H|') === 0) {
+      if (missing >= 3) sh.getRange(r, rc).setValue('2. rata');
+      sh.getRange(r, uc).setValue('Ugovor');
+      sh.getRange(r, uc + 1).setValue('Polica');
+    } else if (k.indexOf('P|') === 0 || k.indexOf('M|') === 0) {
+      sh.getRange(r, uc).insertCheckboxes().setValue(false);
+      if (row[oc - 1] === true) sh.getRange(r, uc + 1).insertCheckboxes().setValue(false);
+    }
+  });
 }
 
 function agNorm_(t) {
@@ -654,12 +669,13 @@ function agAdd_(sh, rows) {
     var line = AG_KEYS.map(function (k) {
       if (k === '') return br.n + 1;
       if (k === 'rata2') return v.rate ? !!v.rata2 : '';
+      if (k === 'polica') return v.osiguranje ? !!v.polica : '';
       if (AG_BOX[k]) return !!v[k];
       var x = v[k] === undefined || v[k] === null ? '' : String(v[k]);
       return /^[=+\-@]/.test(x) ? "'" + x : x;
     });
     sh.getRange(r, 1, 1, AG_HEAD.length).breakApart().clearFormat().clearDataValidations();
-    Object.keys(AG_BOX).forEach(function (k) { if (k !== 'rata2' || v.rate) sh.getRange(r, agC_(k)).insertCheckboxes(); });
+    Object.keys(AG_BOX).forEach(function (k) { if ((k !== 'rata2' || v.rate) && (k !== 'polica' || v.osiguranje)) sh.getRange(r, agC_(k)).insertCheckboxes(); });
     sh.getRange(r, 1, 1, AG_LAST).setValues([line]);
     agPristupnica_(sh.getRange(r, agC_('pristupnica')), v.pristupnica);
     var orig = (String(v.ime || '') + ' ' + String(v.prezime || '')).trim().replace(/\|/g, ' ');
@@ -1021,6 +1037,7 @@ function agSummary_(sh, from, to) {
   ix.blocks.forEach(function (b) {
     if (!b.date || b.date < from || b.date > to) return;
     var br = agBlockRows_(ix, b), n = 0, paid = 0, x = 0, rate = 0, rate2 = 0, rc = agC_('rata2') - 1;
+    var ug = 0, pol = 0, polN = 0, uc = agC_('ugovor') - 1, pq = agC_('polica') - 1, oc = agC_('osiguranje') - 1;
     for (var r = br.first; r <= br.end; r++) {
       if (!agIsPerson_(ix, r)) continue;
       var row = ix.data[r - 1];
@@ -1028,8 +1045,10 @@ function agSummary_(sh, from, to) {
       n++;
       if (row[pc] === true) paid++;
       if (typeof row[rc] === 'boolean') { rate++; if (row[rc] === true) rate2++; }
+      if (row[uc] === true) ug++;
+      if (row[oc] === true) { polN++; if (row[pq] === true) pol++; }
     }
-    out.push({ key: b.key, date: b.date, base: b.base, n: n, paid: paid, x: x, rate: rate, rate2: rate2 });
+    out.push({ key: b.key, date: b.date, base: b.base, n: n, paid: paid, x: x, rate: rate, rate2: rate2, ug: ug, pol: pol, polN: polN });
   });
   return out;
 }
