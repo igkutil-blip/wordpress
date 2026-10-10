@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 11;
+var SCRIPT_VERSION = 12;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -53,6 +53,8 @@ function doPost(e) {
         out = { ok: true, blocks: agList_(agSheet_(d.ag), String(d.date || '')) };
       } else if (d.action === 'ag_summary') {
         out = { ok: true, blocks: agSummary_(agSheet_(d.ag), String(d.from || ''), String(d.to || '')) };
+      } else if (d.action === 'ag_people') {
+        out = { ok: true, people: agPeople_(agSheet_(d.ag), String(d.from || '')) };
       } else if (d.action === 'ag_note') {
         out = { ok: true, n: agNoteOrders_(agSheet_(d.ag), d.items || []) };
       } else if (d.action === 'read') {
@@ -1020,6 +1022,21 @@ function agSummary_(sh, from, to) {
       if (row[pc] === true) paid++;
     }
     out.push({ key: b.key, date: b.date, base: b.base, n: n, paid: paid, x: x });
+  });
+  return out;
+}
+
+/** Osobe na popisima izleta od datuma from (bez otkazanih): OIB i e-mail za siječanjsku članarinu. */
+function agPeople_(sh, from) {
+  var ix = agIndex_(sh), out = [], xc = agC_('otkazao') - 1;
+  ix.blocks.forEach(function (b) {
+    if (!b.date || agBefore_(b.date, from)) return;
+    var br = agBlockRows_(ix, b);
+    for (var r = br.first; r <= br.end; r++) {
+      var row = ix.data[r - 1];
+      if (!agIsPerson_(ix, r) || row[xc] === true) continue;
+      out.push({ oib: str_(row[agC_('oib') - 1]), email: str_(row[agC_('email') - 1]).toLowerCase() });
+    }
   });
   return out;
 }

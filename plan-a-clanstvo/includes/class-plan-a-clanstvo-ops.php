@@ -4,7 +4,7 @@
  * - podsjetnik za uplatu narudžbe (5 dana bez uplate, ili 3 dana prije izleta);
  * - dnevni pregled u 7:00 (vama, agenciji i blagajniku; blagajnik dobiva i kopiju podsjetnika);
  * - popis sudionika vodičima dan prije izleta u 8:00 (PDF);
- * - siječanj: e-mail s uplatnicom za članarinu nove godine (u obrocima) i mjesečni popis
+ * - siječanj: e-mail s uplatnicom za članarinu nove godine članovima prijavljenima na izlete i mjesečni popis
  *   neplaćenih za blagajnika (siječanj–travanj);
  * - upozorenje kad veza s Google tablicom ne radi.
  *
@@ -421,8 +421,9 @@ final class Plan_A_Clanstvo_Ops {
 		$go    = array();
 		$gone  = array();
 		foreach ( (array) $b['rows'] as $r ) {
-			$member = 'potvrđena' === $r['pristupnica'] ? ( $r['clanarina'] ? 'član' : 'član, nije platio čl.' ) : ( 'nema' === $r['pristupnica'] || '' === $r['pristupnica'] ? 'nije član' : 'pristupnica nepotvrđena' );
-			$row    = array( $r['br'], trim( $r['ime'] . ' ' . $r['prezime'] ), $r['mobitel'], $r['uplaceno'] ? 'da' : 'NE', $member, $r['osiguranje'] ? 'da' : '' );
+			$is     = ! ( 'nema' === $r['pristupnica'] || '' === $r['pristupnica'] );
+			$member = 'potvrđena' === $r['pristupnica'] ? ( $r['clanarina'] ? 'član' : 'član, neplaćeno' ) : ( $is ? 'nepotvrđena' : 'nije član' );
+			$row    = array( $r['br'], trim( $r['ime'] . ' ' . $r['prezime'] ), $r['mobitel'], $r['uplaceno'] ? 'da' : 'NE', $member, $is ? ( ! empty( $r['iskaznica'] ) ? 'da' : 'ne' ) : '–', $r['osiguranje'] ? 'da' : '' );
 			if ( $r['otkazao'] ) {
 				$gone[] = $row;
 			} else {
@@ -431,7 +432,7 @@ final class Plan_A_Clanstvo_Ops {
 		}
 		$unpaid = count( array_filter( $go, static fn( $r ) => 'NE' === $r[3] ) );
 		$sub    = 'Vodiči: ' . ( '' !== $guides ? $guides : '–' ) . ' · sudionika: ' . count( $go ) . ( $unpaid ? ' · nije platilo: ' . $unpaid : '' ) . ' · stanje ' . current_time( 'j.n.Y. H:i' );
-		$cols   = array( array( 'Br.', 70, 'center' ), array( 'Ime i prezime', 330, 'left' ), array( 'Mobitel', 200, 'left' ), array( 'Uplaćeno', 120, 'center' ), array( 'Članstvo', 250, 'left' ), array( 'Osig.', 110, 'center' ) );
+		$cols   = array( array( 'Br.', 60, 'center' ), array( 'Ime i prezime', 300, 'left' ), array( 'Mobitel', 185, 'left' ), array( 'Uplaćeno', 120, 'center' ), array( 'Članstvo', 195, 'left' ), array( 'Iskaznica', 125, 'center' ), array( 'Osig.', 95, 'center' ) );
 		$files  = array();
 		$pdf    = Plan_A_Clanstvo_Pdf::table( $title, $sub, $cols, $go, $gone, 'Popis je iz tablice „Prijave na izlete”. Za promjene se javite agenciji.' );
 		if ( '' !== $pdf ) {
@@ -451,7 +452,7 @@ final class Plan_A_Clanstvo_Ops {
 			$table .= '<tr style="border-bottom:1px solid #e3e8ee;' . ( $x ? 'color:#8a96a3;text-decoration:line-through' : '' ) . '">';
 			foreach ( $r as $k => $v ) {
 				$v      = 2 === $k && '' !== $v && ! $x ? '<a href="tel:' . esc_attr( preg_replace( '/[^0-9+]/', '', $v ) ) . '" style="color:#1a73b8">' . esc_html( $v ) . '</a>' : esc_html( $v );
-				$table .= '<td style="padding:6px' . ( 3 === $k && 'NE' === $r[3] && ! $x ? ';color:#b32d2e;font-weight:bold' : '' ) . '">' . $v . '</td>';
+				$table .= '<td style="padding:6px' . ( 2 === $k ? ';white-space:nowrap' : '' ) . ( 3 === $k && 'NE' === $r[3] && ! $x ? ';color:#b32d2e;font-weight:bold' : '' ) . '">' . $v . '</td>';
 			}
 			$table .= '</tr>';
 		}
@@ -493,16 +494,19 @@ final class Plan_A_Clanstvo_Ops {
 		);
 	}
 
-	public static function january() {
+	public static function january( bool $force = false ) {
 		$year = (int) current_time( 'Y' );
 		$s    = self::state();
-		if ( 1 !== (int) current_time( 'n' ) || (int) current_time( 'j' ) < self::JAN_DAY || (int) current_time( 'G' ) < self::DAILY_HOUR
-			|| empty( Plan_A_Clanstvo_Data::value( 'jan_fee' ) ) || (int) ( $s['jan_done'] ?? 0 ) === $year ) {
+		$day = 1 === (int) current_time( 'n' ) && (int) current_time( 'j' ) >= self::JAN_DAY && (int) current_time( 'G' ) >= self::DAILY_HOUR;
+		if ( ( ! $force && ! $day ) || empty( Plan_A_Clanstvo_Data::value( 'jan_fee' ) ) || (int) ( $s['jan_done'] ?? 0 ) === $year ) {
 			return;
 		}
 		$sent = 0;
 		$left = 0;
-		foreach ( self::confirmed_ids() as $id ) {
+		foreach ( self::tour_member_ids() as $id ) {
+			if ( 'potvrdeno' !== get_post_meta( $id, '_pac_status', true ) ) {
+				continue;
+			}
 			if ( (int) get_post_meta( $id, '_pac_jan', true ) === $year ) {
 				continue;
 			}
@@ -520,9 +524,40 @@ final class Plan_A_Clanstvo_Ops {
 		$s['jan_year'] = $year;
 		if ( ! $left ) {
 			$s['jan_done'] = $year;
-			Plan_A_Clanstvo_Mail::send( self::admin_mail(), 'Članarina ' . $year . '. – e-mailovi su poslani', Plan_A_Clanstvo_Mail::wrap( 'Članarina ' . $year . '.', Plan_A_Clanstvo_Mail::p( 'Članovima je poslano ' . (int) $s['jan_sent'] . ' e-mailova s uplatnicom i 2D kodom za članarinu ' . $year . '. (oni koji su već platili nisu dobili e-mail).' ), 'Plan A · članarina' ) );
+			Plan_A_Clanstvo_Mail::send( self::admin_mail(), 'Članarina ' . $year . '. – e-mailovi su poslani', Plan_A_Clanstvo_Mail::wrap( 'Članarina ' . $year . '.', Plan_A_Clanstvo_Mail::p( 'Članovima prijavljenima na izlete poslano je ' . (int) $s['jan_sent'] . ' e-mailova s uplatnicom i 2D kodom za članarinu ' . $year . '. (oni koji su već platili nisu dobili e-mail).' ), 'Plan A · članarina' ) );
 		}
 		self::save_state( $s );
+	}
+
+	/**
+	 * Članovi koji su sada na popisima za izlete (od danas nadalje, bez otkazanih): iz tablice
+	 * agencije (s zamjenama i ručno dodanima), a za svaki slučaj i iz narudžbi na stranici.
+	 */
+	public static function tour_member_ids(): array {
+		$today = current_time( 'Y-m-d' );
+		$ids   = array();
+		$res   = Plan_A_Clanstvo_Agency::call( array( 'action' => 'ag_people', 'from' => $today ) );
+		foreach ( (array) ( $res['people'] ?? array() ) as $p ) {
+			$id = 0;
+			if ( '' !== (string) ( $p['oib'] ?? '' ) ) {
+				$id = Plan_A_Clanstvo_Data::find( 'oib', (string) $p['oib'] );
+			}
+			if ( ! $id && '' !== (string) ( $p['email'] ?? '' ) ) {
+				$id = Plan_A_Clanstvo_Data::find( 'email', (string) $p['email'] );
+			}
+			if ( $id ) {
+				$ids[ $id ] = $id;
+			}
+		}
+		foreach ( (array) get_option( Plan_A_Clanstvo_Agency::ROWS, array() ) as $r ) {
+			if ( ! empty( $r['b'] ) && strcmp( (string) ( $r['d'] ?? '' ), $today ) >= 0 ) {
+				$id = Plan_A_Clanstvo_Data::find( 'broj', (string) $r['b'] );
+				if ( $id ) {
+					$ids[ $id ] = $id;
+				}
+			}
+		}
+		return array_values( $ids );
 	}
 
 	/** Siječanj–travanj, prvi dan u mjesecu: popis članova koji nisu platili tekuću godinu. */
