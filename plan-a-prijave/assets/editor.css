@@ -1,0 +1,44 @@
+/* Plan A izleti – obrazac za uređivanje izleta */
+#pap_editor .inside{margin:0;padding:0}
+.pap{--navy:#12304b;--line:#e3e8ee;--soft:#f4f7fa;--muted:#5f6b77;--orange:#e8862a;color:#24323f}
+.pap-nav{position:sticky;top:32px;z-index:5;display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line)}
+.pap-nav a{padding:5px 10px;border-radius:999px;background:var(--soft);color:var(--navy);font-size:12px;font-weight:600;text-decoration:none}
+.pap-nav a:hover{background:#e8f4fb}
+.pap-sec{padding:18px 16px 20px;border-bottom:1px solid var(--line);scroll-margin-top:90px}
+.pap-sec h3{margin:0 0 6px;font-size:15px;color:var(--navy)}
+.pap-sec h4{margin:14px 0 8px;font-size:13px;color:var(--navy)}
+.pap-hint{margin:0 0 12px;color:var(--muted);font-size:12.5px}
+.pap label{display:block;font-weight:600;font-size:12.5px;color:var(--navy)}
+.pap label input,.pap label select,.pap label textarea{display:block;width:100%;margin-top:4px;font-weight:400}
+.pap label small{display:block;font-weight:400;color:var(--muted);margin-top:3px}
+.pap .pap-check,.pap .pap-radio label,.pap .pap-checks label{display:flex;align-items:center;gap:6px;font-weight:400;color:#24323f}
+.pap .pap-check input,.pap .pap-checks input,.pap .pap-radio input{width:auto;margin:0}
+.pap-radio{display:flex;gap:18px}
+.pap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin:0 0 12px}
+.pap-inline{display:flex;gap:6px}.pap-inline input{width:90px!important}.pap-inline select{width:auto!important}
+.pap-table{width:100%;border-collapse:collapse;margin:4px 0 8px}
+.pap-table th{text-align:left;font-size:11.5px;color:var(--muted);font-weight:600;padding:4px 6px;border-bottom:1px solid var(--line)}
+.pap-table td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.pap-table input{width:100%}
+.pap-table td:nth-child(2) input[type=number]{max-width:110px}
+.pap-locked{background:#fdf1e4}.pap-locked input[readonly]{background:#fdf1e4;border-color:#f0d3b3}
+.pap-lock{color:#8a4a0b;font-size:12.5px}
+.pap-tools{white-space:nowrap;text-align:right}
+.pap-tools button{border:1px solid var(--line);background:#fff;border-radius:6px;width:26px;height:26px;margin-left:3px;cursor:pointer;color:var(--navy)}
+.pap-tools .pap-del{color:#b32d2e}
+.pap-two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.pap-checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px 14px;margin:0 0 10px}
+.pap-scroll{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:10px}
+.pap-two input[type=text],.pap-sec>input[type=text]{width:100%;max-width:420px}
+.pap-block{border:1px solid var(--line);border-radius:10px;padding:10px;margin:0 0 12px;background:#fff}
+.pap-block-head{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.pap-block-head input[type=text]{flex:1;font-weight:600}
+.pap-li{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}.pap-li textarea{flex:1}
+.pap-gallery{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px;padding:0;list-style:none}
+.pap-gallery li{position:relative;width:96px;height:96px;margin:0;cursor:move}
+.pap-gallery img{width:96px;height:96px;object-fit:cover;border-radius:8px;display:block}
+.pap-gdel{position:absolute;top:4px;right:4px;border:0;border-radius:50%;width:22px;height:22px;background:rgba(0,0,0,.6);color:#fff;cursor:pointer}
+@media (max-width:900px){.pap-two{grid-template-columns:1fr}.pap-table thead{display:none}.pap-table td{display:block;border:0}.pap-table tr{display:block;border-bottom:1px solid var(--line);padding:6px 0}}
+
+/* WpTravellyjeva traka (Natrag / Pregled / Spremi) ovdje ne treba: sprema se gumbom u okviru Objava. */
+body.post-type-ttbm_tour #ttbm-admin-page-header{display:none!important}

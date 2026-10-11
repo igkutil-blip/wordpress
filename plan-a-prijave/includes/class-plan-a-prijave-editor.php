@@ -1,0 +1,649 @@
+<?php
+/**
+ * Obrazac za uređivanje izleta na hrvatskom. Sprema iste podatke kao WpTravelly, pa
+ * WpTravellyjeva stranica izleta, prijava i naši dodaci rade bez promjena. Dok je
+ * WpTravelly uključen, njegov obrazac se skriva (bez njegovog obrasca on ništa ne sprema).
+ *
+ * @package Plan_A_Prijave
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+final class Plan_A_Prijave_Editor {
+
+	const NONCE  = 'pap_nonce';
+	const NOTICE = 'pap_editor_notice_';
+
+	public static function init() {
+		add_action( 'init', array( __CLASS__, 'supports' ), 99 );
+		add_filter( 'admin_body_class', array( __CLASS__, 'body_class' ), 999 );
+		add_filter( 'get_user_option_screen_layout_' . Plan_A_Prijave_Tour::CPT, static fn() => 2, 999 ); // dva stupca
+		add_action( 'add_meta_boxes_' . Plan_A_Prijave_Tour::CPT, array( __CLASS__, 'boxes' ), 100 );
+		add_action( 'save_post_' . Plan_A_Prijave_Tour::CPT, array( __CLASS__, 'save' ), 20, 2 );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
+		add_action( 'admin_notices', array( __CLASS__, 'notices' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'no_ttbm_autosave' ), 100 );
+		add_action( 'wp_ajax_ttbm_autosave_tour', array( __CLASS__, 'block_ttbm_autosave' ), 1 );
+	}
+
+	/**
+	 * WpTravellyjevo spremanje u pozadini šalje samo njegov obrazac. Bez njega bi obrisalo
+	 * karte, termine i ostalo, pa se na ovom zaslonu isključuje.
+	 */
+	public static function no_ttbm_autosave() {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( $screen && Plan_A_Prijave_Tour::CPT === $screen->post_type ) {
+			// Skripte WpTravellyjevog obrasca: bez njega bi zaustavile spremanje ili preimenovale naslov.
+			foreach ( array( 'ttbm-autosave', 'ttbm_admin_settings', 'ttbm_admin_script' ) as $h ) {
+				wp_dequeue_script( $h );
+			}
+			wp_dequeue_style( 'ttbm-autosave' );
+		}
+	}
+
+	public static function block_ttbm_autosave() {
+		$id = isset( $_POST['post_ID'] ) ? absint( $_POST['post_ID'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! $id || Plan_A_Prijave_Tour::CPT === get_post_type( $id ) ) {
+			wp_send_json_error( array( 'message' => 'Izlet se sprema gumbom Spremi (obrazac Plan A).' ) );
+		}
+	}
+
+	/** WpTravelly makne naslov i opis (ima ih u svom obrascu); vraćamo WordPressove. */
+	public static function supports() {
+		if ( is_admin() ) {
+			add_post_type_support( Plan_A_Prijave_Tour::CPT, array( 'title', 'editor', 'thumbnail', 'excerpt' ) );
+		}
+	}
+
+	/** Bez WpTravellyjevog izgleda ekrana (skriva desni stupac): običan WordPressov ekran. */
+	public static function body_class( $classes ) {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( $screen && Plan_A_Prijave_Tour::CPT === $screen->post_type ) {
+			$classes = str_replace( array( 'ttbm-modern-edit-page', 'ttbm-tour-edit-page' ), '', (string) $classes );
+		}
+		return $classes;
+	}
+
+	public static function boxes( $post ) {
+		$cpt = Plan_A_Prijave_Tour::CPT;
+		remove_meta_box( 'ttbm_meta_box_panel', $cpt, 'normal' );
+		remove_meta_box( 'ttbm_tour_activitiesdiv', $cpt, 'side' );
+		// Standardni okviri koje WpTravelly skriva (objava, slika, kategorije, oznake).
+		add_meta_box( 'submitdiv', 'Objava', 'post_submit_meta_box', $cpt, 'side', 'high' );
+		add_meta_box( 'postimagediv', 'Glavna slika izleta', 'post_thumbnail_meta_box', $cpt, 'side', 'low' );
+		foreach ( array( 'ttbm_tour_cat' => 'Kategorija', 'ttbm_tour_org' => 'Organizator' ) as $tax => $label ) {
+			if ( taxonomy_exists( $tax ) ) {
+				add_meta_box( $tax . 'div', $label, 'post_categories_meta_box', $cpt, 'side', 'default', array( 'taxonomy' => $tax ) );
+			}
+		}
+		add_meta_box( 'pap_editor', 'Izlet – podaci, termini i prijava', array( __CLASS__, 'render' ), Plan_A_Prijave_Tour::CPT, 'normal', 'high' );
+	}
+
+	public static function assets( $hook ) {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || Plan_A_Prijave_Tour::CPT !== $screen->post_type || 'post' !== $screen->base ) {
+			return;
+		}
+		wp_enqueue_media();
+		wp_enqueue_editor();
+		wp_enqueue_style( 'pap-editor', PLAN_A_PRIJAVE_URL . 'assets/editor.css', array(), PLAN_A_PRIJAVE_VERSION );
+		wp_enqueue_script( 'pap-editor', PLAN_A_PRIJAVE_URL . 'assets/editor.js', array( 'jquery', 'jquery-ui-sortable', 'wp-util' ), PLAN_A_PRIJAVE_VERSION, true );
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Prikaz                                                              */
+	/* ------------------------------------------------------------------ */
+
+	private static function e( $v ): string {
+		return esc_attr( (string) $v );
+	}
+
+	private static function terms( string $tax ): array {
+		$t = get_terms(
+			array(
+				'taxonomy'   => $tax,
+				'hide_empty' => false,
+				'orderby'    => 'name',
+			)
+		);
+		return is_wp_error( $t ) ? array() : $t;
+	}
+
+	private static function section( string $id, string $title, string $hint = '' ) {
+		echo '<section class="pap-sec" id="pap-' . esc_attr( $id ) . '"><h3>' . esc_html( $title ) . '</h3>' . ( '' !== $hint ? '<p class="pap-hint">' . wp_kses_post( $hint ) . '</p>' : '' );
+	}
+
+	public static function render( $post ) {
+		$id     = (int) $post->ID;
+		$m      = static fn( $k, $d = '' ) => Plan_A_Prijave_Tour::meta( $id, $k, $d );
+		$booked = Plan_A_Prijave_Tour::booked( $id );
+
+		$nav = array(
+			'osnovno'  => 'Osnovno',
+			'termini'  => 'Termini',
+			'karte'    => 'Karte i cijene',
+			'usluge'   => 'Dodatne usluge',
+			'ukljuceno' => 'Uključeno',
+			'aktivnosti' => 'Aktivnosti',
+			'vazno'    => 'Važno',
+			'faq'      => 'FAQ',
+			'zasto'    => 'Zašto s nama',
+			'kontakt'  => 'Kontakt i vodiči',
+			'galerija' => 'Galerija',
+			'povezani' => 'Povezani izleti',
+		);
+		echo '<div class="pap">';
+		wp_nonce_field( self::NONCE, self::NONCE );
+		echo '<nav class="pap-nav">';
+		foreach ( $nav as $k => $l ) {
+			echo '<a href="#pap-' . esc_attr( $k ) . '">' . esc_html( $l ) . '</a>';
+		}
+		echo '</nav>';
+
+		/* Osnovno */
+		self::section( 'osnovno', 'Osnovno', 'Naslov i opis izleta pišeš gore. Glavna slika i kategorija su u desnom stupcu.' );
+		$loc = (string) $m( 'ttbm_location_name' );
+		echo '<div class="pap-grid">';
+		echo '<label>Lokacija<input list="pap-locations" name="pap[location]" value="' . self::e( $loc ) . '" placeholder="npr. Velebit"></label><datalist id="pap-locations">';
+		foreach ( self::terms( 'ttbm_tour_location' ) as $t ) {
+			echo '<option value="' . self::e( $t->name ) . '">';
+		}
+		echo '</datalist>';
+		echo '<label>Trajanje<span class="pap-inline"><input type="number" min="0" step="0.5" name="pap[duration]" value="' . self::e( $m( 'ttbm_travel_duration' ) ) . '"><select name="pap[duration_type]">';
+		foreach ( array( 'day' => 'dana', 'hour' => 'sati', 'min' => 'minuta' ) as $k => $l ) {
+			echo '<option value="' . esc_attr( $k ) . '"' . selected( $m( 'ttbm_travel_duration_type', 'day' ), $k, false ) . '>' . esc_html( $l ) . '</option>';
+		}
+		echo '</select></span></label>';
+		echo '<label>Noćenja<input type="number" min="0" name="pap[nights]" value="' . self::e( $m( 'ttbm_travel_duration_night' ) ) . '"><small>prazno = ne prikazuje se</small></label>';
+		echo '<label>Najviše osoba<input type="number" min="0" name="pap[max_people]" value="' . self::e( $m( 'ttbm_travel_max_people_allow' ) ) . '"><small>informacija na stranici; stvarna mjesta su kod karata</small></label>';
+		echo '</div>';
+		echo '<label class="pap-check"><input type="checkbox" name="pap[seats]" value="1"' . checked( 'off' !== $m( 'ttbm_display_seat_details', 'on' ), true, false ) . '> Na stranici prikaži slobodna mjesta (npr. 3/25)</label>';
+		echo '</section>';
+
+		/* Termini */
+		$type = (string) $m( 'ttbm_travel_type', 'particular' );
+		$type = 'fixed' === $type ? 'fixed' : 'particular';
+		self::section( 'termini', 'Termini', 'Termin na koji već postoje prijave ne može se promijeniti ni obrisati (prijave bi ostale na krivom datumu). Ako se izlet seli, javi pa ćemo prijave prebaciti.' );
+		echo '<p class="pap-radio"><label><input type="radio" name="pap[travel_type]" value="particular"' . checked( $type, 'particular', false ) . '> Jedan ili više datuma</label> <label><input type="radio" name="pap[travel_type]" value="fixed"' . checked( $type, 'fixed', false ) . '> Jedan termin od–do</label></p>';
+		echo '<div class="pap-type pap-type-particular"' . ( 'fixed' === $type ? ' hidden' : '' ) . '><table class="pap-table"><thead><tr><th>Datum polaska</th><th>Datum povratka</th><th>Sat polaska</th><th>Prijave</th><th></th></tr></thead><tbody data-rows="dates">';
+		$rows = Plan_A_Prijave_Tour::rows( $id, 'ttbm_particular_dates' );
+		if ( 'fixed' === $type ) {
+			$rows = array();
+		}
+		foreach ( $rows as $i => $r ) {
+			$d    = substr( (string) ( $r['ttbm_particular_start_date'] ?? '' ), 0, 10 );
+			$n    = (int) ( $booked['dates'][ $d ] ?? 0 );
+			$lock = $n > 0;
+			echo self::date_row( 'r' . $i, $d, substr( (string) ( $r['ttbm_particular_end_date'] ?? '' ), 0, 10 ), (string) ( $r['ttbm_particular_start_time'] ?? '' ), $n, $lock ); // phpcs:ignore WordPress.Security.EscapeOutput
+		}
+		echo '</tbody></table><p><button type="button" class="button pap-add" data-tpl="pap-tpl-date" data-to="dates">+ Dodaj datum</button></p></div>';
+		$fd   = substr( (string) $m( 'ttbm_travel_start_date' ), 0, 10 );
+		$flck = 'fixed' === $type && $fd && ! empty( $booked['dates'][ $fd ] );
+		echo '<div class="pap-type pap-type-fixed"' . ( 'fixed' !== $type ? ' hidden' : '' ) . '><div class="pap-grid">'
+			. '<label>Početak<input type="date" name="pap[fixed][start]" value="' . self::e( $fd ) . '"' . ( $flck ? ' readonly' : '' ) . '></label>'
+			. '<label>Sat polaska<input type="time" name="pap[fixed][time]" value="' . self::e( $m( 'ttbm_travel_start_time' ) ) . '"></label>'
+			. '<label>Kraj<input type="date" name="pap[fixed][end]" value="' . self::e( substr( (string) $m( 'ttbm_travel_end_date' ), 0, 10 ) ) . '"></label>'
+			. '<label>Prijave do<input type="date" name="pap[fixed][reg_end]" value="' . self::e( substr( (string) $m( 'ttbm_travel_reg_end_date' ), 0, 10 ) ) . '"><small>prazno = do početka</small></label>'
+			. '</div>' . ( $flck ? '<p class="pap-lock">Na ovaj termin ima prijava (' . (int) $booked['dates'][ $fd ] . '), pa se početak ne može mijenjati.</p>' : '' ) . '</div>';
+		echo '</section>';
+
+		/* Karte */
+		self::section( 'karte', 'Karte i cijene', 'Svaka karta ima svoju cijenu i broj mjesta. Izlet s <strong>dvije rate</strong> ima kartu s punom cijenom i kartu čiji naziv sadrži <strong>„prve rate”</strong> (npr. „Uplata prve rate”) – po tome stranica prepoznaje rate. Slobodna mjesta na stranici zbroj su mjesta svih karata (npr. 20 + 5 = 25). Karta na koju je netko prijavljen ne može se preimenovati ni obrisati.' );
+		echo '<table class="pap-table"><thead><tr><th>Naziv karte</th><th>Cijena (€)</th><th>Mjesta</th><th>Rezervirano</th><th>Opis (nije obavezno)</th><th>Prodano</th><th></th></tr></thead><tbody data-rows="tickets">';
+		foreach ( Plan_A_Prijave_Tour::rows( $id, 'ttbm_ticket_type' ) as $i => $t ) {
+			$name = (string) ( $t['ticket_type_name'] ?? '' );
+			echo self::ticket_row( 't' . $i, $t, (int) ( $booked['tickets'][ $name ] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput
+		}
+		echo '</tbody></table><p><button type="button" class="button pap-add" data-tpl="pap-tpl-ticket" data-to="tickets">+ Dodaj kartu</button> <button type="button" class="button pap-add-rate">+ Dodaj kartu „Uplata prve rate”</button></p>';
+		echo '</section>';
+
+		/* Usluge */
+		self::section( 'usluge', 'Dodatne usluge', 'Npr. „Osiguranje od otkaza (opcionalno)”. Količina je koliko se usluga najviše može prodati (za osiguranje stavi velik broj, npr. 999).' );
+		echo '<table class="pap-table"><thead><tr><th>Naziv usluge</th><th>Cijena (€)</th><th>Količina</th><th>Opis (nije obavezno)</th><th>Prodano</th><th></th></tr></thead><tbody data-rows="services">';
+		foreach ( Plan_A_Prijave_Tour::rows( $id, 'ttbm_extra_service_data' ) as $i => $s ) {
+			$name = (string) ( $s['service_name'] ?? '' );
+			echo self::service_row( 's' . $i, $s, (int) ( $booked['services'][ $name ] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput
+		}
+		echo '</tbody></table><p><button type="button" class="button pap-add" data-tpl="pap-tpl-service" data-to="services">+ Dodaj uslugu</button></p></section>';
+
+		/* Uključeno / isključeno */
+		$inc = array_map( 'strval', (array) $m( 'ttbm_service_included_in_price', array() ) );
+		$exc = array_map( 'strval', (array) $m( 'ttbm_service_excluded_in_price', array() ) );
+		self::section( 'ukljuceno', 'Uključeno / isključeno', 'Označi što je uključeno u cijenu (kvačica na stranici), a što nije (križić). Novu stavku upiši u polje ispod.' );
+		echo '<div class="pap-two"><div><h4>Uključeno</h4><div class="pap-checks">';
+		foreach ( self::terms( 'ttbm_tour_features_list' ) as $t ) {
+			echo '<label><input type="checkbox" name="pap[inc][]" value="' . self::e( $t->name ) . '"' . checked( in_array( $t->name, $inc, true ), true, false ) . '> ' . esc_html( $t->name ) . '</label>';
+		}
+		echo '</div><input type="text" name="pap[inc_new]" placeholder="nove stavke, odvojene zarezom"></div><div><h4>Nije uključeno</h4><div class="pap-checks">';
+		foreach ( self::terms( 'ttbm_tour_features_list' ) as $t ) {
+			echo '<label><input type="checkbox" name="pap[exc][]" value="' . self::e( $t->name ) . '"' . checked( in_array( $t->name, $exc, true ), true, false ) . '> ' . esc_html( $t->name ) . '</label>';
+		}
+		echo '</div><input type="text" name="pap[exc_new]" placeholder="nove stavke, odvojene zarezom"></div></div></section>';
+
+		/* Aktivnosti */
+		$act = array_map( 'strval', (array) $m( 'ttbm_tour_activities', array() ) );
+		self::section( 'aktivnosti', 'Aktivnosti', 'Prikazuju se na stranici izleta i služe za filtar na popisu izleta.' );
+		echo '<div class="pap-checks">';
+		foreach ( self::terms( 'ttbm_tour_activities' ) as $t ) {
+			echo '<label><input type="checkbox" name="pap[act][]" value="' . (int) $t->term_id . '"' . checked( in_array( (string) $t->term_id, $act, true ), true, false ) . '> ' . esc_html( $t->name ) . '</label>';
+		}
+		echo '</div><input type="text" name="pap[act_new]" placeholder="nova aktivnost (nije obavezno)"></section>';
+
+		/* Važno */
+		self::section( 'vazno', 'Važno', 'Blokovi na otvaranje (npr. Uvjeti sudjelovanja, Minimalni broj sudionika, Izjava polaznika). Redoslijed mijenjaš strelicama.' );
+		echo '<div class="pap-blocks" data-rows="days">';
+		foreach ( Plan_A_Prijave_Tour::rows( $id, 'ttbm_daywise_details' ) as $i => $d ) {
+			echo self::block_row( 'days', 'd' . $i, (string) ( $d['ttbm_day_title'] ?? '' ), (string) ( $d['ttbm_day_content'] ?? '' ), (string) ( $d['ttbm_day_time'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput
+		}
+		echo '</div><p><button type="button" class="button pap-add-block" data-to="days">+ Dodaj blok</button></p></section>';
+
+		/* FAQ */
+		self::section( 'faq', 'Česta pitanja (FAQ)' );
+		echo '<div class="pap-blocks" data-rows="faq">';
+		foreach ( Plan_A_Prijave_Tour::rows( $id, 'mep_event_faq' ) as $i => $f ) {
+			echo self::block_row( 'faq', 'f' . $i, (string) ( $f['ttbm_faq_title'] ?? '' ), (string) ( $f['ttbm_faq_content'] ?? '' ), '' ); // phpcs:ignore WordPress.Security.EscapeOutput
+		}
+		echo '</div><p><button type="button" class="button pap-add-block" data-to="faq">+ Dodaj pitanje</button></p></section>';
+
+		/* Zašto s nama */
+		$why = (array) $m( 'ttbm_why_choose_us_texts', array() );
+		self::section( 'zasto', 'Zašto planinariti s nama', 'Jedan razlog po polju. Prazna polja se ne spremaju.' );
+		echo '<div class="pap-list" data-rows="why">';
+		foreach ( array_merge( $why, array( '' ) ) as $i => $w ) {
+			echo '<div class="pap-li"><textarea name="pap[why][]" rows="2">' . esc_textarea( (string) $w ) . '</textarea><span class="pap-tools"><button type="button" class="pap-up" title="Gore">↑</button><button type="button" class="pap-down" title="Dolje">↓</button><button type="button" class="pap-del" title="Obriši">×</button></span></div>';
+		}
+		echo '</div><p><button type="button" class="button pap-add-why">+ Dodaj razlog</button></p></section>';
+
+		/* Kontakt i vodiči */
+		self::section( 'kontakt', 'Kontakt i vodiči' );
+		echo '<label class="pap-check"><input type="checkbox" name="pap[question]" value="1"' . checked( 'off' !== $m( 'ttbm_display_get_question', 'on' ), true, false ) . '> Prikaži okvir „Za sva pitanja?” s gumbom „Pošaljite upit”</label>';
+		echo '<div class="pap-grid"><label>Telefon<input type="text" name="pap[phone]" value="' . self::e( $m( 'ttbm_contact_phone' ) ) . '"></label><label>E-mail<input type="email" name="pap[email]" value="' . self::e( $m( 'ttbm_contact_email' ) ) . '"></label></div>';
+		echo '<label>Tekst u okviru<textarea name="pap[contact_text]" rows="2">' . esc_textarea( (string) $m( 'ttbm_contact_text' ) ) . '</textarea></label>';
+		$guides = array_map( 'strval', (array) $m( 'ttbm_tour_guide', array() ) );
+		$all_g  = get_posts(
+			array(
+				'post_type'      => 'ttbm_guide',
+				'post_status'    => 'publish',
+				'posts_per_page' => 100,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+			)
+		);
+		echo '<h4>Vodiči na izletu (okvir „Upoznajte vodiče”)</h4><div class="pap-checks">';
+		foreach ( $all_g as $g ) {
+			echo '<label><input type="checkbox" name="pap[guides][]" value="' . (int) $g->ID . '"' . checked( in_array( (string) $g->ID, $guides, true ), true, false ) . '> ' . esc_html( $g->post_title ) . '</label>';
+		}
+		echo $all_g ? '' : '<p class="pap-hint">Još nema upisanih vodiča.</p>';
+		echo '</div></section>';
+
+		/* Galerija */
+		$gal = array_map( 'intval', (array) $m( 'ttbm_gallery_images', array() ) );
+		self::section( 'galerija', 'Galerija', 'Slike na vrhu stranice izleta (velika slika i četiri male). Redoslijed mijenjaš povlačenjem.' );
+		echo '<input type="hidden" name="pap[gallery]" value="' . self::e( implode( ',', $gal ) ) . '" class="pap-gallery-ids"><ul class="pap-gallery">';
+		foreach ( $gal as $a ) {
+			$src = wp_get_attachment_image_url( $a, 'thumbnail' );
+			if ( $src ) {
+				echo '<li data-id="' . (int) $a . '"><img src="' . esc_url( $src ) . '" alt=""><button type="button" class="pap-gdel" title="Makni">×</button></li>';
+			}
+		}
+		echo '</ul><p><button type="button" class="button pap-gallery-add">Dodaj slike</button> <span class="pap-hint">' . count( $gal ) . ' slika</span></p></section>';
+
+		/* Povezani */
+		$rel  = array_map( 'strval', (array) $m( 'ttbm_related_tour', array() ) );
+		$all  = get_posts(
+			array(
+				'post_type'      => Plan_A_Prijave_Tour::CPT,
+				'post_status'    => array( 'publish', 'future', 'draft', 'private' ),
+				'posts_per_page' => 300,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+				'post__not_in'   => array( $id ),
+			)
+		);
+		self::section( 'povezani', 'Odaberi sljedeću avanturu', 'Izleti na dnu stranice. Ako ne označiš nijedan, stranica sama odabere slične izlete.' );
+		echo '<label class="pap-check"><input type="checkbox" name="pap[related_show]" value="1"' . checked( 'off' !== $m( 'ttbm_display_related', 'on' ), true, false ) . '> Prikaži na stranici</label><div class="pap-checks pap-scroll">';
+		foreach ( $all as $p ) {
+			echo '<label><input type="checkbox" name="pap[related][]" value="' . (int) $p->ID . '"' . checked( in_array( (string) $p->ID, $rel, true ), true, false ) . '> ' . esc_html( $p->post_title ) . ( 'publish' !== $p->post_status ? ' <em>(' . esc_html( $p->post_status ) . ')</em>' : '' ) . '</label>';
+		}
+		echo '</div></section>';
+
+		self::templates();
+		echo '</div>';
+	}
+
+	private static function tools( bool $del = true ): string {
+		return '<td class="pap-tools"><button type="button" class="pap-up" title="Gore">↑</button><button type="button" class="pap-down" title="Dolje">↓</button>' . ( $del ? '<button type="button" class="pap-del" title="Obriši">×</button>' : '' ) . '</td>';
+	}
+
+	private static function date_row( string $k, string $start, string $end, string $time, int $n, bool $lock ): string {
+		$ro = $lock ? ' readonly' : '';
+		return '<tr' . ( $lock ? ' class="pap-locked"' : '' ) . '><td><input type="date" name="pap[dates][' . esc_attr( $k ) . '][start]" value="' . self::e( $start ) . '"' . $ro . '></td>'
+			. '<td><input type="date" name="pap[dates][' . esc_attr( $k ) . '][end]" value="' . self::e( $end ) . '"></td>'
+			. '<td><input type="time" name="pap[dates][' . esc_attr( $k ) . '][time]" value="' . self::e( $time ) . '"></td>'
+			. '<td>' . ( $n ? '<strong>' . $n . '</strong>' : '–' ) . '</td>' . self::tools( ! $lock ) . '</tr>';
+	}
+
+	private static function ticket_row( string $k, array $t, int $sold ): string {
+		$f    = 'pap[tickets][' . $k . ']';
+		$keep = '';
+		foreach ( array( 'ticket_type_icon', 'sale_price', 'ticket_type_default_qty', 'ticket_type_qty_type' ) as $h ) {
+			$keep .= '<input type="hidden" name="' . esc_attr( $f . '[' . $h . ']' ) . '" value="' . self::e( $t[ $h ] ?? '' ) . '">';
+		}
+		$price = $t['ticket_type_price'] ?? ( $t['ticket_price'] ?? '' );
+		return '<tr' . ( $sold ? ' class="pap-locked"' : '' ) . '><td><input type="text" name="' . esc_attr( $f ) . '[name]" value="' . self::e( $t['ticket_type_name'] ?? '' ) . '"' . ( $sold ? ' readonly' : '' ) . ' required>' . $keep . '</td>'
+			. '<td><input type="number" min="0" step="0.01" name="' . esc_attr( $f ) . '[price]" value="' . self::e( $price ) . '" required></td>'
+			. '<td><input type="number" min="0" name="' . esc_attr( $f ) . '[qty]" value="' . self::e( $t['ticket_type_qty'] ?? '' ) . '" required></td>'
+			. '<td><input type="number" min="0" name="' . esc_attr( $f ) . '[resv]" value="' . self::e( $t['ticket_type_resv_qty'] ?? 0 ) . '"></td>'
+			. '<td><input type="text" name="' . esc_attr( $f ) . '[desc]" value="' . self::e( $t['ticket_type_description'] ?? '' ) . '"></td>'
+			. '<td>' . ( $sold ? '<strong>' . $sold . '</strong>' : '–' ) . '</td>' . self::tools( ! $sold ) . '</tr>';
+	}
+
+	private static function service_row( string $k, array $s, int $sold ): string {
+		$f    = 'pap[services][' . $k . ']';
+		$keep = '';
+		foreach ( array( 'service_icon', 'service_sale_price', 'service_qty_type' ) as $h ) {
+			$keep .= '<input type="hidden" name="' . esc_attr( $f . '[' . $h . ']' ) . '" value="' . self::e( $s[ $h ] ?? '' ) . '">';
+		}
+		return '<tr' . ( $sold ? ' class="pap-locked"' : '' ) . '><td><input type="text" name="' . esc_attr( $f ) . '[name]" value="' . self::e( $s['service_name'] ?? '' ) . '"' . ( $sold ? ' readonly' : '' ) . ' required>' . $keep . '</td>'
+			. '<td><input type="number" min="0" step="0.01" name="' . esc_attr( $f ) . '[price]" value="' . self::e( $s['service_price'] ?? '' ) . '" required></td>'
+			. '<td><input type="number" min="1" name="' . esc_attr( $f ) . '[qty]" value="' . self::e( $s['service_qty'] ?? '' ) . '" required></td>'
+			. '<td><input type="text" name="' . esc_attr( $f ) . '[desc]" value="' . self::e( $s['extra_service_description'] ?? '' ) . '"></td>'
+			. '<td>' . ( $sold ? '<strong>' . $sold . '</strong>' : '–' ) . '</td>' . self::tools( ! $sold ) . '</tr>';
+	}
+
+	private static function block_row( string $group, string $k, string $title, string $content, string $time ): string {
+		$f = 'pap[' . $group . '][' . $k . ']';
+		return '<div class="pap-block"><div class="pap-block-head"><input type="text" name="' . esc_attr( $f ) . '[title]" value="' . self::e( $title ) . '" placeholder="Naslov">'
+			. '<input type="hidden" name="' . esc_attr( $f ) . '[time]" value="' . self::e( $time ) . '">'
+			. '<span class="pap-tools"><button type="button" class="pap-up" title="Gore">↑</button><button type="button" class="pap-down" title="Dolje">↓</button><button type="button" class="pap-del" title="Obriši">×</button></span></div>'
+			. '<textarea class="pap-rich" id="' . esc_attr( 'pap-' . $group . '-' . $k ) . '" name="' . esc_attr( $f ) . '[content]" rows="8">' . esc_textarea( $content ) . '</textarea></div>';
+	}
+
+	/** Predlošci za nove redove (JS zamijeni __K__ jedinstvenim ključem). */
+	private static function templates() {
+		echo '<script type="text/html" id="tmpl-pap-tpl-date">' . self::date_row( '__K__', '', '', '', 0, false ) . '</script>'; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo '<script type="text/html" id="tmpl-pap-tpl-ticket">' . self::ticket_row( '__K__', array( 'ticket_type_qty_type' => 'inputbox', 'ticket_type_resv_qty' => 0 ), 0 ) . '</script>'; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo '<script type="text/html" id="tmpl-pap-tpl-service">' . self::service_row( '__K__', array( 'service_qty_type' => 'inputbox' ), 0 ) . '</script>'; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo '<script type="text/html" id="tmpl-pap-tpl-days">' . self::block_row( 'days', '__K__', '', '', '' ) . '</script>'; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo '<script type="text/html" id="tmpl-pap-tpl-faq">' . self::block_row( 'faq', '__K__', '', '', '' ) . '</script>'; // phpcs:ignore WordPress.Security.EscapeOutput
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Spremanje                                                           */
+	/* ------------------------------------------------------------------ */
+
+	private static function on( bool $v ): string {
+		return $v ? 'on' : 'off';
+	}
+
+	private static function date( $v ): string {
+		$v  = substr( sanitize_text_field( (string) $v ), 0, 10 );
+		$ts = $v ? strtotime( $v ) : false;
+		return $ts ? gmdate( 'Y-m-d', $ts ) : '';
+	}
+
+	private static function money( $v ): string {
+		$v = str_replace( ',', '.', trim( (string) $v ) );
+		return is_numeric( $v ) && (float) $v >= 0 ? (string) ( 0 + $v ) : '';
+	}
+
+	private static function names( string $csv, string $tax ): array {
+		$out = array();
+		foreach ( array_filter( array_map( 'trim', explode( ',', $csv ) ) ) as $n ) {
+			$n    = sanitize_text_field( $n );
+			$term = get_term_by( 'name', $n, $tax );
+			if ( ! $term ) {
+				$r    = wp_insert_term( $n, $tax );
+				$term = is_wp_error( $r ) ? null : get_term( (int) $r['term_id'], $tax );
+			}
+			if ( $term && ! is_wp_error( $term ) ) {
+				$out[] = $term;
+			}
+		}
+		return $out;
+	}
+
+	public static function save( $id, $post ) {
+		if ( ! isset( $_POST[ self::NONCE ] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ self::NONCE ] ) ), self::NONCE ) ) {
+			return;
+		}
+		if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || wp_is_post_revision( $id ) || ! current_user_can( 'edit_post', $id ) ) {
+			return;
+		}
+		$p      = isset( $_POST['pap'] ) && is_array( $_POST['pap'] ) ? wp_unslash( $_POST['pap'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$id     = (int) $id;
+		$booked = Plan_A_Prijave_Tour::booked( $id );
+		$notes  = array();
+		$new    = ! metadata_exists( 'post', $id, 'ttbm_type' );
+
+		/* Osnovno */
+		$loc = sanitize_text_field( (string) ( $p['location'] ?? '' ) );
+		if ( '' !== $loc && ! get_term_by( 'name', $loc, 'ttbm_tour_location' ) ) {
+			wp_insert_term( $loc, 'ttbm_tour_location' );
+		}
+		$term = '' !== $loc ? get_term_by( 'name', $loc, 'ttbm_tour_location' ) : null;
+		update_post_meta( $id, 'ttbm_location_name', $loc );
+		update_post_meta( $id, 'ttbm_country_name', $term ? (string) get_term_meta( $term->term_id, 'ttbm_country_location', true ) : '' );
+		update_post_meta( $id, 'ttbm_display_location', self::on( '' !== $loc ) );
+		$dur = sanitize_text_field( (string) ( $p['duration'] ?? '' ) );
+		update_post_meta( $id, 'ttbm_travel_duration', $dur );
+		update_post_meta( $id, 'ttbm_travel_duration_type', in_array( $p['duration_type'] ?? '', array( 'day', 'hour', 'min' ), true ) ? $p['duration_type'] : 'day' );
+		update_post_meta( $id, 'ttbm_display_duration', self::on( '' !== $dur ) );
+		$nights = sanitize_text_field( (string) ( $p['nights'] ?? '' ) );
+		update_post_meta( $id, 'ttbm_travel_duration_night', $nights );
+		update_post_meta( $id, 'ttbm_display_duration_night', self::on( '' !== $nights && (int) $nights > 0 ) );
+		$max = sanitize_text_field( (string) ( $p['max_people'] ?? '' ) );
+		update_post_meta( $id, 'ttbm_travel_max_people_allow', $max );
+		update_post_meta( $id, 'ttbm_display_max_people', self::on( '' !== $max ) );
+		update_post_meta( $id, 'ttbm_display_seat_details', self::on( ! empty( $p['seats'] ) ) );
+
+		/* Termini */
+		$type = 'fixed' === ( $p['travel_type'] ?? '' ) ? 'fixed' : 'particular';
+		$old  = Plan_A_Prijave_Tour::dates( $id );
+		$was  = 'fixed' === Plan_A_Prijave_Tour::meta( $id, 'ttbm_travel_type', 'particular' ) ? 'fixed' : 'particular';
+		if ( $was !== $type && array_intersect( $old, array_keys( $booked['dates'] ) ) ) {
+			$type    = $was; // vrsta termina s prijavama se ne mijenja
+			$notes[] = 'Izlet ima prijave, pa vrsta termina (jedan termin / više datuma) nije promijenjena.';
+		}
+		if ( 'particular' === $type ) {
+			$rows = array();
+			$seen = array();
+			foreach ( (array) ( $p['dates'] ?? array() ) as $r ) {
+				$s = self::date( $r['start'] ?? '' );
+				if ( '' === $s || isset( $seen[ $s ] ) ) {
+					continue;
+				}
+				$seen[ $s ] = 1;
+				$e          = self::date( $r['end'] ?? '' );
+				$rows[]     = array(
+					'ttbm_particular_start_date' => $s,
+					'ttbm_particular_end_date'   => $e && $e >= $s ? $e : '',
+					'ttbm_particular_start_time' => preg_match( '/^\d{2}:\d{2}$/', (string) ( $r['time'] ?? '' ) ) ? (string) $r['time'] : '',
+				);
+			}
+			// Termin s prijavama se ne smije izgubiti.
+			foreach ( $old as $d ) {
+				if ( ! empty( $booked['dates'][ $d ] ) && ! isset( $seen[ $d ] ) ) {
+					$rows[] = array(
+						'ttbm_particular_start_date' => $d,
+						'ttbm_particular_end_date'   => '',
+						'ttbm_particular_start_time' => '',
+					);
+					$notes[] = 'Termin ' . gmdate( 'j.n.Y.', strtotime( $d ) ) . ' ima prijave i nije obrisan.';
+				}
+			}
+			usort( $rows, static fn( $a, $b ) => strcmp( $a['ttbm_particular_start_date'], $b['ttbm_particular_start_date'] ) );
+			update_post_meta( $id, 'ttbm_particular_dates', $rows );
+			update_post_meta( $id, 'ttbm_travel_reg_end_date', gmdate( 'Y-m-d', strtotime( ' +500 day' ) ) ); // kao WpTravelly
+		} else {
+			$f     = (array) ( $p['fixed'] ?? array() );
+			$start = self::date( $f['start'] ?? '' );
+			$prev  = substr( (string) Plan_A_Prijave_Tour::meta( $id, 'ttbm_travel_start_date' ), 0, 10 );
+			if ( $prev && $prev !== $start && ! empty( $booked['dates'][ $prev ] ) ) {
+				$start   = $prev;
+				$notes[] = 'Početak termina ima prijave i nije promijenjen.';
+			}
+			$end = self::date( $f['end'] ?? '' );
+			$reg = self::date( $f['reg_end'] ?? '' );
+			update_post_meta( $id, 'ttbm_travel_start_date', $start );
+			update_post_meta( $id, 'ttbm_travel_start_time', preg_match( '/^\d{2}:\d{2}$/', (string) ( $f['time'] ?? '' ) ) ? (string) $f['time'] : '' );
+			update_post_meta( $id, 'ttbm_travel_end_date', $end && $end >= $start ? $end : $start );
+			update_post_meta( $id, 'ttbm_travel_reg_end_date', $reg ?: $start );
+		}
+		update_post_meta( $id, 'ttbm_travel_type', $type );
+
+		/* Karte */
+		$tickets = array();
+		$kept    = array();
+		foreach ( (array) ( $p['tickets'] ?? array() ) as $t ) {
+			$name  = sanitize_text_field( (string) ( $t['name'] ?? '' ) );
+			$price = self::money( $t['price'] ?? '' );
+			if ( '' === $name || '' === $price ) {
+				continue;
+			}
+			$kept[ $name ] = 1;
+			$tickets[]     = array(
+				'ticket_type_icon'        => sanitize_text_field( (string) ( $t['ticket_type_icon'] ?? '' ) ),
+				'ticket_type_name'        => $name,
+				'ticket_type_price'       => $price,
+				'sale_price'              => self::money( $t['sale_price'] ?? '' ),
+				'ticket_type_qty'         => (string) absint( $t['qty'] ?? 0 ),
+				'ticket_type_default_qty' => (string) absint( $t['ticket_type_default_qty'] ?? 0 ),
+				'ticket_type_resv_qty'    => (string) absint( $t['resv'] ?? 0 ),
+				'ticket_type_qty_type'    => sanitize_text_field( (string) ( $t['ticket_type_qty_type'] ?? '' ) ) ?: 'inputbox',
+				'ticket_type_description' => sanitize_text_field( (string) ( $t['desc'] ?? '' ) ),
+			);
+		}
+		foreach ( Plan_A_Prijave_Tour::rows( $id, 'ttbm_ticket_type' ) as $t ) {
+			$name = (string) ( $t['ticket_type_name'] ?? '' );
+			if ( '' !== $name && ! empty( $booked['tickets'][ $name ] ) && ! isset( $kept[ $name ] ) ) {
+				$tickets[] = $t;
+				$notes[]   = 'Karta „' . $name . '” ima prijave i nije obrisana.';
+			}
+		}
+		update_post_meta( $id, 'ttbm_ticket_type', $tickets );
+
+		/* Usluge */
+		$services = array();
+		$kept     = array();
+		foreach ( (array) ( $p['services'] ?? array() ) as $s ) {
+			$name  = sanitize_text_field( (string) ( $s['name'] ?? '' ) );
+			$price = self::money( $s['price'] ?? '' );
+			$qty   = absint( $s['qty'] ?? 0 );
+			if ( '' === $name || '' === $price || $qty < 1 ) {
+				continue;
+			}
+			$kept[ $name ] = 1;
+			$services[]    = array(
+				'service_icon'              => sanitize_text_field( (string) ( $s['service_icon'] ?? '' ) ),
+				'service_name'              => $name,
+				'service_price'             => $price,
+				'service_sale_price'        => self::money( $s['service_sale_price'] ?? '' ),
+				'service_qty'               => (string) $qty,
+				'service_qty_type'          => sanitize_text_field( (string) ( $s['service_qty_type'] ?? '' ) ) ?: 'inputbox',
+				'extra_service_description' => sanitize_text_field( (string) ( $s['desc'] ?? '' ) ),
+			);
+		}
+		foreach ( Plan_A_Prijave_Tour::rows( $id, 'ttbm_extra_service_data' ) as $s ) {
+			$name = (string) ( $s['service_name'] ?? '' );
+			if ( '' !== $name && ! empty( $booked['services'][ $name ] ) && ! isset( $kept[ $name ] ) ) {
+				$services[] = $s;
+				$notes[]    = 'Usluga „' . $name . '” ima prijave i nije obrisana.';
+			}
+		}
+		update_post_meta( $id, 'ttbm_extra_service_data', $services );
+
+		/* Uključeno / isključeno */
+		foreach ( array( 'inc' => 'included', 'exc' => 'excluded' ) as $k => $w ) {
+			$list = array_values( array_unique( array_filter( array_map( 'sanitize_text_field', (array) ( $p[ $k ] ?? array() ) ) ) ) );
+			foreach ( self::names( (string) ( $p[ $k . '_new' ] ?? '' ), 'ttbm_tour_features_list' ) as $t ) {
+				$list[] = $t->name;
+			}
+			$list = array_values( array_unique( $list ) );
+			update_post_meta( $id, 'ttbm_service_' . $w . '_in_price', $list );
+			update_post_meta( $id, 'ttbm_display_' . ( 'inc' === $k ? 'include' : 'exclude' ) . '_service', self::on( (bool) $list ) );
+		}
+
+		/* Aktivnosti (podatak izleta i pojmovi, kao WpTravelly) */
+		$act = array_map( 'absint', (array) ( $p['act'] ?? array() ) );
+		foreach ( self::names( (string) ( $p['act_new'] ?? '' ), 'ttbm_tour_activities' ) as $t ) {
+			$act[] = (int) $t->term_id;
+		}
+		$act = array_values( array_unique( array_filter( $act ) ) );
+		update_post_meta( $id, 'ttbm_tour_activities', array_map( 'strval', $act ) );
+		update_post_meta( $id, 'ttbm_display_activities', self::on( (bool) $act ) );
+		wp_set_object_terms( $id, $act, 'ttbm_tour_activities' );
+
+		/* Važno i FAQ */
+		$days = array();
+		foreach ( (array) ( $p['days'] ?? array() ) as $d ) {
+			$title   = sanitize_text_field( (string) ( $d['title'] ?? '' ) );
+			$content = wp_kses_post( (string) ( $d['content'] ?? '' ) );
+			if ( '' === $title && '' === trim( wp_strip_all_tags( $content ) ) ) {
+				continue;
+			}
+			$days[] = array(
+				'ttbm_day_title'   => $title,
+				'ttbm_day_time'    => sanitize_text_field( (string) ( $d['time'] ?? '' ) ),
+				'ttbm_day_content' => $content,
+			);
+		}
+		update_post_meta( $id, 'ttbm_daywise_details', $days );
+		update_post_meta( $id, 'ttbm_display_schedule', self::on( (bool) $days ) );
+		$faq = array();
+		foreach ( (array) ( $p['faq'] ?? array() ) as $f ) {
+			$title   = sanitize_text_field( (string) ( $f['title'] ?? '' ) );
+			$content = wp_kses_post( (string) ( $f['content'] ?? '' ) );
+			if ( '' === $title ) {
+				continue;
+			}
+			$faq[] = array(
+				'ttbm_faq_title'   => $title,
+				'ttbm_faq_content' => $content,
+			);
+		}
+		update_post_meta( $id, 'mep_event_faq', $faq );
+		update_post_meta( $id, 'ttbm_display_faq', self::on( (bool) $faq ) );
+		update_post_meta( $id, 'ttbm_faq_active', self::on( (bool) $faq ) );
+
+		/* Zašto s nama */
+		$why = array_values( array_filter( array_map( 'sanitize_text_field', (array) ( $p['why'] ?? array() ) ) ) );
+		update_post_meta( $id, 'ttbm_why_choose_us_texts', $why );
+		update_post_meta( $id, 'ttbm_display_why_choose_us', self::on( (bool) $why ) );
+
+		/* Kontakt i vodiči */
+		update_post_meta( $id, 'ttbm_display_get_question', self::on( ! empty( $p['question'] ) ) );
+		update_post_meta( $id, 'ttbm_contact_phone', sanitize_text_field( (string) ( $p['phone'] ?? '' ) ) );
+		update_post_meta( $id, 'ttbm_contact_email', sanitize_email( (string) ( $p['email'] ?? '' ) ) );
+		update_post_meta( $id, 'ttbm_contact_text', sanitize_text_field( (string) ( $p['contact_text'] ?? '' ) ) );
+		$guides = array_values( array_map( 'strval', array_filter( array_map( 'absint', (array) ( $p['guides'] ?? array() ) ) ) ) );
+		update_post_meta( $id, 'ttbm_tour_guide', $guides );
+		update_post_meta( $id, 'ttbm_display_tour_guide', self::on( (bool) $guides ) );
+
+		/* Galerija */
+		$gal = array_values( array_filter( array_map( 'absint', explode( ',', (string) ( $p['gallery'] ?? '' ) ) ) ) );
+		update_post_meta( $id, 'ttbm_gallery_images', $gal );
+		update_post_meta( $id, 'ttbm_display_slider', self::on( (bool) $gal ) );
+
+		/* Povezani */
+		update_post_meta( $id, 'ttbm_related_tour', array_values( array_map( 'strval', array_filter( array_map( 'absint', (array) ( $p['related'] ?? array() ) ) ) ) ) );
+		update_post_meta( $id, 'ttbm_display_related', self::on( ! empty( $p['related_show'] ) ) );
+
+		if ( $new ) {
+			Plan_A_Prijave_Tour::apply_defaults( $id );
+		}
+		Plan_A_Prijave_Tour::refresh_dates( $id );
+		if ( $notes ) {
+			set_transient( self::NOTICE . get_current_user_id(), $notes, 120 );
+		}
+	}
+
+	public static function notices() {
+		$notes = get_transient( self::NOTICE . get_current_user_id() );
+		if ( ! $notes ) {
+			return;
+		}
+		delete_transient( self::NOTICE . get_current_user_id() );
+		echo '<div class="notice notice-warning"><p>' . implode( '<br>', array_map( 'esc_html', (array) $notes ) ) . '</p></div>';
+	}
+}
