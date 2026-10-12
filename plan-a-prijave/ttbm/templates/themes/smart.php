@@ -92,11 +92,12 @@ $ttbm_auto_date   = in_array( $travel_type, array( 'repeated', 'particular' ), t
 							<div class="ttbm_hiphop_area placeholder_area">
 								<?php do_action( 'ttbm_hiphop_place' ); ?>
 							</div>
-							<div class="ttbm_day_wise_area placeholder_area">
-								<?php do_action( 'ttbm_day_wise_details' ); ?>
-							</div>
+							<?php // Plan A: prvo „Važno za izlet” (FAQ), zatim „Važno”. ?>
 							<div class="ttbm_faq_area placeholder_area">
 								<?php do_action( 'ttbm_faq' ); ?>
+							</div>
+							<div class="ttbm_day_wise_area placeholder_area">
+								<?php do_action( 'ttbm_day_wise_details' ); ?>
 							</div>
 							<div class="ttbm_review_area placeholder_area">
 								<?php do_action( 'ttbm_review' ); ?>

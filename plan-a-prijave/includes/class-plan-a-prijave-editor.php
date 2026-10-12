@@ -355,7 +355,7 @@ final class Plan_A_Prijave_Editor {
 		'ukljuceno'  => 'sadrzaj',
 		'aktivnosti' => 'sadrzaj',
 		'vazno'      => 'vazno',
-		'faq'        => 'vazno',
+		'faq'        => 'izlet',
 		'zasto'      => 'kontakt',
 		'kontakt'    => 'kontakt',
 		'vodici'     => 'vodici',
@@ -369,7 +369,8 @@ final class Plan_A_Prijave_Editor {
 		'termini'  => array( 'Termini', 'dashicons-calendar-alt', 'Datumi i prijave do' ),
 		'cijene'   => array( 'Cijene i usluge', 'dashicons-tickets-alt', 'Karte, rate i osiguranje' ),
 		'sadrzaj'  => array( 'Uključeno i aktivnosti', 'dashicons-yes-alt', 'Što je u cijeni, aktivnosti' ),
-		'vazno'    => array( 'Važno i FAQ', 'dashicons-info-outline', 'Uvjeti, izjava, pitanja' ),
+		'izlet'    => array( 'Važno za izlet', 'dashicons-flag', 'Na stranici prvo, na otvaranje' ),
+		'vazno'    => array( 'Važno', 'dashicons-info-outline', 'Uvjeti, agencija, izjava' ),
 		'kontakt'  => array( 'Zašto s nama i kontakt', 'dashicons-email-alt', 'Razlozi, okvir za upit' ),
 		'vodici'   => array( 'Vodiči', 'dashicons-groups', 'Tko vodi izlet, slike i opisi' ),
 		'galerija' => array( 'Galerija', 'dashicons-format-gallery', 'Slike na vrhu stranice' ),
@@ -486,7 +487,7 @@ final class Plan_A_Prijave_Editor {
 		echo '</div>' . self::term_add( 'ttbm_tour_activities', 'act', 'Nova aktivnost' ) . '</section>'; // phpcs:ignore WordPress.Security.EscapeOutput
 
 		/* Važno */
-		self::section( 'vazno', 'Važno', 'Blokovi na otvaranje (npr. Uvjeti sudjelovanja, Minimalni broj sudionika, Izjava polaznika). Redoslijed mijenjaš strelicama.' );
+		self::section( 'vazno', 'Važno', 'Blokovi na otvaranje (npr. Uvjeti sudjelovanja, organizator putovanja/agencija, Izjava polaznika) – na stranici ispod „Važno za izlet”, svi zatvoreni. Redoslijed mijenjaš strelicama.' );
 		echo '<div class="pap-blocks" data-rows="days">';
 		foreach ( Plan_A_Prijave_Tour::rows( $id, 'ttbm_daywise_details' ) as $i => $d ) {
 			echo self::block_row( 'days', 'd' . $i, (string) ( $d['ttbm_day_title'] ?? '' ), (string) ( $d['ttbm_day_content'] ?? '' ), (string) ( $d['ttbm_day_time'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput
@@ -494,12 +495,12 @@ final class Plan_A_Prijave_Editor {
 		echo '</div><p><button type="button" class="button pap-add-block" data-to="days">+ Dodaj blok</button></p></section>';
 
 		/* FAQ */
-		self::section( 'faq', 'Česta pitanja (FAQ)' );
+		self::section( 'faq', 'Važno za izlet', 'Blokovi na otvaranje pod naslovom „Važno za izlet” – na stranici izleta su prvi, iznad bloka „Važno”. Redoslijed mijenjaš strelicama.' );
 		echo '<div class="pap-blocks" data-rows="faq">';
 		foreach ( Plan_A_Prijave_Tour::rows( $id, 'mep_event_faq' ) as $i => $f ) {
 			echo self::block_row( 'faq', 'f' . $i, (string) ( $f['ttbm_faq_title'] ?? '' ), (string) ( $f['ttbm_faq_content'] ?? '' ), '' ); // phpcs:ignore WordPress.Security.EscapeOutput
 		}
-		echo '</div><p><button type="button" class="button pap-add-block" data-to="faq">+ Dodaj pitanje</button></p></section>';
+		echo '</div><p><button type="button" class="button pap-add-block" data-to="faq">+ Dodaj blok</button></p></section>';
 
 		/* Zašto s nama */
 		$why = (array) $m( 'ttbm_why_choose_us_texts', array() );

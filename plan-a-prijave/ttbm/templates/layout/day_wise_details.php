@@ -168,7 +168,7 @@
 				<?php
 				foreach ( $daywise as $key => $day ) {
 					$parsed       = ttbm_parse_day_title( $day['ttbm_day_title'], (int) $key );
-					$is_first     = ( 0 === (int) $key );
+					$is_first     = false; // Plan A: svi blokovi zatvoreni, otvaraju se klikom
 					$collapse_id  = '#ttbm_day_datails_' . esc_attr( $key );
 					$title_class  = 'day_wise_details_item_title justifyBetween' . ( $is_first ? ' mActive active' : '' );
 					$item_class   = 'day_wise_details_item' . ( $is_first ? ' is-active' : '' );
