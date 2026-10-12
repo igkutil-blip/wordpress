@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.5.5
+Stable tag: 0.5.6
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,10 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.5.6 =
+* Lokacija (zemlja): padajući izbornik svih postojećih lokacija i „+ Dodaj novu lokaciju…”.
+* Tekst uvijek u fontu i veličini stranice: pri spremanju se iz opisa izleta, blokova „Važno”/„Važno za izlet” i opisa vodiča miču font, veličina, prored, boja i pozadina (iz Worda, maila, weba); podebljano, kurziv, popisi, naslovi, poveznice i poravnanje ostaju. Lijepljenje u uređivač također bez stilova. Za već upisane izlete isto na stranici izleta radi CSS.
 
 = 0.5.5 =
 * Zajednička mjesta: sve karte izleta troše ista mjesta (zbroj mjesta karata s punom cijenom); karta „prve rate” nema svoja mjesta. Na stranici izleta odabir svih karata zajedno ne može prijeći slobodna mjesta, a košarica to provjerava i na poslužitelju.

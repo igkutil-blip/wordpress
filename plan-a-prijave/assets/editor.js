@@ -103,7 +103,7 @@ jQuery(function ($) {
 	function rich(el) {
 		if (!window.wp || !wp.editor || !el.id) { return; }
 		wp.editor.initialize(el.id, {
-			tinymce: { wpautop: true, toolbar1: 'bold,italic,bullist,numlist,link,unlink,undo,redo', height: 160 },
+			tinymce: { wpautop: true, toolbar1: 'bold,italic,bullist,numlist,link,unlink,undo,redo', height: 160, paste_webkit_styles: 'none', paste_remove_styles_if_webkit: true, paste_retain_style_properties: 'none' },
 			quicktags: { buttons: 'strong,em,link,ul,ol,li' },
 			mediaButtons: false
 		});
@@ -307,7 +307,7 @@ jQuery(function ($) {
 		ta.value = c ? c.attr('data-desc') : '';
 		if (window.wp && wp.editor) {
 			wp.editor.initialize('pap-gf-desc', {
-				tinymce: { wpautop: true, height: 220, toolbar1: 'formatselect,bold,italic,bullist,numlist,alignleft,aligncenter,alignright,link,unlink,undo,redo' },
+				tinymce: { wpautop: true, height: 220, paste_webkit_styles: 'none', paste_remove_styles_if_webkit: true, paste_retain_style_properties: 'none', toolbar1: 'formatselect,bold,italic,bullist,numlist,alignleft,aligncenter,alignright,link,unlink,undo,redo' },
 				quicktags: { buttons: 'strong,em,link,ul,ol,li,p' },
 				mediaButtons: false
 			});
@@ -364,6 +364,25 @@ jQuery(function ($) {
 	box.on('input change', '[data-rows="tickets"] input', seats);
 	box.on('click', '.pap-add, .pap-add-rate, .pap-del', function () { setTimeout(seats, 0); });
 	seats();
+
+	/* ---------- Lokacija: nova zemlja u padajućem izborniku ---------- */
+	var locSel = box.find('.pap-loc'), locPrev = locSel.val();
+	locSel.on('change', function () {
+		var isNew = this.value === '__new__';
+		box.find('.pap-loc-new').prop('hidden', !isNew);
+		if (isNew) { box.find('.pap-loc-name').val('').trigger('focus'); } else { locPrev = this.value; }
+	});
+	function addLoc() {
+		var name = $.trim(box.find('.pap-loc-name').val());
+		if (!name) { box.find('.pap-loc-name').trigger('focus'); return; }
+		var found = locSel.find('option').filter(function () { return this.value.toLowerCase() === name.toLowerCase(); });
+		if (!found.length) { found = $('<option>').val(name).text(name).insertBefore(locSel.find('option[value="__new__"]')); }
+		locSel.val(found.val());
+		locPrev = found.val();
+		box.find('.pap-loc-new').prop('hidden', true);
+	}
+	box.on('click', '.pap-loc-add', addLoc);
+	box.on('keydown', '.pap-loc-name', function (e) { if (e.key === 'Enter') { e.preventDefault(); addLoc(); } if (e.key === 'Escape') { locSel.val(locPrev).trigger('change'); } });
 
 	// Prije spremanja: sadržaj iz uređivača u polja.
 	$('#post').on('submit', function () { if (window.tinymce) { tinymce.triggerSave(); } });

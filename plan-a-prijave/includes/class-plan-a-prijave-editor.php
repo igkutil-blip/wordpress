@@ -403,11 +403,18 @@ final class Plan_A_Prijave_Editor {
 		self::section( 'osnovno', 'Osnovni podaci', 'Prikazuju se u karticama ispod galerije (lokacija, trajanje, najviše osoba, slobodna mjesta). Glavna slika i kategorija su u desnom stupcu.' );
 		$loc = (string) $m( 'ttbm_location_name' );
 		echo '<div class="pap-grid">';
-		echo '<label>Lokacija<input list="pap-locations" name="pap[location]" value="' . self::e( $loc ) . '" placeholder="npr. Velebit"></label><datalist id="pap-locations">';
-		foreach ( self::terms( 'ttbm_tour_location' ) as $t ) {
-			echo '<option value="' . self::e( $t->name ) . '">';
+		// Lokacija (zemlja): padajući izbornik postojećih + nova (pojam se stvara pri spremanju).
+		$locs = wp_list_pluck( self::terms( 'ttbm_tour_location' ), 'name' );
+		if ( '' !== $loc && ! in_array( $loc, $locs, true ) ) {
+			$locs[] = $loc;
 		}
-		echo '</datalist>';
+		natcasesort( $locs );
+		echo '<label>Lokacija (zemlja)<select name="pap[location]" class="pap-loc"><option value="">— bez lokacije —</option>';
+		foreach ( $locs as $l ) {
+			echo '<option value="' . self::e( $l ) . '"' . selected( $loc, $l, false ) . '>' . esc_html( $l ) . '</option>';
+		}
+		echo '<option value="__new__">+ Dodaj novu lokaciju…</option></select>'
+			. '<span class="pap-loc-new" hidden><input type="text" class="pap-loc-name" placeholder="npr. Španjolska"><button type="button" class="button pap-loc-add">Dodaj</button></span></label>';
 		echo '<label>Trajanje<span class="pap-inline"><input type="number" min="0" step="0.5" name="pap[duration]" value="' . self::e( $m( 'ttbm_travel_duration' ) ) . '"><select name="pap[duration_type]">';
 		foreach ( array( 'day' => 'dana', 'hour' => 'sati', 'min' => 'minuta' ) as $k => $l ) {
 			echo '<option value="' . esc_attr( $k ) . '"' . selected( $m( 'ttbm_travel_duration_type', 'day' ), $k, false ) . '>' . esc_html( $l ) . '</option>';
@@ -718,6 +725,9 @@ final class Plan_A_Prijave_Editor {
 
 		/* Osnovno */
 		$loc = sanitize_text_field( (string) ( $p['location'] ?? '' ) );
+		if ( '__new__' === $loc ) { // odabrano „Dodaj novu”, a ništa upisano – ostaje stara
+			$loc = (string) Plan_A_Prijave_Tour::meta( $id, 'ttbm_location_name' );
+		}
 		if ( '' !== $loc && ! get_term_by( 'name', $loc, 'ttbm_tour_location' ) ) {
 			wp_insert_term( $loc, 'ttbm_tour_location' );
 		}
@@ -889,7 +899,7 @@ final class Plan_A_Prijave_Editor {
 		$days = array();
 		foreach ( (array) ( $p['days'] ?? array() ) as $d ) {
 			$title   = sanitize_text_field( (string) ( $d['title'] ?? '' ) );
-			$content = wp_kses_post( (string) ( $d['content'] ?? '' ) );
+			$content = Plan_A_Prijave_Text::clean( wp_kses_post( (string) ( $d['content'] ?? '' ) ) );
 			if ( '' === $title && '' === trim( wp_strip_all_tags( $content ) ) ) {
 				continue;
 			}
@@ -904,7 +914,7 @@ final class Plan_A_Prijave_Editor {
 		$faq = array();
 		foreach ( (array) ( $p['faq'] ?? array() ) as $f ) {
 			$title   = sanitize_text_field( (string) ( $f['title'] ?? '' ) );
-			$content = wp_kses_post( (string) ( $f['content'] ?? '' ) );
+			$content = Plan_A_Prijave_Text::clean( wp_kses_post( (string) ( $f['content'] ?? '' ) ) );
 			if ( '' === $title ) {
 				continue;
 			}
