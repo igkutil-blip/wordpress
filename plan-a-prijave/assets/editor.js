@@ -29,6 +29,8 @@ jQuery(function ($) {
 		var isPub = $('#original_post_status').val() === 'publish';
 		var bar = $('<div class="pap-bar"><a class="pap-back" href="edit.php?post_type=ttbm_tour">← Svi izleti</a>' +
 			'<strong class="pap-bar-title"></strong><span class="pap-badge"></span><span class="pap-bar-btns">' +
+			'<button type="button" class="button pap-bar-draft"></button>' +
+			'<button type="button" class="button pap-bar-trash">Smeće</button>' +
 			'<button type="button" class="button pap-bar-preview">Pregledaj</button>' +
 			'<button type="button" class="button button-primary pap-bar-save"></button></span></div>');
 		bar.find('.pap-bar-title').text(title.val() || 'Novi izlet');
@@ -37,6 +39,30 @@ jQuery(function ($) {
 		title.on('input', function () { bar.find('.pap-bar-title').text(this.value || 'Novi izlet'); });
 		bar.on('click', '.pap-bar-save', function () { $('#publish').trigger('click'); });
 		bar.on('click', '.pap-bar-preview', function () { $('#post-preview').trigger('click'); });
+		// U skicu (objavljeni izlet) / Spremi skicu (skica) i Smeće – isto kao u okviru Objava.
+		var draftBtn = bar.find('.pap-bar-draft');
+		if (isPub) {
+			draftBtn.text('U skicu');
+			draftBtn.on('click', function () {
+				if (!window.confirm('Prebaciti izlet u skicu? Više se neće vidjeti na stranici (prijave ostaju).')) { return; }
+				$('#post_status').val('draft');
+				$('#hidden_post_status').val('draft');
+				$('#publish').trigger('click');
+			});
+		} else if ($('#save-post').length) {
+			draftBtn.text('Spremi skicu');
+			draftBtn.on('click', function () { $('#save-post').trigger('click'); });
+		} else {
+			draftBtn.remove();
+		}
+		var trash = $('#delete-action a.submitdelete').attr('href');
+		if (trash) {
+			bar.find('.pap-bar-trash').on('click', function () {
+				if (window.confirm('Premjestiti izlet u smeće? Može se vratiti iz Smeća.')) { window.location.href = trash; }
+			});
+		} else {
+			bar.find('.pap-bar-trash').remove();
+		}
 		$('#poststuff').before(bar);
 
 		// Ostali okviri u glavnom stupcu (npr. Rank Math SEO) idu na karticu „Ostalo”.

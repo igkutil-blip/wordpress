@@ -92,3 +92,5 @@ body.pap-layout .pap-sec{overflow-x:auto}
 .pap-table td:nth-child(2) input[type=number]{max-width:none}
 body.pap-layout .pap-sec{background:#fff}
 body.pap-layout .pap-sec .pap-table th{background:var(--soft)}
+.pap-bar-btns .pap-bar-trash{color:#b32d2e;border-color:#e3b4b4}
+.pap-bar-btns .pap-bar-trash:hover{background:#fcf0f1;color:#8a2424;border-color:#b32d2e}
