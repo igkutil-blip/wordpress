@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A – pomoćnik za kopiju
  * Description:       SAMO ZA KOPIJU STRANICE (staging). Sve mailove kopije preusmjerava na jednu adresu (ili ih blokira). Claudeu omogućuje da preko REST API-ja postavlja i ažurira naše dodatke (plan-a-*), pokreće našu automatiku i čita zapis grešaka. Na srd-plan-a.hr odbija sve.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -33,6 +33,7 @@ final class Plan_A_Pomocnik {
 			add_filter( 'wp_mail', array( __CLASS__, 'mail_redirect' ), PHP_INT_MAX );
 			add_filter( 'pre_wp_mail', array( __CLASS__, 'mail_block' ), PHP_INT_MAX, 2 );
 			add_action( 'phpmailer_init', array( __CLASS__, 'mail_phpmailer' ), PHP_INT_MAX );
+			add_filter( 'wp_mail_from', array( __CLASS__, 'mail_from' ), PHP_INT_MAX );
 			add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
 		}
 	}
@@ -123,6 +124,15 @@ final class Plan_A_Pomocnik {
 		}
 	}
 
+	/** Na kopiji SMTP dodatak zna vratiti praznog pošiljatelja – tada WooCommerceov ili administratorov. */
+	public static function mail_from( $from ) {
+		if ( is_email( (string) $from ) ) {
+			return $from;
+		}
+		$wc = (string) get_option( 'woocommerce_email_from_address', '' );
+		return is_email( $wc ) ? $wc : (string) get_option( 'admin_email' );
+	}
+
 	public static function menu() {
 		add_management_page( 'Plan A – mailovi kopije', 'Plan A – mailovi kopije', 'manage_options', 'plan-a-pomocnik', array( __CLASS__, 'page' ) );
 	}
@@ -187,7 +197,10 @@ final class Plan_A_Pomocnik {
 			array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'meta_get' ), 'permission_callback' => $ok ),
 			array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'meta_set' ), 'permission_callback' => $ok ),
 		) );
-		register_rest_route( self::NS, '/mail', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'mail_status' ), 'permission_callback' => $ok ) );
+		register_rest_route( self::NS, '/mail', array(
+			array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'mail_status' ), 'permission_callback' => $ok ),
+			array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'mail_set' ), 'permission_callback' => $ok ),
+		) );
 		register_rest_route( self::NS, '/mail/test', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'mail_test' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/option/(?P<name>(plan_a|ttbm|pan_|pac_)[A-Za-z0-9_\-]*)', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'option' ), 'permission_callback' => $ok ) );
 	}
@@ -365,10 +378,26 @@ final class Plan_A_Pomocnik {
 		);
 	}
 
+	/** Postavi adresu za sve mailove kopije: {"to": "…"}; prazno = sve blokirati. */
+	public static function mail_set( WP_REST_Request $req ) {
+		$to = trim( (string) $req->get_param( 'to' ) );
+		if ( '' !== $to && ! is_email( $to ) ) {
+			return new WP_Error( 'pap_mail', 'Neispravna adresa.', array( 'status' => 400 ) );
+		}
+		update_option( self::MAIL_OPT, sanitize_email( $to ), false );
+		return array( 'ok' => true, 'redirect' => (bool) self::mail_to() );
+	}
+
 	/** Probni mail na izmišljenu adresu – mora stići samo na upisanu adresu. */
 	public static function mail_test() {
+		$err = '';
+		$cb  = function ( $e ) use ( &$err ) {
+			$err = $e->get_error_message();
+		};
+		add_action( 'wp_mail_failed', $cb );
 		$ok = wp_mail( 'test-kupac@example.com', 'Probni mail s kopije', "Ovo je probni mail s kopije stranice.\nIzvorno je bio upućen na test-kupac@example.com." );
-		return array( 'ok' => (bool) $ok, 'redirect' => (bool) self::mail_to() );
+		remove_action( 'wp_mail_failed', $cb );
+		return array( 'ok' => (bool) $ok, 'redirect' => (bool) self::mail_to(), 'error' => $err );
 	}
 
 	public static function option( WP_REST_Request $req ) {
