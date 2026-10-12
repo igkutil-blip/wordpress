@@ -1,10 +1,8 @@
 /* Plan A izleti – obrazac za uređivanje izleta */
 #pap_editor .inside{margin:0;padding:0}
 .pap{--navy:#12304b;--line:#e3e8ee;--soft:#f4f7fa;--muted:#5f6b77;--orange:#e8862a;color:#24323f}
-.pap-nav{position:sticky;top:32px;z-index:5;display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line)}
-.pap-nav a{padding:5px 10px;border-radius:999px;background:var(--soft);color:var(--navy);font-size:12px;font-weight:600;text-decoration:none}
-.pap-nav a:hover{background:#e8f4fb}
-.pap-sec{padding:18px 16px 20px;border-bottom:1px solid var(--line);scroll-margin-top:90px}
+.pap-sec{padding:18px 20px 22px;border-bottom:1px solid var(--line)}
+.pap-sec[hidden]{display:none}
 .pap-sec h3{margin:0 0 6px;font-size:15px;color:var(--navy)}
 .pap-sec h4{margin:14px 0 8px;font-size:13px;color:var(--navy)}
 .pap-hint{margin:0 0 12px;color:var(--muted);font-size:12.5px}
@@ -42,3 +40,55 @@
 
 /* WpTravellyjeva traka (Natrag / Pregled / Spremi) ovdje ne treba: sprema se gumbom u okviru Objava. */
 body.post-type-ttbm_tour #ttbm-admin-page-header{display:none!important}
+
+/* ---------- Zaslon izleta: gornja traka, lijevi izbornik, kartice (0.4.0) ---------- */
+body.pap-layout{--navy:#12304b;--blue:#1e7fc4;--line:#e3e8ee;--soft:#f4f7fa;--muted:#5f6b77}
+body.pap-layout .wrap>h1.wp-heading-inline,body.pap-layout .wrap>.page-title-action,body.pap-layout .wrap>hr.wp-header-end+.notice-info:empty{display:none}
+.pap-bar{position:sticky;top:32px;z-index:20;display:flex;align-items:center;gap:12px;margin:8px 0 14px;padding:10px 16px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 8px rgba(18,48,75,.06)}
+.pap-back{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}
+.pap-back:hover{color:var(--blue)}
+.pap-bar-title{flex:1;font-size:16px;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pap-badge{padding:3px 10px;border-radius:999px;background:#fdf1e4;color:#8a4a0b;font-size:12px;font-weight:600}
+.pap-badge.is-pub{background:#e6f5ea;color:#1d6b33}
+.pap-bar-btns{display:flex;gap:8px}
+.pap-bar-btns .button{min-height:34px;padding:0 16px;border-radius:8px}
+body.pap-layout #poststuff #post-body.columns-2{display:grid;grid-template-columns:230px minmax(0,1fr) 290px;gap:0 20px;margin-right:0}
+body.pap-layout #post-body .pap-nav{grid-column:1;grid-row:1;align-self:start;position:sticky;top:96px;display:flex;flex-direction:column;gap:4px;padding:10px;background:#fff;border:1px solid var(--line);border-radius:12px}
+.pap-nav a{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:9px;color:var(--navy);text-decoration:none}
+.pap-nav a .dashicons{flex:none;margin-top:2px;color:var(--muted)}
+.pap-nav-t{display:flex;flex-direction:column;line-height:1.25}
+.pap-nav-t b{font-size:13px;font-weight:600}
+.pap-nav-t small{font-size:11.5px;color:var(--muted)}
+.pap-nav a:hover{background:var(--soft)}
+.pap-nav a.is-active{background:var(--blue);color:#fff}
+.pap-nav a.is-active .dashicons,.pap-nav a.is-active small{color:#e8f4fb}
+body.pap-layout .pap-main{grid-column:2;grid-row:1;min-width:0}
+body.pap-layout #post-body-content,body.pap-layout #postbox-container-2{float:none;width:auto;margin:0}
+body.pap-layout #postbox-container-1{grid-column:3;grid-row:1;float:none;width:auto;margin:0}
+body.pap-layout #post-body>br.clear{display:none}
+body.pap-layout #pap_editor{border-radius:12px;overflow:hidden}
+body.pap-layout #pap_editor .postbox-header{display:none}
+body.pap-layout #titlediv,body.pap-layout #postdivrich{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px}
+body.pap-layout #titlediv #title{border-radius:8px}
+body.pap-layout #postbox-container-1 .postbox{border-radius:12px;overflow:hidden}
+@media (max-width:1250px){
+ body.pap-layout #poststuff #post-body.columns-2{grid-template-columns:minmax(0,1fr) 270px}
+ body.pap-layout #post-body .pap-nav{grid-column:1/span 2;grid-row:1;position:static;flex-direction:row;flex-wrap:wrap;margin-bottom:16px}
+ .pap-nav a small{display:none}
+ body.pap-layout .pap-main{grid-column:1;grid-row:2}
+ body.pap-layout #postbox-container-1{grid-column:2;grid-row:2}
+}
+@media (max-width:850px){
+ body.pap-layout #poststuff #post-body.columns-2{display:block}
+ .pap-bar{position:static;flex-wrap:wrap}
+}
+
+/* Tablice karata, usluga i termina: dovoljno široka polja */
+.pap-table{table-layout:auto}
+.pap-table td input[type=text]{min-width:120px}
+.pap-table td input[type=number]{min-width:70px}
+body.pap-layout .pap-sec{overflow-x:auto}
+.pap-table td input[type=date]{min-width:140px}
+.pap-table td:nth-child(2) input[type=number]{max-width:none}
+body.pap-layout .pap-sec{background:#fff}
+body.pap-layout .pap-sec .pap-table th{background:var(--soft)}

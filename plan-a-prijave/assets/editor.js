@@ -16,6 +16,61 @@ jQuery(function ($) {
 	new MutationObserver(function (list) {
 		list.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.nodeType === 1) { bind(n); } }); });
 	}).observe(stuff, { childList: true, subtree: true });
+	/* ---------- Izgled zaslona: gornja traka, lijevi izbornik, kartice ---------- */
+	var body = $('#post-body');
+	var nav = box.find('.pap-nav');
+	if (body.length && nav.length) {
+		$('body').addClass('pap-layout');
+		nav.prependTo(body);
+		// Glavni stupac u jednom omotaču, da visina desnog stupca ne razvlači redove mreže.
+		$('#post-body-content, #postbox-container-2').wrapAll('<div class="pap-main"></div>');
+		// Gornja traka: naziv, stanje, Pregledaj, Spremi.
+		var title = $('#title'), status = $.trim($('#post-status-display').text()) || 'Skica';
+		var isPub = $('#original_post_status').val() === 'publish';
+		var bar = $('<div class="pap-bar"><a class="pap-back" href="edit.php?post_type=ttbm_tour">← Svi izleti</a>' +
+			'<strong class="pap-bar-title"></strong><span class="pap-badge"></span><span class="pap-bar-btns">' +
+			'<button type="button" class="button pap-bar-preview">Pregledaj</button>' +
+			'<button type="button" class="button button-primary pap-bar-save"></button></span></div>');
+		bar.find('.pap-bar-title').text(title.val() || 'Novi izlet');
+		bar.find('.pap-badge').text(status).toggleClass('is-pub', isPub);
+		bar.find('.pap-bar-save').text($('#publish').val() || 'Spremi');
+		title.on('input', function () { bar.find('.pap-bar-title').text(this.value || 'Novi izlet'); });
+		bar.on('click', '.pap-bar-save', function () { $('#publish').trigger('click'); });
+		bar.on('click', '.pap-bar-preview', function () { $('#post-preview').trigger('click'); });
+		$('#poststuff').before(bar);
+
+		// Ostali okviri u glavnom stupcu (npr. Rank Math SEO) idu na karticu „Ostalo”.
+		var others = $('#postbox-container-2 .postbox').not('#pap_editor');
+		others.attr('data-tab', 'ostalo');
+		if (!others.length) { nav.find('[data-tab="ostalo"]').remove(); }
+		var wpOpis = $('#titlediv, #postdivrich, #postexcerpt').attr('data-tab', 'opis');
+
+		var tabs = nav.find('a').map(function () { return $(this).data('tab'); }).get();
+		function show(tab, scroll) {
+			if (tabs.indexOf(tab) < 0) { tab = 'opis'; }
+			nav.find('a').removeClass('is-active').filter('[data-tab="' + tab + '"]').addClass('is-active');
+			box.find('.pap-sec').each(function () { this.hidden = $(this).data('tab') !== tab; });
+			others.toggle(tab === 'ostalo');
+			$('#pap_editor').toggle(tab !== 'ostalo');
+			wpOpis.toggle(tab === 'opis');
+			try { sessionStorage.setItem('pap-tab', tab); } catch (e) {}
+			if (history.replaceState) { history.replaceState(null, '', '#' + tab); }
+			$(window).trigger('resize'); // uređivači teksta u dotad skrivenoj kartici
+			if (scroll) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+		}
+		nav.on('click', 'a', function (e) { e.preventDefault(); show($(this).data('tab'), true); });
+		$(window).on('hashchange', function () { show((location.hash || '').replace('#', ''), false); });
+		var start = (location.hash || '').replace('#', '');
+		if (tabs.indexOf(start) < 0) { try { start = sessionStorage.getItem('pap-tab') || 'opis'; } catch (e) { start = 'opis'; } }
+		show(start, false);
+
+		// Obavezno polje u skrivenoj kartici: preglednik bi šutke odbio spremanje – otvori tu karticu.
+		document.getElementById('post').addEventListener('invalid', function (e) {
+			var t = $(e.target).closest('[data-tab]').data('tab');
+			if (t) { show(t, false); setTimeout(function () { e.target.focus(); }, 50); }
+		}, true);
+	}
+
 	function key() { seq += 1; return 'n' + seq; }
 	function tpl(name) { return $('#tmpl-' + name).html().replace(/__K__/g, key()); }
 

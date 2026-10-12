@@ -109,8 +109,38 @@ final class Plan_A_Prijave_Editor {
 		return is_wp_error( $t ) ? array() : $t;
 	}
 
+	/** Kartica (lijevi izbornik) u kojoj je pojedini dio obrasca. */
+	const TAB_OF = array(
+		'osnovno'    => 'opis',
+		'termini'    => 'termini',
+		'karte'      => 'cijene',
+		'usluge'     => 'cijene',
+		'ukljuceno'  => 'sadrzaj',
+		'aktivnosti' => 'sadrzaj',
+		'vazno'      => 'vazno',
+		'faq'        => 'vazno',
+		'zasto'      => 'kontakt',
+		'kontakt'    => 'kontakt',
+		'galerija'   => 'galerija',
+		'povezani'   => 'povezani',
+	);
+
+	/** Kartice: ključ => [naziv, dashicon, kratki opis]. */
+	const TABS = array(
+		'opis'     => array( 'Opis', 'dashicons-edit-page', 'Naslov, opis i osnovni podaci' ),
+		'termini'  => array( 'Termini', 'dashicons-calendar-alt', 'Datumi i prijave do' ),
+		'cijene'   => array( 'Cijene i usluge', 'dashicons-tickets-alt', 'Karte, rate i osiguranje' ),
+		'sadrzaj'  => array( 'Uključeno i aktivnosti', 'dashicons-yes-alt', 'Što je u cijeni, aktivnosti' ),
+		'vazno'    => array( 'Važno i FAQ', 'dashicons-info-outline', 'Uvjeti, izjava, pitanja' ),
+		'kontakt'  => array( 'Kontakt i vodiči', 'dashicons-groups', 'Zašto s nama, upit, vodiči' ),
+		'galerija' => array( 'Galerija', 'dashicons-format-gallery', 'Slike na vrhu stranice' ),
+		'povezani' => array( 'Povezani izleti', 'dashicons-admin-links', '„Odaberi sljedeću avanturu”' ),
+		'ostalo'   => array( 'Ostalo (SEO …)', 'dashicons-admin-generic', 'Okviri drugih dodataka' ),
+	);
+
 	private static function section( string $id, string $title, string $hint = '' ) {
-		echo '<section class="pap-sec" id="pap-' . esc_attr( $id ) . '"><h3>' . esc_html( $title ) . '</h3>' . ( '' !== $hint ? '<p class="pap-hint">' . wp_kses_post( $hint ) . '</p>' : '' );
+		$tab = self::TAB_OF[ $id ] ?? 'opis';
+		echo '<section class="pap-sec" id="pap-' . esc_attr( $id ) . '" data-tab="' . esc_attr( $tab ) . '"><h3>' . esc_html( $title ) . '</h3>' . ( '' !== $hint ? '<p class="pap-hint">' . wp_kses_post( $hint ) . '</p>' : '' );
 	}
 
 	public static function render( $post ) {
@@ -118,30 +148,16 @@ final class Plan_A_Prijave_Editor {
 		$m      = static fn( $k, $d = '' ) => Plan_A_Prijave_Tour::meta( $id, $k, $d );
 		$booked = Plan_A_Prijave_Tour::booked( $id );
 
-		$nav = array(
-			'osnovno'  => 'Osnovno',
-			'termini'  => 'Termini',
-			'karte'    => 'Karte i cijene',
-			'usluge'   => 'Dodatne usluge',
-			'ukljuceno' => 'Uključeno',
-			'aktivnosti' => 'Aktivnosti',
-			'vazno'    => 'Važno',
-			'faq'      => 'FAQ',
-			'zasto'    => 'Zašto s nama',
-			'kontakt'  => 'Kontakt i vodiči',
-			'galerija' => 'Galerija',
-			'povezani' => 'Povezani izleti',
-		);
 		echo '<div class="pap">';
 		wp_nonce_field( self::NONCE, self::NONCE );
-		echo '<nav class="pap-nav">';
-		foreach ( $nav as $k => $l ) {
-			echo '<a href="#pap-' . esc_attr( $k ) . '">' . esc_html( $l ) . '</a>';
+		echo '<nav class="pap-nav" aria-label="Dijelovi izleta">';
+		foreach ( self::TABS as $k => $t ) {
+			echo '<a href="#' . esc_attr( $k ) . '" data-tab="' . esc_attr( $k ) . '"><span class="dashicons ' . esc_attr( $t[1] ) . '"></span><span class="pap-nav-t"><b>' . esc_html( $t[0] ) . '</b><small>' . esc_html( $t[2] ) . '</small></span></a>';
 		}
 		echo '</nav>';
 
 		/* Osnovno */
-		self::section( 'osnovno', 'Osnovno', 'Naslov i opis izleta pišeš gore. Glavna slika i kategorija su u desnom stupcu.' );
+		self::section( 'osnovno', 'Osnovni podaci', 'Prikazuju se u karticama ispod galerije (lokacija, trajanje, najviše osoba, slobodna mjesta). Glavna slika i kategorija su u desnom stupcu.' );
 		$loc = (string) $m( 'ttbm_location_name' );
 		echo '<div class="pap-grid">';
 		echo '<label>Lokacija<input list="pap-locations" name="pap[location]" value="' . self::e( $loc ) . '" placeholder="npr. Velebit"></label><datalist id="pap-locations">';
