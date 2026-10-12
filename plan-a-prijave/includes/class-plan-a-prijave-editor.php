@@ -35,6 +35,8 @@ final class Plan_A_Prijave_Editor {
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'no_ttbm_autosave' ), 100 );
 		add_action( 'wp_ajax_ttbm_autosave_tour', array( __CLASS__, 'block_ttbm_autosave' ), 1 );
 		add_action( 'admin_init', array( __CLASS__, 'default_icons' ) );
+		add_action( 'init', array( __CLASS__, 'icons_style' ) );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'icons_front' ) );
 		add_action( 'wp_ajax_pap_add_term', array( __CLASS__, 'ajax_add_term' ) );
 		add_action( 'wp_ajax_pap_term_icon', array( __CLASS__, 'ajax_term_icon' ) );
 		add_action( 'wp_ajax_pap_save_guide', array( __CLASS__, 'ajax_save_guide' ) );
@@ -106,7 +108,9 @@ final class Plan_A_Prijave_Editor {
 		// Ikonice (Font Awesome 6) – ista datoteka i oznaka kao kod WpTravellyja i naše kopije.
 		if ( defined( 'TTBM_PLUGIN_URL' ) ) {
 			wp_enqueue_style( 'mp_font_awesome', TTBM_PLUGIN_URL . '/assets/all.min.css', array(), '6.7.2' );
+			wp_enqueue_style( 'mage-icons', TTBM_PLUGIN_URL . '/assets/mage-icon/css/mage-icon.css', array(), '1.0.0' ); // starije ikonice „mi mi-…”
 		}
+		wp_enqueue_style( 'pap-icons' );
 		wp_localize_script(
 			'pap-editor',
 			'papEd',
@@ -120,18 +124,19 @@ final class Plan_A_Prijave_Editor {
 	/** Prijedlog ikonice po nazivu pojma (prvi pogodak; dio riječi, bez obzira na velika slova). */
 	const ICON_GUESS = array(
 		'planinar'   => 'fas fa-person-hiking',
-		'alpin'      => 'fas fa-mountain',
-		'ferat'      => 'fas fa-helmet-safety',
-		'penjanj'    => 'fas fa-hand-back-fist',
-		'zimsk'      => 'fas fa-snowflake',
+		'alpin'      => 'pap-ic pap-ic-alpinizam',
+		'ferat'      => 'pap-ic pap-ic-ferata',
+		'ferrat'     => 'pap-ic pap-ic-ferata',
+		'penjanj'    => 'pap-ic pap-ic-penjanje',
+		'zimsk'      => 'pap-ic pap-ic-zimski',
 		'skij'       => 'fas fa-person-skiing',
 		'bicik'      => 'fas fa-person-biking',
 		'jedren'     => 'fas fa-sailboat',
-		'kajak'      => 'fas fa-water',
+		'kajak'      => 'pap-ic pap-ic-kajak',
 		'ronj'       => 'fas fa-fish',
 		'plivan'     => 'fas fa-person-swimming',
-		'piljar'     => 'fas fa-dungeon',
-		'povijest'   => 'fas fa-landmark',
+		'piljar'     => 'pap-ic pap-ic-spilja',
+		'povijest'   => 'pap-ic pap-ic-povijest',
 		'kultur'     => 'fas fa-landmark',
 		'osigur'     => 'fas fa-shield-halved',
 		'prijevoz'   => 'fas fa-van-shuttle',
@@ -153,9 +158,33 @@ final class Plan_A_Prijave_Editor {
 		'fotograf'   => 'fas fa-camera',
 	);
 
-	/** Jednom (i nakon nadogradnje popisa): pojmovima bez ikonice dodaj odgovarajuću. Postojeće ikonice se ne diraju. */
+	/** Naše aktivnosti: ikonica se postavi i ako već postoji neka druga (dogovoreno s Igorom, jednom). */
+	const ICON_SET = array(
+		'alpinizam'         => 'pap-ic pap-ic-alpinizam',
+		'ferrate'           => 'pap-ic pap-ic-ferata',
+		'ferate'            => 'pap-ic pap-ic-ferata',
+		'kajak'             => 'pap-ic pap-ic-kajak',
+		'povijest'          => 'pap-ic pap-ic-povijest',
+		'sportsko penjanje' => 'pap-ic pap-ic-penjanje',
+		'špiljarenje'       => 'pap-ic pap-ic-spilja',
+		'zimski usponi'     => 'pap-ic pap-ic-zimski',
+		'biciklizam'        => 'fas fa-person-biking',
+		'jedrenje'          => 'fas fa-sailboat',
+		'planinarenje'      => 'fas fa-person-hiking',
+	);
+
+	/** Vlastite ikonice (SVG) – i u administraciji i na stranici, gdje god se ispisuju ikonice pojmova. */
+	public static function icons_style() {
+		wp_register_style( 'pap-icons', PLAN_A_PRIJAVE_URL . 'assets/pap-icons.css', array(), PLAN_A_PRIJAVE_VERSION );
+	}
+
+	public static function icons_front() {
+		wp_enqueue_style( 'pap-icons' );
+	}
+
+	/** Jednom (i nakon nadogradnje popisa): pojmovima bez ikonice dodaj odgovarajuću. Ostale postojeće ikonice se ne diraju. */
 	public static function default_icons() {
-		if ( 1 === (int) get_option( 'pap_default_icons' ) || ! current_user_can( 'manage_categories' ) ) {
+		if ( 2 <= (int) get_option( 'pap_default_icons' ) || ! current_user_can( 'manage_categories' ) ) {
 			return;
 		}
 		foreach ( self::ICON_META as $tax => $key ) {
@@ -165,10 +194,14 @@ final class Plan_A_Prijave_Editor {
 		}
 		foreach ( self::ICON_META as $tax => $key ) {
 			foreach ( self::terms( $tax ) as $t ) {
+				$name = mb_strtolower( trim( $t->name ) );
+				if ( 'ttbm_tour_activities' === $tax && isset( self::ICON_SET[ $name ] ) ) {
+					update_term_meta( $t->term_id, $key, self::ICON_SET[ $name ] );
+					continue;
+				}
 				if ( '' !== (string) get_term_meta( $t->term_id, $key, true ) ) {
 					continue;
 				}
-				$name = mb_strtolower( $t->name );
 				foreach ( self::ICON_GUESS as $w => $icon ) {
 					if ( false !== mb_strpos( $name, $w ) ) {
 						update_term_meta( $t->term_id, $key, $icon );
@@ -177,7 +210,7 @@ final class Plan_A_Prijave_Editor {
 				}
 			}
 		}
-		update_option( 'pap_default_icons', 1, false );
+		update_option( 'pap_default_icons', 2, false );
 	}
 
 	/* ------------------------------------------------------------------ */

@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.5.1
+Stable tag: 0.5.2
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,11 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.5.2 =
+* Vlastite Plan A ikonice (SVG): alpinizam, ferata, kajak, povijest (tvrđava), sportsko penjanje, špiljarenje, zimski uspon (cepin) – prve u biraču, rade i na stranici izleta.
+* Aktivnostima Plan A jednom postavljene odgovarajuće ikonice (i biciklizam, jedrenje, planinarenje).
+* Obrazac izleta prikazuje i starije ikonice „mi mi-…” (WpTravelly).
 
 = 0.5.1 =
 * Birač ikonica: sve ikonice Font Awesome 6 Free (1400), traženje i hrvatskim riječima (npr. planina, autobus, hrana); prvo izbor za izlete.

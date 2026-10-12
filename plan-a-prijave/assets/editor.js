@@ -188,9 +188,9 @@ jQuery(function ($) {
 		'wifi', 'square-parking', 'toilet', 'shower', 'hand-holding-dollar', 'euro-sign', 'gift', 'star', 'heart', 'music',
 		'graduation-cap', 'book', 'clock', 'calendar-days', 'circle-info', 'triangle-exclamation', 'check', 'xmark', 'plus', 'minus'];
 	// Hrvatske riječi za traženje (nazivi ikonica su engleski).
-	var HR = { planin: 'mountain hiking', vrh: 'mountain', hod: 'walking hiking', penj: 'hand mountain', alpin: 'mountain', ferat: 'helmet link',
+	var HR = { planin: 'mountain hiking', vrh: 'mountain', hod: 'walking hiking', penj: 'hand mountain', alpin: 'mountain flag', ferat: 'helmet link', ferr: 'helmet link', klin: 'link', cepin: 'snowflake', spilj: 'dungeon', tvrđav: 'chess-rook landmark', tvrdav: 'chess-rook landmark', dvorac: 'chess-rook landmark',
 		more: 'water umbrella-beach ship sailboat anchor', jedr: 'sailboat ship anchor wind', kajak: 'water', plivan: 'swimming water', ronj: 'water fish',
-		snijeg: 'snowflake skiing', zim: 'snowflake temperature', skij: 'skiing', bicik: 'bicycle biking', biciklizam: 'bicycle biking', spilj: 'dungeon',
+		snijeg: 'snowflake skiing', zim: 'snowflake temperature', skij: 'skiing', bicik: 'bicycle biking', biciklizam: 'bicycle biking',
 		sunce: 'sun', kiša: 'cloud umbrella', kisa: 'cloud umbrella', vjetar: 'wind', šuma: 'tree', suma: 'tree', drvo: 'tree', cvijet: 'seedling leaf', priroda: 'leaf tree seedling',
 		kamp: 'campground tent', šator: 'tent', sator: 'tent', vatra: 'fire', karta: 'map ticket', kompas: 'compass', zastav: 'flag', dalekozor: 'binoculars',
 		foto: 'camera', povijest: 'landmark monument', crkv: 'church', grad: 'city', muzej: 'landmark building-columns',
@@ -205,8 +205,9 @@ jQuery(function ($) {
 		vrijeme: 'clock', sat: 'clock', datum: 'calendar', info: 'circle-info', upozor: 'triangle-exclamation', kvačic: 'check', kvacic: 'check', križ: 'xmark', kriz: 'xmark', srce: 'heart', zvijezd: 'star' };
 	var pick = null, pickFor = null;
 	function fill(q) {
-		var grid = pick.find('.pap-icons-grid').empty(), list = q ? [] : ICONS.slice();
+		var grid = pick.find('.pap-icons-grid').empty(), list = q ? [] : ICONS.slice(), own = window.papOwnIcons || {};
 		q = $.trim(q || '').toLowerCase();
+		var mine = Object.keys(own).filter(function (c) { return !q || own[c].toLowerCase().indexOf(q) >= 0 || c.indexOf(q) >= 0; });
 		if (q) {
 			var words = [q.replace(/\s+/g, '-')];
 			$.each(HR, function (k, v) { if (q.length > 1 && (q.indexOf(k) === 0 || k.indexOf(q) === 0)) { words = words.concat(v.split(' ')); } });
@@ -215,9 +216,10 @@ jQuery(function ($) {
 			// Prvo izbor za izlete, zatim sve ostale ikonice.
 			list = list.concat((window.papIcons || []).filter(function (n) { return ICONS.indexOf(n) < 0; }));
 		}
-		var html = list.map(function (n) { return '<button type="button" data-icon="fas fa-' + n + '" title="' + n + '"><i class="fas fa-' + n + '"></i></button>'; }).join('');
+		var html = mine.map(function (c) { return '<button type="button" class="is-own" data-icon="' + c + '" title="' + own[c] + ' (Plan A)"><i class="' + c + '"></i></button>'; }).join('') +
+			list.map(function (n) { return '<button type="button" data-icon="fas fa-' + n + '" title="' + n + '"><i class="fas fa-' + n + '"></i></button>'; }).join('');
 		grid.html(html || '<p class="pap-icons-none">Nema ikonice za tu riječ – probaj drugu (i engleski, npr. „boat”).</p>');
-		pick.find('.pap-icons-count').text(list.length + ' ikonica');
+		pick.find('.pap-icons-count').text((mine.length + list.length) + ' ikonica');
 	}
 	function picker(btn) {
 		if (!pick) {

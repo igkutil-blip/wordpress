@@ -134,3 +134,4 @@ body.pap-layout .pap-sec .pap-table th{background:var(--soft)}
 .pap-icons-none{grid-column:1/-1;margin:8px 0;color:#646970}
 .pap-icons p{display:flex;justify-content:space-between;align-items:center}
 .pap-icons-count{color:#646970;font-size:12px}
+.pap-icons-grid button.is-own{background:#eef4fb;color:#1d3c78}

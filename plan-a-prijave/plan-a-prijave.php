@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A izleti – prijave
  * Description:       Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima. Obrazac za uređivanje izleta (faza 2); stranica izleta, prijava i narudžbe bez WpTravellyja kad je on isključen (faza 3).
- * Version:           0.5.1
+ * Version:           0.5.2
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_PRIJAVE_VERSION', '0.5.1' );
+define( 'PLAN_A_PRIJAVE_VERSION', '0.5.2' );
 define( 'PLAN_A_PRIJAVE_FILE', __FILE__ );
 define( 'PLAN_A_PRIJAVE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PLAN_A_PRIJAVE_URL', plugin_dir_url( __FILE__ ) );
