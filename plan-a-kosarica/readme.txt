@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.6.0
+Stable tag: 1.6.2
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -107,6 +107,13 @@ email-footer.php).
 == Okrugla ikona (1.6.1) ==
 
 Ikona iznad naslova maila je okrugla slika (u Gmailu na mobitelu se krug više ne razvlači u elipsu), ista u svim mailovima.
+
+== Uređeni ostali mailovi (1.6.2) ==
+
+Otkazana narudžba, povrat, napomena kupcu, račun: umjesto WooCommerceove tablice (sa sličicama
+proizvoda i uskim stupcima) isti sažetak kao u mailu „Prijava zaprimljena” (kartice „Vaš izlet”
+i „Vaši podaci”). Uplatnica i 2D kod (WSB HUB3) samo u mailu „Prijava zaprimljena” i u računu.
+Slike u mailovima nikad nisu šire od kartice (i na mobitelu).
 
 == Postavke ==
 

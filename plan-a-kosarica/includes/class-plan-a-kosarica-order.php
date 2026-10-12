@@ -24,7 +24,86 @@ final class Plan_A_Kosarica_Order {
 		'emails/admin-new-order.php',
 		'emails/email-header.php', // ostali WooCommerceovi mailovi (otkazano, povrat, napomena, lozinka, poklon bon …)
 		'emails/email-footer.php',
+		'emails/email-order-details.php', // u ostalim mailovima: sažetak kao u našim mailovima, bez tablice sa sličicama
+		'emails/email-addresses.php',
 	);
+
+	/** @var WC_Email|null Mail koji se upravo iscrtava (WooCommerce ga ne predaje predlošku zaglavlja). */
+	private static $current_email = null;
+
+	public static function remember_email( $heading, $email = null ) {
+		self::$current_email = is_object( $email ) ? $email : null;
+	}
+
+	public static function current_email() {
+		return self::$current_email;
+	}
+
+	/** Početak i kraj bijele kartice u ostalim WooCommerceovim mailovima. */
+	public static function mail_card_open(): string {
+		return '<tr><td style="padding:14px 0 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td class="pae-card" style="background:#ffffff;border-radius:14px;padding:22px 24px;color:#24323f;font-family:-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;">';
+	}
+
+	public static function mail_card_close(): string {
+		return '</td></tr></table></td></tr>';
+	}
+
+	/**
+	 * Izlaz kuke bez bloka plaćanja dodatka WSB HUB3 (uplatnica i 2D kod idu samo u mail
+	 * „Prijava zaprimljena” i u račun, ne u napomenu, otkaz ili povrat).
+	 */
+	public static function capture_without_hub3( string $hook, ...$args ): string {
+		global $wp_filter;
+		$removed = array();
+		if ( isset( $wp_filter[ $hook ] ) ) {
+			foreach ( $wp_filter[ $hook ]->callbacks as $prio => $cbs ) {
+				foreach ( $cbs as $cb ) {
+					$fn = $cb['function'];
+					if ( is_array( $fn ) && is_object( $fn[0] ) && 0 === strpos( (string) $fn[1], 'wsb_hub3_' ) ) {
+						remove_action( $hook, $fn, $prio );
+						$removed[] = array( $fn, $prio, $cb['accepted_args'] );
+					}
+				}
+			}
+		}
+		$out = self::capture( $hook, ...$args );
+		foreach ( $removed as $r ) {
+			add_action( $hook, $r[0], $r[1], $r[2] );
+		}
+		return $out;
+	}
+
+	/**
+	 * Slike u WooCommerceovim mailovima nikad šire od kartice: WooCommerce svakoj slici
+	 * dodaje razmak 24 px desno, a dodaci fiksnu širinu (npr. uplatnica 560 px).
+	 */
+	public static function mail_images( $html ) {
+		if ( ! is_string( $html ) || false === stripos( $html, '<img' ) ) {
+			return $html;
+		}
+		return preg_replace_callback(
+			'#<img\b[^>]*>#i',
+			static function ( $m ) {
+				$tag = $m[0];
+				if ( ! preg_match( '#\sstyle\s*=\s*"([^"]*)"#i', $tag, $st ) ) {
+					return $tag;
+				}
+				$css = preg_replace( '/(^|;)\s*(margin-right|margin-left)\s*:\s*24px\s*(?=;|$)/i', '$1', $st[1] );
+				$w   = 0;
+				if ( preg_match( '/(?:^|;)\s*width\s*:\s*(\d+)px/i', $css, $mw ) ) {
+					$w = (int) $mw[1];
+				} elseif ( preg_match( '#\swidth\s*=\s*"?(\d+)#i', $tag, $aw ) ) {
+					$w = (int) $aw[1];
+				}
+				if ( $w >= 200 ) {
+					$css = preg_replace( '/(^|;)\s*(width|max-width|display|margin|height)\s*:[^;]*/i', '$1', $css );
+					$css = trim( $css, '; ' ) . ';display:block;width:100%;max-width:' . $w . 'px;height:auto;margin:0 auto;';
+				}
+				return str_replace( $st[0], ' style="' . esc_attr( trim( $css, '; ' ) . ';' ) . '"', $tag );
+			},
+			$html
+		);
+	}
 
 	/** @var bool Upravo se iscrtava naša stranica ili e-mail (za prijevode). */
 	private static $rendering = false;
@@ -38,6 +117,8 @@ final class Plan_A_Kosarica_Order {
 			return;
 		}
 		add_filter( 'woocommerce_locate_template', array( __CLASS__, 'locate_template' ), 99, 2 );
+		add_filter( 'woocommerce_mail_content', array( __CLASS__, 'mail_images' ), 99 );
+		add_action( 'woocommerce_email_header', array( __CLASS__, 'remember_email' ), 1, 2 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ), 30 );
 		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
 		add_filter( 'gettext', array( __CLASS__, 'translate' ), 20, 3 );

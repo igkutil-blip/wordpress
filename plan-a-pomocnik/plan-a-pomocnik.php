@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A – pomoćnik za kopiju
  * Description:       SAMO ZA KOPIJU STRANICE (staging). Sve mailove kopije preusmjerava na jednu adresu (ili ih blokira). Claudeu omogućuje da preko REST API-ja postavlja i ažurira naše dodatke (plan-a-*), pokreće našu automatiku i čita zapis grešaka. Na srd-plan-a.hr odbija sve.
- * Version:           1.4.1
+ * Version:           1.4.2
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -202,6 +202,7 @@ final class Plan_A_Pomocnik {
 			array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'mail_set' ), 'permission_callback' => $ok ),
 		) );
 		register_rest_route( self::NS, '/mail/test', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'mail_test' ), 'permission_callback' => $ok ) );
+		register_rest_route( self::NS, '/source/(?P<slug>[a-z0-9-]+)', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'source' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/mail/samples', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'mail_samples' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/option/(?P<name>(plan_a|ttbm|pan_|pac_)[A-Za-z0-9_\-]*)', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'option' ), 'permission_callback' => $ok ) );
 	}
@@ -418,7 +419,21 @@ final class Plan_A_Pomocnik {
 		}
 		$group = sanitize_key( (string) ( $req['grupa'] ?? 'all' ) );
 		Plan_A_Pomocnik_Samples::$only = sanitize_text_field( (string) ( $req['samo'] ?? '' ) );
-		return Plan_A_Pomocnik_Samples::send(
+		// pokazi=1: mail se ne šalje, nego se vraća njegov HTML (za pregled izgleda).
+		$preview = ! empty( $req['pokazi'] );
+		$html    = array();
+		if ( $preview ) {
+			add_filter(
+				'pre_wp_mail',
+				static function ( $r, $a ) use ( &$html ) {
+					$html[] = array( 'subject' => $a['subject'], 'html' => $a['message'] );
+					return true;
+				},
+				PHP_INT_MAX,
+				2
+			);
+		}
+		$res = Plan_A_Pomocnik_Samples::send(
 			$group ?: 'all',
 			array(
 				'order'      => absint( $req['order'] ?? 0 ),
@@ -427,6 +442,23 @@ final class Plan_A_Pomocnik {
 				'member_email' => sanitize_email( (string) ( $req['member_email'] ?? '' ) ),
 			)
 		);
+		return $preview ? array( 'rezultat' => $res, 'mailovi' => $html ) : $res;
+	}
+
+	/** Samo čitanje: PHP datoteke dodatka (bez slika) kao JSON {putanja: sadržaj}, za proučavanje. */
+	public static function source( WP_REST_Request $req ) {
+		$dir = WP_PLUGIN_DIR . '/' . sanitize_key( (string) $req['slug'] );
+		if ( ! is_dir( $dir ) ) {
+			return new WP_Error( 'none', 'Nema dodatka.', array( 'status' => 404 ) );
+		}
+		$out = array();
+		$it  = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $dir, FilesystemIterator::SKIP_DOTS ) );
+		foreach ( $it as $f ) {
+			if ( preg_match( '/\.(php|txt|json|css|js)$/', $f->getFilename() ) && $f->getSize() < 400000 && count( $out ) < 200 ) {
+				$out[ substr( $f->getPathname(), strlen( $dir ) + 1 ) ] = file_get_contents( $f->getPathname() ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+			}
+		}
+		return $out;
 	}
 
 	public static function option( WP_REST_Request $req ) {

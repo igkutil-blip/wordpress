@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.15.1
+Stable tag: 1.15.2
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.15.2 =
+* Prava uplatnica HUB-3A kao slika (isti izgled kao u mailu narudžbe, s 2D kodom) u mailovima za drugu ratu i članarinu. Ako dodatak WSB HUB3 nije instaliran, ostaje uplatnica u HTML-u.
 
 = 1.15.1 =
 * Ikona iznad naslova maila je okrugla slika (u Gmailu na mobitelu se krug više ne razvlači u elipsu), ista u svim mailovima. Mail o otkazivanju: bez obećanja povrata – s osiguranjem od otkaza kupac se obraća osiguranju, inače agencija ne vraća uplatu.
