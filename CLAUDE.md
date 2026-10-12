@@ -24,6 +24,10 @@ prvo predloži tekstualno, kad to traži. Shortcodeovi i HTML idu u Flatsome HTM
 - **Kopija stranice (staging)** `PROBA_URL`: puni pristup, korisnik `PROBA_WP_USER` +
   `PROBA_WP_APP_PASSWORD`, FTP `PROBA_FTP_*` ograničen na mapu kopije (ako su upisani).
   Na kopiji je uključen dodatak **Disable Emails** – ne isključivati.
+- Na kopiji je dodatak **plan-a-pomocnik** (grana `prijave`): REST `PROBA_URL/wp-json/plan-a-pomocnik/v1/`
+  (`status`, `plugin` – postavljanje našeg zipa, `plugin/{slug}/activate|deactivate`, `cron`, `log`,
+  `meta/{id}`, `option/{ime}`), prijava `PROBA_WP_USER` + `PROBA_WP_APP_PASSWORD`. Na živoj stranici odbija sve.
+- Iz ove sesije internet ide samo preko HTTPS-a (FTP/SSH ne rade).
 - Kopija koristi **kopije Google tablica** („Kopija datoteke Članovi Plan A nova” i
   „Kopija datoteke Prijave na izlete nova”), nikad prave tablice.
 - Lozinke i ključeve korisnik upisuje u postavke okruženja; **nikad ih ne traži u chatu**.
