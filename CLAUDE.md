@@ -84,7 +84,7 @@ Igor ne pamti ništa od ovoga: kad završimo s kopijom, **ja** pripremim sve zip
 napišem redoslijed (što isključiti, što instalirati, što provjeriti). Do tada na živoj ništa ne tražiti.
 
 - **Jednak izgled svih mailova (12.10.2026.)** – zadana grana i `prijave`, isti zipovi: plan-a-kosarica 1.6.2,
-  plan-a-clanstvo 1.15.2, plan-a-jedrenje 1.9.2, plan-a-newsletter 1.1.1, plan-a-izleti 1.22.1 (zajednička
+  plan-a-clanstvo 1.15.3, plan-a-jedrenje 1.9.2, plan-a-newsletter 1.1.1, plan-a-izleti 1.22.1 (zajednička
   datoteka `includes/plan-a-email.php`, klasa `Plan_A_Email`, mora biti ista u svim dodacima). Na kopiji
   primjerci: pomoćnik REST `mail/samples` (grupa all|wc|clanstvo|jedrenje|ostalo, order, rate_order,
   member_email, samo, pokazi=1 = samo HTML bez slanja). 1.6.2/1.15.2: ostali WooCommerceovi mailovi (otkaz,
@@ -94,7 +94,7 @@ napišem redoslijed (što isključiti, što instalirati, što provjeriti). Do ta
 - **Otvoreno pitanje za Igora (12.10.2026.)**: uplatnica i 2D kod za drugu ratu idu na račun S.R.D. Plan A
   (postavke članstva, HR33…), a prva uplata izleta (WSB) na Adventure Donkey j.d.o.o. (HR81…). Isto i na živoj.
   Čeka odgovor treba li druga rata ići agenciji.
-- **plan-a-clanstvo (sada 1.15.2)** (zadana grana i `prijave`, isti zip): druga rata = puna cijena − prva rata po
+- **plan-a-clanstvo (sada 1.15.3)** (zadana grana i `prijave`, isti zip): druga rata = puna cijena − prva rata po
   osobi, osiguranje se ne odbija; ispravak pune cijene (`ticket_type_price`, do 1.14.5 ostatak je bio 0 € i
   mail za drugu ratu nije odlazio). Nakon instalacije se propušteni mail jednom ponovi – na živoj to je
   narudžba **#8989** (prva rata 12.10.2026.). Prije instalacije pitati Igora želi li to slanje.

@@ -380,11 +380,11 @@ final class Plan_A_Clanstvo_Ops {
 	}
 
 	private static function rates_table( array $rates ): string {
-		$t = '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:14px"><tr style="background:#e8eef4;color:#12304b"><th align="left" style="padding:6px">Narudžba</th><th align="left" style="padding:6px">Izlet</th><th align="left" style="padding:6px">Datum</th><th align="left" style="padding:6px">Druga rata</th></tr>';
+		$h = '';
 		foreach ( $rates as $r ) {
-			$t .= '<tr style="border-bottom:1px solid #e3e8ee"><td style="padding:6px">' . esc_html( $r['nr'] . ' ' . $r['name'] ) . '</td><td style="padding:6px">' . esc_html( $r['izlet'] ) . '</td><td style="padding:6px">' . esc_html( $r['datum'] ) . '</td><td style="padding:6px;font-weight:bold">' . esc_html( $r['iznos'] ) . '</td></tr>';
+			$h .= Plan_A_Clanstvo_Mail::r_item( esc_html( $r['name'] ), esc_html( $r['izlet'] . ' · ' . $r['datum'] ) . ' · narudžba ' . esc_html( $r['nr'] ), esc_html( $r['iznos'] ) );
 		}
-		return $t . '</table>';
+		return $h;
 	}
 
 	private static function summary_html( array $events, array $tours, array $rates = array() ): string {
@@ -408,29 +408,47 @@ final class Plan_A_Clanstvo_Ops {
 			if ( empty( $by[ $k ] ) ) {
 				continue;
 			}
-			$inner .= '<p style="margin:18px 0 6px;color:#12304b;font-size:17px;font-weight:bold">' . esc_html( $label ) . ' (' . count( $by[ $k ] ) . ')</p><ul style="margin:0 0 8px;padding-left:20px;font-size:15px;line-height:1.5">';
-			foreach ( $by[ $k ] as $x ) {
-				$inner .= '<li>' . esc_html( $x ) . '</li>';
+			// Isti zapis više puta (npr. dvije kvačice) jednom, s brojem.
+			$same   = array_count_values( $by[ $k ] );
+			$inner .= Plan_A_Clanstvo_Mail::r_head( $label, count( $by[ $k ] ) ) . '<ul style="margin:0 0 8px;padding-left:20px;font-size:15px;line-height:1.5">';
+			foreach ( $same as $x => $times ) {
+				$inner .= '<li style="margin:0 0 4px;">' . esc_html( (string) $x ) . ( $times > 1 ? ' <span style="color:#8a96a3;">×' . (int) $times . '</span>' : '' ) . '</li>';
 			}
 			$inner .= '</ul>';
 		}
 		if ( $rates ) {
-			$inner .= '<p style="margin:22px 0 8px;color:#12304b;font-size:17px;font-weight:bold">Druga rata još nije uplaćena (' . count( $rates ) . ')</p>' . self::rates_table( $rates );
+			$inner .= Plan_A_Clanstvo_Mail::r_head( 'Druga rata još nije uplaćena', count( $rates ) ) . self::rates_table( $rates );
 		}
 		if ( $tours ) {
-			$inner .= '<p style="margin:22px 0 8px;color:#12304b;font-size:17px;font-weight:bold">Izleti u sljedećih 30 dana</p>'
-				. '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:14px">'
-				. '<tr style="background:#e8eef4;color:#12304b"><th align="left" style="padding:6px">Izlet</th><th style="padding:6px">Prijavljeno</th><th style="padding:6px">Uplaćeno</th><th style="padding:6px">Slobodno</th></tr>';
+			$inner .= Plan_A_Clanstvo_Mail::r_head( 'Izleti u sljedećih 30 dana', count( $tours ) );
 			foreach ( $tours as $t ) {
 				$b     = $t['b'];
-				$title = implode( ' · ', array_slice( explode( ' · ', (string) $b['base'] ), 0, 2 ) );
-				$flag  = $t['flags'] ? ' <span style="display:inline-block;padding:1px 8px;border-radius:999px;background:#fdebd3;color:#b85c00;font-weight:bold;font-size:12px">' . esc_html( implode( ' · ', $t['flags'] ) ) . '</span>' : '';
-				$inner .= '<tr style="border-bottom:1px solid #e3e8ee"><td style="padding:6px">' . esc_html( $title ) . $flag . '</td>'
-					. '<td align="center" style="padding:6px">' . (int) $b['n'] . ( (int) $b['x'] ? ' <span style="color:#8a96a3">(+' . (int) $b['x'] . ' otk.)</span>' : '' ) . '<br><span style="font-size:12px;color:#5f6b77">ugovor ' . (int) ( $b['ug'] ?? 0 ) . ' od ' . (int) $b['n'] . ( (int) ( $b['polN'] ?? 0 ) ? ' · polica ' . (int) ( $b['pol'] ?? 0 ) . ' od ' . (int) $b['polN'] : '' ) . '</span></td>'
-					. '<td align="center" style="padding:6px">' . (int) $b['paid'] . ( (int) ( $b['rate'] ?? 0 ) ? '<br><span style="font-size:12px;color:#5f6b77">2. rata: ' . (int) $b['rate2'] . ' od ' . (int) $b['rate'] . '</span>' : '' ) . '</td>'
-					. '<td align="center" style="padding:6px">' . ( null === $t['free'] ? '–' : (int) $t['free'] ) . '</td></tr>';
+				$parts = explode( ' · ', (string) $b['base'] );
+				$chips = '';
+				foreach ( $t['flags'] as $f ) {
+					$chips .= Plan_A_Clanstvo_Mail::r_chip( $f, 'POPUNJEN' === $f );
+				}
+				$papers = array( 'ugovor ' . (int) ( $b['ug'] ?? 0 ) . ' od ' . (int) $b['n'] );
+				if ( (int) ( $b['polN'] ?? 0 ) ) {
+					$papers[] = 'polica ' . (int) ( $b['pol'] ?? 0 ) . ' od ' . (int) $b['polN'];
+				}
+				$days   = (int) $t['days'];
+				$when   = 0 === $days ? 'danas' : ( 1 === $days ? 'sutra' : 'za ' . $days . ' dana' );
+				$inner .= Plan_A_Clanstvo_Mail::r_item(
+					esc_html( $parts[0] ),
+					esc_html( trim( ( $parts[1] ?? '' ) . ' · ' . $when, ' ·' ) ),
+					'',
+					( '' !== $chips ? '<div style="margin:2px 0 2px;">' . $chips . '</div>' : '' )
+					. Plan_A_Clanstvo_Mail::r_stats(
+						array(
+							array( 'prijavljeno', (int) $b['n'], (int) $b['x'] ? '+' . (int) $b['x'] . ' otkazalo' : '' ),
+							array( 'uplaćeno', (int) $b['paid'], (int) ( $b['rate'] ?? 0 ) ? '2. rata: ' . (int) $b['rate2'] . ' od ' . (int) $b['rate'] : '' ),
+							array( 'slobodno', null === $t['free'] ? '–' : (int) $t['free'] ),
+						)
+					)
+					. '<div style="color:#5f6b77;font-size:13px;line-height:1.4;">' . esc_html( ucfirst( implode( ' · ', $papers ) ) ) . '</div>'
+				);
 			}
-			$inner .= '</table>';
 		}
 		$inner .= Plan_A_Clanstvo_Mail::p( '<span style="color:#5f6b77;font-size:13px">Pregled stiže svaki dan u 7 sati kad ima novosti ili izlet treba pažnju. Brojke su iz tablice „Prijave na izlete”.</span>' );
 		return Plan_A_Clanstvo_Mail::wrap( 'Pregled za ' . current_time( 'j.n.Y.' ), $inner, 'Plan A · dnevni pregled' );
@@ -536,21 +554,25 @@ final class Plan_A_Clanstvo_Ops {
 				$files[] = $file;
 			}
 		}
-		$table = '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:14px"><tr style="background:#e8eef4;color:#12304b">';
-		foreach ( $cols as $c ) {
-			$table .= '<th align="left" style="padding:6px">' . esc_html( $c[0] ) . '</th>';
-		}
-		$table .= '</tr>';
+		// Za mobitel: svaki sudionik u svom retku (ime, mobitel), ispod stanje; tablica za print je u PDF-u.
+		$table = '';
+		$labels = array( 3 => 'Uplaćeno', 4 => 'Pristupnica', 5 => 'Članarina', 6 => 'Iskaznica', 7 => 'Osiguranje' );
 		foreach ( array_merge( $go, $gone ) as $i => $r ) {
-			$x      = $i >= count( $go );
-			$table .= '<tr style="border-bottom:1px solid #e3e8ee;' . ( $x ? 'color:#8a96a3;text-decoration:line-through' : '' ) . '">';
-			foreach ( $r as $k => $v ) {
-				$v      = 2 === $k && '' !== $v && ! $x ? '<a href="tel:' . esc_attr( preg_replace( '/[^0-9+]/', '', $v ) ) . '" style="color:#1a73b8">' . esc_html( $v ) . '</a>' : esc_html( $v );
-				$table .= '<td style="padding:6px' . ( 2 === $k ? ';white-space:nowrap' : '' ) . ( $k >= 3 && $k <= 5 && ! $x && 'NE' === $r[ $k ] ? ';color:#b32d2e;font-weight:bold' : '' ) . ( 4 === $k && ! $x && 'nepotvrđena' === $r[4] ? ';color:#b26200;font-weight:bold' : '' ) . '">' . $v . '</td>';
+			$x     = $i >= count( $go );
+			$state = array();
+			foreach ( $labels as $k => $lab ) {
+				if ( '' === (string) $r[ $k ] || ( 7 === $k && 'da' !== $r[7] ) ) {
+					continue;
+				}
+				$bad     = ! $x && ( 'NE' === $r[ $k ] || 'nepotvrđena' === $r[ $k ] );
+				$col     = ! $bad ? '#24323f' : ( 'NE' === $r[ $k ] ? '#b32d2e' : '#b26200' );
+				$state[] = '<span style="white-space:nowrap;"><span style="color:#5f6b77;">' . esc_html( $lab ) . ':</span> <strong style="color:' . $col . ';">' . esc_html( $r[ $k ] ) . '</strong></span>';
 			}
-			$table .= '</tr>';
+			$phone  = '' !== (string) $r[2] ? ( $x ? esc_html( $r[2] ) : '<a href="tel:' . esc_attr( preg_replace( '/[^0-9+]/', '', $r[2] ) ) . '" style="color:#1a73b8;font-weight:normal;">' . esc_html( $r[2] ) . '</a>' ) : '';
+			$name   = '<span style="color:#8a96a3;font-weight:normal;">' . esc_html( (string) $r[0] ) . '.</span> ' . esc_html( $r[1] ) . ( $x ? ' <span style="color:#8a96a3;font-weight:normal;">(otkazao/la)</span>' : '' );
+			$row    = Plan_A_Clanstvo_Mail::r_item( $name, implode( ' &nbsp;·&nbsp; ', $state ), $phone );
+			$table .= $x ? '<div style="opacity:.55;text-decoration:line-through;">' . $row . '</div>' : $row;
 		}
-		$table .= '</table>';
 		$fix = '';
 		if ( $todo ) {
 			$fix = '<div style="background:#fff4e8;border:2px solid #e8862a;border-radius:12px;padding:14px 16px;margin:16px 0"><p style="margin:0 0 6px;color:#b85c00;font-size:16px;font-weight:bold">Na izletu treba riješiti</p><ul style="margin:0;padding-left:20px;font-size:15px;line-height:1.5">';
@@ -716,14 +738,20 @@ final class Plan_A_Clanstvo_Ops {
 		}
 		usort( $rows, static fn( $a, $b ) => strcoll( $a['prezime'] . ' ' . $a['ime'], $b['prezime'] . ' ' . $b['ime'] ) );
 		$to = $test ? self::admin_mail() : ( self::mail( 'mail_kreso' ) ?: self::admin_mail() );
-		$t  = '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:14px"><tr style="background:#e8eef4;color:#12304b"><th align="left" style="padding:6px">Br.</th><th align="left" style="padding:6px">Ime i prezime</th><th align="left" style="padding:6px">E-mail</th><th align="left" style="padding:6px">Mobitel</th></tr>';
+		$t = '';
 		foreach ( $rows as $m ) {
-			$t .= '<tr style="border-bottom:1px solid #e3e8ee"><td style="padding:6px">' . (int) $m['broj'] . '</td><td style="padding:6px">' . esc_html( $m['ime'] . ' ' . $m['prezime'] ) . '</td><td style="padding:6px">' . esc_html( $m['email'] ) . '</td><td style="padding:6px">' . esc_html( $m['mobitel'] ) . '</td></tr>';
+			$contact = array();
+			if ( '' !== (string) $m['email'] ) {
+				$contact[] = '<a href="mailto:' . esc_attr( $m['email'] ) . '" style="color:#1a73b8;">' . esc_html( $m['email'] ) . '</a>';
+			}
+			if ( '' !== (string) $m['mobitel'] ) {
+				$contact[] = '<a href="tel:' . esc_attr( preg_replace( '/[^0-9+]/', '', (string) $m['mobitel'] ) ) . '" style="color:#1a73b8;white-space:nowrap;">' . esc_html( $m['mobitel'] ) . '</a>';
+			}
+			$t .= Plan_A_Clanstvo_Mail::r_item( esc_html( $m['ime'] . ' ' . $m['prezime'] ), implode( ' · ', $contact ), '<span style="color:#8a96a3;font-weight:normal;">br. ' . (int) $m['broj'] . '</span>' );
 		}
-		$t    .= '</table>';
 		$inner = Plan_A_Clanstvo_Mail::p( $rows ? 'Od članova koji su sada prijavljeni na izlete članarinu za ' . $year . '. još nije platilo njih <strong>' . count( $rows ) . '</strong>:' : 'Svi članovi koji su sada prijavljeni na izlete platili su članarinu za ' . $year . '.' )
 			. ( $rows ? $t : '' )
-			. ( self::rate_owed() ? Plan_A_Clanstvo_Mail::p( '<strong>Druga rata još nije uplaćena</strong> (prva rata uplaćena, izlet nije prošao):' ) . self::rates_table( self::rate_owed() ) : '' )
+			. ( self::rate_owed() ? Plan_A_Clanstvo_Mail::r_head( 'Druga rata još nije uplaćena', count( self::rate_owed() ) ) . Plan_A_Clanstvo_Mail::p( '<span style="color:#5f6b77;font-size:14px">Prva rata uplaćena, izlet još nije prošao.</span>' ) . self::rates_table( self::rate_owed() ) : '' )
 			. Plan_A_Clanstvo_Mail::p( '<span style="color:#5f6b77;font-size:13px">Na popisu su samo članovi koji su prijavljeni na izlete od danas nadalje (bez otkazanih); plaćanje se čita iz kvačica „Članarina ' . $year . '” u tablici članova. Stiže prvog u mjesecu, od siječnja do travnja.</span>' );
 		return Plan_A_Clanstvo_Mail::send( $to, ( $test ? 'PROBA – ' : '' ) . 'Neplaćena članarina ' . $year . '. (prijavljeni na izlete) – ' . count( $rows ), Plan_A_Clanstvo_Mail::wrap( 'Neplaćena članarina ' . $year . '.', $inner, 'Plan A · članarina' ) ) ? 1 : 0;
 	}

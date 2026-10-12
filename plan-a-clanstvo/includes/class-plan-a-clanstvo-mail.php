@@ -45,6 +45,50 @@ final class Plan_A_Clanstvo_Mail {
 		return Plan_A_Email::button( $label, $url );
 	}
 
+	/* ---------------- Izvještaji (pregled, popis za vodiča, članarina): bez širokih tablica, čitljivo na mobitelu ---------------- */
+
+	const R_MUTED = 'color:#5f6b77;';
+
+	/** Naslov odjeljka izvještaja (s brojem). */
+	public static function r_head( string $title, int $count = -1 ): string {
+		return '<p style="margin:22px 0 6px;color:#12304b;font-size:17px;line-height:1.35;font-weight:bold;">' . esc_html( $title ) . ( $count >= 0 ? ' <span style="color:#8a96a3;font-weight:normal;">(' . $count . ')</span>' : '' ) . '</p>';
+	}
+
+	/** Oznaka (upozorenje): cijela u jednom komadu, prelama se samo između oznaka. */
+	public static function r_chip( string $text, bool $strong = false ): string {
+		return '<span style="display:inline-block;white-space:nowrap;margin:0 6px 6px 0;padding:3px 10px;border-radius:999px;font-size:13px;line-height:1.4;font-weight:bold;'
+			. ( $strong ? 'background:#c0392b;color:#ffffff;' : 'background:#fdebd3;color:#a34f00;' ) . '">' . esc_html( $text ) . '</span>';
+	}
+
+	/** Brojke u jednakim stupcima: [[oznaka, vrijednost, dodatak (HTML)], …]. */
+	public static function r_stats( array $stats ): string {
+		$w = (int) floor( 100 / max( 1, count( $stats ) ) );
+		$h = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 4px;background:#f3f6f9;border-radius:10px;"><tr>';
+		foreach ( $stats as $st ) {
+			$h .= '<td width="' . $w . '%" align="center" style="width:' . $w . '%;padding:8px 4px;vertical-align:top;">'
+				. '<div style="color:#12304b;font-size:22px;line-height:1.2;font-weight:bold;">' . esc_html( (string) $st[1] ) . '</div>'
+				. '<div style="' . self::R_MUTED . 'font-size:12px;line-height:1.3;">' . esc_html( (string) $st[0] ) . '</div>'
+				. ( ! empty( $st[2] ) ? '<div style="' . self::R_MUTED . 'font-size:12px;line-height:1.3;margin-top:2px;">' . $st[2] . '</div>' : '' )
+				. '</td>';
+		}
+		return $h . '</tr></table>';
+	}
+
+	/**
+	 * Jedna stavka izvještaja: naslov (lijevo) i vrijednost (desno, ne prelama se), ispod podnaslov
+	 * i ostalo (HTML). Odvojena crtom.
+	 */
+	public static function r_item( string $title, string $sub = '', string $right = '', string $body = '' ): string {
+		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-bottom:1px solid #e3e8ee;"><tr><td style="padding:10px 0;vertical-align:top;">'
+			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
+			. '<td style="vertical-align:top;color:#12304b;font-size:16px;line-height:1.35;font-weight:bold;">' . $title . '</td>'
+			. ( '' !== $right ? '<td align="right" style="vertical-align:top;padding-left:10px;white-space:nowrap;font-size:15px;line-height:1.35;font-weight:bold;color:#24323f;">' . $right . '</td>' : '' )
+			. '</tr></table>'
+			. ( '' !== $sub ? '<div style="' . self::R_MUTED . 'font-size:14px;line-height:1.45;margin-top:2px;">' . $sub . '</div>' : '' )
+			. ( '' !== $body ? '<div style="margin-top:6px;">' . $body . '</div>' : '' )
+			. '</td></tr></table>';
+	}
+
 	/** Kartica za uplatu članarine: 2D kod (u samom mailu), uplatnica i podaci. */
 	public static function pay_card( int $id, int $year ): string {
 		$m    = Plan_A_Clanstvo_Data::get_member( $id );

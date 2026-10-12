@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.15.2
+Stable tag: 1.15.3
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.15.3 =
+* Izvještaji pregledni i na mobitelu: dnevni pregled (izleti s brojkama u stupcima i upozorenjima kao oznakama, isti zapisi jednom s brojem ×), popis za vodiča (svaki sudionik u svom retku s mobitelom i stanjem), neplaćena članarina i druga rata (bez širokih tablica).
 
 = 1.15.2 =
 * Prava uplatnica HUB-3A kao slika (isti izgled kao u mailu narudžbe, s 2D kodom) u mailovima za drugu ratu i članarinu. Ako dodatak WSB HUB3 nije instaliran, ostaje uplatnica u HTML-u.
