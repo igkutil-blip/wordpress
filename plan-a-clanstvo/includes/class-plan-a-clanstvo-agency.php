@@ -943,7 +943,22 @@ final class Plan_A_Clanstvo_Agency {
 		$what  = $all
 			? 'tvoja prijava (narudžba <strong>#' . esc_html( $nr ) . '</strong>) za izlet <strong>' . esc_html( $tours ) . '</strong> je <strong>otkazana</strong>.'
 			: 'u tvojoj prijavi (narudžba <strong>#' . esc_html( $nr ) . '</strong>) za izlet <strong>' . esc_html( $tours ) . '</strong> otkazan/a je: <strong>' . esc_html( implode( ', ', $who ) ) . '</strong>. Ostali sudionici iz prijave idu na izlet.';
-		$money = $paid ? Plan_A_Clanstvo_Mail::p( 'Za uplaćeni iznos javit ćemo ti se u vezi povrata.' ) : '';
+		// Povrat: agencija ne vraća uplatu za otkazani izlet; s osiguranjem od otkaza – osiguranje.
+		$ins = false;
+		foreach ( $order->get_items() as $item ) {
+			foreach ( (array) ( $item instanceof WC_Order_Item_Product ? $item->get_meta( '_ttbm_service_info' ) : array() ) as $sv ) {
+				if ( preg_match( '/osigur/i', (string) ( $sv['service_name'] ?? '' ) ) && (int) ( $sv['service_qty'] ?? 0 ) > 0 ) {
+					$ins = true;
+				}
+			}
+		}
+		$money = $paid
+			? Plan_A_Clanstvo_Mail::p(
+				$ins
+					? 'Uz prijavu je uplaćeno <strong>osiguranje od otkaza</strong>. Za povrat novca obrati se osiguranju.'
+					: 'Agencija ne vraća uplaćeni iznos za otkazani izlet.'
+			)
+			: '';
 		$inner = Plan_A_Clanstvo_Mail::p( 'Pozdrav ' . esc_html( $name ) . ',' )
 			. Plan_A_Clanstvo_Mail::p( $what ) . $money
 			. Plan_A_Clanstvo_Mail::p( '<span style="color:#5f6b77;font-size:14px">Ako je ovo greška ili imaš pitanja, javi nam se na info@srd-plan-a.hr ili 095 90 60 556.</span>' );
