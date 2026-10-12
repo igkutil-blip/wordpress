@@ -151,7 +151,7 @@ final class Plan_A_Prijave_Editor {
 		'piće'       => 'fas fa-wine-glass',
 		'skiper'     => 'fas fa-anchor',
 		'vodič'      => 'fas fa-compass',
-		'oprema'     => 'fas fa-toolbox',
+		'oprema'     => 'pap-ic pap-ic-kaciga',
 		'ulaznic'    => 'fas fa-ticket',
 		'karta'      => 'fas fa-ticket',
 		'ljekar'     => 'fas fa-kit-medical',
@@ -173,6 +173,11 @@ final class Plan_A_Prijave_Editor {
 		'planinarenje'      => 'fas fa-person-hiking',
 	);
 
+	/** Stavke uključeno/isključeno: isto, jednom (Igor: bolja ikonica za opremu). */
+	const FEATURE_SET = array(
+		'oprema' => 'pap-ic pap-ic-kaciga',
+	);
+
 	/** Vlastite ikonice (SVG) – i u administraciji i na stranici, gdje god se ispisuju ikonice pojmova. */
 	public static function icons_style() {
 		wp_register_style( 'pap-icons', PLAN_A_PRIJAVE_URL . 'assets/pap-icons.css', array(), PLAN_A_PRIJAVE_VERSION );
@@ -184,7 +189,8 @@ final class Plan_A_Prijave_Editor {
 
 	/** Jednom (i nakon nadogradnje popisa): pojmovima bez ikonice dodaj odgovarajuću. Ostale postojeće ikonice se ne diraju. */
 	public static function default_icons() {
-		if ( 2 <= (int) get_option( 'pap_default_icons' ) || ! current_user_can( 'manage_categories' ) ) {
+		$done = (int) get_option( 'pap_default_icons' );
+		if ( 3 <= $done || ! current_user_can( 'manage_categories' ) ) {
 			return;
 		}
 		foreach ( self::ICON_META as $tax => $key ) {
@@ -195,8 +201,10 @@ final class Plan_A_Prijave_Editor {
 		foreach ( self::ICON_META as $tax => $key ) {
 			foreach ( self::terms( $tax ) as $t ) {
 				$name = mb_strtolower( trim( $t->name ) );
-				if ( 'ttbm_tour_activities' === $tax && isset( self::ICON_SET[ $name ] ) ) {
-					update_term_meta( $t->term_id, $key, self::ICON_SET[ $name ] );
+				// Svaki popis samo jednom (aktivnosti od 0.5.2, oprema od 0.5.3) – kasnije promjene ostaju.
+				$set = 'ttbm_tour_activities' === $tax ? ( $done < 2 ? self::ICON_SET : array() ) : self::FEATURE_SET;
+				if ( isset( $set[ $name ] ) ) {
+					update_term_meta( $t->term_id, $key, $set[ $name ] );
 					continue;
 				}
 				if ( '' !== (string) get_term_meta( $t->term_id, $key, true ) ) {
@@ -210,7 +218,7 @@ final class Plan_A_Prijave_Editor {
 				}
 			}
 		}
-		update_option( 'pap_default_icons', 2, false );
+		update_option( 'pap_default_icons', 3, false );
 	}
 
 	/* ------------------------------------------------------------------ */

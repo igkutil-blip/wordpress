@@ -200,7 +200,7 @@ jQuery(function ($) {
 		hrana: 'utensils bowl-food', ručak: 'utensils', rucak: 'utensils', večer: 'utensils moon', vecer: 'utensils moon', doručak: 'mug-hot bread-slice', dorucak: 'mug-hot bread-slice',
 		piće: 'wine-glass beer-mug-empty bottle-water mug-hot', pice: 'wine-glass beer-mug-empty bottle-water mug-hot', voda: 'bottle-water water', kava: 'mug-hot', vino: 'wine',
 		smješt: 'bed hotel house', smjest: 'bed hotel house', spava: 'bed', noć: 'moon bed', noc: 'moon bed', hotel: 'hotel', kuć: 'house', kuc: 'house',
-		oprema: 'helmet toolbox bag', ruksak: 'bag', kaciga: 'helmet', kacig: 'helmet', uže: 'link', uze: 'link',
+		oprema: 'helmet toolbox bag kaciga ruksak karabiner', ruksak: 'bag ruksak', kaciga: 'helmet kaciga', kacig: 'helmet kaciga', uže: 'link', uze: 'link',
 		novac: 'euro money coins', cijen: 'euro tag', poklon: 'gift', glazb: 'music', knjig: 'book', škol: 'graduation-cap school', skol: 'graduation-cap school',
 		vrijeme: 'clock', sat: 'clock', datum: 'calendar', info: 'circle-info', upozor: 'triangle-exclamation', kvačic: 'check', kvacic: 'check', križ: 'xmark', kriz: 'xmark', srce: 'heart', zvijezd: 'star' };
 	var pick = null, pickFor = null;
