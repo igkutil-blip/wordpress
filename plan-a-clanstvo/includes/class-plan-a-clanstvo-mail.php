@@ -46,11 +46,37 @@ final class Plan_A_Clanstvo_Mail {
 		);
 	}
 
+	/** Slike ugrađene u mail (cid => putanja), samo za sljedeće slanje. */
+	private static $embed = array();
+
+	/**
+	 * Slika u samom mailu (src="cid:…"): vidi se i kad datoteka na stranici više ne postoji.
+	 * Vraća vrijednost za src.
+	 */
+	public static function embed( string $path, string $cid ): string {
+		self::$embed[ $cid ] = $path;
+		return 'cid:' . $cid;
+	}
+
+	public static function add_embedded( $phpmailer ) {
+		foreach ( self::$embed as $cid => $path ) {
+			if ( is_readable( $path ) ) {
+				$phpmailer->addEmbeddedImage( $path, $cid, basename( $path ), 'base64', 'image/png' );
+			}
+		}
+	}
+
 	public static function send( string $to, string $subject, string $html, array $attachments = array(), array $extra = array() ): bool {
 		if ( ! is_email( $to ) ) {
+			self::$embed = array();
 			return false;
 		}
+		if ( self::$embed ) {
+			add_action( 'phpmailer_init', array( __CLASS__, 'add_embedded' ) );
+		}
 		$ok = (bool) wp_mail( $to, $subject, $html, array_merge( self::headers(), $extra ), $attachments );
+		remove_action( 'phpmailer_init', array( __CLASS__, 'add_embedded' ) );
+		self::$embed = array();
 		update_option( 'plan_a_clanstvo_last_mail', array( 'time' => current_time( 'mysql' ), 'to' => $to, 'ok' => $ok, 'error' => $ok ? '' : (string) get_option( 'plan_a_clanstvo_mail_error', '' ) ), false );
 		return $ok;
 	}

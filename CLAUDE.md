@@ -83,11 +83,11 @@ Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate�
 Igor ne pamti ništa od ovoga: kad završimo s kopijom, **ja** pripremim sve zipove za živu stranicu i
 napišem redoslijed (što isključiti, što instalirati, što provjeriti). Do tada na živoj ništa ne tražiti.
 
-- **plan-a-clanstvo 1.14.7** (zadana grana i `prijave`, isti zip): druga rata = puna cijena − prva rata po
+- **plan-a-clanstvo 1.14.8** (zadana grana i `prijave`, isti zip): druga rata = puna cijena − prva rata po
   osobi, osiguranje se ne odbija; ispravak pune cijene (`ticket_type_price`, do 1.14.5 ostatak je bio 0 € i
   mail za drugu ratu nije odlazio). Nakon instalacije se propušteni mail jednom ponovi – na živoj to je
   narudžba **#8989** (prva rata 12.10.2026.). Prije instalacije pitati Igora želi li to slanje.
-  1.14.7: kvačica Otkazao → mail kupcu (+ kopija nama za pojedinog sudionika), osiguranje po osobi,
+  1.14.8: 2D kod u mailu za drugu ratu. 1.14.7: kvačica Otkazao → mail kupcu (+ kopija nama za pojedinog sudionika), osiguranje po osobi,
   zamjena bez međukoraka, vraćanje iz tablice ne šalje „Nova prijava”.
 - **Prije uključivanja plaćanja karticom** (sada je na živoj samo uplata na račun): popraviti dvostruki mail
   „Cijelokupni iznos je uplaćen” (U obradi → Završeno) i prvu ratu plaćenu karticom (krivi mail, nema maila
