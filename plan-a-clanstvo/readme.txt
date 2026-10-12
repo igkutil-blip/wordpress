@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.14.8
+Stable tag: 1.15.0
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.15.0 =
+* Svi mailovi (pristupnica, članarina, prva i druga rata, otkazivanje, dnevni pregled, popis za vodiča, neplaćena članarina, upozorenja) u zajedničkom Plan A izgledu. Mailovi s plaćanjem imaju 2D kod u samom mailu i uplatnicu (HUB-3A); kod druge rate i pregled: puna cijena, uplaćena prva rata, osiguranje (ne ulazi u ostatak) i ostatak.
 
 = 1.14.8 =
 * Mail s ostatkom za drugu ratu (i podsjetnik): 2D kod je ugrađen u sam mail, pa se vidi u tekstu (do sada je slika na stranici obrisana odmah nakon slanja, pa se u mailu nije prikazivala, nego samo kao privitak).

@@ -198,17 +198,22 @@ final class Plan_A_Izleti_Plan_Notify {
 		$site  = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
 
 		$subject = 'Objavljen je izlet: ' . $title;
-		$body    = '<!doctype html><html><body style="margin:0;padding:24px;background:#f3f6f9;font-family:Arial,Helvetica,sans-serif;color:#24323f">'
-			. '<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;padding:28px">'
-			. '<p style="margin:0 0 6px;color:#c96a12;font-size:12px;font-weight:bold;letter-spacing:2px;text-transform:uppercase">Plan izleta</p>'
-			. '<h1 style="margin:0 0 12px;color:#12304b;font-size:24px;line-height:1.25">' . esc_html( $title ) . '</h1>'
-			. '<p style="margin:0 0 6px;font-size:16px"><strong>' . esc_html( $date ) . '</strong>' . ( $row['guides'] ? ' · Vodiči: ' . esc_html( $row['guides'] ) : '' ) . '</p>'
-			. '<p style="margin:0 0 22px;font-size:16px;line-height:1.5">Javljamo ti: izlet je upravo objavljen. ' . ( $row['sold_out'] ? 'Mjesta su već popunjena, ali pogledaj stranicu izleta.' : 'Prijave su otvorene – rezerviraj svoje mjesto na vrijeme.' ) . '</p>'
-			. '<p style="margin:0 0 26px"><a href="' . esc_url( $url ) . '" style="display:inline-block;padding:14px 24px;border-radius:999px;background:#e8862a;color:#fff;font-weight:bold;text-decoration:none">Pogledaj izlet i prijavi se</a></p>'
-			. '<p style="margin:0;color:#5f6b77;font-size:13px;line-height:1.5">Ovaj e-mail šaljemo samo jednom, jer je za ovu adresu na ' . esc_html( $site ) . ' zatražena obavijest o ovom izletu. Adresu smo nakon slanja obrisali.</p>'
-			. '</div></body></html>';
+		// Zajednički Plan A izgled (zaglavlje s logom, naslov, kartica).
+		$body    = Plan_A_Email::render(
+			array(
+				'title'    => $title,
+				'label'    => 'Plan izleta',
+				'icon'     => 'star',
+				'subtitle' => '<strong>' . esc_html( $date ) . '</strong>' . ( $row['guides'] ? ' · Vodiči: ' . esc_html( $row['guides'] ) : '' ),
+			),
+			Plan_A_Email::p( 'Javljamo ti: izlet je upravo objavljen. ' . ( $row['sold_out'] ? 'Mjesta su već popunjena, ali pogledaj stranicu izleta.' : 'Prijave su otvorene – rezerviraj svoje mjesto na vrijeme.' ) )
+			. Plan_A_Email::button( 'Pogledaj izlet i prijavi se', $url )
+			. Plan_A_Email::small( 'Ovaj e-mail šaljemo samo jednom, jer je za ovu adresu na ' . esc_html( $site ) . ' zatražena obavijest o ovom izletu. Adresu smo nakon slanja obrisali.' )
+		);
+		$from    = sanitize_email( (string) get_option( 'woocommerce_email_from_address', '' ) ) ?: sanitize_email( (string) get_option( 'admin_email' ) );
+		$fname   = str_replace( array( '"', "\r", "\n" ), '', trim( wp_strip_all_tags( (string) get_option( 'woocommerce_email_from_name', '' ) ) ) ?: 'Plan A' );
 
-		return (bool) wp_mail( $email, $subject, $body, array( 'Content-Type: text/html; charset=UTF-8' ) );
+		return (bool) wp_mail( $email, $subject, $body, array( 'Content-Type: text/html; charset=UTF-8', 'From: "' . $fname . '" <' . $from . '>' ) );
 	}
 
 	public static function register_eraser( $erasers ) {

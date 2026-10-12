@@ -34,28 +34,18 @@ final class Plan_A_Newsletter_Mail {
 		$body  = self::style( $body ) . $tours;
 		$plain = trim( preg_replace( '/\s+/', ' ', wp_strip_all_tags( $body ) ) );
 		$pre   = function_exists( 'mb_substr' ) ? mb_substr( $plain, 0, 140 ) : substr( $plain, 0, 140 );
-		$logo  = Plan_A_Newsletter::logo();
 		$unsub = '' !== $email ? self::unsub_url( $email ) : '#';
-		$head  = '' !== $logo
-			? '<img src="' . esc_url( $logo ) . '" alt="Plan A" height="44" style="display:block;height:44px;width:auto;max-width:220px;border:0">'
-			: '<span style="color:#fff;font-size:22px;font-weight:bold;letter-spacing:2px">PLAN A</span>';
-
-		return '<!doctype html><html lang="hr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>' . esc_html( $subject ) . '</title>'
-			. '<style>a{color:#1a7fc1}img{max-width:100%;height:auto}@media (max-width:620px){.pan-pad{padding:22px 18px!important}.pan-tour-img{width:96px!important}}</style></head>'
-			. '<body style="margin:0;padding:0;background:#f3f6f9;font-family:Arial,Helvetica,sans-serif;color:' . self::TEXT . '">'
-			. '<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#f3f6f9">' . esc_html( $pre ) . '</div>'
-			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f6f9"><tr><td align="center" style="padding:24px 12px">'
-			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden">'
-			. '<tr><td style="background:' . self::NAVY . ';padding:18px 24px">' . $head . '</td></tr>'
-			. '<tr><td class="pan-pad" style="padding:28px 28px 8px">'
-			. '<h1 style="margin:0 0 18px;color:' . self::NAVY . ';font-size:24px;line-height:1.3">' . esc_html( $subject ) . '</h1>'
-			. $body
-			. '</td></tr>'
-			. '<tr><td class="pan-pad" style="padding:8px 28px 26px">'
-			. '<p style="margin:18px 0 0;padding-top:16px;border-top:1px solid #e3e8ee;color:#8a96a3;font-size:12px;line-height:1.6">'
-			. 'S.R.D. Plan A · Celovečka 60b, Zagreb · <a href="mailto:info@srd-plan-a.hr" style="color:#8a96a3">info@srd-plan-a.hr</a> · 095 90 60 556<br>'
-			. 'Ovaj e-mail primaš kao član udruge Plan A ili sudionik naših izleta. <a href="' . esc_url( $unsub ) . '" style="color:#8a96a3">Odjava od obavijesti</a></p>'
-			. '</td></tr></table></td></tr></table></body></html>';
+		// Zajednički Plan A izgled (zaglavlje s logom, naslov, kartica, podnožje) s odjavom.
+		return Plan_A_Email::render(
+			array(
+				'title'     => $subject,
+				'icon'      => '',
+				'label'     => 'Plan A · novosti',
+				'preheader' => $pre,
+			),
+			$body,
+			'Ovaj e-mail primaš kao član udruge Plan A ili sudionik naših izleta. <a href="' . esc_url( $unsub ) . '" style="color:#8a96a3">Odjava od obavijesti</a>'
+		);
 	}
 
 	/** {ime} → ime primatelja; bez imena se izbaci i razmak ispred. */
@@ -258,6 +248,7 @@ final class Plan_A_Newsletter_Mail {
 		$html = '<p>Newsletter <strong>' . esc_html( get_post_field( 'post_title', $id ) ) . '</strong> je poslan.</p>'
 			. '<p>Poslano: <strong>' . $sent . '</strong> od ' . (int) get_post_meta( $id, '_pan_total', true ) . ' mailova.'
 			. ( $fail ? '<br>Nije poslano (' . count( $fail ) . '): ' . esc_html( implode( ', ', array_slice( $fail, 0, 30 ) ) ) : '' ) . '</p>';
+		$html = Plan_A_Email::render( array( 'title' => 'Newsletter je poslan', 'icon' => 'check', 'label' => 'Plan A · novosti' ), Plan_A_Email::card( '', self::style( $html ) ) );
 		wp_mail( $to, 'Newsletter je poslan: ' . wp_specialchars_decode( get_post_field( 'post_title', $id ), ENT_QUOTES ), $html, self::headers() );
 	}
 

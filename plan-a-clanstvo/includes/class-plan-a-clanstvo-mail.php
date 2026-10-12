@@ -9,23 +9,62 @@ defined( 'ABSPATH' ) || exit;
 
 final class Plan_A_Clanstvo_Mail {
 
-	public static function wrap( string $title, string $inner, string $label = 'Plan A · pristupnica' ): string {
-		return '<!doctype html><html lang="hr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>'
-			. '<body style="margin:0;padding:24px 12px;background:#f3f6f9;font-family:Arial,Helvetica,sans-serif;color:#24323f">'
-			. '<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:16px;padding:28px 24px">'
-			. '<p style="margin:0 0 6px;color:#c96a12;font-size:12px;font-weight:bold;letter-spacing:2px;text-transform:uppercase">' . esc_html( $label ) . '</p>'
-			. '<h1 style="margin:0 0 16px;color:#12304b;font-size:24px;line-height:1.25">' . esc_html( $title ) . '</h1>'
-			. $inner
-			. '<p style="margin:24px 0 0;color:#8a96a3;font-size:12px;line-height:1.5">S.R.D. Plan A · Celovečka 60b, Zagreb · info@srd-plan-a.hr · 095 90 60 556</p>'
-			. '</div></body></html>';
+	/** Ikona u krugu po vrsti maila (natpis iznad naslova). */
+	const ICON_BY_LABEL = array(
+		'Plan A · pristupnica'    => 'mail',
+		'Plan A · članarina'      => 'euro',
+		'Plan A · uplata'         => 'euro',
+		'Plan A · izleti'         => 'x',
+		'Plan A · dnevni pregled' => 'list',
+		'Plan A · popis za vodiča' => 'list',
+		'Plan A · stanje sustava' => 'warn',
+		'Plan A · blagajna'       => 'list',
+	);
+
+	/**
+	 * Cijeli mail u zajedničkom Plan A izgledu (zaglavlje s logom, naslov, kartice).
+	 * $inner: običan HTML (ide u jednu karticu) ili kartice (Plan_A_Email::card/payment …).
+	 */
+	public static function wrap( string $title, string $inner, string $label = 'Plan A · pristupnica', string $icon = '', string $subtitle = '' ): string {
+		return Plan_A_Email::render(
+			array(
+				'title'    => $title,
+				'label'    => $label,
+				'icon'     => $icon ?: ( self::ICON_BY_LABEL[ $label ] ?? 'info' ),
+				'subtitle' => $subtitle,
+			),
+			$inner
+		);
 	}
 
 	public static function p( string $text ): string {
-		return '<p style="margin:0 0 14px;font-size:16px;line-height:1.55">' . $text . '</p>';
+		return Plan_A_Email::p( $text );
 	}
 
 	public static function button( string $label, string $url ): string {
-		return '<p style="margin:22px 0 22px;text-align:center"><a href="' . esc_url( $url ) . '" style="display:inline-block;padding:16px 30px;border-radius:999px;background:#e8862a;color:#fff;font-size:18px;font-weight:bold;text-decoration:none">' . esc_html( $label ) . '</a></p>';
+		return Plan_A_Email::button( $label, $url );
+	}
+
+	/** Kartica za uplatu članarine: 2D kod (u samom mailu), uplatnica i podaci. */
+	public static function pay_card( int $id, int $year ): string {
+		$m    = Plan_A_Clanstvo_Data::get_member( $id );
+		$pay  = Plan_A_Clanstvo_Hub3::payment( $year );
+		$code = Plan_A_Clanstvo_Hub3::for_member( $id, $year );
+		$src  = $code ? ( $code['path'] ? self::embed( $code['path'], 'pac2d' ) : $code['url'] ) : '';
+		$s    = Plan_A_Clanstvo_Data::get();
+		return Plan_A_Email::payment(
+			array(
+				'title'     => 'Članarina za ' . (int) $year . '.',
+				'code'      => $src,
+				'iznos'     => (float) $pay['iznos'],
+				'platitelj' => $m ? array( trim( $m['ime'] . ' ' . $m['prezime'] ), $m['adresa'] ?? '', $m['mjesto'] ?? '' ) : array(),
+				'primatelj' => array( $pay['primatelj'], $s['adresa'] ?? '', $s['mjesto'] ?? '' ),
+				'iban'      => $pay['iban'],
+				'model'     => $pay['model'],
+				'poziv'     => $pay['poziv'],
+				'opis'      => $pay['opis'],
+			)
+		);
 	}
 
 	/**
@@ -102,7 +141,7 @@ final class Plan_A_Clanstvo_Mail {
 			. self::button( 'Potvrđujem pristupnicu', $url )
 			. self::p( '<span style="color:#5f6b77;font-size:14px">Klikom potvrđuješ i da prihvaćaš Izjavu člana. Poveznica vrijedi ' . (int) $days . ' dana. Ako gumb ne radi, kopiraj ovu adresu u preglednik:<br><a href="' . esc_url( $url ) . '" style="color:#1a73b8;word-break:break-all">' . esc_html( $url ) . '</a></span>' )
 			. self::p( '<span style="color:#5f6b77;font-size:14px">Ako pristupnicu nisi ispunio/la ti, javi nam se na info@srd-plan-a.hr.</span>' );
-		return self::send( $m['email'], ( $reminder ? 'Podsjetnik: ' : '' ) . 'Potvrdi pristupnicu u Plan A', self::wrap( $reminder ? 'Potvrdi svoju pristupnicu' : 'Potvrdi svoju pristupnicu', $inner ) );
+		return self::send( $m['email'], ( $reminder ? 'Podsjetnik: ' : '' ) . 'Potvrdi pristupnicu u Plan A', self::wrap( 'Potvrdi svoju pristupnicu', $inner, 'Plan A · pristupnica', 'mail' ) );
 	}
 
 	/**
@@ -149,11 +188,11 @@ final class Plan_A_Clanstvo_Mail {
 		}
 		$code  = Plan_A_Clanstvo_Hub3::for_member( $id, $year );
 		$inner = self::p( 'Pozdrav ' . esc_html( $m['ime'] ) . ',' )
-			. self::p( 'hvala na prijavi na izlet! Članarina u udruzi Plan A za <strong>' . (int) $year . '.</strong> još nije plaćena. Uplati je na račun udruge (ne agencije), najjednostavnije skeniranjem 2D koda:' )
-			. self::payment_html( $id, 'display:block;width:100%;max-width:420px;height:auto;margin:0 auto 14px', $year )
-			. self::p( '<span style="color:#5f6b77;font-size:14px">Članarina vrijedi kalendarsku godinu. Ako si je već platio/la, zanemari ovu poruku.</span>' );
-		$files = $code && $code['path'] ? array( $code['path'] ) : array();
-		return self::send( $m['email'], 'Članarina Plan A za ' . (int) $year . '.', self::wrap( 'Članarina za ' . (int) $year . '.', $inner ), $files );
+			. self::p( 'hvala na prijavi na izlet! Članarina u udruzi Plan A za <strong>' . (int) $year . '.</strong> još nije plaćena. Uplati je na račun udruge (ne agencije), najjednostavnije skeniranjem 2D koda.' );
+		$inner = Plan_A_Email::card( '', $inner ) . self::pay_card( $id, $year )
+			. Plan_A_Email::card( '', Plan_A_Email::small( 'Članarina vrijedi kalendarsku godinu. Ako si je već platio/la, zanemari ovu poruku.' ) );
+		$files = array(); // 2D kod je ugrađen u mail (pay_card)
+		return self::send( $m['email'], 'Članarina Plan A za ' . (int) $year . '.', self::wrap( 'Članarina za ' . (int) $year . '.', $inner, 'Plan A · članarina' ), $files );
 	}
 
 	/**
@@ -166,13 +205,16 @@ final class Plan_A_Clanstvo_Mail {
 		}
 		$code  = Plan_A_Clanstvo_Hub3::for_member( $id, $year );
 		$inner = self::p( 'Pozdrav ' . esc_html( $m['ime'] ) . ',' )
-			. self::p( 'sretna nova ' . (int) $year . '. i hvala što si s nama! Počela je nova godina članstva u udruzi Plan A, pa ti šaljemo podatke za članarinu za <strong>' . (int) $year . '.</strong> Najjednostavnije je skenirati 2D kod:' )
-			. self::payment_html( $id, 'display:block;width:100%;max-width:420px;height:auto;margin:0 auto 14px', $year )
-			. self::p( 'Članarina vrijedi do kraja kalendarske godine.' )
-			. self::button( 'Pogledaj izlete', home_url( '/izleti/' ) )
-			. self::p( '<span style="color:#5f6b77;font-size:14px">Ako si članarinu već platio/la, zanemari ovu poruku. Ako više ne želiš biti član, javi nam se na info@srd-plan-a.hr.</span>' )
-			. self::p( '<span style="color:#5f6b77;font-size:13px">Ne želiš ovaj e-mail početkom godine? <a href="' . esc_url( Plan_A_Clanstvo_Ops::jan_url( $id ) ) . '" style="color:#5f6b77">Odjavi se s popisa za ovaj e-mail</a>.</span>' );
-		$files = $code && $code['path'] ? array( $code['path'] ) : array();
+			. self::p( 'sretna nova ' . (int) $year . '. i hvala što si s nama! Počela je nova godina članstva u udruzi Plan A, pa ti šaljemo podatke za članarinu za <strong>' . (int) $year . '.</strong> Najjednostavnije je skenirati 2D kod.' )
+			. self::p( 'Članarina vrijedi do kraja kalendarske godine.' );
+		$inner = Plan_A_Email::card( '', $inner ) . self::pay_card( $id, $year )
+			. Plan_A_Email::card(
+				'',
+				self::button( 'Pogledaj izlete', home_url( '/izleti/' ) )
+				. Plan_A_Email::small( 'Ako si članarinu već platio/la, zanemari ovu poruku. Ako više ne želiš biti član, javi nam se na info@srd-plan-a.hr.' )
+				. Plan_A_Email::small( 'Ne želiš ovaj e-mail početkom godine? <a href="' . esc_url( Plan_A_Clanstvo_Ops::jan_url( $id ) ) . '" style="color:#5f6b77">Odjavi se s popisa za ovaj e-mail</a>.' )
+			);
+		$files = array(); // 2D kod je ugrađen u mail (pay_card)
 		return self::send( $m['email'], 'Članarina Plan A za ' . (int) $year . '.', self::wrap( 'Članarina za ' . (int) $year . '.', $inner, 'Plan A · članarina' ), $files, array( 'List-Unsubscribe: <' . Plan_A_Clanstvo_Ops::jan_url( $id ) . '>' ) );
 	}
 
@@ -184,10 +226,10 @@ final class Plan_A_Clanstvo_Mail {
 		$code  = Plan_A_Clanstvo_Hub3::for_member( $id, self::fee_year( $id ) );
 		$inner = self::p( 'Pozdrav ' . esc_html( $m['ime'] ) . ',' )
 			. self::p( 'tvoja pristupnica je <strong>potvrđena</strong>. Dobrodošao/la u Plan A!' )
-			. self::p( 'Članarina vrijedi za kalendarsku godinu. Člansku iskaznicu preuzimaš na prvom susretu s nama.' )
-			. self::payment_html( $id )
-			. self::button( 'Pogledaj izlete', home_url( '/izleti/' ) );
-		$files = $code && $code['path'] ? array( $code['path'] ) : array();
-		return self::send( $m['email'], 'Pristupnica je potvrđena – dobrodošli u Plan A', self::wrap( 'Pristupnica je potvrđena', $inner ), $files );
+			. self::p( 'Članarina vrijedi za kalendarsku godinu. Člansku iskaznicu preuzimaš na prvom susretu s nama.' );
+		$inner = Plan_A_Email::card( '', $inner ) . self::pay_card( $id, self::fee_year( $id ) )
+			. Plan_A_Email::card( '', self::button( 'Pogledaj izlete', home_url( '/izleti/' ) ) );
+		$files = array(); // 2D kod je ugrađen u mail (pay_card)
+		return self::send( $m['email'], 'Pristupnica je potvrđena – dobrodošli u Plan A', self::wrap( 'Pristupnica je potvrđena', $inner, 'Plan A · pristupnica', 'check' ), $files );
 	}
 }

@@ -22,6 +22,8 @@ final class Plan_A_Kosarica_Order {
 		'emails/customer-processing-order.php',
 		'emails/customer-completed-order.php',
 		'emails/admin-new-order.php',
+		'emails/email-header.php', // ostali WooCommerceovi mailovi (otkazano, povrat, napomena, lozinka, poklon bon …)
+		'emails/email-footer.php',
 	);
 
 	/** @var bool Upravo se iscrtava naša stranica ili e-mail (za prijevode). */
