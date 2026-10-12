@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Plan A – pomoćnik za kopiju
- * Description:       SAMO ZA KOPIJU STRANICE (staging). Claudeu omogućuje da preko REST API-ja postavlja i ažurira naše dodatke (plan-a-*), pokreće našu automatiku i čita zapis grešaka. Na srd-plan-a.hr odbija sve.
- * Version:           1.0.0
+ * Description:       SAMO ZA KOPIJU STRANICE (staging). Sve mailove kopije preusmjerava na jednu adresu (ili ih blokira). Claudeu omogućuje da preko REST API-ja postavlja i ažurira naše dodatke (plan-a-*), pokreće našu automatiku i čita zapis grešaka. Na srd-plan-a.hr odbija sve.
+ * Version:           1.1.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -20,9 +20,21 @@ final class Plan_A_Pomocnik {
 	/** Žive stranice na kojima pomoćnik ne radi ništa. */
 	const LIVE_HOSTS = array( 'srd-plan-a.hr', 'www.srd-plan-a.hr' );
 
+	/** Adresa na koju idu svi mailovi kopije; prazno = svi se mailovi blokiraju. */
+	const MAIL_OPT = 'plan_a_pomocnik_mail_to';
+
+	/** Zadnji preusmjereni/blokirani mailovi (za provjeru). */
+	const MAIL_LOG = 'plan_a_pomocnik_mail_log';
+
 	public static function init() {
 		add_action( 'rest_api_init', array( __CLASS__, 'routes' ) );
 		add_action( 'admin_notices', array( __CLASS__, 'notice' ) );
+		if ( ! self::is_live() ) {
+			add_filter( 'wp_mail', array( __CLASS__, 'mail_redirect' ), PHP_INT_MAX );
+			add_filter( 'pre_wp_mail', array( __CLASS__, 'mail_block' ), PHP_INT_MAX, 2 );
+			add_action( 'phpmailer_init', array( __CLASS__, 'mail_phpmailer' ), PHP_INT_MAX );
+			add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
+		}
 	}
 
 	public static function is_live(): bool {
@@ -39,7 +51,115 @@ final class Plan_A_Pomocnik {
 		}
 		echo self::is_live()
 			? '<div class="notice notice-error"><p><strong>Plan A – pomoćnik za kopiju</strong> je instaliran na živoj stranici. Ne radi ništa, ali ga obriši (Dodaci → Deaktiviraj → Obriši).</p></div>'
-			: '<div class="notice notice-info"><p><strong>Kopija stranice</strong> – Plan A pomoćnik je uključen (Claude ovdje smije postavljati naše dodatke i pokretati automatiku).</p></div>';
+			: '<div class="notice notice-info"><p><strong>Kopija stranice</strong> – Plan A pomoćnik je uključen (Claude ovdje smije postavljati naše dodatke i pokretati automatiku). '
+				. ( self::mail_to()
+					? 'Svi mailovi idu na <strong>' . esc_html( self::mail_to() ) . '</strong>.'
+					: '<strong>Svi mailovi su blokirani</strong> (nije upisana adresa za preusmjeravanje).' )
+				. ' <a href="' . esc_url( admin_url( 'tools.php?page=plan-a-pomocnik' ) ) . '">Postavke</a></p></div>';
+	}
+
+	/* ---------- Mailovi na kopiji: sve na jednu adresu ---------- */
+
+	public static function mail_to(): string {
+		$to = trim( (string) get_option( self::MAIL_OPT, '' ) );
+		return is_email( $to ) ? $to : '';
+	}
+
+	private static function list_addresses( $v ): array {
+		$v = is_array( $v ) ? $v : explode( ',', (string) $v );
+		return array_values( array_filter( array_map( 'trim', $v ) ) );
+	}
+
+	private static function mail_log( array $orig, string $subject, string $result ) {
+		$log = (array) get_option( self::MAIL_LOG, array() );
+		array_unshift( $log, array(
+			'time'    => current_time( 'mysql' ),
+			'orig'    => implode( ', ', $orig ),
+			'subject' => wp_strip_all_tags( $subject ),
+			'result'  => $result,
+		) );
+		update_option( self::MAIL_LOG, array_slice( $log, 0, 50 ), false );
+	}
+
+	/** Svi primatelji (To, Cc, Bcc) zamjenjuju se jednom adresom; izvorni pišu u naslovu. */
+	public static function mail_redirect( $atts ) {
+		$atts    = (array) $atts;
+		$orig    = self::list_addresses( $atts['to'] ?? '' );
+		$headers = $atts['headers'] ?? array();
+		$headers = is_array( $headers ) ? $headers : explode( "\n", str_replace( "\r\n", "\n", (string) $headers ) );
+		$keep    = array();
+		foreach ( $headers as $h ) {
+			if ( preg_match( '/^\s*(cc|bcc)\s*:(.*)$/i', (string) $h, $m ) ) {
+				foreach ( self::list_addresses( $m[2] ) as $a ) {
+					$orig[] = strtolower( $m[1] ) . ':' . $a;
+				}
+				continue;
+			}
+			$keep[] = $h;
+		}
+		$atts['headers'] = $keep;
+		$subject         = (string) ( $atts['subject'] ?? '' );
+		$to              = self::mail_to();
+		if ( $to ) {
+			$list            = implode( ', ', $orig );
+			$atts['to']      = $to;
+			$atts['subject'] = '[KOPIJA → ' . ( mb_strlen( $list ) > 120 ? mb_substr( $list, 0, 120 ) . '…' : $list ) . '] ' . $subject;
+		}
+		self::mail_log( $orig, $subject, $to ? 'preusmjereno na ' . $to : 'blokirano' );
+		return $atts;
+	}
+
+	/** Bez upisane adrese ništa ne odlazi. */
+	public static function mail_block( $pre, $atts ) {
+		return self::mail_to() ? $pre : false;
+	}
+
+	/** Zadnja zaštita: što god drugi dodaci dodali, PHPMailer šalje samo na našu adresu. */
+	public static function mail_phpmailer( $mailer ) {
+		$to = self::mail_to();
+		$mailer->clearAllRecipients();
+		if ( $to ) {
+			$mailer->addAddress( $to );
+		}
+	}
+
+	public static function menu() {
+		add_management_page( 'Plan A – mailovi kopije', 'Plan A – mailovi kopije', 'manage_options', 'plan-a-pomocnik', array( __CLASS__, 'page' ) );
+	}
+
+	public static function page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		if ( isset( $_POST['pap_mail_to'] ) && check_admin_referer( 'pap_mail' ) ) {
+			$new = sanitize_email( wp_unslash( $_POST['pap_mail_to'] ) );
+			update_option( self::MAIL_OPT, $new, false );
+			echo '<div class="notice notice-success"><p>Spremljeno.</p></div>';
+		}
+		if ( isset( $_POST['pap_test'] ) && check_admin_referer( 'pap_mail' ) ) {
+			$ok = wp_mail( 'test-kupac@example.com', 'Probni mail s kopije', "Ovo je probni mail s kopije stranice.\nIzvorno je bio upućen na test-kupac@example.com." );
+			echo '<div class="notice notice-' . ( $ok ? 'success' : 'warning' ) . '"><p>' . ( $ok ? 'Probni mail poslan.' : 'Probni mail nije poslan (blokiran ili greška).' ) . '</p></div>';
+		}
+		$log = (array) get_option( self::MAIL_LOG, array() );
+		?>
+		<div class="wrap">
+			<h1>Plan A – mailovi kopije</h1>
+			<p>Na kopiji stranice <strong>nijedan mail ne ide stvarnom primatelju</strong>. Svi mailovi (kupcima, članovima, vodičima, osoblju…) idu na adresu ispod, a izvorni primatelji pišu u naslovu: <code>[KOPIJA → kupac@…] Naslov</code>.<br>Ako je polje prazno, svi se mailovi blokiraju.</p>
+			<form method="post">
+				<?php wp_nonce_field( 'pap_mail' ); ?>
+				<p><label>Svi mailovi idu na: <input type="email" name="pap_mail_to" class="regular-text" value="<?php echo esc_attr( (string) get_option( self::MAIL_OPT, '' ) ); ?>"></label>
+				<?php submit_button( 'Spremi', 'primary', 'submit', false ); ?>
+				<?php submit_button( 'Pošalji probni mail', 'secondary', 'pap_test', false ); ?></p>
+			</form>
+			<h2>Zadnji mailovi</h2>
+			<table class="widefat striped"><thead><tr><th>Vrijeme</th><th>Izvorni primatelji</th><th>Naslov</th><th>Što je bilo</th></tr></thead><tbody>
+			<?php foreach ( $log as $r ) : ?>
+				<tr><td><?php echo esc_html( $r['time'] ?? '' ); ?></td><td><?php echo esc_html( $r['orig'] ?? '' ); ?></td><td><?php echo esc_html( $r['subject'] ?? '' ); ?></td><td><?php echo esc_html( $r['result'] ?? '' ); ?></td></tr>
+			<?php endforeach; ?>
+			<?php if ( ! $log ) : ?><tr><td colspan="4">Još nema.</td></tr><?php endif; ?>
+			</tbody></table>
+		</div>
+		<?php
 	}
 
 	/** Samo administrator prijavljen lozinkom aplikacije, i nikad na živoj stranici. */
@@ -67,6 +187,8 @@ final class Plan_A_Pomocnik {
 			array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'meta_get' ), 'permission_callback' => $ok ),
 			array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'meta_set' ), 'permission_callback' => $ok ),
 		) );
+		register_rest_route( self::NS, '/mail', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'mail_status' ), 'permission_callback' => $ok ) );
+		register_rest_route( self::NS, '/mail/test', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'mail_test' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/option/(?P<name>(plan_a|ttbm|pan_|pac_)[A-Za-z0-9_\-]*)', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'option' ), 'permission_callback' => $ok ) );
 	}
 
@@ -100,6 +222,7 @@ final class Plan_A_Pomocnik {
 			'debug_log'   => defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG,
 			'fs_direct'   => 'direct' === get_filesystem_method(),
 			'emails_off'  => is_plugin_active( 'disable-emails/disable-emails.php' ),
+			'mail_to'     => self::mail_to() ? 'upisana' : 'nema – svi mailovi blokirani',
 			'plugins'     => $plugins,
 		);
 	}
@@ -232,6 +355,20 @@ final class Plan_A_Pomocnik {
 		}
 		clean_post_cache( $id );
 		return array( 'ok' => true, 'id' => $id, 'keys' => array_keys( $meta ) );
+	}
+
+	/** Stanje preusmjeravanja i zadnji mailovi (bez same adrese). */
+	public static function mail_status() {
+		return array(
+			'redirect' => (bool) self::mail_to(),
+			'log'      => array_slice( (array) get_option( self::MAIL_LOG, array() ), 0, 20 ),
+		);
+	}
+
+	/** Probni mail na izmišljenu adresu – mora stići samo na upisanu adresu. */
+	public static function mail_test() {
+		$ok = wp_mail( 'test-kupac@example.com', 'Probni mail s kopije', "Ovo je probni mail s kopije stranice.\nIzvorno je bio upućen na test-kupac@example.com." );
+		return array( 'ok' => (bool) $ok, 'redirect' => (bool) self::mail_to() );
 	}
 
 	public static function option( WP_REST_Request $req ) {

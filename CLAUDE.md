@@ -23,9 +23,11 @@ prvo predloži tekstualno, kad to traži. Shortcodeovi i HTML idu u Flatsome HTM
   U novoj sesiji prvo provjeri da je ključ samo za čitanje (upis mora biti odbijen).
 - **Kopija stranice (staging)** `PROBA_URL`: puni pristup, korisnik `PROBA_WP_USER` +
   `PROBA_WP_APP_PASSWORD`, FTP `PROBA_FTP_*` ograničen na mapu kopije (ako su upisani).
-  Na kopiji je uključen dodatak **Disable Emails** – ne isključivati.
+  Mailovi na kopiji: **plan-a-pomocnik** (od 1.1.0) sve mailove preusmjerava na Igorovu adresu upisanu u
+  Alati → Plan A – mailovi kopije (izvorni primatelji u naslovu); bez upisane adrese sve blokira.
+  Pomoćnik se na kopiji nikad ne isključuje. Disable Emails se više ne koristi (blokirao bi i preusmjerene mailove).
 - Na kopiji je dodatak **plan-a-pomocnik** (grana `prijave`): REST `PROBA_URL/wp-json/plan-a-pomocnik/v1/`
-  (`status`, `plugin` – postavljanje našeg zipa, `plugin/{slug}/activate|deactivate`, `cron`, `log`,
+  (`status`, `mail`, `mail/test`, `plugin` – postavljanje našeg zipa, `plugin/{slug}/activate|deactivate`, `cron`, `log`,
   `meta/{id}`, `option/{ime}`), prijava `PROBA_WP_USER` + `PROBA_WP_APP_PASSWORD`. Na živoj stranici odbija sve.
 - Iz ove sesije internet ide samo preko HTTPS-a (FTP/SSH ne rade).
 - Kopija koristi **kopije Google tablica** („Kopija datoteke Članovi Plan A nova” i
