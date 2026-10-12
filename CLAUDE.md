@@ -32,7 +32,12 @@ prvo predloži tekstualno, kad to traži. Shortcodeovi i HTML idu u Flatsome HTM
   `meta/{id}`, `option/{ime}`), prijava `PROBA_WP_USER` + `PROBA_WP_APP_PASSWORD`. Na živoj stranici odbija sve.
 - Iz ove sesije internet ide samo preko HTTPS-a (FTP/SSH ne rade).
 - Kopija koristi **kopije Google tablica** („Kopija datoteke Članovi Plan A nova” i
-  „Kopija datoteke Prijave na izlete nova”), nikad prave tablice.
+  „Kopija datoteke Prijave na izlete nova”), nikad prave tablice. Spojeno 12.10.2026.: kopija stranice ima
+  svoj ključ (Članstvo → „Novi ključ”), vlastitu objavu skripte u kopiji tablice članova (Web app URL
+  `…AKfycbwb1mz…/exec`) i tablicu za agenciju `…/d/1fIOcuG71XDa…`. Prava tablica za agenciju je `…/d/1z53LwhYgw87…`.
+  **Prije svakog slanja u tablice provjeri** (`option/plan_a_clanstvo`: `agency_url`, `sheet_url`) da nije upisana prava.
+  Iz sesije se do Googlea ne može (script.google.com je blokiran); vezu provjerava Igor gumbom „Provjeri vezu”.
+- Na kopiji je probni izlet 9013 „PROBNI IZLET – test tablice (ne prijavljivati)”, 22.11.2026., proizvod 9014.
 - Lozinke i ključeve korisnik upisuje u postavke okruženja; **nikad ih ne traži u chatu**.
 
 ## Osobni podaci i sigurnost
