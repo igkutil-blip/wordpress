@@ -84,7 +84,7 @@ Igor ne pamti ništa od ovoga: kad završimo s kopijom, **ja** pripremim sve zip
 napišem redoslijed (što isključiti, što instalirati, što provjeriti). Do tada na živoj ništa ne tražiti.
 
 - **Jednak izgled svih mailova (12.10.2026.)** – zadana grana i `prijave`, isti zipovi: plan-a-kosarica 1.6.1,
-  plan-a-clanstvo 1.15.1, plan-a-jedrenje 1.9.1, plan-a-newsletter 1.1.1, plan-a-izleti 1.22.1 (zajednička
+  plan-a-clanstvo 1.15.1, plan-a-jedrenje 1.9.2, plan-a-newsletter 1.1.1, plan-a-izleti 1.22.1 (zajednička
   datoteka `includes/plan-a-email.php`, klasa `Plan_A_Email`, mora biti ista u svim dodacima). Na kopiji
   primjerci: pomoćnik REST `mail/samples` (grupa all|wc|clanstvo|jedrenje|ostalo, order, rate_order,
   member_email, samo).
@@ -98,6 +98,9 @@ napišem redoslijed (što isključiti, što instalirati, što provjeriti). Do ta
   „Cijelokupni iznos je uplaćen” (U obradi → Završeno) i prvu ratu plaćenu karticom (krivi mail, nema maila
   s ostatkom ni podsjetnika). Ostatak druge rate računa se po današnjoj cijeni pune karte (bolje zapamtiti
   cijenu pri prijavi).
+- **Pravilo za otkaz (12.10.2026.):** agencija ne vraća novac za otkazani izlet/jedrenje; s osiguranjem od otkaza kupac
+  se obraća osiguranju. Nigdje ne smije pisati da vraćamo novac ili postotak (mailovi, uvjeti jedrenja). U novim
+  uputama za agenciju maknuti „povrat radite kao i dosad”.
 - **Upute (PDF) za agenciju i Krešu** napraviti nove **nakon prelaska, prema živoj stranici** (dogovor s Igorom; popis razlika napisan mu 12.10.2026.): naslov maila
   „Cijelokupni iznos je uplaćen…”, novi izlet samo za termine u 120 dana (najviše 3), zaštićeni stupci pitaju
   „jeste li sigurni”, mail s ostatkom 1–2 h nakon kvačice, stupac 2. rata postoji svugdje (siv), POPUNJEN /
