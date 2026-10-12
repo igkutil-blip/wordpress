@@ -14,6 +14,9 @@ final class Plan_A_Prijave_Editor {
 	const NONCE  = 'pap_nonce';
 	const NOTICE = 'pap_editor_notice_';
 
+	/** Količina usluge: praktički neograničeno. */
+	const SERVICE_QTY = 9999;
+
 	/** Ikonica pojma (isti podatak kao WpTravelly) i zadana ikonica. */
 	const ICON_META    = array(
 		'ttbm_tour_activities'    => 'ttbm_activities_icon',
@@ -444,18 +447,19 @@ final class Plan_A_Prijave_Editor {
 		echo '</section>';
 
 		/* Karte */
-		self::section( 'karte', 'Karte i cijene', 'Svaka karta ima svoju cijenu i broj mjesta. Izlet s <strong>dvije rate</strong> ima kartu s punom cijenom i kartu čiji naziv sadrži <strong>„prve rate”</strong> (npr. „Uplata prve rate”) – po tome stranica prepoznaje rate. Slobodna mjesta na stranici zbroj su mjesta svih karata (npr. 20 + 5 = 25). Karta na koju je netko prijavljen ne može se preimenovati ni obrisati.' );
+		self::section( 'karte', 'Karte i cijene', 'Broj mjesta upisuješ samo kod karte s punom cijenom (npr. „Uplata”). Izlet s <strong>dvije rate</strong> ima i kartu čiji naziv sadrži <strong>„prve rate”</strong> (npr. „Uplata prve rate”) – ona nema svoja mjesta, nego troši <strong>ista mjesta</strong> kao puna uplata. Ako je 8 mjesta, zajedno se može prijaviti najviše 8 osoba, bez obzira na to plaćaju li sve ili prvu ratu. Karta na koju je netko prijavljen ne može se preimenovati ni obrisati.' );
 		echo '<table class="pap-table"><thead><tr><th>Naziv karte</th><th>Cijena (€)</th><th>Mjesta</th><th>Rezervirano</th><th>Opis (nije obavezno)</th><th>Prodano</th><th></th></tr></thead><tbody data-rows="tickets">';
 		foreach ( Plan_A_Prijave_Tour::rows( $id, 'ttbm_ticket_type' ) as $i => $t ) {
 			$name = (string) ( $t['ticket_type_name'] ?? '' );
 			echo self::ticket_row( 't' . $i, $t, (int) ( $booked['tickets'][ $name ] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput
 		}
-		echo '</tbody></table><p><button type="button" class="button pap-add" data-tpl="pap-tpl-ticket" data-to="tickets">+ Dodaj kartu</button> <button type="button" class="button pap-add-rate">+ Dodaj kartu „Uplata prve rate”</button></p>';
+		echo '</tbody></table><p class="pap-pool">Mjesta na izletu: <strong class="pap-pool-n">–</strong> <span class="pap-hint">– zajednička za sve karte (puna uplata i prva rata)</span></p>';
+		echo '<p><button type="button" class="button pap-add" data-tpl="pap-tpl-ticket" data-to="tickets">+ Dodaj kartu</button> <button type="button" class="button pap-add-rate">+ Dodaj kartu „Uplata prve rate”</button></p>';
 		echo '</section>';
 
 		/* Usluge */
-		self::section( 'usluge', 'Dodatne usluge', 'Npr. „Osiguranje od otkaza (opcionalno)”. Količina je koliko se usluga najviše može prodati (za osiguranje stavi velik broj, npr. 999).' );
-		echo '<table class="pap-table"><thead><tr><th>Naziv usluge</th><th>Cijena (€)</th><th>Količina</th><th>Opis (nije obavezno)</th><th>Prodano</th><th></th></tr></thead><tbody data-rows="services">';
+		self::section( 'usluge', 'Dodatne usluge', 'Npr. „Osiguranje od otkaza (opcionalno)”. Usluga nema ograničenu količinu – može je uzeti svaki prijavljeni (koliko osoba, toliko osiguranja).' );
+		echo '<table class="pap-table"><thead><tr><th>Naziv usluge</th><th>Cijena (€)</th><th>Opis (nije obavezno)</th><th>Prodano</th><th></th></tr></thead><tbody data-rows="services">';
 		foreach ( Plan_A_Prijave_Tour::rows( $id, 'ttbm_extra_service_data' ) as $i => $s ) {
 			$name = (string) ( $s['service_name'] ?? '' );
 			echo self::service_row( 's' . $i, $s, (int) ( $booked['services'][ $name ] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput
@@ -625,10 +629,12 @@ final class Plan_A_Prijave_Editor {
 			$keep .= '<input type="hidden" name="' . esc_attr( $f . '[' . $h . ']' ) . '" value="' . self::e( $t[ $h ] ?? '' ) . '">';
 		}
 		$price = $t['ticket_type_price'] ?? ( $t['ticket_price'] ?? '' );
-		return '<tr' . ( $sold ? ' class="pap-locked"' : '' ) . '><td><input type="text" name="' . esc_attr( $f ) . '[name]" value="' . self::e( $t['ticket_type_name'] ?? '' ) . '"' . ( $sold ? ' readonly' : '' ) . ' required>' . $keep . '</td>'
+		$rate  = Plan_A_Prijave_Seats::is_rate( (string) ( $t['ticket_type_name'] ?? '' ) );
+		$cls   = trim( ( $sold ? 'pap-locked' : '' ) . ( $rate ? ' pap-rate' : '' ) );
+		return '<tr' . ( '' !== $cls ? ' class="' . $cls . '"' : '' ) . '><td><input type="text" name="' . esc_attr( $f ) . '[name]" value="' . self::e( $t['ticket_type_name'] ?? '' ) . '"' . ( $sold ? ' readonly' : '' ) . ' required>' . $keep . '</td>'
 			. '<td><input type="number" min="0" step="0.01" name="' . esc_attr( $f ) . '[price]" value="' . self::e( $price ) . '" required></td>'
-			. '<td><input type="number" min="0" name="' . esc_attr( $f ) . '[qty]" value="' . self::e( $t['ticket_type_qty'] ?? '' ) . '" required></td>'
-			. '<td><input type="number" min="0" name="' . esc_attr( $f ) . '[resv]" value="' . self::e( $t['ticket_type_resv_qty'] ?? 0 ) . '"></td>'
+			. '<td class="pap-seat"><input type="number" min="0" name="' . esc_attr( $f ) . '[qty]" value="' . self::e( $t['ticket_type_qty'] ?? '' ) . '"' . ( $rate ? '' : ' required' ) . '><span class="pap-shared">zajednička</span></td>'
+			. '<td class="pap-seat"><input type="number" min="0" name="' . esc_attr( $f ) . '[resv]" value="' . self::e( $t['ticket_type_resv_qty'] ?? 0 ) . '"><span class="pap-shared">–</span></td>'
 			. '<td><input type="text" name="' . esc_attr( $f ) . '[desc]" value="' . self::e( $t['ticket_type_description'] ?? '' ) . '"></td>'
 			. '<td>' . ( $sold ? '<strong>' . $sold . '</strong>' : '–' ) . '</td>' . self::tools( ! $sold ) . '</tr>';
 	}
@@ -641,7 +647,6 @@ final class Plan_A_Prijave_Editor {
 		}
 		return '<tr' . ( $sold ? ' class="pap-locked"' : '' ) . '><td><input type="text" name="' . esc_attr( $f ) . '[name]" value="' . self::e( $s['service_name'] ?? '' ) . '"' . ( $sold ? ' readonly' : '' ) . ' required>' . $keep . '</td>'
 			. '<td><input type="number" min="0" step="0.01" name="' . esc_attr( $f ) . '[price]" value="' . self::e( $s['service_price'] ?? '' ) . '" required></td>'
-			. '<td><input type="number" min="1" name="' . esc_attr( $f ) . '[qty]" value="' . self::e( $s['service_qty'] ?? '' ) . '" required></td>'
 			. '<td><input type="text" name="' . esc_attr( $f ) . '[desc]" value="' . self::e( $s['extra_service_description'] ?? '' ) . '"></td>'
 			. '<td>' . ( $sold ? '<strong>' . $sold . '</strong>' : '–' ) . '</td>' . self::tools( ! $sold ) . '</tr>';
 	}
@@ -816,6 +821,17 @@ final class Plan_A_Prijave_Editor {
 				$notes[]   = 'Karta „' . $name . '” ima prijave i nije obrisana.';
 			}
 		}
+		// Karta za prvu ratu nema svoja mjesta: upisuje se broj zajedničkih mjesta (zbroj punih karata).
+		$pool = 0;
+		foreach ( $tickets as $t ) {
+			$pool += Plan_A_Prijave_Seats::is_rate( $t['ticket_type_name'] ) ? 0 : (int) $t['ticket_type_qty'];
+		}
+		foreach ( $tickets as $i => $t ) {
+			if ( Plan_A_Prijave_Seats::is_rate( $t['ticket_type_name'] ) ) {
+				$tickets[ $i ]['ticket_type_qty']      = (string) $pool;
+				$tickets[ $i ]['ticket_type_resv_qty'] = '0';
+			}
+		}
 		update_post_meta( $id, 'ttbm_ticket_type', $tickets );
 
 		/* Usluge */
@@ -824,8 +840,8 @@ final class Plan_A_Prijave_Editor {
 		foreach ( (array) ( $p['services'] ?? array() ) as $s ) {
 			$name  = sanitize_text_field( (string) ( $s['name'] ?? '' ) );
 			$price = self::money( $s['price'] ?? '' );
-			$qty   = absint( $s['qty'] ?? 0 );
-			if ( '' === $name || '' === $price || $qty < 1 ) {
+			$qty   = self::SERVICE_QTY; // usluga nije ograničena (osiguranje: koliko osoba, toliko osiguranja)
+			if ( '' === $name || '' === $price ) {
 				continue;
 			}
 			$kept[ $name ] = 1;

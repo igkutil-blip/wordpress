@@ -349,6 +349,22 @@ jQuery(function ($) {
 			.always(function () { btn.prop('disabled', false); });
 	});
 
+	/* ---------- Zajednička mjesta: karta „prve rate” nema svoja mjesta ---------- */
+	function isRate(v) { return /prve rate/i.test(v || ''); }
+	function seats() {
+		var sum = 0;
+		box.find('[data-rows="tickets"] tr').each(function () {
+			var tr = $(this), rate = isRate(tr.find('input[name$="[name]"]').val());
+			tr.toggleClass('pap-rate', rate);
+			tr.find('input[name$="[qty]"]').prop('required', !rate);
+			if (!rate) { sum += parseInt(tr.find('input[name$="[qty]"]').val(), 10) || 0; }
+		});
+		box.find('.pap-pool-n').text(sum);
+	}
+	box.on('input change', '[data-rows="tickets"] input', seats);
+	box.on('click', '.pap-add, .pap-add-rate, .pap-del', function () { setTimeout(seats, 0); });
+	seats();
+
 	// Prije spremanja: sadržaj iz uređivača u polja.
 	$('#post').on('submit', function () { if (window.tinymce) { tinymce.triggerSave(); } });
 });

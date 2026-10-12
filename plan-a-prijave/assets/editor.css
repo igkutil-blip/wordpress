@@ -135,3 +135,9 @@ body.pap-layout .pap-sec .pap-table th{background:var(--soft)}
 .pap-icons p{display:flex;justify-content:space-between;align-items:center}
 .pap-icons-count{color:#646970;font-size:12px}
 .pap-icons-grid button.is-own{background:#eef4fb;color:#1d3c78}
+/* Zajednička mjesta */
+.pap .pap-shared{display:none;color:#646970;font-style:italic}
+.pap tr.pap-rate .pap-seat input{display:none}
+.pap tr.pap-rate .pap-seat .pap-shared{display:inline}
+.pap .pap-pool{margin:8px 0 4px;font-size:14px}
+.pap .pap-pool-n{font-size:16px}
