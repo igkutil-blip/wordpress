@@ -32,6 +32,8 @@ final class Plan_A_Clanstvo_Agency {
 	const R2    = '_pac_ag_r2';               // narudžba: poslan podsjetnik za drugu ratu
 	const R1T   = '_pac_ag_r1t';              // narudžba: kad je označena prva rata
 	const R1S   = '_pac_ag_r1s';              // narudžba: poslan mail s ostatkom (nakon sat vremena)
+	const R1M   = '_pac_ag_r1m';              // narudžba: mail s ostatkom stvarno otišao (od 1.14.6)
+	const R1R   = '_pac_ag_r1r';              // narudžba: jednom ponovljen mail koji do 1.14.5 nije otišao (iznos 0)
 
 	public static function init() {
 		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'queue' ), 30, 1 );
@@ -257,28 +259,46 @@ final class Plan_A_Clanstvo_Agency {
 		}
 		foreach ( (array) TTBM_Function::get_ticket_type( $tour_id ) as $t ) {
 			if ( ! preg_match( '/prve\s+rate/iu', (string) ( $t['ticket_type_name'] ?? '' ) ) ) {
-				return (float) ( $t['ticket_price'] ?? 0 );
+				// Karta izleta ima cijenu pod „ticket_type_price” (stariji zapis: „ticket_price”).
+				return (float) ( $t['ticket_type_price'] ?? ( $t['ticket_price'] ?? 0 ) );
 			}
 		}
 		return 0.0;
 	}
 
-	/** Ostatak za drugu ratu: puna cijena (po osobi × osobe) minus uplaćena prva rata. */
+	/**
+	 * Ostatak za drugu ratu: za svaku osobu s kartom „Uplata prve rate” puna cijena minus
+	 * uplaćena prva rata. Osiguranje i ostale dodatne usluge plaćene uz prvu ratu se ne
+	 * odbijaju (WpTravelly ih zbraja u istu stavku narudžbe), a ni osobe koje su platile
+	 * punu cijenu.
+	 */
 	public static function balance( WC_Order $order ): float {
 		$sum = 0.0;
 		foreach ( $order->get_items() as $item ) {
 			if ( ! $item instanceof WC_Order_Item_Product || ! self::first_rate( $item ) ) {
 				continue;
 			}
-			$qty = 0;
+			$full = self::full_price( (int) $item->get_meta( '_ttbm_id' ) );
 			foreach ( (array) $item->get_meta( '_ttbm_ticket_info' ) as $t ) {
-				$qty += (int) ( $t['ticket_qty'] ?? 0 );
+				$name = (string) ( $t['ticket_name'] ?? $t['ticket_type_name'] ?? '' );
+				if ( ! preg_match( '/prve\s+rate/iu', $name ) ) {
+					continue;
+				}
+				$qty  = max( 1, (int) ( $t['ticket_qty'] ?? 1 ) );
+				$rate = isset( $t['ticket_price'] ) ? (float) $t['ticket_price'] : self::rate_paid_fallback( $item, $qty );
+				$sum += max( 0.0, ( $full - $rate ) * $qty );
 			}
-			$qty  = max( 1, $qty ?: (int) $item->get_quantity() );
-			$paid = (float) $item->get_total() + (float) $item->get_total_tax();
-			$sum += max( 0.0, self::full_price( (int) $item->get_meta( '_ttbm_id' ) ) * $qty - $paid );
 		}
 		return round( $sum, 2 );
+	}
+
+	/** Stari zapis bez cijene karte: uplaćeno po osobi = stavka bez dodatnih usluga / osobe. */
+	private static function rate_paid_fallback( WC_Order_Item_Product $item, int $qty ): float {
+		$paid = (float) $item->get_total() + (float) $item->get_total_tax();
+		foreach ( (array) $item->get_meta( '_ttbm_service_info' ) as $s ) {
+			$paid -= (float) ( $s['service_price'] ?? 0 ) * (int) ( $s['service_qty'] ?? 0 );
+		}
+		return max( 0.0, $paid ) / max( 1, $qty );
 	}
 
 	/** Izlet ima kartu „Uplata prve rate” (plaća se u dvije rate). */
@@ -405,6 +425,10 @@ final class Plan_A_Clanstvo_Agency {
 			wp_delete_file( $f );
 		}
 		if ( $ok ) {
+			if ( 'first' === $kind ) {
+				$order->update_meta_data( self::R1M, current_time( 'mysql' ) );
+				$order->save_meta_data();
+			}
 			$order->add_order_note( ( 'first' === $kind ? 'Kupcu je poslan mail s ostatkom za drugu ratu' : 'Kupcu je poslan podsjetnik za drugu ratu' ) . ' (' . $money . ').' );
 			// Ako je prva rata uplaćena u zadnjih 35 dana prije izleta, podsjetnik nije potreban.
 			if ( 'first' === $kind && '' !== $tour && current_time( 'Y-m-d' ) >= gmdate( 'Y-m-d', strtotime( $tour ) - 35 * DAY_IN_SECONDS ) ) {
@@ -423,8 +447,16 @@ final class Plan_A_Clanstvo_Agency {
 		$n = 0;
 		foreach ( wc_get_orders( array( 'status' => array( 'processing' ), 'limit' => 200 ) ) as $order ) {
 			$t = (int) $order->get_meta( self::R1T );
-			if ( ! $t || '' !== (string) $order->get_meta( self::R1S ) || time() - $t < HOUR_IN_SECONDS ) {
+			if ( ! $t || time() - $t < HOUR_IN_SECONDS || '' !== (string) $order->get_meta( self::R1M ) ) {
 				continue;
+			}
+			if ( '' !== (string) $order->get_meta( self::R1S ) ) {
+				// Do 1.14.5 je ostatak ispadao 0 € pa mail nije otišao: jednom ga ponovi, ako izlet nije prošao.
+				$tour = self::rate_tour_date( $order );
+				if ( '' !== (string) $order->get_meta( self::R1R ) || '' === $tour || $tour < current_time( 'Y-m-d' ) ) {
+					continue;
+				}
+				$order->update_meta_data( self::R1R, current_time( 'mysql' ) );
 			}
 			$order->update_meta_data( self::R1S, current_time( 'mysql' ) );
 			$order->save_meta_data();
