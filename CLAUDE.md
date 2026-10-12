@@ -83,10 +83,21 @@ Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate�
 Igor ne pamti ništa od ovoga: kad završimo s kopijom, **ja** pripremim sve zipove za živu stranicu i
 napišem redoslijed (što isključiti, što instalirati, što provjeriti). Do tada na živoj ništa ne tražiti.
 
-- **plan-a-clanstvo 1.14.6** (zadana grana i `prijave`, isti zip): druga rata = puna cijena − prva rata po
+- **plan-a-clanstvo 1.14.7** (zadana grana i `prijave`, isti zip): druga rata = puna cijena − prva rata po
   osobi, osiguranje se ne odbija; ispravak pune cijene (`ticket_type_price`, do 1.14.5 ostatak je bio 0 € i
   mail za drugu ratu nije odlazio). Nakon instalacije se propušteni mail jednom ponovi – na živoj to je
   narudžba **#8989** (prva rata 12.10.2026.). Prije instalacije pitati Igora želi li to slanje.
+  1.14.7: kvačica Otkazao → mail kupcu (+ kopija nama za pojedinog sudionika), osiguranje po osobi,
+  zamjena bez međukoraka, vraćanje iz tablice ne šalje „Nova prijava”.
+- **Prije uključivanja plaćanja karticom** (sada je na živoj samo uplata na račun): popraviti dvostruki mail
+  „Cijelokupni iznos je uplaćen” (U obradi → Završeno) i prvu ratu plaćenu karticom (krivi mail, nema maila
+  s ostatkom ni podsjetnika). Ostatak druge rate računa se po današnjoj cijeni pune karte (bolje zapamtiti
+  cijenu pri prijavi).
+- **Upute (PDF) za agenciju i Krešu** treba ispraviti (popis razlika napisan Igoru 12.10.2026.): naslov maila
+  „Cijelokupni iznos je uplaćen…”, novi izlet samo za termine u 120 dana (najviše 3), zaštićeni stupci pitaju
+  „jeste li sigurni”, mail s ostatkom 1–2 h nakon kvačice, stupac 2. rata postoji svugdje (siv), POPUNJEN /
+  skoro pun (≤3) / nitko nije platio (10 dana), Krešo: kopija podsjetnika i 3 dana prije izleta; novo:
+  mail kupcu pri otkazivanju.
 - **plan-a-prijave** (novi sustav, faza 5): zajednička mjesta za sve karte (karta „prve rate” nema svoja
   mjesta). Prije prelaska pregledati izlete s prvom ratom – npr. Doček Nove godine (7935) ima Uplata 5 +
   prva rata 20: ako treba 25 mjesta, upisati 25 kod Uplate. Usluge (osiguranje) nisu ograničene.

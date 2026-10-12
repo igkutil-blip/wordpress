@@ -34,6 +34,7 @@ final class Plan_A_Clanstvo_Agency {
 	const R1S   = '_pac_ag_r1s';              // narudžba: poslan mail s ostatkom (nakon sat vremena)
 	const R1M   = '_pac_ag_r1m';              // narudžba: mail s ostatkom stvarno otišao (od 1.14.6)
 	const R1R   = '_pac_ag_r1r';              // narudžba: jednom ponovljen mail koji do 1.14.5 nije otišao (iznos 0)
+	const ZAM   = '_pac_ag_zam';              // narudžba: zadnja zamjena po osobi (spaja „ime pa prezime” u jednu)
 
 	public static function init() {
 		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'queue' ), 30, 1 );
@@ -41,7 +42,7 @@ final class Plan_A_Clanstvo_Agency {
 		add_action( 'woocommerce_order_status_changed', array( __CLASS__, 'changed' ), 30, 1 );
 		add_action( 'transition_post_status', array( __CLASS__, 'tour_published' ), 20, 3 );
 		add_action( 'pac_ag_run', array( __CLASS__, 'run' ) );
-		foreach ( array( 'customer_on_hold_order', 'customer_processing_order', 'customer_completed_order', 'customer_cancelled_order' ) as $email ) {
+		foreach ( array( 'customer_on_hold_order', 'customer_processing_order', 'customer_completed_order', 'customer_cancelled_order', 'new_order' ) as $email ) { // new_order: npr. vraćanje iz Otkazano ne javlja nam „nova prijava”
 			add_filter( 'woocommerce_email_enabled_' . $email, array( __CLASS__, 'quiet' ), 99, 2 );
 		}
 	}
@@ -503,10 +504,11 @@ final class Plan_A_Clanstvo_Agency {
 				$count += (int) ( $t['ticket_qty'] ?? 0 );
 			}
 			$count = max( 1, $count ?: (int) $item->get_quantity() );
-			$ins   = false;
+			// Osiguranje po osobi: koliko je osiguranja kupljeno, toliko prvih osoba ima kvačicu.
+			$ins = 0;
 			foreach ( (array) $item->get_meta( '_ttbm_service_info' ) as $sv ) {
-				if ( preg_match( '/osigur/i', (string) ( $sv['service_name'] ?? '' ) ) && (int) ( $sv['service_qty'] ?? 1 ) > 0 ) {
-					$ins = true;
+				if ( preg_match( '/osigur/i', (string) ( $sv['service_name'] ?? '' ) ) ) {
+					$ins += max( 0, (int) ( $sv['service_qty'] ?? 1 ) );
 				}
 			}
 			foreach ( self::persons( $order, $item, $count ) as $n => $p ) {
@@ -522,7 +524,7 @@ final class Plan_A_Clanstvo_Agency {
 				$v    = self::person_values( $p, $m ) + ( empty( $p['ph'] ) ? self::status( $m, $tour['year'] ) : array() );
 				$v   += array(
 					'iznos'      => 0 === $n ? html_entity_decode( wp_strip_all_tags( wc_price( (float) $item->get_total() + (float) $item->get_total_tax(), array( 'currency' => $order->get_currency() ) ) ), ENT_QUOTES, 'UTF-8' ) : '',
-					'osiguranje' => $ins && 0 === $n,
+					'osiguranje' => $n < $ins,
 					'uplaceno'   => $order->is_paid(),
 					'narudzba'   => '#' . $order->get_order_number(),
 					'otkazano'   => $order->has_status( array( 'cancelled', 'refunded', 'failed' ) ),
@@ -794,6 +796,7 @@ final class Plan_A_Clanstvo_Agency {
 		$gone  = array();
 		$notes = array();
 		$new   = false;
+		$xnew  = array(); // novootkazane osobe
 		foreach ( $rows as $r ) {
 			$k    = sanitize_key( (string) ( $r['k'] ?? '' ) );
 			$name = sanitize_text_field( (string) ( $r['n'] ?? '' ) );
@@ -802,12 +805,7 @@ final class Plan_A_Clanstvo_Agency {
 			}
 			$prev = (string) ( $names[ $k ] ?? sanitize_text_field( (string) ( $r['f'] ?? '' ) ) );
 			if ( '' !== $name && '' !== $prev && $prev !== $name ) {
-				$notes[] = preg_match( '/^\d+\. osoba/', $prev )
-					? sprintf( 'Upisan sudionik (tablica agencije): %s.', $name )
-					: sprintf( 'Zamjena (tablica agencije): %1$s umjesto %2$s.', $name, $prev );
-				if ( ! preg_match( '/^\d+\. osoba/', $prev ) ) {
-					Plan_A_Clanstvo_Ops::log( 'zamjena', $order->get_id(), '#' . $order->get_order_number() . ': ' . $name . ' umjesto ' . $prev );
-				}
+				self::replacement( $order, $k, $prev, $name );
 			}
 			if ( '' !== $name ) {
 				$names[ $k ] = $name;
@@ -819,6 +817,7 @@ final class Plan_A_Clanstvo_Agency {
 					$notes[] = sprintf( 'Otkazao/la (tablica agencije): %s.', $name );
 					Plan_A_Clanstvo_Ops::log( 'osoba_x', $order->get_id(), '#' . $order->get_order_number() . ': ' . $name );
 					$new     = true;
+					$xnew[]  = $name;
 				}
 			} elseif ( ! empty( $was[ $k ] ) ) {
 				$notes[] = sprintf( 'Više nije otkazan/a (tablica agencije): %s.', $name );
@@ -842,7 +841,12 @@ final class Plan_A_Clanstvo_Agency {
 					$mails['WC_Email_Cancelled_Order']->trigger( $order->get_id(), $order );
 				}
 			}
+			self::cancel_mail( $order, array(), in_array( $from, array( 'processing', 'completed' ), true ) );
 			return true;
+		}
+		if ( $xnew && ! $order->has_status( array( 'cancelled', 'refunded' ) ) ) {
+			// Otkazali su samo neki: narudžba ostaje, a kupac i mi dobijemo mail tko je otkazan.
+			self::cancel_mail( $order, $xnew, $order->is_paid() || '' !== (string) $order->get_meta( self::R1 ) );
 		}
 		if ( ! $all && '' !== $prev && $order->has_status( 'cancelled' ) ) {
 			$order->delete_meta_data( self::PREV );
@@ -850,6 +854,79 @@ final class Plan_A_Clanstvo_Agency {
 			return true;
 		}
 		return (bool) $notes;
+	}
+
+	/**
+	 * Zamjena osobe u bilješke narudžbe i dnevni pregled. Agencija upisuje „ime, pa prezime”:
+	 * promjena iste osobe unutar 15 minuta zamjenjuje prethodni zapis, pa ostane jedna zamjena
+	 * (staro ime → konačno ime), bez međukoraka.
+	 */
+	private static function replacement( WC_Order $order, string $k, string $prev, string $name ) {
+		$zam = $order->get_meta( self::ZAM );
+		$zam = is_array( $zam ) ? $zam : array();
+		$was = $zam[ $k ] ?? null;
+		if ( is_array( $was ) && time() - (int) ( $was['t'] ?? 0 ) < 15 * MINUTE_IN_SECONDS ) {
+			if ( ! empty( $was['n'] ) ) {
+				wc_delete_order_note( (int) $was['n'] );
+			}
+			Plan_A_Clanstvo_Ops::unlog( 'zamjena', $order->get_id(), (int) ( $was['t'] ?? 0 ) );
+			$prev = (string) ( $was['from'] ?? $prev );
+		}
+		unset( $zam[ $k ] );
+		if ( $prev !== $name ) { // vraćeno na staro ime – nije zamjena
+			$placeholder = (bool) preg_match( '/^\d+\. osoba/', $prev );
+			$note        = $order->add_order_note(
+				$placeholder
+					? sprintf( 'Upisan sudionik (tablica agencije): %s.', $name )
+					: sprintf( 'Zamjena (tablica agencije): %1$s umjesto %2$s.', $name, $prev )
+			);
+			$t = time();
+			if ( ! $placeholder ) {
+				Plan_A_Clanstvo_Ops::log( 'zamjena', $order->get_id(), '#' . $order->get_order_number() . ': ' . $name . ' umjesto ' . $prev );
+			}
+			$zam[ $k ] = array( 't' => $t, 'from' => $prev, 'n' => (int) $note );
+		}
+		$order->update_meta_data( self::ZAM, $zam );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Mail o otkazivanju kupcu (i kopija nama za djelomično otkazivanje; za cijelu narudžbu
+	 * nama javlja WooCommerce). $who prazno = otkazana cijela prijava.
+	 */
+	private static function cancel_mail( WC_Order $order, array $who, bool $paid ): void {
+		$tours = array();
+		foreach ( $order->get_items() as $item ) {
+			if ( $item instanceof WC_Order_Item_Product && (int) $item->get_meta( '_ttbm_id' ) ) {
+				$ts      = strtotime( (string) $item->get_meta( '_ttbm_date' ) );
+				$tours[] = wp_strip_all_tags( html_entity_decode( (string) $item->get_name(), ENT_QUOTES, 'UTF-8' ) ) . ( $ts ? ' (' . gmdate( 'j.n.Y.', $ts ) . ')' : '' );
+			}
+		}
+		$tours = implode( ', ', array_unique( $tours ) );
+		$nr    = $order->get_order_number();
+		$name  = trim( $order->get_billing_first_name() ) ?: 'poštovani';
+		$all   = ! $who;
+		$what  = $all
+			? 'tvoja prijava (narudžba <strong>#' . esc_html( $nr ) . '</strong>) za izlet <strong>' . esc_html( $tours ) . '</strong> je <strong>otkazana</strong>.'
+			: 'u tvojoj prijavi (narudžba <strong>#' . esc_html( $nr ) . '</strong>) za izlet <strong>' . esc_html( $tours ) . '</strong> otkazan/a je: <strong>' . esc_html( implode( ', ', $who ) ) . '</strong>. Ostali sudionici iz prijave idu na izlet.';
+		$money = $paid ? Plan_A_Clanstvo_Mail::p( 'Za uplaćeni iznos javit ćemo ti se u vezi povrata.' ) : '';
+		$inner = Plan_A_Clanstvo_Mail::p( 'Pozdrav ' . esc_html( $name ) . ',' )
+			. Plan_A_Clanstvo_Mail::p( $what ) . $money
+			. Plan_A_Clanstvo_Mail::p( '<span style="color:#5f6b77;font-size:14px">Ako je ovo greška ili imaš pitanja, javi nam se na info@srd-plan-a.hr ili 095 90 60 556.</span>' );
+		$subj  = $all ? 'Prijava je otkazana – narudžba #' . $nr : 'Otkazan sudionik – narudžba #' . $nr;
+		$title = $all ? 'Prijava je otkazana' : 'Otkazan sudionik';
+		$html  = Plan_A_Clanstvo_Mail::wrap( $title, $inner, 'Plan A · izleti' );
+		if ( Plan_A_Clanstvo_Mail::send( sanitize_email( (string) $order->get_billing_email() ), $subj, $html ) ) {
+			$order->add_order_note( 'Kupcu je poslan mail o otkazivanju' . ( $all ? '' : ' (' . implode( ', ', $who ) . ')' ) . '.' );
+		}
+		if ( ! $all ) {
+			$mails = WC()->mailer()->get_emails();
+			$to    = isset( $mails['WC_Email_Cancelled_Order'] ) ? (string) $mails['WC_Email_Cancelled_Order']->get_recipient() : '';
+			$to    = $to ?: (string) get_option( 'admin_email' );
+			foreach ( array_filter( array_map( 'trim', explode( ',', $to ) ), 'is_email' ) as $a ) {
+				Plan_A_Clanstvo_Mail::send( $a, '[Kopija] ' . $subj . ' – ' . trim( $order->get_formatted_billing_full_name() ), $html );
+			}
+		}
 	}
 
 	/** Svaki sat: pročitaj kvačice iz tablice (ako javljanje iz tablice nije stiglo). */

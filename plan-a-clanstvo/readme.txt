@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.14.6
+Stable tag: 1.14.7
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,12 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.14.7 =
+* Kvačica „Otkazao” u tablici agencije: kupac dobiva mail o otkazivanju (cijela prijava ili pojedini sudionik), a za pojedinog sudionika i mi kopiju (za cijelu narudžbu nama i dalje javlja WooCommerce). Ako je bilo uplaćeno, u mailu piše da ćemo se javiti oko povrata.
+* Osiguranje u tablici agencije kod svake osobe koja ga je uzela (do sada samo kod prve u prijavi), pa i „Polica” i dnevni pregled broje točno.
+* Zamjena „ime, pa prezime” bilježi se jednom (bez međukoraka) u bilješkama narudžbe i dnevnom pregledu.
+* Vraćanje narudžbe iz tablice (npr. maknuta kvačica „Otkazao”) više ne šalje nama mail „Nova prijava”.
 
 = 1.14.6 =
 * Druga rata: ostatak se računa po osobi s kartom „Uplata prve rate” (puna cijena − prva rata). Osiguranje i druge usluge plaćene uz prvu ratu više se ne odbijaju.
