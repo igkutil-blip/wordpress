@@ -163,6 +163,19 @@ jQuery(function ($) {
 		gal.next().find('.pap-hint').text(gal.children().length + ' slika');
 	}
 	if ($.fn.sortable) { gal.sortable({ update: sync }); }
+	// Standard 3:2, najmanje 1200 px širine: ostale slike žuti rub i opis.
+	function checkSizes() {
+		gal.children().each(function () {
+			var w = parseInt($(this).attr('data-w'), 10) || 0, h = parseInt($(this).attr('data-h'), 10) || 0, msg = '';
+			if (w && h) {
+				if (h >= w) { msg = 'Uspravna slika (' + w + ' × ' + h + ') – na vrhu izleta će biti jako obrezana. Bolje vodoravna 3:2.'; }
+				else if (w < 1200) { msg = 'Mala slika (' + w + ' × ' + h + ') – može biti mutna. Preporuka 1800 × 1200.'; }
+				else if (w / h > 2 || w / h < 1.3) { msg = 'Omjer ' + w + ' × ' + h + ' – bolje 3:2 (npr. 1800 × 1200).'; }
+			}
+			$(this).toggleClass('pap-gwarn', !!msg).attr('title', msg || (w ? w + ' × ' + h + ' – u redu' : ''));
+		});
+	}
+	checkSizes();
 	box.on('click', '.pap-gdel', function () { $(this).closest('li').remove(); sync(); });
 	box.on('click', '.pap-gallery-add', function (e) {
 		e.preventDefault();
@@ -171,9 +184,10 @@ jQuery(function ($) {
 			frame.state().get('selection').each(function (a) {
 				a = a.toJSON();
 				var src = (a.sizes && a.sizes.thumbnail) ? a.sizes.thumbnail.url : a.url;
-				gal.append($('<li>').attr('data-id', a.id).data('id', a.id).append($('<img alt="">').attr('src', src), '<button type="button" class="pap-gdel" title="Makni">×</button>'));
+				gal.append($('<li>').attr({ 'data-id': a.id, 'data-w': a.width || 0, 'data-h': a.height || 0 }).data('id', a.id).append($('<img alt="">').attr('src', src), '<button type="button" class="pap-gdel" title="Makni">×</button>'));
 			});
 			sync();
+			checkSizes();
 		});
 		frame.open();
 	});

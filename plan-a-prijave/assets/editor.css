@@ -144,3 +144,4 @@ body.pap-layout .pap-sec .pap-table th{background:var(--soft)}
 .pap .pap-loc-new{display:flex;gap:6px;margin-top:6px}
 .pap .pap-loc-new[hidden]{display:none}
 .pap .pap-loc-new input{flex:1;min-width:0}
+.pap .pap-gallery li.pap-gwarn{outline:3px solid #dba617;outline-offset:-3px}

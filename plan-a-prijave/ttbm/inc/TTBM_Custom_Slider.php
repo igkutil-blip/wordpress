@@ -119,7 +119,7 @@
 						<?php
 							$count = 1;
 							foreach ($image_ids as $id) {
-								$image_url = TTBM_Global_Function::get_image_url('', $id);
+								$image_url = TTBM_Global_Function::get_image_url('', $id, 'pap_hero'); // Plan A: 1800 px (za starije slike: izvornik)
 								$image_url = $image_url ?: TTBM_PLUGIN_URL . '/assets/images/no_image.png';
 								$metadata = wp_get_attachment_metadata($id);
 								$width = 0;

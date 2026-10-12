@@ -555,12 +555,13 @@ final class Plan_A_Prijave_Editor {
 
 		/* Galerija */
 		$gal = array_map( 'intval', (array) $m( 'ttbm_gallery_images', array() ) );
-		self::section( 'galerija', 'Galerija', 'Slike na vrhu stranice izleta (velika slika i četiri male). Redoslijed mijenjaš povlačenjem.' );
+		self::section( 'galerija', 'Galerija', 'Slike na vrhu stranice izleta (velika slika i četiri male). Redoslijed mijenjaš povlačenjem.<br><strong>Standard za slike:</strong> vodoravne fotografije omjera <strong>3:2</strong>, idealno <strong>1800 × 1200 px</strong> (najmanje 1200 × 800), JPG do oko 600 KB. Glavni motiv neka bude <strong>u sredini</strong> – na računalu se slika obrezuje odozgo i odozdo, a na mobitelu sa strane. Isto vrijedi za glavnu sliku izleta. Slike koje odstupaju označene su žutim rubom.' );
 		echo '<input type="hidden" name="pap[gallery]" value="' . self::e( implode( ',', $gal ) ) . '" class="pap-gallery-ids"><ul class="pap-gallery">';
 		foreach ( $gal as $a ) {
 			$src = wp_get_attachment_image_url( $a, 'thumbnail' );
 			if ( $src ) {
-				echo '<li data-id="' . (int) $a . '"><img src="' . esc_url( $src ) . '" alt=""><button type="button" class="pap-gdel" title="Makni">×</button></li>';
+				$meta = wp_get_attachment_metadata( $a );
+				echo '<li data-id="' . (int) $a . '" data-w="' . (int) ( $meta['width'] ?? 0 ) . '" data-h="' . (int) ( $meta['height'] ?? 0 ) . '"><img src="' . esc_url( $src ) . '" alt=""><button type="button" class="pap-gdel" title="Makni">×</button></li>';
 			}
 		}
 		echo '</ul><p><button type="button" class="button pap-gallery-add">Dodaj slike</button> <span class="pap-hint">' . count( $gal ) . ' slika</span></p></section>';

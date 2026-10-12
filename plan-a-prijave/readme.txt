@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.5.7
+Stable tag: 0.5.8
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,10 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.5.8 =
+* Velika slika izleta: uz lokaciju i datum termina (npr. „21.–22.11.2026.”, uz broj ostalih termina); strelice za slike u gornjem dijelu slike – naslov u dva reda ne preklapa se ni na mobitelu.
+* Standard za slike: vodoravno 3:2, 1800 × 1200 px (najmanje 1200 × 800), motiv u sredini. Upute u kartici Galerija, slike koje odstupaju označene žutim rubom. Za veliku sliku nova veličina 1800 px (brže učitavanje).
 
 = 0.5.7 =
 * Stranica izleta: tekst u opisu, „Važno za izlet”, „Važno” i „Zašto s nama” crn; „Važno za izlet” iste veličine kao „Važno” (16 px).
