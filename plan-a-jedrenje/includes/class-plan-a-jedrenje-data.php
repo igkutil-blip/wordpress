@@ -15,6 +15,9 @@ defined( 'ABSPATH' ) || exit;
 final class Plan_A_Jedrenje_Data {
 
 	const OPTION  = 'plan_a_jedrenje';
+
+	/** Uvjeti otkaza (dogovor 12.10.2026.): agencija ne vraća novac; s osiguranjem od otkaza – osiguranje. */
+	const TERMS = "Za otkazanu rezervaciju uplaćeni iznos se ne vraća.\nAko je uz rezervaciju uplaćeno osiguranje od otkaza, za povrat novca obrati se osiguranju.\nUmjesto otkaza možeš pronaći zamjenu za člana ekipe bez troška.";
 	const PERIODS = 'plan_a_jedrenje_periods';
 	const WEEKS   = 'plan_a_jedrenje_weeks';
 
@@ -56,12 +59,29 @@ final class Plan_A_Jedrenje_Data {
 			'mail_reject'    => 'Nažalost, brod u odabranom tjednu više nije slobodan. Rado ćemo ti predložiti drugi tjedan – odgovori na ovaj e-mail ili odaberi novi termin na stranici.',
 			'mail_booked'    => 'Akontacija je uplaćena i tjedan jedrenja je tvoj. Ostatak uplaćuješ prema uplatnici koju ćemo poslati prije roka.',
 			'mail_paid'      => 'Sve je uplaćeno. Vidimo se u marini! Nekoliko dana prije polaska poslat ćemo ti popis stvari za ponijeti i upute za ukrcaj.',
-			'cancel_terms'   => "Otkaz do 60 dana prije ukrcaja: vraća se uplaćeni iznos umanjen za 10 % cijene.\nOtkaz od 59 do 30 dana prije ukrcaja: zadržava se akontacija.\nOtkaz manje od 30 dana prije ukrcaja: zadržava se cijeli iznos.\nUmjesto otkaza možeš pronaći zamjenu za člana ekipe bez troška.",
+			'cancel_terms'   => self::TERMS,
 			'gallery_tour'   => 0,
 			'gallery_images' => '',
 			'list_tour'      => 0,
 			'organizer'      => 'Organizator: Adventure Donkey j.d.o.o., turistička agencija, Meksička ulica 11, 10000 Zagreb, OIB 78664134608, u suradnji sa S.R.D. Plan A',
 		);
+	}
+
+	/**
+	 * Jednom: upisani uvjeti otkaza s povratom novca (postoci, „vraća se”, „zadržava se”)
+	 * zamjenjuju se novima – povrata nema, osim preko osiguranja od otkaza.
+	 */
+	public static function terms_policy() {
+		if ( (int) get_option( 'plan_a_jedrenje_terms' ) >= 1 ) {
+			return;
+		}
+		$saved = get_option( self::OPTION, array() );
+		if ( is_array( $saved ) && isset( $saved['cancel_terms'] ) && preg_match( '/vra[cć]|umanjen|zadržava|\d+\s*%/iu', (string) $saved['cancel_terms'] ) ) {
+			$saved['cancel_terms'] = self::TERMS;
+			update_option( self::OPTION, $saved, false );
+			self::$settings = null;
+		}
+		update_option( 'plan_a_jedrenje_terms', 1, false );
 	}
 
 	/**
