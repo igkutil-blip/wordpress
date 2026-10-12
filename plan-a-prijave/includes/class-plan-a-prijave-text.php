@@ -77,6 +77,20 @@ final class Plan_A_Prijave_Text {
 		return $init;
 	}
 
+	private static function black_css(): string {
+		$areas = array( '.ttbm_overview_section .ttbm_wp_editor', '.ttbm_faq_section .ttbm_faq_content', '.day_wise_details_item_details', '.ttbm_why_choose_us_list' );
+		$tags  = array( '', ' p', ' li', ' td', ' th', ' div', ' span', ' strong', ' b', ' em', ' i', ' h3', ' h4', ' h5', ' h6', ' .day_wise_activity_title', ' .day_wise_activity_desc' );
+		$sel   = array();
+		foreach ( $areas as $a ) {
+			foreach ( $tags as $t ) {
+				$sel[] = '#ttbm_content ' . $a . $t;
+			}
+		}
+		$faq = '#ttbm_content .ttbm_faq_section .ttbm_faq_content';
+		return implode( ',', $sel ) . '{color:#111827!important}'
+			. $faq . ' p,' . $faq . ' li{font-size:16px!important;line-height:1.7}';
+	}
+
 	/** Već upisani izleti: na stranici izleta tekst preuzima font i veličinu stranice. */
 	public static function front_css() {
 		if ( ! is_singular( array( Plan_A_Prijave_Tour::CPT, 'ttbm_guide' ) ) ) {
@@ -85,7 +99,9 @@ final class Plan_A_Prijave_Text {
 		$css = '#ttbm_content [style*="font-family"],#ttbm_content font{font-family:inherit!important}'
 			. '#ttbm_content [style*="font-size"],#ttbm_content font[size]{font-size:inherit!important}'
 			. '#ttbm_content [style*="line-height"]{line-height:inherit!important}'
-			. '#ttbm_content .ttbm_wp_editor [style*="background"],#ttbm_content .ttbm_wp_editor [style*="color"]{background:transparent!important;color:inherit!important}';
+			. '#ttbm_content .ttbm_wp_editor [style*="background"],#ttbm_content .ttbm_wp_editor [style*="color"]{background:transparent!important;color:inherit!important}'
+			// Sav tekst izleta crn i iste veličine (opis, Važno za izlet, Važno, Zašto s nama); poveznice ostaju u boji poveznica.
+			. self::black_css() . '';
 		wp_register_style( 'pap-text', false, array(), PLAN_A_PRIJAVE_VERSION );
 		wp_enqueue_style( 'pap-text' );
 		wp_add_inline_style( 'pap-text', $css );
