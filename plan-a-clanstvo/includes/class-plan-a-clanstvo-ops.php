@@ -117,6 +117,13 @@ final class Plan_A_Clanstvo_Ops {
 		update_option( self::LOG, array_slice( $log, -500 ), false );
 	}
 
+	/** Makni zapis iz dnevnika (npr. međukorak zamjene koji je zamijenio konačni). */
+	public static function unlog( string $type, int $order, int $time ) {
+		$log = (array) get_option( self::LOG, array() );
+		$log = array_values( array_filter( $log, static fn( $e ) => ! ( $type === ( $e['k'] ?? '' ) && $order === (int) ( $e['o'] ?? 0 ) && abs( $time - (int) ( $e['t'] ?? 0 ) ) <= 2 ) ) );
+		update_option( self::LOG, $log, false );
+	}
+
 	/** Kratki opis narudžbe: "#123 Ime Prezime – Izlet 14.11. (2 osobe)". */
 	public static function describe( WC_Order $order ): string {
 		$parts = array();
