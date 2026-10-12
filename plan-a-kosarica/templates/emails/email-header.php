@@ -11,7 +11,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$paka_id   = isset( $email ) && is_object( $email ) ? (string) $email->id : '';
+$paka_mail = isset( $email ) && is_object( $email ) ? $email : Plan_A_Kosarica_Order::current_email();
+$paka_id   = $paka_mail ? (string) $paka_mail->id : '';
 $paka_icon = 'mail';
 if ( false !== strpos( $paka_id, 'cancelled' ) || false !== strpos( $paka_id, 'failed' ) ) {
 	$paka_icon = 'x';
@@ -29,5 +30,6 @@ echo Plan_A_Email::open(
 		'icon'  => $paka_icon,
 	)
 );
-?>
-<tr><td style="padding:14px 0 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td class="pae-card" style="background:#ffffff;border-radius:14px;padding:22px 24px;color:#24323f;font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;">
+// Sadržaj se skuplja do email-footer.php (koji miče prazne kartice).
+$GLOBALS['paka_mail_ob'] = ob_start();
+echo Plan_A_Kosarica_Order::mail_card_open(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

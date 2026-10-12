@@ -437,7 +437,7 @@ final class Plan_A_Clanstvo_Agency {
 			. Plan_A_Email::p( $intro . ' Ostatak uplate je <strong>' . esc_html( $money ) . '</strong>, a treba biti uplaćen <strong>' . esc_html( $when ) . '</strong> (30 dana prije izleta).' )
 		)
 			. Plan_A_Email::card( 'Vaš izlet', Plan_A_Email::rows( $trip ) )
-			. Plan_A_Email::payment(
+			. Plan_A_Email::payment( self::with_slip(
 				array(
 					'title'     => 'Uplata druge rate',
 					'code'      => $src,
@@ -449,8 +449,9 @@ final class Plan_A_Clanstvo_Agency {
 					'poziv'     => (string) $order->get_order_number(),
 					'opis'      => 'Druga rata, narudžba ' . $order->get_order_number(),
 					'rok'       => $due ? gmdate( 'j.n.Y.', $due ) : '',
-				)
-			)
+				),
+				$code && $code['path'] ? (string) $code['path'] : ''
+			) )
 			. Plan_A_Email::card( '', Plan_A_Email::small( 'Ako si ostatak već uplatio/la, zanemari ovu poruku. Pitanja: info@srd-plan-a.hr ili 095 90 60 556.' ) );
 		$subj   = 'first' === $kind ? 'Uplaćena prva rata – druga rata ' . $when : 'Podsjetnik: druga rata ' . $when;
 		$title  = 'first' === $kind ? 'Uplaćena prva rata' : 'Podsjetnik: druga rata';
@@ -478,6 +479,12 @@ final class Plan_A_Clanstvo_Agency {
 	 * Mail s ostatkom za prvu ratu: nakon sat vremena od kvačice „Uplaćeno”, ako u tom roku nije
 	 * stigla i „2. rata” (tada je narudžba već završena i mail je o završetku).
 	 */
+	/** Podaci za plaćanje + prava uplatnica (slika), ako se može izraditi. */
+	private static function with_slip( array $d, string $code_path ): array {
+		$d['slip'] = Plan_A_Clanstvo_Mail::slip( $d, $code_path );
+		return $d;
+	}
+
 	public static function rate_first_due(): int {
 		$n = 0;
 		foreach ( wc_get_orders( array( 'status' => array( 'processing' ), 'limit' => 200 ) ) as $order ) {

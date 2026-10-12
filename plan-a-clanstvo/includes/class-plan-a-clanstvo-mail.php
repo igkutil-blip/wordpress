@@ -52,19 +52,35 @@ final class Plan_A_Clanstvo_Mail {
 		$code = Plan_A_Clanstvo_Hub3::for_member( $id, $year );
 		$src  = $code ? ( $code['path'] ? self::embed( $code['path'], 'pac2d' ) : $code['url'] ) : '';
 		$s    = Plan_A_Clanstvo_Data::get();
-		return Plan_A_Email::payment(
-			array(
-				'title'     => 'Članarina za ' . (int) $year . '.',
-				'code'      => $src,
-				'iznos'     => (float) $pay['iznos'],
-				'platitelj' => $m ? array( trim( $m['ime'] . ' ' . $m['prezime'] ), $m['adresa'] ?? '', $m['mjesto'] ?? '' ) : array(),
-				'primatelj' => array( $pay['primatelj'], $s['adresa'] ?? '', $s['mjesto'] ?? '' ),
-				'iban'      => $pay['iban'],
-				'model'     => $pay['model'],
-				'poziv'     => $pay['poziv'],
-				'opis'      => $pay['opis'],
-			)
+		$d    = array(
+			'title'     => 'Članarina za ' . (int) $year . '.',
+			'code'      => $src,
+			'iznos'     => (float) $pay['iznos'],
+			'platitelj' => $m ? array( trim( $m['ime'] . ' ' . $m['prezime'] ), $m['adresa'] ?? '', $m['mjesto'] ?? '' ) : array(),
+			'primatelj' => array( $pay['primatelj'], $s['adresa'] ?? '', $s['mjesto'] ?? '' ),
+			'iban'      => $pay['iban'],
+			'model'     => $pay['model'],
+			'poziv'     => $pay['poziv'],
+			'opis'      => $pay['opis'],
 		);
+		$d['slip'] = self::slip( $d, $code ? (string) $code['path'] : '' );
+		return Plan_A_Email::payment( $d );
+	}
+
+	/**
+	 * Prava uplatnica HUB-3A (slika kao u mailu narudžbe) ugrađena u mail; datoteka se briše
+	 * nakon slanja. Vraća src ili '' (tada mail ima uplatnicu u HTML-u).
+	 */
+	public static function slip( array $d, string $code_path ): string {
+		if ( ! method_exists( 'Plan_A_Email', 'slip_image' ) ) {
+			return '';
+		}
+		$file = trailingslashit( get_temp_dir() ) . 'pac-uplatnica-' . wp_generate_password( 10, false ) . '.jpg';
+		if ( ! Plan_A_Email::slip_image( $d, $code_path, $file ) ) {
+			return '';
+		}
+		self::$temp[] = $file;
+		return self::embed( $file, 'pacslip' );
 	}
 
 	/**
@@ -88,6 +104,9 @@ final class Plan_A_Clanstvo_Mail {
 	/** Slike ugrađene u mail (cid => putanja), samo za sljedeće slanje. */
 	private static $embed = array();
 
+	/** Privremene datoteke (uplatnica) koje se brišu nakon slanja. */
+	private static $temp = array();
+
 	/**
 	 * Slika u samom mailu (src="cid:…"): vidi se i kad datoteka na stranici više ne postoji.
 	 * Vraća vrijednost za src.
@@ -100,14 +119,22 @@ final class Plan_A_Clanstvo_Mail {
 	public static function add_embedded( $phpmailer ) {
 		foreach ( self::$embed as $cid => $path ) {
 			if ( is_readable( $path ) ) {
-				$phpmailer->addEmbeddedImage( $path, $cid, basename( $path ), 'base64', 'image/png' );
+				$phpmailer->addEmbeddedImage( $path, $cid, basename( $path ), 'base64', preg_match( '/\.jpe?g$/i', $path ) ? 'image/jpeg' : 'image/png' );
 			}
 		}
+	}
+
+	public static function cleanup() {
+		foreach ( self::$temp as $file ) {
+			wp_delete_file( $file );
+		}
+		self::$temp = array();
 	}
 
 	public static function send( string $to, string $subject, string $html, array $attachments = array(), array $extra = array() ): bool {
 		if ( ! is_email( $to ) ) {
 			self::$embed = array();
+			self::cleanup();
 			return false;
 		}
 		if ( self::$embed ) {
@@ -116,6 +143,7 @@ final class Plan_A_Clanstvo_Mail {
 		$ok = (bool) wp_mail( $to, $subject, $html, array_merge( self::headers(), $extra ), $attachments );
 		remove_action( 'phpmailer_init', array( __CLASS__, 'add_embedded' ) );
 		self::$embed = array();
+		self::cleanup();
 		update_option( 'plan_a_clanstvo_last_mail', array( 'time' => current_time( 'mysql' ), 'to' => $to, 'ok' => $ok, 'error' => $ok ? '' : (string) get_option( 'plan_a_clanstvo_mail_error', '' ) ), false );
 		return $ok;
 	}

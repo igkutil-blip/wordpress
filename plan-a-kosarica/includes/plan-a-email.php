@@ -17,7 +17,7 @@ if ( ! class_exists( 'Plan_A_Email' ) ) {
 
 	final class Plan_A_Email {
 
-		const V = '1.0.1';
+		const V = '1.0.2';
 
 		const FONT  = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 		const TEXT  = '#24323f';
@@ -168,8 +168,100 @@ if ( ! class_exists( 'Plan_A_Email' ) ) {
 		}
 
 		/**
+		 * Prava uplatnica HUB-3A kao slika (isti predložak, fontovi i raspored kao dodatak WSB HUB3,
+		 * čije se datoteke samo čitaju). $d kao za slip(); $code = putanja slike 2D koda (ili '');
+		 * $dest = putanja nove JPG datoteke. Vraća false ako nema predloška, fontova ili GD-a
+		 * (tada mail ima uplatnicu u HTML-u).
+		 */
+		public static function slip_image( array $d, string $code, string $dest ): bool {
+			$dir   = (string) apply_filters( 'plan_a_email_hub3_dir', ( defined( 'WP_PLUGIN_DIR' ) ? WP_PLUGIN_DIR : '' ) . '/wsb-hub3/public/' );
+			$tpl   = $dir . 'img/hub-3a.jpg';
+			$mono  = $dir . 'fonts/RobotoMono-Regular.ttf';
+			$times = $dir . 'fonts/times-new-roman.ttf';
+			if ( ! function_exists( 'imagettftext' ) || ! function_exists( 'imagecreatefromjpeg' ) || ! is_readable( $tpl ) || ! is_readable( $mono ) || ! is_readable( $times ) ) {
+				return false;
+			}
+			$img = @imagecreatefromjpeg( $tpl ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			if ( ! $img ) {
+				return false;
+			}
+			$ink   = imagecolorallocate( $img, 0x30, 0x30, 0x30 );
+			$chars = static fn( string $t ): array => function_exists( 'mb_str_split' ) ? mb_str_split( $t ) : str_split( $t );
+			// Polja s kućicama: znak po znak, razmak kao u WSB (3 + 14,7 px).
+			$boxes = static function ( int $x, int $y, string $t ) use ( $img, $ink, $mono, $chars ) {
+				foreach ( $chars( $t ) as $i => $c ) {
+					imagettftext( $img, 18, 0, (int) ( $x + $i * 17.7 ), $y, $ink, $mono, $c );
+				}
+			};
+			$width = static fn( int $size, string $font, string $t ): int => (int) ( imagettfbbox( $size, 0, $font, $t )[4] ?? 0 );
+			// Tekst skraćen da stane do zadane širine.
+			$fit   = static function ( int $size, string $font, string $t, int $max ) use ( $width, $chars ): string {
+				$t = trim( preg_replace( '/\s+/u', ' ', $t ) );
+				while ( '' !== $t && $width( $size, $font, $t ) > $max ) {
+					$t = implode( '', array_slice( $chars( $t ), 0, -1 ) );
+				}
+				return $t;
+			};
+			$text  = static function ( int $size, string $font, int $x, int $y, string $t, int $max = 0 ) use ( $img, $ink, $fit ) {
+				$t = $max ? $fit( $size, $font, $t, $max ) : $t;
+				if ( '' !== $t ) {
+					imagettftext( $img, $size, 0, $x, $y, $ink, $font, $t );
+				}
+			};
+			$right = static function ( int $size, string $font, int $x, int $y, string $t, int $max ) use ( $text, $width, $fit ) {
+				$t = $fit( $size, $font, $t, $max );
+				$text( $size, $font, $x - $width( $size, $font, $t ), $y, $t );
+			};
+
+			$iznos = (float) ( $d['iznos'] ?? 0 );
+			$iban  = preg_replace( '/\s+/', '', (string) ( $d['iban'] ?? '' ) );
+			$model = (string) ( $d['model'] ?? 'HR00' );
+			$poziv = (string) ( $d['poziv'] ?? '' );
+			$opis  = (string) ( $d['opis'] ?? '' );
+			$plat  = array_values( array_filter( array_map( 'trim', array_map( 'strval', (array) ( $d['platitelj'] ?? array() ) ) ) ) );
+			$prim  = array_values( array_filter( array_map( 'trim', array_map( 'strval', (array) ( $d['primatelj'] ?? array() ) ) ) ) );
+
+			$boxes( 402, 54, 'EUR' );
+			$amt = '=' . number_format( $iznos, 2, '', '' );
+			$boxes( (int) ( 768 - count( $chars( $amt ) ) * 17.7 ), 55, $amt );
+			$boxes( 401, 160, substr( $iban, 0, 21 ) );
+			$boxes( 278, 202, substr( $model, 0, 4 ) );
+			$boxes( 384, 202, substr( $poziv, 0, 22 ) );
+			$text( 12, $times, 438, 227, $opis, 330 );
+			$text( 12, $times, 805, 240, $opis, 272 );
+			$right( 12, $times, 1080, 54, 'EUR = ' . number_format( $iznos, 2, ',', '' ), 260 );
+			foreach ( array_slice( $plat, 0, 4 ) as $i => $line ) {
+				$text( 14, $times, 35, 60 + 20 * $i, $line, 330 );
+			}
+			foreach ( array_slice( $prim, 0, 3 ) as $i => $line ) {
+				$text( 14, $times, 35, 200 + 20 * $i, $line, 330 );
+			}
+			// Kao WSB: ime i mjesto (bez poštanskog broja).
+			$city = count( $plat ) > 1 ? trim( (string) preg_replace( '/^\d{4,6}\s*/', '', (string) end( $plat ) ) ) : '';
+			$right( 12, $times, 1080, 86, trim( ( $plat[0] ?? '' ) . ( '' !== $city ? ', ' . $city : '' ), ', ' ), 270 );
+			$right( 12, $times, 1080, 201, trim( $model . ' ' . $poziv ), 270 );
+			$right( 12, $times, 1080, 162, $iban, 270 );
+
+			if ( '' !== $code && is_readable( $code ) ) {
+				$raw = @imagecreatefromstring( (string) file_get_contents( $code ) ); // phpcs:ignore
+				if ( $raw ) {
+					$small = imagescale( $raw, 305, -1, IMG_BICUBIC_FIXED );
+					if ( $small ) {
+						imagecopy( $img, $small, 31, 300, 0, 0, imagesx( $small ), imagesy( $small ) );
+						imagedestroy( $small );
+					}
+					imagedestroy( $raw );
+				}
+			}
+			$ok = imagejpeg( $img, $dest, 90 );
+			imagedestroy( $img );
+			return (bool) $ok;
+		}
+
+		/**
 		 * Kartica „Podaci za plaćanje”: 2D kod (src slike, npr. cid:…), uplatnica i podaci.
-		 * $d kao za slip() + 'code' (src) + 'rok' (tekst) + 'title'.
+		 * $d kao za slip() + 'code' (src) + 'slip' (src slike uplatnice iz slip_image(); bez nje
+		 * uplatnica u HTML-u) + 'rok' (tekst) + 'title'.
 		 */
 		public static function payment( array $d ): string {
 			$navy = self::color( 'navy' );
@@ -178,7 +270,10 @@ if ( ! class_exists( 'Plan_A_Email' ) ) {
 				$h .= self::p( '<strong style="color:' . $navy . ';">Skenirajte i platite</strong>', 'text-align:center;' )
 					. '<div style="text-align:center;margin:0 0 16px;"><img src="' . esc_attr( (string) $d['code'] ) . '" alt="2D kod za plaćanje" width="420" style="display:block;width:100%;max-width:420px;height:auto;margin:0 auto;border:0;"></div>';
 			}
-			$h .= self::p( '<strong style="color:' . $navy . ';">Uplatnica</strong>', 'text-align:center;margin-top:4px;' ) . self::slip( $d );
+			$h .= self::p( '<strong style="color:' . $navy . ';">Uplatnica</strong>', 'text-align:center;margin-top:4px;' )
+				. ( ! empty( $d['slip'] )
+					? '<img src="' . esc_attr( (string) $d['slip'] ) . '" alt="Uplatnica HUB-3A" width="552" style="display:block;width:100%;max-width:552px;height:auto;margin:0 auto;border:1px solid #e3e8ee;">'
+					: self::slip( $d ) );
 			$prim = (array) ( $d['primatelj'] ?? array() );
 			$h   .= '<div style="height:14px;line-height:14px;font-size:0;">&nbsp;</div>' . self::rows(
 				array_filter(
