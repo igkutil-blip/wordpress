@@ -14,6 +14,16 @@ final class Plan_A_Prijave_Editor {
 	const NONCE  = 'pap_nonce';
 	const NOTICE = 'pap_editor_notice_';
 
+	/** Ikonica pojma (isti podatak kao WpTravelly) i zadana ikonica. */
+	const ICON_META    = array(
+		'ttbm_tour_activities'    => 'ttbm_activities_icon',
+		'ttbm_tour_features_list' => 'ttbm_feature_icon',
+	);
+	const ICON_DEFAULT = array(
+		'ttbm_tour_activities'    => 'fas fa-person-hiking',
+		'ttbm_tour_features_list' => 'fas fa-check',
+	);
+
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'supports' ), 99 );
 		add_filter( 'admin_body_class', array( __CLASS__, 'body_class' ), 999 );
@@ -24,6 +34,9 @@ final class Plan_A_Prijave_Editor {
 		add_action( 'admin_notices', array( __CLASS__, 'notices' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'no_ttbm_autosave' ), 100 );
 		add_action( 'wp_ajax_ttbm_autosave_tour', array( __CLASS__, 'block_ttbm_autosave' ), 1 );
+		add_action( 'wp_ajax_pap_add_term', array( __CLASS__, 'ajax_add_term' ) );
+		add_action( 'wp_ajax_pap_term_icon', array( __CLASS__, 'ajax_term_icon' ) );
+		add_action( 'wp_ajax_pap_save_guide', array( __CLASS__, 'ajax_save_guide' ) );
 	}
 
 	/**
@@ -88,6 +101,124 @@ final class Plan_A_Prijave_Editor {
 		wp_enqueue_editor();
 		wp_enqueue_style( 'pap-editor', PLAN_A_PRIJAVE_URL . 'assets/editor.css', array(), PLAN_A_PRIJAVE_VERSION );
 		wp_enqueue_script( 'pap-editor', PLAN_A_PRIJAVE_URL . 'assets/editor.js', array( 'jquery', 'jquery-ui-sortable', 'wp-util' ), PLAN_A_PRIJAVE_VERSION, true );
+		// Ikonice (Font Awesome 6) – ista datoteka i oznaka kao kod WpTravellyja i naše kopije.
+		if ( defined( 'TTBM_PLUGIN_URL' ) ) {
+			wp_enqueue_style( 'mp_font_awesome', TTBM_PLUGIN_URL . '/assets/all.min.css', array(), '6.7.2' );
+		}
+		wp_localize_script(
+			'pap-editor',
+			'papEd',
+			array(
+				'ajax'  => admin_url( 'admin-ajax.php' ),
+				'nonce' => wp_create_nonce( 'pap_ajax' ),
+			)
+		);
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Dodavanje pojmova i vodiča bez napuštanja izleta (AJAX)             */
+	/* ------------------------------------------------------------------ */
+
+	private static function ajax_check( string $cap ) {
+		check_ajax_referer( 'pap_ajax', 'nonce' );
+		if ( ! current_user_can( $cap ) ) {
+			wp_send_json_error( array( 'message' => 'Nemaš dozvolu za ovo.' ), 403 );
+		}
+	}
+
+	private static function ajax_tax(): string {
+		$tax = sanitize_key( wp_unslash( $_POST['tax'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! isset( self::ICON_META[ $tax ] ) || ! taxonomy_exists( $tax ) ) {
+			wp_send_json_error( array( 'message' => 'Nepoznat popis.' ), 400 );
+		}
+		return $tax;
+	}
+
+	private static function icon( $v ): string {
+		$v = trim( sanitize_text_field( (string) $v ) );
+		return preg_match( '/^[a-z0-9 -]{1,80}$/', $v ) ? $v : '';
+	}
+
+	public static function ajax_add_term() {
+		self::ajax_check( 'edit_posts' );
+		$tax = self::ajax_tax();
+		if ( ! current_user_can( get_taxonomy( $tax )->cap->edit_terms ) ) {
+			wp_send_json_error( array( 'message' => 'Nemaš dozvolu za dodavanje.' ), 403 );
+		}
+		$name = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$icon = self::icon( wp_unslash( $_POST['icon'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( '' === $name ) {
+			wp_send_json_error( array( 'message' => 'Upiši naziv.' ), 400 );
+		}
+		$term = get_term_by( 'name', $name, $tax );
+		$old  = (bool) $term;
+		if ( ! $term ) {
+			$r = wp_insert_term( $name, $tax );
+			if ( is_wp_error( $r ) ) {
+				wp_send_json_error( array( 'message' => $r->get_error_message() ), 400 );
+			}
+			$term = get_term( (int) $r['term_id'], $tax );
+		}
+		if ( '' !== $icon && ( ! $old || '' === (string) get_term_meta( $term->term_id, self::ICON_META[ $tax ], true ) ) ) {
+			update_term_meta( $term->term_id, self::ICON_META[ $tax ], $icon );
+		}
+		$html = array();
+		foreach ( 'ttbm_tour_activities' === $tax ? array( 'act' ) : array( 'inc', 'exc' ) as $f ) {
+			$html[ $f ] = self::term_check( $term, $f, 'act' === $f ? (string) $term->term_id : $term->name, false );
+		}
+		wp_send_json_success(
+			array(
+				'id'     => (int) $term->term_id,
+				'exists' => $old,
+				'html'   => $html,
+			)
+		);
+	}
+
+	public static function ajax_term_icon() {
+		self::ajax_check( 'edit_posts' );
+		$tax  = self::ajax_tax();
+		$id   = absint( $_POST['term'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification
+		$icon = self::icon( wp_unslash( $_POST['icon'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! current_user_can( get_taxonomy( $tax )->cap->edit_terms ) || ! get_term( $id, $tax ) || '' === $icon ) {
+			wp_send_json_error( array( 'message' => 'Ikonica nije spremljena.' ), 400 );
+		}
+		update_term_meta( $id, self::ICON_META[ $tax ], $icon );
+		wp_send_json_success( array( 'icon' => $icon ) );
+	}
+
+	public static function ajax_save_guide() {
+		$type = get_post_type_object( 'ttbm_guide' );
+		self::ajax_check( $type ? $type->cap->publish_posts : 'do_not_allow' );
+		$id   = absint( $_POST['id'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification
+		$name = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$desc = wp_kses_post( wp_unslash( $_POST['desc'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$img  = absint( $_POST['img'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( '' === $name ) {
+			wp_send_json_error( array( 'message' => 'Upiši ime vodiča.' ), 400 );
+		}
+		if ( $id && ( 'ttbm_guide' !== get_post_type( $id ) || ! current_user_can( 'edit_post', $id ) ) ) {
+			wp_send_json_error( array( 'message' => 'Vodič ne postoji.' ), 400 );
+		}
+		$data = array(
+			'post_type'    => 'ttbm_guide',
+			'post_title'   => $name,
+			'post_content' => $desc,
+			'post_status'  => 'publish',
+		);
+		if ( $id ) {
+			$data['ID'] = $id;
+		}
+		$r = $id ? wp_update_post( $data, true ) : wp_insert_post( $data, true );
+		if ( is_wp_error( $r ) ) {
+			wp_send_json_error( array( 'message' => $r->get_error_message() ), 400 );
+		}
+		if ( $img && wp_attachment_is_image( $img ) ) {
+			set_post_thumbnail( $r, $img );
+		} elseif ( ! $img ) {
+			delete_post_thumbnail( $r );
+		}
+		wp_send_json_success( array( 'id' => (int) $r, 'html' => self::guide_card( get_post( $r ), true ) ) );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -121,6 +252,7 @@ final class Plan_A_Prijave_Editor {
 		'faq'        => 'vazno',
 		'zasto'      => 'kontakt',
 		'kontakt'    => 'kontakt',
+		'vodici'     => 'vodici',
 		'galerija'   => 'galerija',
 		'povezani'   => 'povezani',
 	);
@@ -132,7 +264,8 @@ final class Plan_A_Prijave_Editor {
 		'cijene'   => array( 'Cijene i usluge', 'dashicons-tickets-alt', 'Karte, rate i osiguranje' ),
 		'sadrzaj'  => array( 'Uključeno i aktivnosti', 'dashicons-yes-alt', 'Što je u cijeni, aktivnosti' ),
 		'vazno'    => array( 'Važno i FAQ', 'dashicons-info-outline', 'Uvjeti, izjava, pitanja' ),
-		'kontakt'  => array( 'Kontakt i vodiči', 'dashicons-groups', 'Zašto s nama, upit, vodiči' ),
+		'kontakt'  => array( 'Zašto s nama i kontakt', 'dashicons-email-alt', 'Razlozi, okvir za upit' ),
+		'vodici'   => array( 'Vodiči', 'dashicons-groups', 'Tko vodi izlet, slike i opisi' ),
 		'galerija' => array( 'Galerija', 'dashicons-format-gallery', 'Slike na vrhu stranice' ),
 		'povezani' => array( 'Povezani izleti', 'dashicons-admin-links', '„Odaberi sljedeću avanturu”' ),
 		'ostalo'   => array( 'Ostalo (SEO …)', 'dashicons-admin-generic', 'Okviri drugih dodataka' ),
@@ -225,25 +358,26 @@ final class Plan_A_Prijave_Editor {
 		/* Uključeno / isključeno */
 		$inc = array_map( 'strval', (array) $m( 'ttbm_service_included_in_price', array() ) );
 		$exc = array_map( 'strval', (array) $m( 'ttbm_service_excluded_in_price', array() ) );
-		self::section( 'ukljuceno', 'Uključeno / isključeno', 'Označi što je uključeno u cijenu (kvačica na stranici), a što nije (križić). Novu stavku upiši u polje ispod.' );
-		echo '<div class="pap-two"><div><h4>Uključeno</h4><div class="pap-checks">';
-		foreach ( self::terms( 'ttbm_tour_features_list' ) as $t ) {
-			echo '<label><input type="checkbox" name="pap[inc][]" value="' . self::e( $t->name ) . '"' . checked( in_array( $t->name, $inc, true ), true, false ) . '> ' . esc_html( $t->name ) . '</label>';
+		self::section( 'ukljuceno', 'Uključeno / isključeno', 'Označi što je uključeno u cijenu (kvačica na stranici), a što nije (križić). Novu stavku dodaj ispod popisa; ikonicu promijeniš klikom na nju.' );
+		$features = self::terms( 'ttbm_tour_features_list' );
+		echo '<div class="pap-two"><div><h4>Uključeno</h4><div class="pap-checks" data-terms="inc">';
+		foreach ( $features as $t ) {
+			echo self::term_check( $t, 'inc', $t->name, in_array( $t->name, $inc, true ) ); // phpcs:ignore WordPress.Security.EscapeOutput
 		}
-		echo '</div><input type="text" name="pap[inc_new]" placeholder="nove stavke, odvojene zarezom"></div><div><h4>Nije uključeno</h4><div class="pap-checks">';
-		foreach ( self::terms( 'ttbm_tour_features_list' ) as $t ) {
-			echo '<label><input type="checkbox" name="pap[exc][]" value="' . self::e( $t->name ) . '"' . checked( in_array( $t->name, $exc, true ), true, false ) . '> ' . esc_html( $t->name ) . '</label>';
+		echo '</div>' . self::term_add( 'ttbm_tour_features_list', 'inc', 'Nova stavka (uključeno)' ) . '</div><div><h4>Nije uključeno</h4><div class="pap-checks" data-terms="exc">'; // phpcs:ignore WordPress.Security.EscapeOutput
+		foreach ( $features as $t ) {
+			echo self::term_check( $t, 'exc', $t->name, in_array( $t->name, $exc, true ) ); // phpcs:ignore WordPress.Security.EscapeOutput
 		}
-		echo '</div><input type="text" name="pap[exc_new]" placeholder="nove stavke, odvojene zarezom"></div></div></section>';
+		echo '</div>' . self::term_add( 'ttbm_tour_features_list', 'exc', 'Nova stavka (nije uključeno)' ) . '</div></div></section>'; // phpcs:ignore WordPress.Security.EscapeOutput
 
 		/* Aktivnosti */
 		$act = array_map( 'strval', (array) $m( 'ttbm_tour_activities', array() ) );
-		self::section( 'aktivnosti', 'Aktivnosti', 'Prikazuju se na stranici izleta i služe za filtar na popisu izleta.' );
-		echo '<div class="pap-checks">';
+		self::section( 'aktivnosti', 'Aktivnosti', 'Prikazuju se na stranici izleta (s ikonicom) i služe za filtar na popisu izleta. Ikonicu promijeniš klikom na nju.' );
+		echo '<div class="pap-checks" data-terms="act">';
 		foreach ( self::terms( 'ttbm_tour_activities' ) as $t ) {
-			echo '<label><input type="checkbox" name="pap[act][]" value="' . (int) $t->term_id . '"' . checked( in_array( (string) $t->term_id, $act, true ), true, false ) . '> ' . esc_html( $t->name ) . '</label>';
+			echo self::term_check( $t, 'act', (string) $t->term_id, in_array( (string) $t->term_id, $act, true ) ); // phpcs:ignore WordPress.Security.EscapeOutput
 		}
-		echo '</div><input type="text" name="pap[act_new]" placeholder="nova aktivnost (nije obavezno)"></section>';
+		echo '</div>' . self::term_add( 'ttbm_tour_activities', 'act', 'Nova aktivnost' ) . '</section>'; // phpcs:ignore WordPress.Security.EscapeOutput
 
 		/* Važno */
 		self::section( 'vazno', 'Važno', 'Blokovi na otvaranje (npr. Uvjeti sudjelovanja, Minimalni broj sudionika, Izjava polaznika). Redoslijed mijenjaš strelicama.' );
@@ -270,27 +404,36 @@ final class Plan_A_Prijave_Editor {
 		}
 		echo '</div><p><button type="button" class="button pap-add-why">+ Dodaj razlog</button></p></section>';
 
-		/* Kontakt i vodiči */
-		self::section( 'kontakt', 'Kontakt i vodiči' );
+		/* Kontakt */
+		self::section( 'kontakt', 'Kontakt' );
 		echo '<label class="pap-check"><input type="checkbox" name="pap[question]" value="1"' . checked( 'off' !== $m( 'ttbm_display_get_question', 'on' ), true, false ) . '> Prikaži okvir „Za sva pitanja?” s gumbom „Pošaljite upit”</label>';
 		echo '<div class="pap-grid"><label>Telefon<input type="text" name="pap[phone]" value="' . self::e( $m( 'ttbm_contact_phone' ) ) . '"></label><label>E-mail<input type="email" name="pap[email]" value="' . self::e( $m( 'ttbm_contact_email' ) ) . '"></label></div>';
 		echo '<label>Tekst u okviru<textarea name="pap[contact_text]" rows="2">' . esc_textarea( (string) $m( 'ttbm_contact_text' ) ) . '</textarea></label>';
+		echo '</section>';
+
+		/* Vodiči */
 		$guides = array_map( 'strval', (array) $m( 'ttbm_tour_guide', array() ) );
 		$all_g  = get_posts(
 			array(
 				'post_type'      => 'ttbm_guide',
 				'post_status'    => 'publish',
-				'posts_per_page' => 100,
+				'posts_per_page' => 200,
 				'orderby'        => 'title',
 				'order'          => 'ASC',
 			)
 		);
-		echo '<h4>Vodiči na izletu (okvir „Upoznajte vodiče”)</h4><div class="pap-checks">';
+		self::section( 'vodici', 'Vodiči na izletu', 'Označi tko vodi izlet – na stranici se prikazuju u okviru „Upoznajte vodiče” (slika, ime i opis). Novog vodiča dodaj gumbom ispod; promjena slike ili opisa vrijedi za sve izlete tog vodiča.' );
+		echo '<div class="pap-guides" data-rows="guides">';
 		foreach ( $all_g as $g ) {
-			echo '<label><input type="checkbox" name="pap[guides][]" value="' . (int) $g->ID . '"' . checked( in_array( (string) $g->ID, $guides, true ), true, false ) . '> ' . esc_html( $g->post_title ) . '</label>';
+			echo self::guide_card( $g, in_array( (string) $g->ID, $guides, true ) ); // phpcs:ignore WordPress.Security.EscapeOutput
 		}
-		echo $all_g ? '' : '<p class="pap-hint">Još nema upisanih vodiča.</p>';
-		echo '</div></section>';
+		echo '</div>' . ( $all_g ? '' : '<p class="pap-hint pap-guides-empty">Još nema upisanih vodiča.</p>' );
+		echo '<p><button type="button" class="button pap-guide-new">+ Dodaj vodiča</button></p>';
+		echo '<div class="pap-guide-form" hidden><h4>Novi vodič</h4><input type="hidden" class="pap-gf-id" value="0"><input type="hidden" class="pap-gf-img" value="0">'
+			. '<div class="pap-gf-row"><div class="pap-gf-photo"><span class="pap-gf-prev"></span><button type="button" class="button pap-gf-pick">Odaberi sliku</button><button type="button" class="button-link pap-gf-noimg">Makni sliku</button></div>'
+			. '<div class="pap-gf-fields"><label>Ime i prezime<input type="text" class="pap-gf-name"></label><label>Opis<textarea class="pap-gf-desc" rows="5" placeholder="npr. licencirani planinarski vodič, iskustvo, zanimljivosti"></textarea></label></div></div>'
+			. '<p><button type="button" class="button button-primary pap-gf-save">Spremi vodiča</button> <button type="button" class="button pap-gf-cancel">Odustani</button> <span class="pap-gf-msg"></span></p></div>';
+		echo '</section>';
 
 		/* Galerija */
 		$gal = array_map( 'intval', (array) $m( 'ttbm_gallery_images', array() ) );
@@ -329,6 +472,35 @@ final class Plan_A_Prijave_Editor {
 
 	private static function tools( bool $del = true ): string {
 		return '<td class="pap-tools"><button type="button" class="pap-up" title="Gore">↑</button><button type="button" class="pap-down" title="Dolje">↓</button>' . ( $del ? '<button type="button" class="pap-del" title="Obriši">×</button>' : '' ) . '</td>';
+	}
+
+	/** Kvačica za pojam (aktivnost, uključeno/isključeno) s ikonicom koja se mijenja klikom. */
+	private static function term_check( $t, string $field, string $value, bool $on ): string {
+		$tax  = $t->taxonomy;
+		$icon = (string) get_term_meta( $t->term_id, self::ICON_META[ $tax ], true );
+		return '<label class="pap-term"><input type="checkbox" name="pap[' . esc_attr( $field ) . '][]" value="' . self::e( $value ) . '"' . checked( $on, true, false ) . '>'
+			. '<button type="button" class="pap-ico' . ( '' === $icon ? ' is-empty' : '' ) . '" data-term="' . (int) $t->term_id . '" data-tax="' . esc_attr( $tax ) . '" title="Promijeni ikonicu"><i class="' . esc_attr( $icon ?: self::ICON_DEFAULT[ $tax ] ) . '"></i></button>'
+			. '<span>' . esc_html( $t->name ) . '</span></label>';
+	}
+
+	/** Redak za dodavanje novog pojma: ikonica + naziv + gumb. */
+	private static function term_add( string $tax, string $field, string $placeholder ): string {
+		return '<div class="pap-addterm" data-tax="' . esc_attr( $tax ) . '" data-field="' . esc_attr( $field ) . '">'
+			. '<button type="button" class="pap-ico pap-ico-new" data-icon="' . esc_attr( self::ICON_DEFAULT[ $tax ] ) . '" title="Odaberi ikonicu"><i class="' . esc_attr( self::ICON_DEFAULT[ $tax ] ) . '"></i></button>'
+			. '<input type="text" class="pap-addterm-name" placeholder="' . esc_attr( $placeholder ) . '">'
+			. '<button type="button" class="button pap-addterm-btn">+ Dodaj</button></div>';
+	}
+
+	/** Kartica vodiča: slika, ime, kvačica „vodi ovaj izlet”, gumb Uredi. */
+	private static function guide_card( $g, bool $on ): string {
+		$img = (int) get_post_thumbnail_id( $g );
+		$src = $img ? wp_get_attachment_image_url( $img, 'thumbnail' ) : '';
+		$txt = wp_strip_all_tags( (string) $g->post_content );
+		return '<div class="pap-guide" data-id="' . (int) $g->ID . '" data-img="' . $img . '" data-name="' . self::e( $g->post_title ) . '" data-desc="' . self::e( (string) $g->post_content ) . '">'
+			. '<label><input type="checkbox" name="pap[guides][]" value="' . (int) $g->ID . '"' . checked( $on, true, false ) . '>'
+			. '<span class="pap-guide-img">' . ( $src ? '<img src="' . esc_url( $src ) . '" alt="">' : '<span class="dashicons dashicons-admin-users"></span>' ) . '</span>'
+			. '<b>' . esc_html( $g->post_title ) . '</b><small>' . esc_html( wp_trim_words( $txt, 14, ' …' ) ) . '</small></label>'
+			. '<button type="button" class="button-link pap-guide-edit">Uredi</button></div>';
 	}
 
 	private static function date_row( string $k, string $start, string $end, string $time, int $n, bool $lock ): string {

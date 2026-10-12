@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.4.2
+Stable tag: 0.5.0
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,10 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.5.0 =
+* Zaslon izleta: nova kartica „Vodiči” – kartice vodiča sa slikom i opisom, kvačica tko vodi izlet, „+ Dodaj vodiča” i „Uredi” (ime, slika, opis) bez napuštanja izleta.
+* Aktivnosti i Uključeno/isključeno: dodavanje nove stavke s ikonicom (gumb „+ Dodaj”), ikonice uz stavke, klik na ikonicu je mijenja (isti podatak kao WpTravelly).
 
 = 0.4.2 =
 * Zaslon izleta, gornja traka: „U skicu” (objavljeni izlet, uz potvrdu) ili „Spremi skicu” (skica) i „Smeće” (uz potvrdu).

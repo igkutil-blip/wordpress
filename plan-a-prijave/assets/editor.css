@@ -94,3 +94,37 @@ body.pap-layout .pap-sec{background:#fff}
 body.pap-layout .pap-sec .pap-table th{background:var(--soft)}
 .pap-bar-btns .pap-bar-trash{color:#b32d2e;border-color:#e3b4b4}
 .pap-bar-btns .pap-bar-trash:hover{background:#fcf0f1;color:#8a2424;border-color:#b32d2e}
+/* Pojmovi s ikonicama (aktivnosti, uključeno/isključeno) */
+.pap .pap-term{display:flex;align-items:center;gap:6px}
+.pap .pap-ico{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:0 0 28px;padding:0;border:1px solid #c3c4c7;border-radius:6px;background:#fff;color:#2271b1;cursor:pointer;font-size:14px}
+.pap .pap-ico:hover,.pap .pap-ico:focus{border-color:#2271b1;box-shadow:0 0 0 1px #2271b1;outline:0}
+.pap .pap-ico.is-empty{color:#a7aaad}
+.pap .pap-term.is-new span,.pap .pap-guide.is-new b{color:#00a32a}
+.pap .pap-addterm{display:flex;gap:6px;align-items:center;margin-top:10px;max-width:520px}
+.pap .pap-addterm .pap-ico{width:32px;height:32px;flex-basis:32px}
+.pap .pap-addterm-name{flex:1;min-width:0}
+.pap-icons{position:absolute;z-index:100100;width:320px;background:#fff;border:1px solid #c3c4c7;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);padding:10px}
+.pap-icons-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.pap-icons-grid button{height:32px;border:1px solid transparent;border-radius:6px;background:#f6f7f7;color:#1d2327;cursor:pointer;font-size:15px}
+.pap-icons-grid button:hover,.pap-icons-grid button:focus{border-color:#2271b1;color:#2271b1;background:#fff;outline:0}
+.pap-icons p{margin:8px 0 0;text-align:right}
+/* Vodiči */
+.pap .pap-guides{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.pap .pap-guide{position:relative;border:1px solid #dcdcde;border-radius:8px;background:#fff;padding:10px;text-align:center}
+.pap .pap-guide label{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;margin:0}
+.pap .pap-guide input[type=checkbox]{position:absolute;top:10px;left:10px;margin:0;width:16px;height:16px;min-width:0;padding:0}
+.pap .pap-guide:has(input:checked){border-color:#2271b1;box-shadow:0 0 0 1px #2271b1;background:#f0f6fc}
+.pap .pap-guide-img,.pap .pap-gf-prev{display:flex;align-items:center;justify-content:center;width:84px;height:84px;border-radius:50%;overflow:hidden;background:#f0f0f1;color:#a7aaad}
+.pap .pap-guide-img img,.pap .pap-gf-prev img{width:100%;height:100%;object-fit:cover}
+.pap .pap-guide-img .dashicons,.pap .pap-gf-prev .dashicons{font-size:40px;width:40px;height:40px}
+.pap .pap-guide small{color:#646970;line-height:1.35}
+.pap .pap-guide-edit{margin-top:6px}
+.pap .pap-guide-form{margin-top:12px;padding:14px;border:1px solid #c3c4c7;border-radius:8px;background:#f6f7f7}
+.pap .pap-guide-form h4{margin-top:0}
+.pap .pap-gf-row{display:flex;gap:16px;align-items:flex-start}
+.pap .pap-gf-photo{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pap .pap-gf-fields{flex:1;min-width:0}
+.pap .pap-gf-fields label{display:block;margin-bottom:8px}
+.pap .pap-gf-fields input,.pap .pap-gf-fields textarea{display:block;width:100%}
+.pap .pap-gf-msg{color:#646970}
+@media (max-width:600px){.pap .pap-gf-row{flex-direction:column;align-items:stretch}}

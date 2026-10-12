@@ -178,6 +178,130 @@ jQuery(function ($) {
 		frame.open();
 	});
 
+	/* ---------- Ikonice, nove aktivnosti i stavke uključeno/isključeno ---------- */
+	var ICONS = ['person-hiking', 'mountain', 'mountain-sun', 'tree', 'leaf', 'seedling', 'water', 'person-swimming', 'sailboat', 'ship',
+		'anchor', 'fish', 'umbrella-beach', 'sun', 'cloud-sun', 'snowflake', 'person-skiing', 'campground', 'tent', 'fire',
+		'bicycle', 'person-biking', 'person-walking', 'shoe-prints', 'route', 'map', 'map-location-dot', 'compass', 'location-dot', 'flag',
+		'binoculars', 'camera', 'landmark', 'church', 'monument', 'city', 'bus', 'van-shuttle', 'car', 'train',
+		'plane', 'ticket', 'id-card', 'shield-halved', 'kit-medical', 'user-tie', 'users', 'child', 'dog', 'paw',
+		'utensils', 'mug-hot', 'wine-glass', 'beer-mug-empty', 'bread-slice', 'apple-whole', 'bottle-water', 'bed', 'hotel', 'house',
+		'wifi', 'square-parking', 'toilet', 'shower', 'hand-holding-dollar', 'euro-sign', 'gift', 'star', 'heart', 'music',
+		'graduation-cap', 'book', 'clock', 'calendar-days', 'circle-info', 'triangle-exclamation', 'check', 'xmark', 'plus', 'minus'];
+	var pick = null, pickFor = null;
+	function picker(btn) {
+		if (!pick) {
+			pick = $('<div class="pap-icons" role="dialog" aria-label="Odaberi ikonicu"><div class="pap-icons-grid"></div><p><button type="button" class="button-link pap-icons-close">Zatvori</button></p></div>').appendTo(document.body);
+			ICONS.forEach(function (n) {
+				$('<button type="button">').attr({ 'data-icon': 'fas fa-' + n, title: n }).append($('<i>').addClass('fas fa-' + n)).appendTo(pick.find('.pap-icons-grid'));
+			});
+			pick.on('click', '.pap-icons-close', function () { pick.hide(); });
+			pick.on('click', '[data-icon]', function () { choose($(this).data('icon')); });
+			$(document).on('mousedown keydown', function (e) {
+				if (!pick.is(':visible')) { return; }
+				if (e.type === 'keydown' && e.key !== 'Escape') { return; }
+				if (e.type === 'mousedown' && $(e.target).closest('.pap-icons, .pap-ico').length) { return; }
+				pick.hide();
+			});
+		}
+		pickFor = $(btn);
+		var o = pickFor.offset();
+		pick.css({ top: o.top + pickFor.outerHeight() + 4, left: Math.max(8, Math.min(o.left, $(window).width() - 330)) }).show();
+	}
+	function setIcon(btn, icon) { btn.removeClass('is-empty').find('i').attr('class', icon); }
+	function choose(icon) {
+		var btn = pickFor;
+		pick.hide();
+		if (!btn) { return; }
+		if (btn.hasClass('pap-ico-new')) { btn.data('icon', icon); setIcon(btn, icon); return; }
+		var term = btn.data('term'), old = btn.find('i').attr('class');
+		// Ista ikonica u stupcima Uključeno i Nije uključeno.
+		var all = box.find('.pap-ico[data-term="' + term + '"]');
+		all.each(function () { setIcon($(this), icon); });
+		$.post(papEd.ajax, { action: 'pap_term_icon', nonce: papEd.nonce, tax: btn.data('tax'), term: term, icon: icon }).fail(function () {
+			all.find('i').attr('class', old);
+			window.alert('Ikonica nije spremljena.');
+		});
+	}
+	box.on('click', '.pap-ico', function (e) { e.preventDefault(); e.stopPropagation(); picker(this); });
+
+	function addTerm(row) {
+		var name = $.trim(row.find('.pap-addterm-name').val()), btn = row.find('.pap-addterm-btn');
+		if (!name) { row.find('.pap-addterm-name').trigger('focus'); return; }
+		btn.prop('disabled', true);
+		$.post(papEd.ajax, { action: 'pap_add_term', nonce: papEd.nonce, tax: row.data('tax'), name: name, icon: row.find('.pap-ico-new').data('icon') })
+			.done(function (r) {
+				if (!r || !r.success) { window.alert((r && r.data && r.data.message) || 'Nije dodano.'); return; }
+				$.each(r.data.html, function (field, html) {
+					var list = box.find('[data-terms="' + field + '"]');
+					var old = list.find('.pap-ico[data-term="' + r.data.id + '"]').closest('label');
+					var el = old.length ? old : $(html).appendTo(list);
+					if (field === row.data('field')) { el.find('input').prop('checked', true); el.addClass('is-new'); }
+				});
+				row.find('.pap-addterm-name').val('').trigger('focus');
+			})
+			.fail(function (x) { window.alert((x.responseJSON && x.responseJSON.data && x.responseJSON.data.message) || 'Nije dodano.'); })
+			.always(function () { btn.prop('disabled', false); });
+	}
+	box.on('click', '.pap-addterm-btn', function () { addTerm($(this).closest('.pap-addterm')); });
+	box.on('keydown', '.pap-addterm-name, .pap-gf-name', function (e) {
+		if (e.key !== 'Enter') { return; }
+		e.preventDefault(); // inače bi Enter spremio cijeli izlet
+		if ($(this).hasClass('pap-addterm-name')) { addTerm($(this).closest('.pap-addterm')); } else { box.find('.pap-gf-save').trigger('click'); }
+	});
+
+	/* ---------- Vodiči ---------- */
+	var gf = box.find('.pap-guide-form');
+	function gfImg(id, url) {
+		gf.find('.pap-gf-img').val(id || 0);
+		gf.find('.pap-gf-prev').html(url ? $('<img alt="">').attr('src', url) : '<span class="dashicons dashicons-admin-users"></span>');
+		gf.find('.pap-gf-noimg').toggle(!!id);
+	}
+	function gfOpen(card) {
+		var c = card ? $(card) : null;
+		gf.find('h4').text(c ? 'Uredi vodiča' : 'Novi vodič');
+		gf.find('.pap-gf-id').val(c ? c.data('id') : 0);
+		gf.find('.pap-gf-name').val(c ? c.attr('data-name') : '');
+		gf.find('.pap-gf-desc').val(c ? c.attr('data-desc') : '');
+		gfImg(c ? c.data('img') : 0, c ? c.find('.pap-guide-img img').attr('src') : '');
+		gf.find('.pap-gf-msg').text('');
+		gf.prop('hidden', false);
+		gf.find('.pap-gf-name').trigger('focus');
+	}
+	box.on('click', '.pap-guide-new', function () { gfOpen(null); });
+	box.on('click', '.pap-guide-edit', function () { gfOpen($(this).closest('.pap-guide')); });
+	box.on('click', '.pap-gf-cancel', function () { gf.prop('hidden', true); });
+	box.on('click', '.pap-gf-noimg', function () { gfImg(0, ''); });
+	box.on('click', '.pap-gf-pick', function (e) {
+		e.preventDefault();
+		var frame = wp.media({ title: 'Slika vodiča', button: { text: 'Odaberi' }, multiple: false, library: { type: 'image' } });
+		frame.on('select', function () {
+			var a = frame.state().get('selection').first().toJSON();
+			gfImg(a.id, (a.sizes && a.sizes.thumbnail) ? a.sizes.thumbnail.url : a.url);
+		});
+		frame.open();
+	});
+	box.on('click', '.pap-gf-save', function () {
+		var btn = $(this), id = parseInt(gf.find('.pap-gf-id').val(), 10) || 0;
+		if (!$.trim(gf.find('.pap-gf-name').val())) { gf.find('.pap-gf-name').trigger('focus'); return; }
+		btn.prop('disabled', true);
+		gf.find('.pap-gf-msg').text('Spremam …');
+		$.post(papEd.ajax, { action: 'pap_save_guide', nonce: papEd.nonce, id: id, name: gf.find('.pap-gf-name').val(), desc: gf.find('.pap-gf-desc').val(), img: gf.find('.pap-gf-img').val() })
+			.done(function (r) {
+				if (!r || !r.success) { gf.find('.pap-gf-msg').text((r && r.data && r.data.message) || 'Nije spremljeno.'); return; }
+				var card = $(r.data.html), old = box.find('.pap-guide[data-id="' + r.data.id + '"]');
+				if (old.length) {
+					card.find('input').prop('checked', old.find('input').prop('checked'));
+					old.replaceWith(card);
+				} else {
+					box.find('[data-rows="guides"]').append(card.addClass('is-new'));
+					box.find('.pap-guides-empty').remove();
+				}
+				gf.prop('hidden', true);
+			})
+			.fail(function (x) { gf.find('.pap-gf-msg').text((x.responseJSON && x.responseJSON.data && x.responseJSON.data.message) || 'Nije spremljeno.'); })
+			.always(function () { btn.prop('disabled', false); });
+	});
+
 	// Prije spremanja: sadržaj iz uređivača u polja.
 	$('#post').on('submit', function () { if (window.tinymce) { tinymce.triggerSave(); } });
 });
