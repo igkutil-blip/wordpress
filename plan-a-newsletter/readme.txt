@@ -1,7 +1,7 @@
 === Plan A newsletter ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 
 Slanje newslettera članovima i sudionicima izleta iz sučelja weba.
@@ -31,6 +31,9 @@ Slanje newslettera članovima i sudionicima izleta iz sučelja weba.
 * Ne prati se tko je otvorio mail ni na što je kliknuo. Popis primatelja ne izlazi sa stranice.
 
 == Promjene ==
+
+= 1.1.0 =
+* Newsletter i izvješće o slanju u zajedničkom Plan A izgledu (zaglavlje s logom, kartica, podnožje s odjavom).
 
 = 1.0.0 =
 * Prva verzija.

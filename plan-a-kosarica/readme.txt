@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.5.5
+Stable tag: 1.6.0
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -96,6 +96,13 @@ Kad se kupac tipkom "Natrag" vrati na stranicu izleta, stranica se osvježi (ina
 == Obavijest na vrhu e-maila (1.5.5) ==
 
 Filtar plan_a_kosarica_email_notice: HTML u narančastom okviru ispod naslova e-maila kupcu (npr. potvrda pristupnice).
+
+== Isti izgled svih mailova (1.6.0) ==
+
+Zajednički Plan A izgled maila (Plan_A_Email, ista datoteka u svim Plan A dodacima): i svi ostali
+WooCommerceovi mailovi (otkazana narudžba, povrat, napomena kupcu, lozinka, novi račun, poklon bon …)
+dobivaju isto zaglavlje s logom, naslov s ikonom, karticu i podnožje (predlošci email-header.php i
+email-footer.php).
 
 == Postavke ==
 

@@ -398,31 +398,64 @@ final class Plan_A_Clanstvo_Agency {
 		}
 		$name  = trim( $order->get_billing_first_name() ) ?: 'poštovani';
 		$money = number_format( $amount, 2, ',', '.' ) . ' €';
-		$rows  = array(
-			'Iznos'         => $money,
-			'Primatelj'     => Plan_A_Clanstvo_Data::value( 'primatelj' ) . ', ' . Plan_A_Clanstvo_Data::value( 'adresa' ) . ', ' . Plan_A_Clanstvo_Data::value( 'mjesto' ),
-			'IBAN'          => Plan_A_Clanstvo_Data::value( 'iban' ),
-			'Poziv na broj' => (string) $order->get_order_number(),
-			'Opis plaćanja' => 'Druga rata, narudžba ' . $order->get_order_number(),
-		);
-		$table = '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:15px">';
-		foreach ( $rows as $k => $v ) {
-			$table .= '<tr><td style="padding:5px 10px 5px 0;color:#5f6b77;white-space:nowrap">' . esc_html( $k ) . '</td><td style="padding:5px 0;font-weight:bold">' . esc_html( $v ) . '</td></tr>';
+		$eur   = static fn( $v ) => number_format( (float) $v, 2, ',', '.' ) . ' €';
+		// Pregled izleta: tko je platio prvu ratu, koliko, puna cijena i ostatak.
+		$trip = array();
+		foreach ( $order->get_items() as $item ) {
+			if ( ! $item instanceof WC_Order_Item_Product || ! self::first_rate( $item ) ) {
+				continue;
+			}
+			$full = self::full_price( (int) $item->get_meta( '_ttbm_id' ) );
+			$ts   = strtotime( (string) $item->get_meta( '_ttbm_date' ) );
+			$te   = strtotime( (string) $item->get_meta( '_ttbm_end_date' ) );
+			$trip[] = array( 'Izlet', '<strong>' . esc_html( wp_strip_all_tags( html_entity_decode( (string) $item->get_name(), ENT_QUOTES, 'UTF-8' ) ) ) . '</strong>' );
+			if ( $ts ) {
+				$trip[] = array( 'Datum', esc_html( gmdate( 'j.n.Y.', $ts ) . ( $te && gmdate( 'Y-m-d', $te ) !== gmdate( 'Y-m-d', $ts ) ? ' – ' . gmdate( 'j.n.Y.', $te ) : '' ) ) );
+			}
+			foreach ( (array) $item->get_meta( '_ttbm_ticket_info' ) as $t ) {
+				if ( preg_match( '/prve\s+rate/iu', (string) ( $t['ticket_name'] ?? '' ) ) ) {
+					$q = max( 1, (int) ( $t['ticket_qty'] ?? 1 ) );
+					$trip[] = array( 'Puna cijena', esc_html( $q . ' × ' . $eur( $full ) . ' = ' . $eur( $full * $q ) ) );
+					$trip[] = array( 'Uplaćena prva rata', esc_html( $q . ' × ' . $eur( $t['ticket_price'] ?? 0 ) . ' = ' . $eur( (float) ( $t['ticket_price'] ?? 0 ) * $q ) ) );
+				}
+			}
+			foreach ( (array) $item->get_meta( '_ttbm_service_info' ) as $sv ) {
+				if ( (int) ( $sv['service_qty'] ?? 0 ) > 0 ) {
+					$trip[] = array( (string) ( $sv['service_name'] ?? 'Usluga' ), esc_html( (int) $sv['service_qty'] . ' × ' . $eur( $sv['service_price'] ?? 0 ) . ' – uplaćeno, ne ulazi u ostatak' ) );
+				}
+			}
 		}
-		$table .= '</table>';
+		$trip[] = array( 'Ostatak (druga rata)', '<strong style="font-size:17px;color:' . Plan_A_Email::color( 'navy' ) . ';">' . esc_html( $money ) . '</strong>' );
 		// 2D kod ugrađen u mail: datoteka se nakon slanja briše, pa poveznica na stranicu ne bi radila.
 		$src    = $code && $code['path'] ? Plan_A_Clanstvo_Mail::embed( $code['path'], 'pac2d' ) : ( $code['url'] ?? '' );
-		$img    = $src ? '<img src="' . esc_attr( $src ) . '" alt="2D kod za uplatu druge rate" style="display:block;width:100%;max-width:420px;height:auto;margin:0 auto 14px">' : '';
 		$intro  = 'first' === $kind
-			? 'Primili smo <strong>uplatu prve rate</strong> za tvoju prijavu. Hvala!'
+			? 'primili smo <strong>uplatu prve rate</strong> za tvoju prijavu. Hvala!'
 			: 'podsjećamo te da <strong>druga rata</strong> za tvoj izlet još nije uplaćena.';
-		$inner  = Plan_A_Clanstvo_Mail::p( 'Pozdrav ' . esc_html( $name ) . ',' )
-			. Plan_A_Clanstvo_Mail::p( $intro . ' Ostatak uplate je <strong>' . esc_html( $money ) . '</strong>, a treba biti uplaćen ' . esc_html( $when ) . ' (30 dana prije izleta).' )
-			. '<div style="background:#f3f8fc;border-radius:14px;padding:18px 18px 10px;margin:6px 0 16px">' . $img . $table . '</div>'
-			. Plan_A_Clanstvo_Mail::p( '<span style="color:#5f6b77;font-size:14px">Ako si ostatak već uplatio/la, zanemari ovu poruku. Pitanja: info@srd-plan-a.hr.</span>' );
+		$inner  = Plan_A_Email::card(
+			'',
+			Plan_A_Email::p( 'Pozdrav ' . esc_html( $name ) . ',' )
+			. Plan_A_Email::p( $intro . ' Ostatak uplate je <strong>' . esc_html( $money ) . '</strong>, a treba biti uplaćen <strong>' . esc_html( $when ) . '</strong> (30 dana prije izleta).' )
+		)
+			. Plan_A_Email::card( 'Vaš izlet', Plan_A_Email::rows( $trip ) )
+			. Plan_A_Email::payment(
+				array(
+					'title'     => 'Uplata druge rate',
+					'code'      => $src,
+					'iznos'     => $amount,
+					'platitelj' => array( trim( $order->get_formatted_billing_full_name() ), $order->get_billing_address_1(), trim( $order->get_billing_postcode() . ' ' . $order->get_billing_city() ) ),
+					'primatelj' => array( Plan_A_Clanstvo_Data::value( 'primatelj' ), Plan_A_Clanstvo_Data::value( 'adresa' ), Plan_A_Clanstvo_Data::value( 'mjesto' ) ),
+					'iban'      => Plan_A_Clanstvo_Data::value( 'iban' ),
+					'model'     => 'HR' . preg_replace( '/\D/', '', (string) Plan_A_Clanstvo_Data::value( 'model' ) ),
+					'poziv'     => (string) $order->get_order_number(),
+					'opis'      => 'Druga rata, narudžba ' . $order->get_order_number(),
+					'rok'       => $due ? gmdate( 'j.n.Y.', $due ) : '',
+				)
+			)
+			. Plan_A_Email::card( '', Plan_A_Email::small( 'Ako si ostatak već uplatio/la, zanemari ovu poruku. Pitanja: info@srd-plan-a.hr ili 095 90 60 556.' ) );
 		$subj   = 'first' === $kind ? 'Uplaćena prva rata – druga rata ' . $when : 'Podsjetnik: druga rata ' . $when;
-		$title  = 'first' === $kind ? 'Uplaćena prva rata' : 'Druga rata';
-		$ok     = Plan_A_Clanstvo_Mail::send( $to, $subj, Plan_A_Clanstvo_Mail::wrap( $title, $inner, 'Plan A · uplata' ) );
+		$title  = 'first' === $kind ? 'Uplaćena prva rata' : 'Podsjetnik: druga rata';
+		$sub    = 'Broj narudžbe: <strong>' . esc_html( $order->get_order_number() ) . '</strong>' . ( $order->get_date_created() ? ' · ' . esc_html( $order->get_date_created()->date_i18n( 'j. F Y.' ) ) : '' );
+		$ok     = Plan_A_Clanstvo_Mail::send( $to, $subj, Plan_A_Clanstvo_Mail::wrap( $title, $inner, 'Plan A · uplata', 'first' === $kind ? 'check' : 'euro', $sub ) );
 		if ( $code && $code['path'] ) {
 			wp_delete_file( $code['path'] );
 		}

@@ -35,12 +35,11 @@ final class Plan_A_Jedrenje_Mail {
 		if ( '' !== (string) $r['note'] ) {
 			$rows['Napomena'] = $r['note'];
 		}
-		$html = '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:0 0 18px;font-size:15px;">';
+		$out = array();
 		foreach ( array_filter( $rows, 'strlen' ) as $k => $v ) {
-			$html .= '<tr><td style="padding:7px 10px 7px 0;color:#5f6b77;vertical-align:top;white-space:nowrap;border-bottom:1px solid #edf1f5;">' . esc_html( $k ) . '</td>'
-				. '<td style="padding:7px 0;color:#24323f;font-weight:bold;border-bottom:1px solid #edf1f5;">' . esc_html( $v ) . '</td></tr>';
+			$out[] = array( $k, '<strong>' . esc_html( $v ) . '</strong>' );
 		}
-		return $html . '</table>';
+		return '<div style="margin:6px 0 16px;">' . Plan_A_Email::rows( $out ) . '</div>';
 	}
 
 	public static function organizer_html(): string {
@@ -51,18 +50,35 @@ final class Plan_A_Jedrenje_Mail {
 	 * Cijeli e-mail. $paragraphs su običan tekst (escapira se), $html je već siguran HTML.
 	 */
 	public static function wrap( string $title, array $paragraphs, string $html = '', array $button = array() ): string {
-		$body = '<!doctype html><html><body style="margin:0;padding:24px 12px;background:#f3f6f9;font-family:Arial,Helvetica,sans-serif;color:#24323f">'
-			. '<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:16px;padding:28px 24px">'
-			. '<p style="margin:0 0 6px;color:#c96a12;font-size:12px;font-weight:bold;letter-spacing:2px;text-transform:uppercase">' . esc_html( (string) Plan_A_Jedrenje_Data::value( 'title' ) ) . '</p>'
-			. '<h1 style="margin:0 0 16px;color:#12304b;font-size:24px;line-height:1.25">' . esc_html( $title ) . '</h1>';
+		// Zajednički Plan A izgled (zaglavlje s logom, ikona, kartica).
+		$t    = mb_strtolower( $title );
+		$icon = 'mail';
+		if ( false !== strpos( $t, 'upozorenje' ) ) {
+			$icon = 'warn';
+		} elseif ( false !== strpos( $t, 'odgovor' ) || false !== strpos( $t, 'odbij' ) ) {
+			$icon = 'info';
+		} elseif ( false !== strpos( $t, 'potvrđ' ) || false !== strpos( $t, 'uplaćeno' ) ) {
+			$icon = 'check';
+		} elseif ( false !== strpos( $t, 'podsjetnik' ) ) {
+			$icon = 'list';
+		}
+		$body = '';
 		foreach ( $paragraphs as $p ) {
-			$body .= '<p style="margin:0 0 14px;font-size:16px;line-height:1.55">' . nl2br( esc_html( $p ) ) . '</p>';
+			$body .= Plan_A_Email::p( nl2br( esc_html( $p ) ) );
 		}
 		$body .= $html;
 		if ( $button ) {
-			$body .= '<p style="margin:6px 0 10px"><a href="' . esc_url( $button[1] ) . '" style="display:inline-block;padding:14px 24px;border-radius:999px;background:#e8862a;color:#fff;font-weight:bold;text-decoration:none">' . esc_html( $button[0] ) . '</a></p>';
+			$body .= Plan_A_Email::button( (string) $button[0], (string) $button[1] );
 		}
-		return $body . self::organizer_html() . '</div></body></html>';
+		return Plan_A_Email::render(
+			array(
+				'title' => $title,
+				'label' => (string) Plan_A_Jedrenje_Data::value( 'title' ),
+				'icon'  => $icon,
+			),
+			$body,
+			esc_html( (string) Plan_A_Jedrenje_Data::value( 'organizer' ) )
+		);
 	}
 
 	/**
@@ -95,7 +111,7 @@ final class Plan_A_Jedrenje_Mail {
 		if ( ! $lines ) {
 			return '';
 		}
-		$html = '<p style="margin:18px 0 6px;font-size:14px;font-weight:bold;color:#12304b">Uvjeti otkaza</p><ul style="margin:0;padding-left:18px;color:#5f6b77;font-size:13px;line-height:1.5">';
+		$html = '<p style="margin:18px 0 6px;font-family:' . Plan_A_Email::FONT . ';font-size:14px;font-weight:bold;color:' . Plan_A_Email::color( 'navy' ) . '">Uvjeti otkaza</p><ul style="margin:0;padding-left:18px;color:#5f6b77;font-family:' . Plan_A_Email::FONT . ';font-size:13px;line-height:1.5">';
 		foreach ( $lines as $l ) {
 			$html .= '<li>' . esc_html( $l ) . '</li>';
 		}

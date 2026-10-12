@@ -83,7 +83,12 @@ Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate�
 Igor ne pamti ništa od ovoga: kad završimo s kopijom, **ja** pripremim sve zipove za živu stranicu i
 napišem redoslijed (što isključiti, što instalirati, što provjeriti). Do tada na živoj ništa ne tražiti.
 
-- **plan-a-clanstvo 1.14.8** (zadana grana i `prijave`, isti zip): druga rata = puna cijena − prva rata po
+- **Jednak izgled svih mailova (12.10.2026.)** – zadana grana i `prijave`, isti zipovi: plan-a-kosarica 1.6.0,
+  plan-a-clanstvo 1.15.0, plan-a-jedrenje 1.9.0, plan-a-newsletter 1.1.0, plan-a-izleti 1.22.0 (zajednička
+  datoteka `includes/plan-a-email.php`, klasa `Plan_A_Email`, mora biti ista u svim dodacima). Na kopiji
+  primjerci: pomoćnik REST `mail/samples` (grupa all|wc|clanstvo|jedrenje|ostalo, order, rate_order,
+  member_email, samo).
+- **plan-a-clanstvo (sada 1.15.0)** (zadana grana i `prijave`, isti zip): druga rata = puna cijena − prva rata po
   osobi, osiguranje se ne odbija; ispravak pune cijene (`ticket_type_price`, do 1.14.5 ostatak je bio 0 € i
   mail za drugu ratu nije odlazio). Nakon instalacije se propušteni mail jednom ponovi – na živoj to je
   narudžba **#8989** (prva rata 12.10.2026.). Prije instalacije pitati Igora želi li to slanje.

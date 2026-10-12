@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.5.8
+Stable tag: 0.6.0
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,9 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.6.0 =
+* Upiti s izleta: mailovi na hrvatskom u zajedničkom Plan A izgledu (nama, potvrda kupcu, odgovor kupcu) umjesto WpTravellyjevih na engleskom.
 
 = 0.5.8 =
 * Velika slika izleta: uz lokaciju i datum termina (npr. „21.–22.11.2026.”, uz broj ostalih termina); strelice za slike u gornjem dijelu slike – naslov u dva reda ne preklapa se ni na mobitelu.

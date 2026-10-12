@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A – pomoćnik za kopiju
  * Description:       SAMO ZA KOPIJU STRANICE (staging). Sve mailove kopije preusmjerava na jednu adresu (ili ih blokira). Claudeu omogućuje da preko REST API-ja postavlja i ažurira naše dodatke (plan-a-*), pokreće našu automatiku i čita zapis grešaka. Na srd-plan-a.hr odbija sve.
- * Version:           1.3.0
+ * Version:           1.4.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -147,7 +147,7 @@ final class Plan_A_Pomocnik {
 			echo '<div class="notice notice-success"><p>Spremljeno.</p></div>';
 		}
 		if ( isset( $_POST['pap_test'] ) && check_admin_referer( 'pap_mail' ) ) {
-			$ok = wp_mail( 'test-kupac@example.com', 'Probni mail s kopije', "Ovo je probni mail s kopije stranice.\nIzvorno je bio upućen na test-kupac@example.com." );
+			$ok = wp_mail( 'test-kupac@example.com', 'Probni mail s kopije', self::test_body(), array( 'Content-Type: text/html; charset=UTF-8' ) );
 			echo '<div class="notice notice-' . ( $ok ? 'success' : 'warning' ) . '"><p>' . ( $ok ? 'Probni mail poslan.' : 'Probni mail nije poslan (blokiran ili greška).' ) . '</p></div>';
 		}
 		$log = (array) get_option( self::MAIL_LOG, array() );
@@ -202,6 +202,7 @@ final class Plan_A_Pomocnik {
 			array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'mail_set' ), 'permission_callback' => $ok ),
 		) );
 		register_rest_route( self::NS, '/mail/test', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'mail_test' ), 'permission_callback' => $ok ) );
+		register_rest_route( self::NS, '/mail/samples', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'mail_samples' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/option/(?P<name>(plan_a|ttbm|pan_|pac_)[A-Za-z0-9_\-]*)', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'option' ), 'permission_callback' => $ok ) );
 	}
 
@@ -395,9 +396,37 @@ final class Plan_A_Pomocnik {
 			$err = $e->get_error_message();
 		};
 		add_action( 'wp_mail_failed', $cb );
-		$ok = wp_mail( 'test-kupac@example.com', 'Probni mail s kopije', "Ovo je probni mail s kopije stranice.\nIzvorno je bio upućen na test-kupac@example.com." );
+		$ok = wp_mail( 'test-kupac@example.com', 'Probni mail s kopije', self::test_body(), array( 'Content-Type: text/html; charset=UTF-8' ) );
 		remove_action( 'wp_mail_failed', $cb );
 		return array( 'ok' => (bool) $ok, 'redirect' => (bool) self::mail_to(), 'error' => $err );
+	}
+
+	private static function test_body(): string {
+		return Plan_A_Email::render(
+			array( 'title' => 'Probni mail s kopije', 'icon' => 'mail', 'label' => 'Plan A · kopija stranice' ),
+			Plan_A_Email::p( 'Ovo je probni mail s kopije stranice.' ) . Plan_A_Email::small( 'Izvorno je bio upućen na test-kupac@example.com, a stigao je na adresu iz „Plan A – mailovi kopije”.' )
+		);
+	}
+
+	/** Po jedan primjerak svakog maila (grupa: all | wc | clanstvo | jedrenje | ostalo). */
+	public static function mail_samples( WP_REST_Request $req ) {
+		if ( ! self::mail_to() ) {
+			return new WP_Error( 'no_redirect', 'Nije upisana adresa za mailove kopije – primjerci se ne šalju.', array( 'status' => 400 ) );
+		}
+		if ( function_exists( 'set_time_limit' ) ) {
+			set_time_limit( 300 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions
+		}
+		$group = sanitize_key( (string) ( $req['grupa'] ?? 'all' ) );
+		Plan_A_Pomocnik_Samples::$only = sanitize_text_field( (string) ( $req['samo'] ?? '' ) );
+		return Plan_A_Pomocnik_Samples::send(
+			$group ?: 'all',
+			array(
+				'order'      => absint( $req['order'] ?? 0 ),
+				'rate_order' => absint( $req['rate_order'] ?? 0 ),
+				'member'     => absint( $req['member'] ?? 0 ),
+				'member_email' => sanitize_email( (string) ( $req['member_email'] ?? '' ) ),
+			)
+		);
 	}
 
 	public static function option( WP_REST_Request $req ) {
@@ -405,4 +434,6 @@ final class Plan_A_Pomocnik {
 	}
 }
 
+require_once __DIR__ . '/includes/plan-a-email.php';
+require_once __DIR__ . '/includes/class-plan-a-pomocnik-samples.php';
 Plan_A_Pomocnik::init();
