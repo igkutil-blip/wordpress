@@ -93,7 +93,7 @@ napišem redoslijed (što isključiti, što instalirati, što provjeriti). Do ta
   „Cijelokupni iznos je uplaćen” (U obradi → Završeno) i prvu ratu plaćenu karticom (krivi mail, nema maila
   s ostatkom ni podsjetnika). Ostatak druge rate računa se po današnjoj cijeni pune karte (bolje zapamtiti
   cijenu pri prijavi).
-- **Upute (PDF) za agenciju i Krešu** treba ispraviti (popis razlika napisan Igoru 12.10.2026.): naslov maila
+- **Upute (PDF) za agenciju i Krešu** napraviti nove **nakon prelaska, prema živoj stranici** (dogovor s Igorom; popis razlika napisan mu 12.10.2026.): naslov maila
   „Cijelokupni iznos je uplaćen…”, novi izlet samo za termine u 120 dana (najviše 3), zaštićeni stupci pitaju
   „jeste li sigurni”, mail s ostatkom 1–2 h nakon kvačice, stupac 2. rata postoji svugdje (siv), POPUNJEN /
   skoro pun (≤3) / nitko nije platio (10 dana), Krešo: kopija podsjetnika i 3 dana prije izleta; novo:
