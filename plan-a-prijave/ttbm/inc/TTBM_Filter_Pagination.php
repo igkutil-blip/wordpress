@@ -1,0 +1,1080 @@
+<?php
+	if (!defined('ABSPATH')) {
+		die;
+	} // Cannot access pages directly.
+	if (!class_exists('TTBM_Filter_Pagination')) {
+		class TTBM_Filter_Pagination {
+			public $upcomming_date = '';
+			private $top_static_filter_active = false;
+			public function __construct() {
+				add_action('ttbm_top_filter_static', array($this, 'top_filter_static'), 10, 1);
+				add_action('ttbm_left_filter', array($this, 'left_filter'), 10, 1);
+				add_action('ttbm_top_filter', array($this, 'top_filter'), 10, 1);
+				add_action('ttbm_pagination', array($this, 'pagination'), 10, 3);
+				add_action('ttbm_filter_top_bar', array($this, 'filter_top_bar'), 10, 2);
+				add_action('ttbm_sort_result', array($this, 'sort_result'), 10, 2);
+				/*
+				 * refresh_upcoming_dates() is deliberately NOT called here. This class is
+				 * instantiated whenever the plugin loads, so priming it in the constructor
+				 * ran a postmeta scan on every single request -- admin screens, AJAX, REST
+				 * and cron included -- even though only the filter renderers read it. Each
+				 * of those renderers (top_filter_static/top_filter/left_filter) refreshes
+				 * for itself before touching $this->upcomming_date.
+				 */
+			}
+			public function refresh_upcoming_dates() {
+				$this->upcomming_date = array_reverse(TTBM_Function::get_meta_values('ttbm_upcoming_date', 'ttbm_tour'));
+			}
+			public function top_filter_static($params) {
+				$this->refresh_upcoming_dates();
+				$this->top_static_filter_active = true;
+				?>
+                <div class="ttbm_style ttbm_wraper ttbm_top_filter ttbm-top-search-modern">
+                    <form method="get" action="<?php echo esc_url(home_url('/find/')); ?>" class="ttbm-top-search-form">
+						<?php wp_nonce_field('ttbm_search_nonce', 'ttbm_search_nonce'); ?>
+                        <div class="ttbm-top-search-row flexWrap">
+							<?php $this->title_filter($params); ?>
+							<?php $this->type_filter($params); ?>
+							<?php $this->duration_filter($params); ?>
+							<?php $this->category_filter($params); ?>
+							<?php $this->organizer_filter($params); ?>
+							<?php $this->location_filter($params); ?>
+							<?php $this->country_filter($params); ?>
+							<?php $this->activity_filter($params); ?>
+							<?php $this->person_filter($params); ?>
+							<?php $this->select_month_filter($params); ?>
+                            <button type="submit" class="ttbm-top-search-submit dButton" data-placeholder>
+								<span class="ttbm-top-search-submit-text"><?php esc_html_e('Find Tours', 'tour-booking-manager'); ?></span>
+								<span class="ttbm-top-search-submit-arrow" aria-hidden="true">&rarr;</span>
+							</button>
+                        </div>
+                    </form>
+                </div>
+				<?php
+				$this->top_static_filter_active = false;
+			}
+			public function top_filter($params) {
+				$this->refresh_upcoming_dates();
+				//ob_start();
+				$filter = $params['search-filter'];
+				if ($filter == 'yes') {
+					?>
+                    <div class="ttbm_filter ttbm_top_filter flexWrap justifyCenter">
+						<?php $this->type_filter($params); ?>
+						<?php $this->category_filter($params); ?>
+						<?php $this->organizer_filter($params); ?>
+						<?php $this->location_filter($params); ?>
+						<?php $this->country_filter($params); ?>
+						<?php $this->activity_filter($params); ?>
+						<?php $this->duration_filter($params); ?>
+						<?php $this->month_filter($params); ?>
+						<?php $this->title_filter($params); ?>
+                    </div>
+					<?php
+				}
+				//echo ob_get_clean();
+			}
+			public function left_filter($params) {
+				$this->refresh_upcoming_dates();
+				?>
+                <div class="filter-top-label">
+                    <div class="ttbm-filter-top-title" >
+                        <h4 data-placeholder><?php echo esc_html(apply_filters('tbm_filter_top_label_title',__('Filters', 'tour-booking-manager'))); ?></h4>
+                        <button type="button" class="ttbm-mobile-filter-toggle" aria-expanded="false" data-show-label="<?php esc_attr_e('Show filters', 'tour-booking-manager'); ?>" data-hide-label="<?php esc_attr_e('Hide filters', 'tour-booking-manager'); ?>">
+                            <span class="ttbm-mobile-filter-toggle-text"><?php esc_html_e('Show filters', 'tour-booking-manager'); ?></span>
+                            <span class="fas fa-chevron-down" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="ttbm-filter-reset-all" data-placeholder><?php esc_html_e('Reset all', 'tour-booking-manager'); ?></button>
+                    </div>
+					<p class="filter-subtitle" data-placeholder><?php echo esc_html( apply_filters('tbm_filter_top_label_subtitle',__('Refine your luxury journey', 'tour-booking-manager'))); ?></p>
+				</div>
+                <div class="ttbm_filter">
+					<?php /* Order matches the reference design: Category, Price, Duration, Rating, Destination, Tour Type — see TTBM_Function::get_price_range() and the price_filter_left()/rating_filter_left() methods above. Remaining dimensions stay available (harmless no-ops whenever their own -filter flag is "no") for any other shortcode call that still wants them. */ ?>
+					<?php $this->activity_filter_multiple($params); ?>
+					<?php $this->price_filter_left($params); ?>
+					<?php $this->duration_filter_multiple($params); ?>
+					<?php $this->rating_filter_left($params); ?>
+					<?php $this->location_filter_multiple($params); ?>
+					<?php $this->category_filter_left($params); ?>
+					<?php $this->country_filter_left($params); ?>
+					<?php $this->title_filter_left($params); ?>
+					<?php $this->type_filter_left($params); ?>
+					<?php $this->month_filter_left($params); ?>
+					<?php $this->feature_filter_multiple($params); ?>
+					<?php $this->tag_filter_multiple($params); ?>
+					<?php $this->organizer_filter_left($params); ?>
+                </div>
+				<?php
+			}
+			//****************************************/
+			public function title_filter($params) {
+				if ($params['title-filter'] == 'yes') {
+					$title_filter = '';
+					if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+						$title_filter = isset($_GET['title_filter']) ? sanitize_text_field(wp_unslash($_GET['title_filter'])) : '';
+					}
+					?>
+                    <label data-placeholder class="ttbm_filter_icon_container">
+                        <span class="mR_xs mi mi-search ttbm_filter_icon"></span>
+                        <input name="title_filter" value="<?php echo esc_attr($title_filter); ?>" placeholder="<?php esc_attr_e('Search ....', 'tour-booking-manager'); ?>" class="formControl ttbm_filter_input_with_icon"/>
+                    </label>
+					<?php
+				}
+			}
+			public function title_filter_left($params) {
+				if ($params['title-filter'] == 'yes') {
+					?>
+                    <h5 class="mT justifyBetween _alignCenter" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#ttbm_title_filter" data-placeholder>
+						<?php esc_html_e('Filters By Tour Name', 'tour-booking-manager'); ?>
+                        <span data-icon class="fas fa-chevron-down"></span>
+                    </h5>
+                    <div class="divider"></div>
+                    <div class="mActive" data-collapse="#ttbm_title_filter" data-placeholder>
+						<?php $this->title_filter($params); ?>
+                    </div>
+					<?php
+				}
+			}
+			//****************************************/
+			public function type_filter($params) {
+				if ($params['type-filter'] == 'yes') {
+					$url = '';
+					if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+						$url = isset($_GET['type_filter']) ? sanitize_text_field(wp_unslash($_GET['type_filter'])) : '';
+					}
+					?>
+                    <label data-placeholder>
+                        <select class="formControl ttbm_filter_input_radius" name="type_filter">
+                            <option selected value=""><?php esc_html_e('All Type', 'tour-booking-manager'); ?></option>
+                            <option value="general" <?php echo esc_attr($url == 'general' ? 'selected' : ''); ?>><?php esc_html_e('Tour', 'tour-booking-manager'); ?></option>
+                            <option value="hotel" <?php echo esc_attr($url == 'hotel' ? 'selected' : ''); ?>><?php esc_html_e('Hotel', 'tour-booking-manager'); ?></option>
+                        </select>
+                    </label>
+					<?php
+				}
+			}
+			public function type_filter_left($params) {
+				if ($params['type-filter'] == 'yes') {
+					?>
+                    <h5 class="mT justifyBetween _alignCenter" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#ttbm_type_filter_left" data-placeholder>
+						<?php esc_html_e('Filters By Type', 'tour-booking-manager'); ?>
+                        <span data-icon class="fas fa-chevron-down"></span>
+                    </h5>
+                    <div class="divider"></div>
+                    <div class="mActive" data-collapse="#ttbm_type_filter_left" data-placeholder>
+						<?php $this->type_filter($params); ?>
+                    </div>
+					<?php
+				}
+			}
+			//****************************************/
+			public function category_filter($params, $categories = '') {
+				if ($params['category-filter'] == 'yes') {
+					$categories = is_array($categories) ? $categories : TTBM_Global_Function::get_taxonomy('ttbm_tour_cat');
+					if (is_array($categories) && sizeof($categories) > 0) {
+						$category_filter = '';
+						if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+							$category_filter = isset($_GET['category_filter']) ? sanitize_text_field(wp_unslash($_GET['category_filter'])) : '';
+						}
+						$url = $category_filter;
+						$current = $url ? (($term = get_term_by('id', $url, 'ttbm_tour_cat')) ? $term->term_id : '') : '';
+						?>
+                        <label data-placeholder>
+                            <select class="formControl" name="category_filter">
+                                <option selected value=""><?php esc_html_e('All Category', 'tour-booking-manager'); ?></option>
+								<?php foreach ($categories as $category) { ?>
+                                    <option value="<?php echo esc_attr($category->term_id); ?>" <?php echo esc_attr($url && $current == $category->term_id ? 'selected' : ''); ?>><?php echo esc_html($category->name); ?></option>
+								<?php } ?>
+                            </select>
+                        </label>
+						<?php
+					}
+				}
+			}
+			public function category_filter_left($params) {
+				if ($params['category-filter'] == 'yes') {
+					/* hide_empty => true — only offer a "Tour Type" checkbox for terms at
+					   least one tour is actually assigned to (this taxonomy has 2 unused
+					   terms, "City Tour"/"Day trip", that would otherwise always narrow
+					   results to zero if picked). */
+					$categories = get_terms( array( 'taxonomy' => 'ttbm_tour_cat', 'hide_empty' => true ) );
+					if (sizeof($categories) > 0) {
+						?>
+                        <h5 class="mT justifyBetween _alignCenter" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#ttbm_category_filter_left" data-placeholder>
+							<?php esc_html_e('Tour Type', 'tour-booking-manager'); ?>
+                            <span data-icon class="fas fa-chevron-down"></span>
+                        </h5>
+                        <div class="divider"></div>
+                        <div class="mActive" data-collapse="#ttbm_category_filter_left" data-placeholder>
+                            <div class="groupCheckBox _dFlex flexColumn">
+                                <input type="hidden" name="category_filter_multiple" value=""/>
+								<?php foreach ($categories as $category) {
+									$icon = get_term_meta($category->term_id, 'ttbm_feature_icon', true) ?: 'mi mi-folder';
+									$checked = (isset($_GET['category_filter']) && $_GET['category_filter'] == $category->term_id) ? 'checked' : '';
+									?>
+                                    <label class="customCheckboxLabel">
+                                        <input type="checkbox" class="formControl" data-checked="<?php echo esc_attr($category->term_id); ?>" <?php echo esc_attr($checked); ?>/>
+                                        <span class="customCheckbox"><span class="mR_xs <?php echo esc_attr($icon); ?>"></span><?php echo esc_html($category->name); ?></span>
+                                    </label>
+								<?php } ?>
+                            </div>
+                        </div>
+						<?php
+					}
+				}
+			}
+			//****************************************/
+			public function organizer_filter($params, $organizers = array()) {
+				if ($params['organizer-filter'] == 'yes') {
+					$organizers = sizeof($organizers) > 0 ? $organizers : TTBM_Global_Function::get_taxonomy('ttbm_tour_org', 'ttbm_tour');
+					if (sizeof($organizers) > 0) {
+						$organizer_filter = '';
+						if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+							$organizer_filter = isset($_GET['organizer_filter']) ? sanitize_text_field(wp_unslash($_GET['organizer_filter'])) : '';
+						}
+						$url = $organizer_filter;
+						$current = $url ? (($term = get_term_by('id', $url, 'ttbm_tour_org')) ? $term->term_id : '') : '';
+						?>
+                        <label data-placeholder>
+                            <select class="formControl" name="organizer_filter">
+                                <option selected value=""><?php esc_html_e('All Organizer', 'tour-booking-manager'); ?></option>
+								<?php foreach ($organizers as $organizer) {
+									if (get_term($organizer->term_id, 'ttbm_tour_org')->count) { ?>
+                                        <option value="<?php echo esc_attr($organizer->term_id); ?>" <?php echo esc_attr($url && $current == $organizer->term_id ? 'selected' : ''); ?>><?php echo esc_html($organizer->name) ?></option>
+									<?php }
+								} ?>
+                            </select>
+                        </label>
+						<?php
+					}
+				}
+			}
+			public function organizer_filter_left($params) {
+				if ($params['organizer-filter'] == 'yes') {
+					$organizers = TTBM_Global_Function::get_taxonomy('ttbm_tour_org');
+					$total_organizers = 0;
+					foreach ($organizers as $organizer) {
+						if (get_term($organizer->term_id, 'ttbm_tour_org')->count) {
+							$total_organizers++;
+						}
+					}
+					if (sizeof($organizers) > 0 && $total_organizers) {
+						?>
+                        <h5 class="mT justifyBetween _alignCenter" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#ttbm_organizer_filter_left" data-placeholder>
+							<?php esc_html_e('Filters By Organizer', 'tour-booking-manager'); ?>
+                            <span data-icon class="fas fa-chevron-down"></span>
+                        </h5>
+                        <div class="divider"></div>
+                        <div class="mActive" data-collapse="#ttbm_organizer_filter_left" data-placeholder>
+                            <div class="groupCheckBox _dFlex flexColumn">
+                                <input type="hidden" name="organizer_filter_multiple" value=""/>
+								<?php foreach ($organizers as $organizer) {
+									if (get_term($organizer->term_id, 'ttbm_tour_org')->count) {
+										$icon = get_term_meta($organizer->term_id, 'ttbm_organizer_icon', true) ?: 'mi mi-user';
+										$checked = (isset($_GET['organizer_filter']) && $_GET['organizer_filter'] == $organizer->term_id) ? 'checked' : '';
+										?>
+                                        <label class="customCheckboxLabel">
+                                            <input type="checkbox" class="formControl" data-checked="<?php echo esc_attr($organizer->term_id); ?>" <?php echo esc_attr($checked); ?>/>
+                                            <span class="customCheckbox"><span class="mR_xs <?php echo esc_attr($icon); ?>"></span><?php echo esc_html($organizer->name); ?></span>
+                                        </label>
+									<?php }
+								} ?>
+                            </div>
+                        </div>
+						<?php
+					}
+				}
+			}
+			//****************************************/
+			public function location_filter($params) {
+				if ($params['location-filter'] == 'yes') {
+					$locations = TTBM_Global_Function::get_taxonomy('ttbm_tour_location');
+					if (sizeof($locations) > 0) {
+						$location_filter = '';
+						if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+							$location_filter = isset($_GET['location_filter']) ? sanitize_text_field(wp_unslash($_GET['location_filter'])) : '';
+						}
+						$url = $location_filter;
+						if ($this->top_static_filter_active) {
+							$this->top_search_field_open(__('Destination', 'tour-booking-manager'), 'mi mi-marker');
+						} else {
+							?>
+                        <label data-placeholder class="ttbm_filter_icon_container">
+                            <span class="mR_xs mi mi-marker ttbm_filter_icon"></span>
+							<?php
+						}
+						$input_class = $this->top_static_filter_active
+							? 'formControl ttbm_filter_input_radius ttbm-top-search-input ttbm-top-search-select ttbm-top-search-select--location'
+							: 'formControl ttbm_filter_input_radius ttbm_filter_input_with_icon';
+						?>
+                            <select class="<?php echo esc_attr( $input_class ); ?>" name="location_filter">
+                                <option value="" <?php selected( $url, '' ); ?> data-subtitle="<?php esc_attr_e( 'ANYWHERE', 'tour-booking-manager' ); ?>"><?php esc_html_e( 'All Location', 'tour-booking-manager' ); ?></option>
+								<?php foreach ( $locations as $location ) {
+									$country_label = self::get_location_country_label( $location->term_id );
+									?>
+                                    <option
+										value="<?php echo esc_attr( $location->term_id ); ?>"
+										data-subtitle="<?php echo esc_attr( $country_label ); ?>"
+										<?php selected( (string) $url, (string) $location->term_id ); ?>
+									><?php echo esc_html( $location->name ); ?></option>
+								<?php } ?>
+                            </select>
+						<?php
+						if ($this->top_static_filter_active) {
+							$this->top_search_field_close();
+						} else {
+							?>
+                        </label>
+							<?php
+						}
+						?>
+						<?php
+					}
+				}
+			}
+			public function location_filter_multiple($params) {
+				if ($params['location-filter'] == 'yes') {
+					$upcomming_date = $this->upcomming_date;
+					$locations = TTBM_Function::get_meta_values('ttbm_location_name', 'ttbm_tour');
+					$exist_locations = $locations;
+					/*for ($i = 0; $i < count($locations); $i++) {
+                        if( isset( $upcomming_date[$i] ) ) {
+                            if (is_array($upcomming_date) && !empty($upcomming_date) && $upcomming_date[$i] && $locations[$i]) {
+                                $exist_locations[$i] = $locations[$i];
+                            }
+                        }
+					}*/
+					$exist_locations = array_unique($exist_locations);
+					if (sizeof($exist_locations) > 0) {
+						$url_location = '';
+						if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+							$url_location = isset($_GET['location_filter']) ? sanitize_text_field(wp_unslash($_GET['location_filter'])) : '';
+						}
+						$current_location = $url_location ? (($term = get_term_by('id', $url_location, 'ttbm_tour_location')) ? $term->term_id : '') : '';
+						?>
+                        <h5 class="_alignCenter" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#ttbm_location_filter_multiple" data-placeholder>
+							<span><i class="mi mi-marker"></i> <?php esc_html_e('Destination', 'tour-booking-manager'); ?></span>
+                            <span data-icon class="fas fa-chevron-down"></span>
+                        </h5>
+                        <div class="divider"></div>
+                        <div class="mActive" data-collapse="#ttbm_location_filter_multiple" >
+                            <div class="groupCheckBox _dFlex flexColumn" id="ttbm_locationList">
+                                <input data-placeholder type="hidden" name="location_filter_multiple" value="<?php echo esc_attr($current_location); ?>"/>
+								<?php foreach ($exist_locations as $location) { ?>
+									<?php
+									$term = TTBM_Function::get_term_by_name_cached($location, 'ttbm_tour_location');
+									$term_id = $term ? $term->term_id : 0;
+									$icon = $term_id ? (get_term_meta($term_id, 'ttbm_location_icon', true) ? get_term_meta($term_id, 'ttbm_location_icon', true) : 'mi mi-marker') : 'mi mi-marker';
+									$checked = $current_location == $term_id ? 'checked' : ''; ?>
+                                    <label class="customCheckboxLabel ttbm_location_checkBoxLevel"  data-placeholder>
+                                        <input type="checkbox" class="formControl" data-checked="<?php echo esc_attr($term_id); ?>" <?php echo esc_attr($checked); ?> />
+                                        <span class="customCheckbox"><span class="mR_xs <?php echo esc_attr($icon); ?>"></span><?php echo esc_html($location); ?></span>
+                                    </label>
+								<?php } ?>
+                                <button id="ttbm_show_location_seeMoreBtn" class="ttbm_see-more-button" data-placeholder><?php esc_html_e('See More+', 'tour-booking-manager'); ?></button>
+                            </div>
+                        </div>
+						<?php
+					}
+				}
+			}
+			//****************************************/
+			public function country_filter($params, $countries = '') {
+				if ($params['country-filter'] == 'yes') {
+					$countries = is_array($countries) ? $countries : TTBM_Function::get_all_country();
+					if (sizeof($countries) > 0) {
+						$url = '';
+						if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+							$url = isset($_GET['country_filter']) ? sanitize_text_field(wp_unslash($_GET['country_filter'])) : '';
+						}
+						?>
+                        <label data-placeholder class="ttbm_filter_icon_container">
+                            <span class="mR_xs mi mi-globe ttbm_filter_icon"></span>
+                            <select class="formControl ttbm_filter_input_with_icon" name="country_filter">
+                                <option value="" selected><?php esc_html_e('All Country', 'tour-booking-manager'); ?></option>
+								<?php foreach ($countries as $country) { ?>
+									<?php $selected = $country == $url ? 'selected' : ''; ?>
+                                    <option value="<?php echo esc_attr($country); ?>" <?php echo esc_attr($selected); ?>><?php echo esc_html($country); ?></option>
+								<?php } ?>
+                            </select>
+                        </label>
+						<?php
+					}
+				}
+			}
+			public function country_filter_left($params) {
+				if ($params['country-filter'] == 'yes') {
+					$countries = TTBM_Function::get_all_country();
+					if (sizeof($countries) > 0) {
+						?>
+                        <h5 class="mT justifyBetween _alignCenter" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#country_filter" data-placeholder>
+							<span><i class="mi mi-map"></i><?php esc_html_e('Filters By Country', 'tour-booking-manager'); ?></span>
+                            <span data-icon class="fas fa-chevron-down"></span>
+                        </h5>
+                        <div class="divider"></div>
+                        <div class="mActive" data-collapse="#country_filter" data-placeholder>
+							<?php $this->country_filter($params, $countries); ?>
+                        </div>
+						<?php
+					}
+				}
+			}
+			//****************************************/
+			public function duration_filter($params) {
+				if ($params['duration-filter'] == 'yes') {
+					$durations = TTBM_Function::get_all_duration();
+					if (sizeof($durations) > 0) {
+						$url = '';
+						if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+							$url = isset($_GET['duration_filter']) ? sanitize_text_field(wp_unslash($_GET['duration_filter'])) : '';
+						}
+						?>
+                        <label data-placeholder class="ttbm_filter_icon_container">
+                            <span class="mR_xs mi mi-clock ttbm_filter_icon"></span>
+                            <select class="formControl ttbm_filter_input_with_icon" name="duration_filter">
+                                <option value="" selected><?php esc_html_e('All Duration', 'tour-booking-manager'); ?></option>
+								<?php foreach ($durations as $duration) { ?>
+									<?php if ($duration > 0) { ?>
+										<?php $selected = $duration == $url ? 'selected' : ''; ?>
+                                        <option value="<?php echo esc_attr($duration); ?>" <?php echo esc_attr($selected); ?>>
+											<?php echo esc_html($duration); ?>&nbsp;
+											<?php if ($duration == 1) {
+												esc_html_e('Day Tour', 'tour-booking-manager');
+											} else {
+												esc_html_e('Days Tour', 'tour-booking-manager');
+											} ?>
+                                        </option>
+									<?php } ?>
+								<?php } ?>
+                            </select>
+                        </label>
+						<?php
+					}
+				}
+			}
+			public function duration_filter_multiple($params) {
+				if ($params['duration-filter'] == 'yes') {
+					$durations = TTBM_Function::get_all_duration();
+					if (sizeof($durations) > 0) {
+						$url = '';
+						if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+							$url = isset($_GET['duration_filter']) ? sanitize_text_field(wp_unslash($_GET['duration_filter'])) : '';
+						}
+						?>
+                        <h5 class="mT justifyBetween _alignCenter" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#ttbm_duration_filter_multiple" data-placeholder>
+							<?php esc_html_e('Duration', 'tour-booking-manager'); ?>
+                            <span data-icon class="fas fa-chevron-down"></span>
+                        </h5>
+                        <div class="divider"></div>
+                        <div class="mActive" data-collapse="#ttbm_duration_filter_multiple" data-placeholder>
+                            <div class="groupCheckBox _dFlex flexColumn">
+                                <input type="hidden" name="duration_filter_multiple" value="<?php echo esc_attr($url); ?>"/>
+								<?php foreach ($durations as $duration) { ?>
+									<?php if ($duration > 0) { ?>
+										<?php $checked = $url == $duration ? 'checked' : ''; ?>
+                                        <label class="customCheckboxLabel">
+                                            <input type="checkbox" class="formControl" data-checked="<?php echo esc_attr($duration); ?>" <?php echo esc_attr($checked); ?>/>
+                                            <span class="customCheckbox">
+                                                <span class="mR_xs mi mi-clock"></span>
+											<?php echo esc_html($duration); ?>&nbsp;
+
+											<?php if ($duration == 1) {
+												esc_html_e('Day Tour', 'tour-booking-manager');
+											} else {
+												esc_html_e('Days Tour', 'tour-booking-manager');
+											} ?>
+
+										</span>
+                                        </label>
+									<?php } ?>
+								<?php } ?>
+                            </div>
+                        </div>
+						<?php
+					}
+				}
+			}
+			//****************************************/
+			/* "Price per person" sidebar block — client-side range filter (no AJAX,
+			   same convention as every other filter in this file: a hidden input
+			   drives filter_pagination.js's get_item_result(), matched against the
+			   data-price already stamped on every card). Bounds are the real
+			   min/max across this install's tours (TTBM_Function::get_price_range()),
+			   not a fabricated fixed range. */
+			public function price_filter_left($params) {
+				if ($params['price-filter'] == 'yes') {
+					$range = TTBM_Function::get_price_range();
+					$min = $range['min'];
+					$max = $range['max'];
+					if ($max > $min) {
+						$currency_symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '$';
+						?>
+                        <h5 class="" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#ttbm_price_filter_left" data-placeholder>
+							<?php esc_html_e('Price per person', 'tour-booking-manager'); ?>
+                            <span data-icon class="fas fa-chevron-down"></span>
+                        </h5>
+                        <div class="divider"></div>
+                        <div class="mActive" data-collapse="#ttbm_price_filter_left">
+                            <div class="ttbm-price-range" data-currency="<?php echo esc_attr($currency_symbol); ?>">
+                                <input type="hidden" name="price_filter_range" value="<?php echo esc_attr($min . ',' . $max); ?>"/>
+                                <?php /* Fixed-height row so the track can be centered on it exactly (top:50%), instead of the track and the two thumbs each guessing a separate top offset that happens to line up. */ ?>
+                                <div class="ttbm-price-slider-row">
+                                    <div class="ttbm-price-track">
+                                        <div class="ttbm-price-fill"></div>
+                                    </div>
+                                    <input type="range" class="ttbm-price-thumb-input ttbm-price-thumb-min" min="<?php echo esc_attr($min); ?>" max="<?php echo esc_attr($max); ?>" step="1" value="<?php echo esc_attr($min); ?>" aria-label="<?php esc_attr_e('Minimum price', 'tour-booking-manager'); ?>"/>
+                                    <input type="range" class="ttbm-price-thumb-input ttbm-price-thumb-max" min="<?php echo esc_attr($min); ?>" max="<?php echo esc_attr($max); ?>" step="1" value="<?php echo esc_attr($max); ?>" aria-label="<?php esc_attr_e('Maximum price', 'tour-booking-manager'); ?>"/>
+                                </div>
+                                <div class="ttbm-price-labels">
+                                    <span class="ttbm-price-label-min"><?php echo esc_html($currency_symbol . (int) $min); ?></span>
+                                    <span class="ttbm-price-label-max"><?php echo esc_html($currency_symbol . (int) $max); ?></span>
+                                </div>
+                            </div>
+                        </div>
+						<?php
+					}
+				}
+			}
+			//****************************************/
+			/* "Minimum rating" sidebar block — same client-side, hidden-input-driven
+			   convention. Sourced from Tour Booking Manager Pro's real, review-based
+			   ttbm_tour_rating postmeta (not the free plugin's manual admin field,
+			   which isn't populated on this install) — an unrated tour (0 or empty)
+			   correctly never matches a "4.0 & up" style threshold. */
+			public function rating_filter_left($params) {
+				if ($params['rating-filter'] == 'yes') {
+					$url_rating = '';
+					if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+						$url_rating = isset($_GET['rating_filter']) ? sanitize_text_field(wp_unslash($_GET['rating_filter'])) : '';
+					}
+					$tiers = array(
+						'5' => __('5.0 only', 'tour-booking-manager'),
+						'4' => __('4.0 & up', 'tour-booking-manager'),
+						'3' => __('3.0 & up', 'tour-booking-manager'),
+					);
+					?>
+                    <h5 class="" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#ttbm_rating_filter_left" data-placeholder>
+						<?php esc_html_e('Minimum rating', 'tour-booking-manager'); ?>
+                        <span data-icon class="fas fa-chevron-down"></span>
+                    </h5>
+                    <div class="divider"></div>
+                    <div class="mActive" data-collapse="#ttbm_rating_filter_left">
+                        <div class="ttbm-rating-filter-group" id="ttbm_ratingFilterList">
+                            <input type="hidden" name="rating_filter_threshold" value="<?php echo esc_attr($url_rating); ?>"/>
+							<?php foreach ($tiers as $value => $label) : ?>
+                                <div class="ttbm-rating-option<?php echo $url_rating === (string) $value ? ' active' : ''; ?>" data-rating-tier="<?php echo esc_attr($value); ?>">
+									<?php for ($ttbm_star = 1; $ttbm_star <= 5; $ttbm_star++) : ?>
+                                        <span class="ttbm-rating-option-star<?php echo $ttbm_star <= (int) $value ? ' filled' : ''; ?>">★</span>
+									<?php endfor; ?>
+                                    <span class="ttbm-rating-option-label"><?php echo esc_html($label); ?></span>
+                                </div>
+							<?php endforeach; ?>
+                        </div>
+                    </div>
+					<?php
+				}
+			}
+			//****************************************/
+			public function feature_filter_multiple($params) {
+				if ($params['feature-filter'] == 'yes') {
+					$raw_features = TTBM_Function::get_meta_values('ttbm_service_included_in_price', 'ttbm_tour');
+                    // get_meta_values() returns raw rows; array-typed meta is stored
+                    // serialized, so unserialize each one. Skipping non-array rows keeps
+                    // array_merge() below from receiving a string and fataling.
+                    $features = [];
+                    foreach ($raw_features as $feature_group) {
+                        $unserialized = maybe_unserialize($feature_group);
+                        if (is_array($unserialized)) {
+                            $features[] = $unserialized;
+                        }
+                    }
+					$upcomming_date = $this->upcomming_date;
+					$exist_feature = [];
+					for ($i = 0; $i < count($features); $i++) {
+                        if( isset( $upcomming_date[$i] ) ){
+                            if (is_array($upcomming_date) && !empty($upcomming_date) && $upcomming_date[$i] && $features[$i]) {
+                                $features_i = $this->ensure_array($features[$i]);
+                                $exist_feature = array_unique(array_merge($exist_feature, $features_i));
+                            }
+                        }
+
+					}
+					if (sizeof($exist_feature) > 0) {
+						$url = '';
+						if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+							$url = isset($_GET['feature_filter']) ? sanitize_text_field(wp_unslash($_GET['feature_filter'])) : '';
+						}
+						?>
+                        <h5 class="" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#feature_filter_multiple" data-placeholder>
+							<span><i class="mi mi-star"></i> <?php esc_html_e('Feature', 'tour-booking-manager'); ?></span>
+                            <span data-icon class="fas fa-chevron-down"></span>
+                        </h5>
+                        <div class="divider"></div>
+                        <div class="mActive" data-collapse="#feature_filter_multiple" >
+                            <div class="groupCheckBox _dFlex flexColumn" id="ttbm_featureList">
+                                <input type="hidden" name="feature_filter_multiple" value="<?php echo esc_attr($url); ?>"/>
+								<?php foreach ($exist_feature as $feature_item) { ?>
+									<?php
+									$term = TTBM_Function::get_term_by_name_cached($feature_item, 'ttbm_tour_features_list');
+									$term_id = $term ? $term->term_id : 0;
+									$icon = $term_id ? (get_term_meta($term_id, 'ttbm_feature_icon', true) ? get_term_meta($term_id, 'ttbm_feature_icon', true) : 'mi mi-checklist-task-budget') : 'mi mi-checklist-task-budget'; ?>
+                                    <label class="customCheckboxLabel ttbm_feature_checkBoxLevel" data-placeholder>
+                                        <input type="checkbox" class="formControl" data-checked="<?php echo esc_attr($term_id); ?>"/>
+                                        <span class="customCheckbox"><span class="mR_xs <?php echo esc_attr($icon); ?>"></span><?php echo esc_html($feature_item); ?></span>
+                                    </label>
+								<?php } ?>
+                                <button id="ttbm_show_feature_seeMoreBtn" class="ttbm_see-more-button" data-placeholder><?php esc_html_e('See More+', 'tour-booking-manager'); ?></button>
+                            </div>
+                        </div>
+						<?php
+					}
+				}
+			}
+			//****************************************/
+			public function activity_filter($params) {
+				if ($params['activity-filter'] == 'yes') {
+					$activities = TTBM_Global_Function::get_taxonomy('ttbm_tour_activities');
+					if (sizeof($activities) > 0) {
+						$url_activity = '';
+						if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+							$url_activity = isset($_GET['activity_filter']) ? sanitize_text_field(wp_unslash($_GET['activity_filter'])) : '';
+						}
+						$current_activity = $url_activity ? (($term = get_term_by('id', $url_activity, 'ttbm_tour_activities')) ? $term->term_id : '') : '';
+						if ($this->top_static_filter_active) {
+							$this->top_search_field_open(__('Activity', 'tour-booking-manager'), 'mi mi-compass-alt');
+						} else {
+							?>
+                        <label data-placeholder>
+							<?php
+						}
+						$activity_input_class = $this->top_static_filter_active
+							? 'formControl ttbm_filter_input_radius ttbm-top-search-input ttbm-top-search-select ttbm-top-search-select--activity'
+							: 'formControl ttbm_filter_input_radius';
+						?>
+                            <select class="<?php echo esc_attr( $activity_input_class ); ?>" name="activity_filter">
+                                <option value="" <?php selected( $current_activity, '' ); ?> data-subtitle="<?php esc_attr_e( 'ALL TYPES', 'tour-booking-manager' ); ?>"><?php esc_html_e( 'All Activity', 'tour-booking-manager' ); ?></option>
+								<?php foreach ( $activities as $activity ) {
+									$activity_subtitle = self::get_activity_subtitle_label( $activity );
+									?>
+                                    <option
+										value="<?php echo esc_attr( $activity->term_id ); ?>"
+										data-subtitle="<?php echo esc_attr( $activity_subtitle ); ?>"
+										<?php selected( (string) $current_activity, (string) $activity->term_id ); ?>
+									><?php echo esc_html( $activity->name ); ?></option>
+								<?php } ?>
+                            </select>
+						<?php
+						if ($this->top_static_filter_active) {
+							$this->top_search_field_close();
+						} else {
+							?>
+                        </label>
+							<?php
+						}
+						?>
+						<?php
+					}
+				}
+			}
+		public function activity_filter_multiple_old($params) {
+			if ($params['activity-filter'] == 'yes') {
+				$raw_activities = TTBM_Function::get_meta_values('ttbm_tour_activities', 'ttbm_tour');
+				$activities = [];
+				foreach ($raw_activities as $activity_group) {
+					$unserialized = maybe_unserialize($activity_group);
+					if (is_array($unserialized)) {
+						$activities[] = $unserialized;
+					}
+				}
+				$upcomming_date = $this->upcomming_date;
+				$exist_activities = [];
+
+				for ($i = 0; $i < count($activities); $i++) {
+                        if( isset( $upcomming_date[$i] ) ) {
+                            if (is_array($upcomming_date) && !empty($upcomming_date) && $upcomming_date[$i] && $activities[$i]) {
+//						    if ($upcomming_date[$i] && is_array($activities[$i])) {
+                                $activities_i = $this->ensure_array($activities[$i]);
+                                $exist_activities = array_unique(array_merge($exist_activities, $activities_i));
+                            }
+                        }
+				}
+					if (sizeof($exist_activities) > 0) {
+						$url_activity = '';
+						if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+							$url_activity = isset($_GET['activity_filter']) ? sanitize_text_field(wp_unslash($_GET['activity_filter'])) : '';
+						}
+						$current_activity = $url_activity ? (($term = get_term_by('id', $url_activity, 'ttbm_tour_activities')) ? $term->term_id : '') : '';
+						?>
+                        <h5 class="mT justifyBetween _alignCenter" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#activity_filter_multiple" data-placeholder>
+							<span><i class="mi mi-hiking"></i> <?php esc_html_e('Activity', 'tour-booking-manager'); ?></span>
+                            <span data-icon class="fas fa-chevron-down"></span>
+                        </h5>
+                        <div class="divider"></div>
+                        <div class="mActive" data-collapse="#activity_filter_multiple" >
+                            <div class="groupCheckBox _dFlex flexColumn">
+                                <input type="hidden" name="activity_filter_multiple" value="<?php echo esc_attr($current_activity); ?>"/>
+								<?php foreach ($exist_activities as $activity) {
+                                    if( $activity ){
+									$term = get_term_by('name', $activity, 'ttbm_tour_activities');
+
+									$term_id = $term ? $term->term_id : 0;
+									$icon = $term_id ? (get_term_meta($term_id, 'ttbm_activities_icon', true) ? get_term_meta($term_id, 'ttbm_activities_icon', true) : 'fas fa-running') : 'fas fa-running';
+									$checked = $current_activity == $term_id ? 'checked' : '';
+									?>
+                                    <label class="customCheckboxLabel" data-placeholder>
+                                        <input type="checkbox" class="formControl" data-checked="<?php echo esc_attr($term_id); ?>" <?php echo esc_attr($checked); ?>/>
+                                        <span class="customCheckbox"><span class="mR_xs <?php echo esc_attr($icon); ?>"></span><?php echo esc_html($activity); ?></span>
+                                    </label>
+								<?php }
+                                } ?>
+                            </div>
+                        </div>
+						<?php
+					}
+				}
+			}
+		public function activity_filter_multiple($params) {
+			/* Reference "Category" sidebar block: this site's real ttbm_tour_activities
+			   terms (Hiking/Culture/Adventure/Beach/Wildlife/etc.) are the actual match
+			   for that concept — ttbm_tour_cat is a tour-TYPE taxonomy (Fixed/Flexible/
+			   Day trip), used separately below as "Tour Type". Previously this method's
+			   term-gathering was dead code ($activities was hardcoded to an empty array
+			   before ever being read), so it always rendered nothing; rebuilt on the
+			   same reliable "list every term" pattern category_filter_left() already
+			   uses rather than the broken upcoming-date cross-reference. */
+			if ($params['activity-filter'] == 'yes') {
+				/* hide_empty => true (unlike TTBM_Global_Function::get_taxonomy(), which
+				   hard-codes false for its other, broader admin-facing uses) — a sidebar
+				   filter checkbox for a category no tour is actually assigned to would
+				   always narrow the results to zero if clicked, so it shouldn't be offered. */
+				$activities = get_terms( array( 'taxonomy' => 'ttbm_tour_activities', 'hide_empty' => true ) );
+				if (is_array($activities) && sizeof($activities) > 0) {
+					$url_activity = '';
+					if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+						$url_activity = isset($_GET['activity_filter']) ? sanitize_text_field(wp_unslash($_GET['activity_filter'])) : '';
+					}
+					$current_activity = $url_activity ? (($term = get_term_by('id', $url_activity, 'ttbm_tour_activities')) ? $term->term_id : '') : '';
+					?>
+                    <h5 class="" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#activity_filter_multiple" data-placeholder>
+						<?php esc_html_e('Category', 'tour-booking-manager'); ?>
+                        <span data-icon class="fas fa-chevron-down"></span>
+                    </h5>
+                    <div class="divider"></div>
+                    <div class="mActive" data-collapse="#activity_filter_multiple" >
+                        <div class="groupCheckBox _dFlex flexColumn" id="ttbm_activityList">
+                            <input type="hidden" name="activity_filter_multiple" value="<?php echo esc_attr($current_activity); ?>"/>
+							<?php foreach ($activities as $activity_term) {
+								$term_id = $activity_term->term_id;
+								$checked = $current_activity == $term_id ? 'checked' : '';
+								$icon = get_term_meta($term_id, 'ttbm_activities_icon', true) ?: 'mi mi-hiking';
+								?>
+                                <label class="customCheckboxLabel ttbm_activity_checkBoxLevel" data-placeholder>
+                                    <input type="checkbox" class="formControl" data-checked="<?php echo esc_attr($term_id); ?>" <?php echo esc_attr($checked); ?>/>
+                                    <span class="customCheckbox"><span class="mR_xs <?php echo esc_attr($icon); ?>"></span><?php echo esc_html($activity_term->name); ?></span>
+                                </label>
+							<?php } ?>
+                        </div>
+                    </div>
+					<?php
+				}
+			}
+		}
+		//****************************************/
+			public function tag_filter_multiple($params) {
+				if ($params['tag-filter'] == 'yes') {
+					$tags = TTBM_Global_Function::get_taxonomy('ttbm_tour_tag');
+					$total_tags = 0;
+					foreach ($tags as $tag) {
+						if (get_term($tag->term_id, 'ttbm_tour_tag')->count) {
+							$total_tags++;
+						}
+					}
+					if (sizeof($tags) > 0 && $total_tags) {
+						?>
+                        <h5 class="mT justifyBetween _alignCenter" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#tag_filter_multiple" data-placeholder>
+							<?php esc_html_e('Specials', 'tour-booking-manager'); ?>
+                            <span data-icon class="fas fa-chevron-down"></span>
+                        </h5>
+                        <div class="divider"></div>
+                        <div class="mActive" data-collapse="#tag_filter_multiple" >
+                            <div class="groupCheckBox _dFlex flexColumn">
+                                <input type="hidden" name="tag_filter_multiple" value=""/>
+								<?php foreach ($tags as $tag) {
+									if (get_term($tag->term_id, 'ttbm_tour_tag')->count) {
+										$icon = get_term_meta($tag->term_id, 'ttbm_tag_icon', true) ?: 'mi mi-tag';
+										?>
+                                        <label class="customCheckboxLabel" data-placeholder>
+                                            <input type="checkbox" class="formControl" data-checked="<?php echo esc_attr($tag->term_id); ?>"/>
+                                            <span class="customCheckbox"><span class="mR_xs <?php echo esc_attr($icon); ?>"></span><?php echo esc_html($tag->name); ?></span>
+                                        </label>
+									<?php }
+								} ?>
+                            </div>
+                        </div>
+						<?php
+					}
+				}
+			}
+			//****************************************/
+			public function month_filter($params) {
+				if ($params['month-filter'] == 'yes') {
+					$url_month = '';
+					if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+						$url_month = isset($_GET['month_filter']) ? sanitize_text_field(wp_unslash($_GET['month_filter'])) : '';
+					}
+					$first_date = gmdate('Y-m-01');
+					$current_date = current_time('Y-m-d');
+					$month = gmdate('n', strtotime($current_date));
+					$selected = $url_month == $month ? 'selected' : '';
+					$date_format = TTBM_Global_Function::get_settings('ttbm_global_settings', 'date_format_short', 'M , Y');
+					?>
+                    <label data-placeholder class="ttbm_filter_icon_container">
+                        <span class="mR_xs mi mi-calendar ttbm_filter_icon"></span>
+                        <select class="formControl ttbm_filter_input_with_icon" name="month_filter">
+                            <option selected value=""><?php esc_html_e('All Month', 'tour-booking-manager'); ?></option>
+                            <option value="<?php echo esc_attr($month); ?>" <?php echo esc_attr($selected); ?>><?php echo esc_html(date_i18n($date_format, strtotime($current_date))); ?></option>
+							<?php
+								for ($i = 1; $i < 12; $i++) {
+									$first_date = gmdate('y-m-d', strtotime("+1 month", strtotime($first_date)));
+									$month = gmdate('n', strtotime($first_date));
+									$selected = $url_month == $month ? 'selected' : '';
+									?>
+                                    <option value="<?php echo esc_attr($month); ?>" <?php echo esc_attr($selected); ?>><?php echo esc_html(date_i18n($date_format, strtotime($first_date))); ?></option>
+									<?php
+								}
+							?>
+                        </select>
+                    </label>
+					<?php
+				}
+			}
+			public function select_month_filter($params) {
+				if ($params['month-filter'] == 'yes') {
+					$travel_dates = '';
+					if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+						$travel_dates = !empty($_GET['ttbm_date_start_end_input']) ? sanitize_text_field(wp_unslash($_GET['ttbm_date_start_end_input'])) : '';
+					}
+					if ($this->top_static_filter_active) {
+						$this->top_search_field_open(__('Travel Dates', 'tour-booking-manager'), 'mi mi-calendar');
+					} else {
+						?>
+                    <label data-placeholder>
+						<?php
+					}
+					?>
+                        <div class="ttbm_date-picker-container ttbm-top-search-date">
+                            <input name="ttbm_date_start_end_input" type="text" id="ttbm_date_start_end_input" class="ttbm_date-picker-input ttbm-top-search-input" value="<?php echo esc_attr($travel_dates); ?>" placeholder="<?php esc_attr_e('Select travel dates', 'tour-booking-manager'); ?>" readonly="readonly">
+                            <div id="ttbm_start_end_calendar_icon" class="ttbm_calendar-icon" aria-hidden="true"></div>
+                        </div>
+					<?php
+					if ($this->top_static_filter_active) {
+						$this->top_search_field_close();
+					} else {
+						?>
+                    </label>
+						<?php
+					}
+				}
+			}
+			public function person_filter($params) {
+				if (($params['person-filter'] ?? 'no') == 'yes') {
+					$people_filter = '';
+					if (isset($_GET['ttbm_search_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['ttbm_search_nonce'])), 'ttbm_search_nonce')) {
+						$people_filter = isset($_GET['people_filter']) ? absint(wp_unslash($_GET['people_filter'])) : 0;
+						$people_filter = $people_filter > 0 ? $people_filter : '';
+					}
+					?>
+                    <label data-placeholder class="ttbm_filter_icon_container">
+                        <span class="mR_xs mi mi-users ttbm_filter_icon"></span>
+                        <input type="number"
+                               min="1"
+                               step="1"
+                               name="people_filter"
+                               value="<?php echo esc_attr($people_filter); ?>"
+                               placeholder="<?php esc_attr_e('How many people?', 'tour-booking-manager'); ?>"
+                               class="formControl ttbm_filter_input_radius ttbm_filter_input_with_icon"/>
+                    </label>
+					<?php
+				}
+			}
+			public function month_filter_left($params) {
+				if ($params['month-filter'] == 'yes') { ?>
+                    <h5 class="mT justifyBetween _alignCenter" data-open-icon="fa-chevron-down" data-close-icon="fa-chevron-right" data-collapse-target="#month_filter_left" data-placeholder>
+						<span><i class="mi mi-calendar"></i> <?php esc_html_e('Month', 'tour-booking-manager'); ?></span>
+                        <span data-icon class="fas fa-chevron-down"></span>
+                    </h5>
+                    <div class="divider"></div>
+                    <div class="mActive" data-collapse="#month_filter_left" data-placeholder>
+						<?php $this->month_filter($params); ?>
+                    </div>
+				<?php }
+			}
+			//****************************************/
+			public function pagination($params, $total_item, $active_page = 0) {
+				//ob_start();
+				$per_page = $params['show'] > 1 ? $params['show'] : $total_item;
+				$search_filter = array_key_exists('search-filter', $params) ? $params['search-filter'] : '';
+				?>
+                <input type="hidden" name="pagination_per_page" value="<?php echo esc_attr($per_page); ?>"/>
+                <input type="hidden" name="pagination_style" value="<?php echo esc_attr($params['pagination-style']); ?>"/>
+				<?php if (($search_filter == 'yes' || $params['pagination'] == 'yes') && $total_item > $per_page) { ?>
+                    <div class="allCenter pagination_area" data-placeholder>
+						<?php
+							if ($params['pagination-style'] == 'load_more') {
+								?>
+                                <button type="button" class="_dButton_min_200 pagination_load_more" data-load-more="0">
+									<?php esc_html_e('Load More', 'tour-booking-manager'); ?>
+                                </button>
+								<?php
+							} else {
+								$page_mod = $total_item % $per_page;
+								$total_page = (int)($total_item / $per_page) + ($page_mod > 0 ? 1 : 0);
+								?>
+                                <div class="buttonGroup">
+									<?php if ($total_page > 2) { ?>
+                                        <button class="dButton_xs page_prev" type="button" title="<?php esc_html_e('GoTO Previous Page', 'tour-booking-manager'); ?>" disabled>
+                                            <span class="fas fa-chevron-left mp_zero"></span>
+                                        </button>
+									<?php } ?>
+
+									<?php if ($total_page > 5) { ?>
+                                        <button class="dButton_xs ellipse_left" type="button" disabled>
+                                            <span class="fas fa-ellipsis-h mp_zero"></span>
+                                        </button>
+									<?php } ?>
+
+									<?php for ($i = 0; $i < $total_page; $i++) { ?>
+                                        <button class="dButton_xs <?php echo ($i == $active_page) ? 'active_pagination' : ''; ?>" type="button" data-pagination="<?php echo esc_attr($i); ?>"><?php echo esc_html($i + 1); ?></button>
+									<?php } ?>
+
+									<?php if ($total_page > 5) { ?>
+                                        <button class="dButton_xs ellipse_right" type="button" disabled>
+                                            <span class="fas fa-ellipsis-h mp_zero"></span>
+                                        </button>
+									<?php } ?>
+
+									<?php if ($total_page > 2) { ?>
+                                        <button class="dButton_xs page_next" type="button" title="<?php esc_html_e('GoTO Next Page', 'tour-booking-manager'); ?>">
+                                            <span class="fas fa-chevron-right mp_zero"></span>
+                                        </button>
+									<?php } ?>
+                                </div>
+							<?php } ?>
+                    </div>
+					<?php
+				}
+				//echo ob_get_clean();
+			}
+			public function filter_top_bar($loop, $params) {
+				$style = $params['style'] ?: 'modern';
+				$style = $style == 'list' ? 'modern' : $style;
+				if (is_page('find')) {
+					?>
+                    <div class="placeholder_area filter_top_bar ttbm-search-top-bar justifyBetween">
+						<div class="ttbm-search-top-bar-text">
+							<span class="ttbm-search-top-bar-count total_filter_qty"><?php echo esc_html($loop->post_count); ?></span>
+							<span class="ttbm-search-top-bar-label"><?php esc_html_e('Trips match your search criteria', 'tour-booking-manager'); ?></span>
+						</div>
+                        <div class="ttbm-search-view-switcher dFlex">
+                            <button class="ttbm_grid_view" type="button" <?php echo esc_attr($style == 'grid' ? 'disabled' : ''); ?> title="<?php esc_attr_e('Grid view', 'tour-booking-manager'); ?>" aria-label="<?php esc_attr_e('Grid view', 'tour-booking-manager'); ?>">
+                                <i class="fas fa-th-large" aria-hidden="true"></i>
+                            </button>
+                            <button class="ttbm_list_view" type="button" <?php echo esc_attr($style == 'modern' ? 'disabled' : ''); ?> title="<?php esc_attr_e('List view', 'tour-booking-manager'); ?>" aria-label="<?php esc_attr_e('List view', 'tour-booking-manager'); ?>">
+                                <i class="fas fa-th-list" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+					<?php
+				}
+			}
+			public function sort_result($loop, $params) {
+				?>
+                <div class="search_result_empty ttbm-search-empty" data-placeholder><?php esc_html_e('No Match Result Found!', 'tour-booking-manager'); ?></div>
+                <div class="filter_short_result ttbm-search-result-count" data-placeholder>
+					<?php esc_html_e('Showing', 'tour-booking-manager'); ?>
+                    <span class="ttbm-search-count-highlight">
+                        <strong class="qty_count"><?php echo esc_html($params['show']); ?></strong>
+                        <?php esc_html_e('of', 'tour-booking-manager'); ?>
+                        <strong class="total_filter_qty"><?php echo esc_html($loop->post_count); ?></strong>
+                    </span>
+                </div>
+				<?php
+			}
+			private static function get_location_country_label( $term_id ) {
+				$country = get_term_meta( $term_id, 'ttbm_country_location', true );
+				if ( is_array( $country ) ) {
+					$country = isset( $country[0] ) ? $country[0] : '';
+				}
+				if ( $country === '' || $country === null ) {
+					$raw = get_term_meta( $term_id, 'ttbm_country_location' );
+					if ( is_array( $raw ) && ! empty( $raw[0] ) ) {
+						$country = $raw[0];
+					}
+				}
+
+				$country = trim( (string) $country );
+				if ( $country !== '' && function_exists( 'ttbm_get_coutnry_arr' ) ) {
+					$countries = ttbm_get_coutnry_arr();
+					if ( isset( $countries[ $country ] ) ) {
+						$country = $countries[ $country ];
+					} elseif ( is_numeric( $country ) && isset( $countries[ (int) $country ] ) ) {
+						$country = $countries[ (int) $country ];
+					}
+				}
+
+				if ( $country === '' ) {
+					$country = __( 'Destination', 'tour-booking-manager' );
+				}
+
+				return strtoupper( $country );
+			}
+
+			private static function get_activity_subtitle_label( $term ) {
+				if ( ! $term instanceof WP_Term ) {
+					return '';
+				}
+				$description = trim( wp_strip_all_tags( (string) $term->description ) );
+				if ( $description !== '' ) {
+					return strtoupper( $description );
+				}
+				return strtoupper( __( 'Activity', 'tour-booking-manager' ) );
+			}
+
+			private function top_search_field_open($label, $icon = '') {
+				?>
+				<div class="ttbm-top-search-field" data-placeholder>
+					<span class="ttbm-top-search-label"><?php echo esc_html($label); ?></span>
+					<div class="ttbm-top-search-control<?php echo $icon ? ' has-left-icon' : ''; ?>">
+						<?php if ($icon) { ?>
+							<span class="ttbm-top-search-icon <?php echo esc_attr($icon); ?>" aria-hidden="true"></span>
+						<?php } ?>
+				<?php
+			}
+			private function top_search_field_close($show_chevron = true) {
+				?>
+						<?php if ($show_chevron) { ?>
+							<span class="ttbm-top-search-chevron" aria-hidden="true"></span>
+						<?php } ?>
+					</div>
+				</div>
+				<?php
+			}
+			private function ensure_array($value) {
+				if (is_array($value)) {
+					return $value;
+				}
+				if (is_serialized($value)) {
+					$unserialized = maybe_unserialize($value);
+					if (is_array($unserialized)) {
+						return $unserialized;
+					}
+				}
+				if (is_string($value) && strpos($value, ',') !== false) {
+					return array_map('trim', explode(',', $value));
+				}
+				return array($value);
+			}
+			//**************************************//
+		}
+		new  TTBM_Filter_Pagination();
+	}

@@ -1,0 +1,3331 @@
+<?php
+	/*
+* @Author 		engr.sumonazma@gmail.com
+* Copyright: 	mage-people.com
+*/
+	if (!defined('ABSPATH')) {
+		die;
+	} // Cannot access pages directly.
+	if (!class_exists('TTBM_Function')) {
+		class TTBM_Function {
+			private static $hero_stat_render_index = 0;
+			private static $hero_stat_limit_enabled = false;
+
+			/*
+			 * ---------------------------------------------------------------
+			 * Request-scoped memo cache.
+			 * ---------------------------------------------------------------
+			 * The list shortcodes render every matching tour server-side (up to
+			 * get_list_render_cap()) and each card re-derives the same schedule,
+			 * price and availability data from scratch -- the same tour's dates
+			 * can be expanded a dozen times in one request, and every ticket type
+			 * of every card fires its own booking WP_Query.
+			 *
+			 * The getters below are deterministic for the lifetime of a single
+			 * request, so their results are memoised here instead of being
+			 * recomputed per card. Nothing is persisted: the cache dies with the
+			 * request, so there is no stale-data window across page loads.
+			 *
+			 * Invalidation, for the requests that DO mutate state mid-flight
+			 * (checkout creating bookings, admin saving a tour):
+			 *   - booking-derived entries (sold/available) are dropped whenever a
+			 *     ttbm_booking post or any ttbm_* meta on one changes;
+			 *   - tour-derived entries are dropped whenever a tour is saved.
+			 * See register_cache_invalidation() below.
+			 */
+			private static $ttbm_cache = array();
+			/* Booking rows pre-loaded per tour by prime_sold_cache(); null = not primed. */
+			private static $sold_rows = null;
+
+			private static function cache_has($group, $key): bool {
+				return isset(self::$ttbm_cache[$group]) && array_key_exists($key, self::$ttbm_cache[$group]);
+			}
+			private static function cache_set($group, $key, $value) {
+				self::$ttbm_cache[$group][$key] = $value;
+				return $value;
+			}
+			private static function cache_get($group, $key) {
+				return self::$ttbm_cache[$group][$key];
+			}
+			/**
+			 * Stringify an argument for use in a cache key. Keys on the exact value
+			 * rather than its truthiness, so a caller passing a different flavour of
+			 * "truthy" can never be handed another caller's result.
+			 */
+			private static function cache_scalar_key($value): string {
+				if (is_scalar($value) || null === $value) {
+					return gettype($value) . ':' . (string) $value;
+				}
+				return 'other:' . md5((string) wp_json_encode($value));
+			}
+			/**
+			 * Drop memoised tour-schedule/price data (whole cache when $group is empty).
+			 */
+			public static function flush_request_cache($group = ''): void {
+				if ($group === '') {
+					self::$ttbm_cache = array();
+					self::$sold_rows = null;
+					return;
+				}
+				unset(self::$ttbm_cache[$group]);
+			}
+			/**
+			 * Drop everything derived from booking rows. Called whenever a booking
+			 * post/meta changes so an availability re-check later in the same
+			 * request sees the new numbers.
+			 */
+			public static function flush_booking_request_cache(): void {
+				unset(self::$ttbm_cache['sold'], self::$ttbm_cache['available'], self::$ttbm_cache['any_available']);
+				self::$sold_rows = null;
+			}
+			public static function register_cache_invalidation(): void {
+				$booking_flush = array(__CLASS__, 'flush_booking_request_cache');
+				add_action('save_post_ttbm_booking', $booking_flush, 1);
+				add_action('save_post_ttbm_service_booking', $booking_flush, 1);
+				add_action('deleted_post', $booking_flush, 1);
+				add_action('trashed_post', $booking_flush, 1);
+				add_action('untrashed_post', $booking_flush, 1);
+				foreach (array('added_post_meta', 'updated_post_meta', 'deleted_post_meta') as $meta_hook) {
+					add_action($meta_hook, array(__CLASS__, 'maybe_flush_on_meta_change'), 1, 3);
+				}
+				add_action('save_post', array(__CLASS__, 'maybe_flush_on_tour_save'), 1);
+			}
+			/**
+			 * Booking meta is written key-by-key during checkout; flush when one of
+			 * the keys that feeds a sold-seat count moves. The meta_key prefix test
+			 * runs first so unrelated meta writes never pay for a post-type lookup.
+			 */
+			public static function maybe_flush_on_meta_change($meta_id, $object_id, $meta_key): void {
+				if (!is_string($meta_key) || strpos($meta_key, 'ttbm_') !== 0) {
+					return;
+				}
+				$post_type = get_post_type($object_id);
+				if ($post_type === 'ttbm_booking' || $post_type === 'ttbm_service_booking') {
+					self::flush_booking_request_cache();
+				}
+			}
+			public static function maybe_flush_on_tour_save($post_id): void {
+				if (get_post_type($post_id) === self::get_cpt_name()) {
+					self::flush_request_cache();
+				}
+			}
+			/**
+			 * get_term_by( 'name', ... ) resolved from a single get_terms() pass.
+			 *
+			 * List cards look terms up by name for the location chip and for every
+			 * included-feature tag, so a page of 300 cards fires one term query per
+			 * distinct name. Building the taxonomy's name map once per request turns
+			 * all of those into array lookups. Falls back to get_term_by() when a
+			 * name is not in the map, so behaviour is unchanged for edge cases.
+			 *
+			 * @return WP_Term|false
+			 */
+			public static function get_term_by_name_cached($name, $taxonomy) {
+				$name = (string) $name;
+				if ('' === $name || !$taxonomy) {
+					return false;
+				}
+				if (!self::cache_has('term_name_map', $taxonomy)) {
+					$map = array();
+					$terms = get_terms(array('taxonomy' => $taxonomy, 'hide_empty' => false));
+					if (is_array($terms)) {
+						foreach ($terms as $term) {
+							if (!isset($map[$term->name])) {
+								$map[$term->name] = $term;
+							}
+						}
+					}
+					self::cache_set('term_name_map', $taxonomy, $map);
+				}
+				$map = self::cache_get('term_name_map', $taxonomy);
+				if (isset($map[$name])) {
+					return $map[$name];
+				}
+				return get_term_by('name', $name, $taxonomy);
+			}
+
+			public static function enable_hero_stat_limit() {
+				self::$hero_stat_limit_enabled  = true;
+				self::$hero_stat_render_index   = 0;
+			}
+
+			public static function disable_hero_stat_limit() {
+				self::$hero_stat_limit_enabled = false;
+			}
+
+			public static function reset_hero_stat_render_index() {
+				self::$hero_stat_render_index = 0;
+			}
+
+			public static function get_hero_stat_render_count() {
+				return self::$hero_stat_render_index;
+			}
+
+			/**
+			 * Extra class for hero stat chips beyond the first four visible items.
+			 *
+			 * @param bool $counts_toward_limit Pass false for chips hidden in hero (e.g. price).
+			 */
+			public static function hero_stat_item_class( $counts_toward_limit = true ) {
+				if ( ! self::$hero_stat_limit_enabled ) {
+					return '';
+				}
+				// Price (and similar) stay in markup for other themes but never show in the hero bar.
+				if ( ! $counts_toward_limit ) {
+					return ' ttbm_hero_stat_item--hidden';
+				}
+				$extra = '';
+				if ( self::$hero_stat_render_index >= 4 ) {
+					$extra = ' ttbm_hero_stat_item--extra';
+				}
+				self::$hero_stat_render_index++;
+				return $extra;
+			}
+
+			public function __construct() {
+				self::register_cache_invalidation();
+			}
+			//**************Support multi Language*********************//
+			public static function post_id_multi_language($post_id) {
+				if (function_exists('wpml_loaded')) {
+					global $sitepress;
+					$default_language = function_exists('wpml_loaded') ? $sitepress->get_default_language() : get_locale();
+					return apply_filters('wpml_object_id', $post_id, TTBM_Function::get_cpt_name(), TRUE, $default_language);
+				}
+				if (function_exists('pll_get_post_translations')) {
+					$defaultLanguage = function_exists('pll_default_language') ? pll_default_language() : get_locale();
+					$translations = function_exists('pll_get_post_translations') ? pll_get_post_translations($post_id) : [];
+					return sizeof($translations) > 0 && array_key_exists($defaultLanguage, $translations) ? $translations[$defaultLanguage] : $post_id;
+				}
+				return $post_id;
+			}
+			//***********Template********************//
+			public static function all_details_template() {
+				$template_path = get_stylesheet_directory() . '/ttbm_templates/themes/';
+				$default_path = TTBM_PLUGIN_DIR . '/templates/themes/';
+				// Get the list of template files
+				$dir = is_dir($template_path) ? glob($template_path . "*") : glob($default_path . "*");
+				$templates = [];
+				foreach ($dir as $filename) {
+					if (is_file($filename) && is_readable($filename)) {
+						$file = basename($filename);
+						$file_contents = file_get_contents($filename);
+						preg_match('/Template Name:\s*(.+)/i', $file_contents, $matches);
+						$template_name = !empty($matches[1]) ? trim($matches[1]) : $file;
+						$templates[$file] = $template_name;
+					}
+				}
+				return apply_filters('ttbm_template_list_arr', $templates);
+			}
+			public static function details_template_path(): string {
+				$tour_id = get_the_id();
+				// Getting the saved template name
+				$template_name  = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_theme_file', 'default.php');
+				$file_name      = 'themes/' . $template_name;
+				// Getting the Folder name of Theme and Plugin
+				$theme_folder_template_dir     = get_stylesheet_directory() . '/ttbm_templates/themes/';
+				$plugin_folder_template_dir    = TTBM_PLUGIN_DIR . '/templates/themes/';
+				// Now checking the theme folder first then plugin folder for template file which is existis
+				$dir        = is_dir( $theme_folder_template_dir ) ? $theme_folder_template_dir : $plugin_folder_template_dir;
+				// Checking the file exists or not
+				if (!file_exists($dir)) {
+					$file_name = 'themes/default.php';
+				}
+				// return the template path
+				return self::template_path($file_name);
+			}
+			public static function details_template_file_path($post_id = ''): string {
+				$post_id = $post_id ?? get_the_id();
+				$template_name = TTBM_Global_Function::get_post_info($post_id, 'ttbm_hotel_template', 'hotel_default.php');
+				$file_name = 'themes/' . $template_name;
+				$dir = TTBM_PLUGIN_DIR . '/templates/' . $file_name;
+				if (!file_exists($dir)) {
+					$file_name = 'themes/hotel_default.php';
+				}
+				return self::template_path($file_name);
+			}
+			public static function template_path($file_name): string {
+				$template_path = get_stylesheet_directory() . '/ttbm_templates/';
+				$default_dir = TTBM_PLUGIN_DIR . '/templates/';
+				$dir = is_dir($template_path) ? $template_path : $default_dir;
+				$file_path = $dir . $file_name;
+				return locate_template(array('ttbm_templates/' . $file_name)) ? $file_path : $default_dir . $file_name;
+			}
+
+			public static function template_screenshot_url() {
+				$theme_path   = get_stylesheet_directory_uri() . '/ttbm_templates/screenshot/';
+				$plugin_path  = TTBM_PLUGIN_URL . '/templates/screenshot/';
+				$theme_dir    = get_stylesheet_directory() . '/ttbm_templates/screenshot/'; 
+				if (is_dir($theme_dir)) {
+					return $theme_path; 
+				} else {
+					return $plugin_path; 
+				}
+			}
+
+			//*********Date and Time**********************//
+			public static function get_tour_off_schedule_data($tour_id) {
+				if (self::cache_has('off_schedule', (int) $tour_id)) {
+					return self::cache_get('off_schedule', (int) $tour_id);
+				}
+				return self::cache_set('off_schedule', (int) $tour_id, self::build_tour_off_schedule_data($tour_id));
+			}
+			private static function build_tour_off_schedule_data($tour_id) {
+				if (TTBM_Global_Function::get_post_info($tour_id, 'ttbm_enable_off_schedule', 'no') !== 'yes') {
+					return array(array(), array());
+				}
+				$off_days = TTBM_Global_Function::get_post_info($tour_id, 'mep_ticket_offdays', array());
+				if (!is_array($off_days)) {
+					$off_days = $off_days ? explode(',', (string) $off_days) : array();
+				}
+				$all_off_dates = TTBM_Global_Function::get_post_info($tour_id, 'mep_ticket_off_dates', array());
+				$off_dates = array();
+				foreach ((array) $all_off_dates as $off_date) {
+					if (is_array($off_date) && !empty($off_date['mep_ticket_off_date'])) {
+						$off_dates[] = $off_date['mep_ticket_off_date'];
+					}
+				}
+				return array((array) $off_days, $off_dates);
+			}
+			/**
+			 * Dates that must appear on a repeated tour's calendar even when the
+			 * recurrence pattern, the weekly off days or the blocked dates would
+			 * exclude them.
+			 *
+			 * A repeated tour's calendar is derived purely from its recurrence
+			 * pattern minus those filters, so until now nothing could *add* a
+			 * one-off date to the schedule -- an add-on could only re-time a date
+			 * the pattern had already produced. This is the seam add-ons hook to
+			 * inject genuine exceptions (PRO's "Special Dates Time" tab uses it).
+			 *
+			 * @return array Y-m-d => Y-m-d map, so membership tests stay O(1).
+			 */
+			public static function get_forced_schedule_dates($tour_id) {
+				if (self::cache_has('forced_dates', (int) $tour_id)) {
+					return self::cache_get('forced_dates', (int) $tour_id);
+				}
+				$dates = array();
+				foreach ((array) apply_filters('ttbm_forced_schedule_dates', array(), $tour_id) as $forced_date) {
+					$timestamp = $forced_date ? strtotime((string) $forced_date) : false;
+					if ($timestamp) {
+						$normalized = gmdate('Y-m-d', $timestamp);
+						$dates[$normalized] = $normalized;
+					}
+				}
+				return self::cache_set('forced_dates', (int) $tour_id, $dates);
+			}
+			public static function is_forced_schedule_date($tour_id, $date): bool {
+				$timestamp = $date ? strtotime((string) $date) : false;
+				if (!$timestamp) {
+					return false;
+				}
+				$forced_dates = self::get_forced_schedule_dates($tour_id);
+				return isset($forced_dates[gmdate('Y-m-d', $timestamp)]);
+			}
+
+			/**
+			 * The post a tour's schedule is actually stored on.
+			 *
+			 * WPML (and any translation plugin) creates a translation with the tour meta
+			 * empty -- ttbm_travel_type falls back to 'fixed' and every date field is a
+			 * blank string. get_date() then finds no dates, and the daily rebuild in
+			 * update_all_upcoming_date_month() writes an EMPTY ttbm_upcoming_date over
+			 * the translation. Since the list shortcodes filter on that key being >=
+			 * today, the translated tour silently drops out of every listing overnight,
+			 * and comes back only until the next rebuild if someone re-saves it.
+			 *
+			 * Dates are not translatable content, so a translation carrying no schedule
+			 * of its own reads the original's. A translation that HAS been given its own
+			 * dates is left completely alone, and on a single-language site this is a
+			 * no-op. Filterable so Polylang and friends can supply the same mapping.
+			 */
+			public static function schedule_source_id($tour_id) {
+				$tour_id = (int) $tour_id;
+				if ($tour_id < 1) {
+					return $tour_id;
+				}
+				if (self::cache_has('schedule_source', $tour_id)) {
+					return self::cache_get('schedule_source', $tour_id);
+				}
+				$source_id = $tour_id;
+				if (defined('ICL_SITEPRESS_VERSION') && !self::has_own_schedule($tour_id)) {
+					$post_type = get_post_type($tour_id);
+					if ($post_type) {
+						$element_type = 'post_' . $post_type;
+						$trid = apply_filters('wpml_element_trid', null, $tour_id, $element_type);
+						if ($trid) {
+							$translations = apply_filters('wpml_get_element_translations', null, $trid, $element_type);
+							if (is_array($translations)) {
+								foreach ($translations as $translation) {
+									// WPML flags the post the translations were made from as `original`.
+									if (!empty($translation->original) && !empty($translation->element_id)) {
+										$source_id = (int) $translation->element_id;
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+				$source_id = (int) apply_filters('ttbm_schedule_source_id', $source_id, $tour_id);
+				return self::cache_set('schedule_source', $tour_id, $source_id > 0 ? $source_id : $tour_id);
+			}
+			/**
+			 * Whether this post carries a schedule of its own, i.e. anything get_date()
+			 * could actually build dates from. ttbm_travel_type is deliberately not
+			 * consulted: it defaults to 'fixed' on an untouched translation, so it is
+			 * always present and would make every translation look configured.
+			 */
+			private static function has_own_schedule($tour_id): bool {
+				if (TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_start_date')) {
+					return true;
+				}
+				if (TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_repeated_start_date')) {
+					return true;
+				}
+				$particular_dates = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_particular_dates', array());
+				return is_array($particular_dates) && count($particular_dates) > 0;
+			}
+			public static function get_date($tour_id, $expire = '') {
+				$cache_key = (int) $tour_id . '|' . self::cache_scalar_key($expire);
+				if (self::cache_has('date', $cache_key)) {
+					return self::cache_get('date', $cache_key);
+				}
+				/*
+				 * A tour runs on one real-world schedule whatever language the visitor is
+				 * reading it in, and the plugin has no per-language scheduling concept --
+				 * so a translation that was never given dates of its own reads them from
+				 * the post they were entered on. Every $tour_id below is a schedule read
+				 * (travel type, recurrence, off days, one-off dates, time checks); the
+				 * requested id is kept for the filter at the end so anything hooking
+				 * ttbm_get_date still sees the post that was actually asked about.
+				 */
+				$requested_id = $tour_id;
+				$tour_id = self::schedule_source_id($tour_id);
+				$tour_date = [];
+				$travel_type = TTBM_Function::get_travel_type($tour_id);
+				$now = strtotime(current_time('Y-m-d H:i:s'));
+				if ($travel_type == 'particular') {
+					$particular_dates = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_particular_dates', array());
+					if (sizeof($particular_dates) > 0) {
+						foreach ($particular_dates as $date) {
+							$time = $date['ttbm_particular_start_time'] ?: '23:59:59';
+							$full_date = TTBM_Function::reduce_stop_sale_hours($date['ttbm_particular_start_date'] . ' ' . $time);
+							if ($expire || $now <= strtotime($full_date)) {
+								$tour_date[] = $date['ttbm_particular_start_date'];
+							}
+						}
+					}
+					$tour_date = array_unique($tour_date);
+				} else if ($travel_type == 'repeated') {
+					$now_date = strtotime(current_time('Y-m-d'));
+					$start_date = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_repeated_start_date');
+					$start_date = $start_date ? gmdate('Y-m-d', strtotime($start_date)) : '';
+					$ttbm_repeat_type = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_repeat_type');
+					$end_date = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_repeated_end_date');
+					if ($ttbm_repeat_type == 'continue') {
+						$end_date = self::get_open_ended_end_date($start_date);
+					}
+					// Format end date to Y-m-d, but validate it first
+					if ($end_date) {
+						$parsed_end_date = strtotime($end_date);
+						if ($parsed_end_date !== false) {
+							$end_date = gmdate('Y-m-d', $parsed_end_date);
+						} else {
+							$end_date = '';
+						}
+					} else {
+						$end_date = '';
+					}
+					list($off_days, $off_dates) = self::get_tour_off_schedule_data($tour_id);
+					$tour_date = array();
+					if ($start_date == $end_date) {
+						$date = $start_date;
+						$day = strtolower(gmdate('D', strtotime($date)));
+						if (!in_array($day, $off_days) && !in_array($date, $off_dates)) {
+							$current_date = self::get_date_by_time_check($tour_id, $date, $expire);
+							if ($current_date) {
+								$tour_date[] = $current_date;
+							}
+						}
+					} else {
+						$interval = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_repeated_after', 1);
+						$all_dates = TTBM_Global_Function::date_separate_period($start_date, $end_date, $interval);
+						foreach ($all_dates as $date) {
+							$date = $date->format('Y-m-d'); // Convert DateTime object to string
+							if ($expire || $now_date <= strtotime($date)) {
+								$day = strtolower(gmdate('D', strtotime($date))); // Get the day in lowercase
+								// Ensure $off_days and $off_dates are arrays before using in_array()
+								if (!in_array($day, (array)$off_days) && !in_array($date, (array)$off_dates)) {
+									$current_date = self::get_date_by_time_check($tour_id, $date, $expire);
+									if ($current_date) {
+										$tour_date[] = $current_date;
+									}
+								}
+							}
+						}
+					}
+					/*
+					 * Fold in the admin's explicit one-off dates. These sit outside the
+					 * recurrence entirely, so they are merged here rather than filtered
+					 * above, then the list is re-sorted: update_upcoming_date_month()
+					 * takes current()/end() of this array as the tour's first and last
+					 * date, so chronological order is load-bearing.
+					 */
+					foreach (self::get_forced_schedule_dates($tour_id) as $forced_date) {
+						if (!$expire && $now_date > strtotime($forced_date)) {
+							continue;
+						}
+						$current_date = self::get_date_by_time_check($tour_id, $forced_date, $expire);
+						if ($current_date && !in_array($current_date, $tour_date, true)) {
+							$tour_date[] = $current_date;
+						}
+					}
+					sort($tour_date);
+				} else {
+					$date = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_start_date');
+					if ($date) {
+						$time = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_start_time');
+						$full_date = $time ? $date . ' ' . $time : $date . ' ' . '23:59:59';
+						$tour_status = self::get_tour_status($tour_id);
+						$end_date = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_reg_end_date');
+						$end_date_time = $end_date . ' ' . '23:59:59';
+						$full_date = self::reduce_stop_sale_hours($end_date ? $end_date_time : $full_date);
+						if ($expire || ($now <= strtotime($full_date) && $tour_status == 'active')) {
+							$tour_date['date'] = $date;
+							$tour_date['expire'] = $expire;
+							$tour_date['now'] = $now;
+							$tour_date['fulldate'] = $full_date;
+							$tour_date['end_date'] = $end_date;
+							$tour_date['checkout_date'] = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_end_date');
+						}
+					}
+				}
+				return self::cache_set('date', $cache_key, apply_filters('ttbm_get_date', $tour_date, $requested_id, $expire));
+			}
+			/**
+			 * Last date of the calendar window for a repeated tour whose End Repeat
+			 * Logic is "Never".
+			 *
+			 * "Never" stores no end date, but the date picker and the list queries need
+			 * a finite set of dates. The window used to be start date + 365 days -- a
+			 * fixed span the tour silently outlived: once the start date was more than a
+			 * year old no dates were left at all, and before that the window lost a day
+			 * every day. It is a rolling horizon now: a year ahead of today, or of the
+			 * start date while the tour has not started yet.
+			 *
+			 * @param string $start_date Repeat start date (Y-m-d).
+			 * @return string Y-m-d, or '' when there is no start date.
+			 */
+			public static function get_open_ended_end_date($start_date): string {
+				$start_timestamp = $start_date ? strtotime($start_date) : false;
+				if (!$start_timestamp) {
+					return '';
+				}
+				$horizon_from = gmdate('Y-m-d', max($start_timestamp, strtotime(current_time('Y-m-d'))));
+				return gmdate('Y-m-d', strtotime($horizon_from . ' +365 day'));
+			}
+			/**
+			 * Repeated-tour recurrence dates as a Y-m-d => Y-m-d lookup map.
+			 *
+			 * get_date() walks every recurrence date and asks get_date_by_time_check()
+			 * to validate each one, and that check used to rebuild the whole DatePeriod
+			 * and scan it linearly -- O(n^2) over a range that is 365 days wide for
+			 * "continue" tours, i.e. ~133k iterations for a single card. Building the
+			 * period once per request and testing membership with isset() makes the
+			 * check O(1) while matching the previous date set exactly.
+			 */
+			private static function get_repeat_pattern_dates($start_date, $end_date, $interval): array {
+				$cache_key = $start_date . '|' . $end_date . '|' . $interval;
+				if (self::cache_has('repeat_pattern', $cache_key)) {
+					return self::cache_get('repeat_pattern', $cache_key);
+				}
+				$dates = array();
+				foreach (TTBM_Global_Function::date_separate_period($start_date, $end_date, $interval) as $pattern_date) {
+					$pattern_date_str = $pattern_date->format('Y-m-d');
+					$dates[$pattern_date_str] = $pattern_date_str;
+				}
+				return self::cache_set('repeat_pattern', $cache_key, $dates);
+			}
+			public static function get_date_by_time_check($tour_id, $date, $expire) {
+				$check_cache_key = (int) $tour_id . '|' . (string) $date . '|' . self::cache_scalar_key($expire);
+				if (self::cache_has('date_time_check', $check_cache_key)) {
+					return self::cache_get('date_time_check', $check_cache_key);
+				}
+				$tour_date = '';
+				$now = strtotime(current_time('Y-m-d H:i:s'));
+
+				// Normalize the date format to Y-m-d
+				$date_normalized = $date ? gmdate('Y-m-d', strtotime($date)) : '';
+				if (!$date_normalized) {
+					return self::cache_set('date_time_check', $check_cache_key, $tour_date);
+				}
+
+				// For repeated dates, validate directly without calling get_date to avoid recursion
+				$travel_type = self::get_travel_type($tour_id);
+				if ($travel_type == 'repeated') {
+					$now_date = strtotime(current_time('Y-m-d'));
+					$start_date = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_repeated_start_date');
+					$start_date = $start_date ? gmdate('Y-m-d', strtotime($start_date)) : '';
+					$ttbm_repeat_type = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_repeat_type');
+					$end_date = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_repeated_end_date');
+					if ($ttbm_repeat_type == 'continue') {
+						$end_date = self::get_open_ended_end_date($start_date);
+					}
+					// Format end date to Y-m-d, but validate it first
+					if ($end_date) {
+						$parsed_end_date = strtotime($end_date);
+						if ($parsed_end_date !== false) {
+							$end_date = gmdate('Y-m-d', $parsed_end_date);
+						} else {
+							$end_date = '';
+						}
+					} else {
+						$end_date = '';
+					}
+					
+					/*
+					 * An admin-entered one-off date is an explicit exception, so it
+					 * overrides all three recurrence gates below: the start/end window,
+					 * the repeat interval, and the off day / off date filters. Without
+					 * this, a date added purely to open an extra departure could never
+					 * pass -- the recurrence would have excluded it by definition.
+					 */
+					$is_forced = self::is_forced_schedule_date($tour_id, $date_normalized);
+
+					// Check if date is within range
+					if ($is_forced || ($start_date && $end_date && $date_normalized >= $start_date && $date_normalized <= $end_date)) {
+						// Check off days and off dates
+						list($off_days, $off_dates) = self::get_tour_off_schedule_data($tour_id);
+						$day = strtolower(gmdate('D', strtotime($date_normalized)));
+
+						// Check if date matches interval pattern
+						if ($is_forced) {
+							$date_in_pattern = true;
+						} else {
+							$interval = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_repeated_after', 1);
+							$all_dates = self::get_repeat_pattern_dates($start_date, $end_date, $interval);
+							$date_in_pattern = isset($all_dates[$date_normalized]);
+						}
+
+						// Validate date is not expired and matches pattern
+						if ($date_in_pattern && ($expire || $now_date <= strtotime($date_normalized))) {
+							if ($is_forced || (!in_array($day, (array)$off_days) && !in_array($date_normalized, (array)$off_dates))) {
+								// Date is valid, now check time
+								if (TTBM_Global_Function::check_time_exit_date($date)) {
+									$full_date = TTBM_Function::reduce_stop_sale_hours($date);
+									if ($expire || $now <= strtotime($full_date)) {
+										$tour_date = $date;
+									}
+								} else {
+									$times = TTBM_Function::get_time($tour_id, $date_normalized, true);
+									if (is_array($times) && sizeof($times) > 0) {
+										foreach ($times as $time) {
+											$single_time = self::normalize_time_value( $time );
+											$full_date = $single_time ? $date_normalized . ' ' . $single_time : $date_normalized . ' ' . '23:59:59';
+											$full_date = TTBM_Function::reduce_stop_sale_hours($full_date);
+											if ($expire || $now <= strtotime($full_date)) {
+												if (!$expire && $single_time) {
+													$tour_date = $date_normalized . ' ' . $single_time;
+												} else {
+													$tour_date = $date_normalized;
+												}
+												break;
+											}
+										}
+									} else {
+										$full_date = TTBM_Function::reduce_stop_sale_hours($date_normalized . ' ' . '23:59:59');
+										if ($expire || $now <= strtotime($full_date)) {
+											$tour_date = $date_normalized;
+										}
+									}
+								}
+							}
+						}
+					}
+				} else {
+					// For fixed and particular dates, use original logic
+					if (TTBM_Global_Function::check_time_exit_date($date)) {
+						$full_date = TTBM_Function::reduce_stop_sale_hours($date);
+						if ($expire || $now <= strtotime($full_date)) {
+							$tour_date = $date;
+						}
+					} else {
+						$times = TTBM_Function::get_time($tour_id, $date_normalized, true);
+						if (is_array($times) && sizeof($times) > 0) {
+							foreach ($times as $time) {
+								$single_time = self::normalize_time_value( $time );
+								$full_date = $single_time ? $date_normalized . ' ' . $single_time : $date_normalized . ' ' . '23:59:59';
+								$full_date = TTBM_Function::reduce_stop_sale_hours($full_date);
+								if ($expire || $now <= strtotime($full_date)) {
+									$tour_date = $date_normalized;
+								}
+							}
+						} else {
+							$full_date = TTBM_Function::reduce_stop_sale_hours($date_normalized . ' ' . '23:59:59');
+							if ($expire || $now <= strtotime($full_date)) {
+								$tour_date = $date_normalized;
+							}
+						}
+					}
+				}
+				return self::cache_set('date_time_check', $check_cache_key, $tour_date);
+			}
+			public static function reduce_stop_sale_hours($date): string {
+				$stop_hours = (int)self::get_general_settings('ttbm_ticket_expire_time') * 60 * 60;
+				return gmdate('Y-m-d H:i:s', strtotime($date) - $stop_hours);
+			}
+			public static function get_time($tour_id, $date = '', $expire = '') {
+				$time_cache_key = (int) $tour_id . '|' . (string) $date . '|' . self::cache_scalar_key($expire);
+				if (self::cache_has('time', $time_cache_key)) {
+					return self::cache_get('time', $time_cache_key);
+				}
+				return self::cache_set('time', $time_cache_key, self::build_time($tour_id, $date, $expire));
+			}
+			private static function build_time($tour_id, $date = '', $expire = '') {
+				$date = $date ? gmdate('Y-m-d', strtotime($date)) : '';
+				if ($date) {
+					$travel_type = self::get_travel_type($tour_id);
+					if ($travel_type === 'particular') {
+						$result_times = array();
+						$particular_dates = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_particular_dates', array());
+						if (is_array($particular_dates) && sizeof($particular_dates) > 0) {
+							foreach ($particular_dates as $p) {
+								if (!empty($p['ttbm_particular_start_date']) && gmdate('Y-m-d', strtotime($p['ttbm_particular_start_date'])) === $date) {
+									if (!empty($p['ttbm_particular_start_time'])) {
+										$result_times[] = $p['ttbm_particular_start_time'];
+									}
+								}
+							}
+						}
+						if (sizeof($result_times) === 0) {
+							$fallback = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_start_time');
+							if ($fallback) {
+								$result_times[] = $fallback;
+							}
+						}
+						return apply_filters('ttbm_get_time', $result_times, $tour_id, $date, $expire);
+					}
+					if ($travel_type === 'repeated') {
+						$time_status = TTBM_Global_Function::get_post_info($tour_id, 'mep_disable_ticket_time', 'no');
+						if ($time_status !== 'no') {
+							$slot_times = self::get_repeated_time_slots($tour_id, $date, $expire);
+							if (!empty($slot_times)) {
+								return apply_filters('ttbm_get_time', $slot_times, $tour_id, $date, $expire);
+							}
+						}
+					}
+					$time = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_start_time');
+					return apply_filters('ttbm_get_time', $time, $tour_id, $date, $expire);
+				}
+				return false;
+			}
+			public static function get_repeated_time_slots( $tour_id, $date, $expire = '' ) {
+				$current_time = current_time( 'Y-m-d H:i' );
+				$day_name     = strtolower( gmdate( 'D', strtotime( $date ) ) );
+				$day_slot     = TTBM_Global_Function::get_post_info( $tour_id, 'mep_ticket_times_' . $day_name, array() );
+				$default_slot = TTBM_Global_Function::get_post_info( $tour_id, 'mep_ticket_times_global', array() );
+				$time_slots   = ( is_array( $day_slot ) && count( $day_slot ) > 0 ) ? $day_slot : $default_slot;
+				if ( ! is_array( $time_slots ) || empty( $time_slots ) ) {
+					return array();
+				}
+				$tour_time = array();
+				$count     = 0;
+				foreach ( $time_slots as $slot ) {
+					if ( ! is_array( $slot ) ) {
+						continue;
+					}
+					$slot_time = $slot['mep_ticket_time'] ?? '';
+					if ( ! $slot_time ) {
+						continue;
+					}
+					$full_date = gmdate( 'Y-m-d H:i', strtotime( $date . ' ' . $slot_time ) );
+					if ( strtotime( $full_date ) >= strtotime( $current_time ) || $expire ) {
+						$tour_time[ $count ]['label'] = $slot['mep_ticket_time_name'] ?? $slot_time;
+						$tour_time[ $count ]['time']  = $slot_time;
+						$count++;
+					}
+				}
+				return $tour_time;
+			}
+			/**
+			 * Reduce a time value (string, slot array, or list of slots) to a single time string.
+			 */
+			public static function normalize_time_value( $time ) {
+				if ( $time === null || $time === false || $time === '' ) {
+					return '';
+				}
+				if ( is_string( $time ) || is_numeric( $time ) ) {
+					return (string) $time;
+				}
+				if ( ! is_array( $time ) ) {
+					return '';
+				}
+				if ( isset( $time['time'] ) && $time['time'] !== '' ) {
+					return (string) $time['time'];
+				}
+				if ( isset( $time['mep_ticket_time'] ) && $time['mep_ticket_time'] !== '' ) {
+					return (string) $time['mep_ticket_time'];
+				}
+				if ( empty( $time ) ) {
+					return '';
+				}
+				return self::normalize_time_value( reset( $time ) );
+			}
+			public static function update_upcoming_date_month($tour_id, $update = '', $all_date = array()): void {
+				$now = strtotime(current_time('Y-m-d'));
+				$db_date = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_upcoming_date');
+				$db_date = gmdate('Y-m-d', strtotime($db_date));
+				$month_list = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_month_list');
+				if (!$month_list || !$db_date || $update || strtotime($db_date) < $now) {
+					$date = '';
+					$end_date = '';
+					$all_date = sizeof($all_date) > 0 ? $all_date : self::get_date($tour_id);
+					if (sizeof($all_date) > 0) {
+						$date = current($all_date);
+						$travel_type = TTBM_Function::get_travel_type($tour_id);
+						if ($travel_type == 'particular' || $travel_type == 'repeated') {
+							$end_date = end($all_date);
+						} else {
+							$reg_end_date = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_reg_end_date');
+							$end_date = $reg_end_date ?: $date;
+						}
+					}
+					update_post_meta($tour_id, 'ttbm_upcoming_date', $date);
+					update_post_meta($tour_id, 'ttbm_reg_end_date', $end_date);
+					self::update_month_list($tour_id, $all_date);
+				}
+			}
+			public static function get_upcoming_date_month($tour_id, $update = '', $all_date = array()) {
+				$date = '';
+				$now = strtotime(current_time('Y-m-d'));
+				$db_date = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_upcoming_date');
+				$db_date = gmdate('Y-m-d', strtotime($db_date));
+				$month_list = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_month_list');
+				if (!$month_list || !$db_date || $update || strtotime($db_date) < $now) {
+					$all_date = sizeof($all_date) > 0 ? $all_date : self::get_date($tour_id);
+					if (sizeof($all_date) > 0) {
+						$date = current($all_date);
+					}
+				}
+				return $date;
+			}
+			public static function update_all_upcoming_date_month(): void {
+				$done_key = 'ttbm_last_upcoming_update';
+				// Already rebuilt successfully today -- nothing to do.
+				if (get_transient($done_key)) {
+					return;
+				}
+				// Short-lived lock so concurrent requests don't all rebuild at once
+				// (stampede protection) and so a request that dies mid-rebuild doesn't
+				// re-run on EVERY subsequent hit. The lock expires quickly, so a
+				// genuinely interrupted pass is retried within minutes instead of
+				// being locked out for a full day. Critically, the long "done for the
+				// day" flag is only set AFTER a complete pass -- the tour list filters
+				// on the ttbm_upcoming_date meta this writes, so we must never mark the
+				// day done while that meta is still empty/partial.
+				$lock_key = 'ttbm_upcoming_update_lock';
+				if (get_transient($lock_key)) {
+					return;
+				}
+				set_transient($lock_key, true, 2 * MINUTE_IN_SECONDS);
+				/*
+				 * Deliberately not get_all_post_id(): that runs get_posts(), which WPML
+				 * scopes to the language of whoever happened to trigger the rebuild --
+				 * while the "done for the day" transient below is site-wide. So on a
+				 * multilingual site the first visitor of the day rebuilt only their own
+				 * language's tours and locked every other language out until tomorrow.
+				 * Reading the ids straight from the posts table is language-agnostic
+				 * (and cheaper than a full get_posts()).
+				 */
+				global $wpdb;
+				$tour_ids = $wpdb->get_col(
+					$wpdb->prepare(
+						"SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status = %s",
+						TTBM_Function::get_cpt_name(),
+						'publish'
+					)
+				);
+				$tour_ids = array_map('intval', (array) $tour_ids);
+				/*
+				 * Pull every tour's meta in one query up front. update_upcoming_date_month()
+				 * reads several meta keys per tour, and without a warm cache each of those
+				 * is its own SELECT -- the rebuild is inline in ttbm_query(), so one visitor
+				 * a day would otherwise pay for a few thousand round trips.
+				 */
+				if (!empty($tour_ids)) {
+					update_meta_cache('post', $tour_ids);
+				}
+				foreach ($tour_ids as $tour_id) {
+					self::update_upcoming_date_month($tour_id);
+				}
+				set_transient($done_key, true, DAY_IN_SECONDS);
+				delete_transient($lock_key);
+			}
+			/**
+			 * Upper bound on how many tour/hotel cards a list shortcode renders in a
+			 * single request.
+			 *
+			 * The list shortcodes paginate and filter entirely client-side, so every
+			 * item is rendered up-front (overflow hidden with CSS). With an uncapped
+			 * "show all" (-1) query a large catalog renders thousands of cards on one
+			 * PHP request and times out. Capping the server-side render keeps the page
+			 * responsive while leaving the existing Load More / filter UX intact.
+			 * Raise it with the `ttbm_list_render_cap` filter if a site genuinely needs
+			 * to surface more items at once.
+			 */
+			public static function get_list_render_cap(): int {
+				$cap = (int) apply_filters('ttbm_list_render_cap', 300);
+				return $cap > 0 ? $cap : 300;
+			}
+			public static function update_month_list($tour_id, $dates): void {
+				$month = '';
+				if (is_array($dates)) {
+					$all_months = array();
+					foreach ($dates as $date) {
+						$all_months[] = gmdate('n', strtotime($date));
+					}
+					$all_months = array_unique($all_months);
+					foreach ($all_months as $all_month) {
+						$month = $month ? $month . ',' . $all_month : $all_month;
+					}
+				} else {
+					$month = gmdate('n', strtotime($dates));
+				}
+				update_post_meta($tour_id, 'ttbm_month_list', $month);
+			}
+			public static function get_reg_end_date($tour_id) {
+				$end_date = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_reg_end_date');
+				return apply_filters('ttbm_tour_reg_end_date', $end_date, $tour_id);
+			}
+			public static function datetime_format($date, $type = 'date-time-text') {
+				$date_format = get_option('date_format');
+				$time_format = get_option('time_format');
+				$wp_settings = $date_format . '  ' . $time_format;
+				$timezone = wp_timezone_string();
+				$timestamp = strtotime($date . ' ' . $timezone);
+				if ($type == 'date-time') {
+					$date = wp_date($wp_settings, $timestamp);
+				} elseif ($type == 'date-text') {
+					$date = wp_date($date_format, $timestamp);
+				} elseif ($type == 'date') {
+					$date = wp_date($date_format, $timestamp);
+				} elseif ($type == 'time') {
+					$date = wp_date($time_format, $timestamp, wp_timezone());
+				} elseif ($type == 'day') {
+					$date = wp_date('d', $timestamp);
+				} elseif ($type == 'month') {
+					$date = wp_date('M', $timestamp);
+				} elseif ($type == 'date-time-text') {
+					$date = wp_date($wp_settings, $timestamp, wp_timezone());
+				} else {
+					$date = wp_date($type, $timestamp);
+				}
+				return $date;
+			}
+			public static function date_format(): string {
+				$format = self::get_general_settings('ttbm_date_format', 'D d M , yy');
+				$date_format = 'Y-m-d';
+				$date_format = $format == 'yy/mm/dd' ? 'Y/m/d' : $date_format;
+				$date_format = $format == 'yy-dd-mm' ? 'Y-d-m' : $date_format;
+				$date_format = $format == 'yy/dd/mm' ? 'Y/d/m' : $date_format;
+				$date_format = $format == 'dd-mm-yy' ? 'd-m-Y' : $date_format;
+				$date_format = $format == 'dd/mm/yy' ? 'd/m/Y' : $date_format;
+				$date_format = $format == 'mm-dd-yy' ? 'm-d-Y' : $date_format;
+				$date_format = $format == 'mm/dd/yy' ? 'm/d/Y' : $date_format;
+				$date_format = $format == 'd M , yy' ? 'j M , Y' : $date_format;
+				$date_format = $format == 'D d M , yy' ? 'D j M , Y' : $date_format;
+				$date_format = $format == 'M d , yy' ? 'M  j, Y' : $date_format;
+				return $format == 'D M d , yy' ? 'D M  j, Y' : $date_format;
+			}
+			//*************Price*********************************//
+			public static function get_first_booking_date( $all_dates ) {
+				if ( empty( $all_dates ) || ! is_array( $all_dates ) ) {
+					return '';
+				}
+				if ( ! empty( $all_dates['date'] ) ) {
+					return $all_dates['date'];
+				}
+				foreach ( $all_dates as $key => $value ) {
+					if ( is_numeric( $key ) && is_string( $value ) && strtotime( $value ) ) {
+						return $value;
+					}
+				}
+				return '';
+			}
+
+			/**
+			 * Default hotel check-in: next available tour day (or tomorrow).
+			 */
+			public static function get_hotel_default_checkin_date( $tour_id, $all_dates = null ) {
+				$all_dates = ( null === $all_dates ) ? self::get_date( $tour_id ) : $all_dates;
+				$checkin   = self::get_first_booking_date( $all_dates );
+				if ( ! $checkin ) {
+					$checkin = gmdate( 'Y-m-d', strtotime( '+1 day', strtotime( current_time( 'Y-m-d' ) ) ) );
+				}
+				return $checkin;
+			}
+
+			public static function get_hotel_default_checkout_date( $checkin_ymd ) {
+				return gmdate( 'Y-m-d', strtotime( $checkin_ymd . ' +1 day' ) );
+			}
+
+			/**
+			 * Resolve the booking date used for price filters (repeated/particular time slots, fixed date, etc.).
+			 */
+			public static function get_effective_booking_date( $tour_id, $all_dates = null ) {
+				$all_dates = ( null === $all_dates ) ? self::get_date( $tour_id ) : $all_dates;
+				if ( empty( $all_dates ) || ! is_array( $all_dates ) ) {
+					return '';
+				}
+
+				$travel_type = self::get_travel_type( $tour_id );
+
+				if ( $travel_type === 'particular' ) {
+					$particular_dates = TTBM_Global_Function::get_post_info( $tour_id, 'ttbm_particular_dates', array() );
+					if ( ! is_array( $particular_dates ) || empty( $particular_dates ) ) {
+						return '';
+					}
+					foreach ( $particular_dates as $particular_date ) {
+						$start_date = $particular_date['ttbm_particular_start_date'] ?? '';
+						$start_time = $particular_date['ttbm_particular_start_time'] ?? '';
+						if ( ! $start_date ) {
+							continue;
+						}
+						$option_date            = $start_time ? $start_date . ' ' . $start_time : $start_date;
+						$normalized_option_date = self::get_date_by_time_check( $tour_id, $option_date, '' );
+						if ( $normalized_option_date ) {
+							return $normalized_option_date;
+						}
+					}
+					return '';
+				}
+
+				if ( $travel_type === 'repeated' ) {
+					$first_date = self::get_first_booking_date( $all_dates );
+					if ( $first_date === '' ) {
+						return '';
+					}
+					return self::get_date_by_time_check( $tour_id, $first_date, '' ) ?: $first_date;
+				}
+
+				return self::get_first_booking_date( $all_dates );
+			}
+			public static function get_next_tour_date_label( $tour_id ) {
+				return self::get_travel_type( $tour_id ) === 'fixed'
+					? __( 'Tour Date', 'tour-booking-manager' )
+					: __( 'Next Tour', 'tour-booking-manager' );
+			}
+			/**
+			 * Split a schedule value into [ Y-m-d, H:i ].
+			 *
+			 * get_date() is not consistent about the shape it returns: repeated tours come
+			 * back as "Y-m-d H:i" because get_date_by_time_check() bakes the matched slot
+			 * time into the value, while fixed/particular tours return a bare "Y-m-d".
+			 * Callers that append a time themselves must split first -- concatenating onto
+			 * a value that already carries one yields "Y-m-d H:i H:i", which strtotime()
+			 * cannot parse.
+			 */
+			private static function split_schedule_value( $value ) {
+				$value = trim( (string) $value );
+				if ( preg_match( '/^(\d{4}-\d{2}-\d{2})[ T](\d{1,2}:\d{2}(?::\d{2})?)$/', $value, $matches ) ) {
+					return array( $matches[1], $matches[2] );
+				}
+				return array( $value, '' );
+			}
+			/**
+			 * Repeated-tour start time for tours saved before the repeated-tab mirror shipped.
+			 *
+			 * get_time() reads a repeated tour's effective time from ttbm_travel_start_time,
+			 * which TTBM_Settings mirrors from ttbm_travel_repeated_start_time -- but only on
+			 * save. Tours last edited before that mirror existed still have a blank
+			 * ttbm_travel_start_time, so the admin's configured time is invisible and the
+			 * date renders as midnight. Read-side fallback only: the booking flow keeps
+			 * using get_time() unchanged.
+			 */
+			private static function get_repeated_start_time_fallback( $tour_id ) {
+				if ( self::get_travel_type( $tour_id ) !== 'repeated' ) {
+					return '';
+				}
+				return self::normalize_time_value(
+					TTBM_Global_Function::get_post_info( $tour_id, 'ttbm_travel_repeated_start_time' )
+				);
+			}
+			public static function get_next_tour_date_display( $tour_id ) {
+				$all_dates = self::get_date( $tour_id );
+				if ( empty( $all_dates ) ) {
+					return '';
+				}
+
+				if ( ! empty( $all_dates['date'] ) ) {
+					list( $start_date, $start_time ) = self::split_schedule_value( $all_dates['date'] );
+					if ( ! $start_time ) {
+						$start_time = self::normalize_time_value( self::get_time( $tour_id, $start_date ) );
+					}
+					$start_date_time = $start_time ? $start_date . ' ' . $start_time : $start_date;
+					$display         = TTBM_Global_Function::date_format( $start_date_time, 'full' );
+					$checkout        = $all_dates['checkout_date'] ?? '';
+
+					if ( $checkout ) {
+						$end_time      = TTBM_Global_Function::get_post_info( $tour_id, 'ttbm_travel_end_time' );
+						$end_date_time = $end_time ? $checkout . ' ' . $end_time : $checkout;
+						$display      .= ' - ' . TTBM_Global_Function::date_format( $end_date_time, 'full' );
+					}
+
+					return $display;
+				}
+
+				$next_date = self::get_first_booking_date( $all_dates );
+				if ( ! $next_date ) {
+					return '';
+				}
+
+				list( $next_date, $start_time ) = self::split_schedule_value( $next_date );
+				if ( ! $start_time ) {
+					$start_time = self::normalize_time_value( self::get_time( $tour_id, $next_date ) );
+				}
+				if ( ! $start_time ) {
+					$start_time = self::get_repeated_start_time_fallback( $tour_id );
+				}
+				$date_time = $start_time ? $next_date . ' ' . $start_time : $next_date;
+
+				/* date_format() renders "now" for anything strtotime() rejects -- show nothing instead. */
+				if ( ! strtotime( $date_time ) ) {
+					return '';
+				}
+
+				return TTBM_Global_Function::date_format( $date_time, 'full' );
+			}
+			public static function get_tour_start_price($tour_id, $start_date = ''): string {
+				/* Each grid card resolves this twice (data-price attribute + card footer). */
+				$price_cache_key = (int) $tour_id . '|' . (string) $start_date;
+				if (self::cache_has('start_price', $price_cache_key)) {
+					return self::cache_get('start_price', $price_cache_key);
+				}
+				return self::cache_set('start_price', $price_cache_key, self::build_tour_start_price($tour_id, $start_date));
+			}
+			private static function build_tour_start_price($tour_id, $start_date = ''): string {
+				$tour_id = self::post_id_multi_language( $tour_id );
+
+				/*
+				 * An admin-entered starting price is an explicit override: it wins over every
+				 * computed ticket / hotel-room price. Leave the field empty and the price stays
+				 * dynamic (lowest available price), which is the default.
+				 */
+				$manual_price = self::get_manual_start_price( $tour_id );
+				if ( $manual_price !== '' ) {
+					return $manual_price;
+				}
+
+				/*
+				 * Legacy last-resort value. Unlike the override above this only surfaces when
+				 * nothing can be computed, which is the behaviour it has always had -- the PRO
+				 * AI tools mirror the lowest ticket price into it, so it must not act as an
+				 * override.
+				 */
+				$manual_price = self::normalize_positive_price( TTBM_Global_Function::get_post_info( $tour_id, 'ttbm_travel_start_price' ) );
+
+				if ( self::get_tour_type( $tour_id ) === 'hotel' ) {
+					$hotel_prices = array();
+					foreach ( self::get_hotel_list( $tour_id ) as $hotel_id ) {
+						$hotel_min = self::get_hotel_room_min_price( $hotel_id );
+						if ( $hotel_min > 0 ) {
+							$hotel_prices[] = floatval( $hotel_min );
+						}
+					}
+					if ( ! empty( $hotel_prices ) ) {
+						return (string) min( $hotel_prices );
+					}
+					return $manual_price;
+				}
+
+				$ticket_list = self::get_ticket_type( $tour_id );
+				$start_price = '';
+
+				if ( ! empty( $ticket_list ) && is_array( $ticket_list ) ) {
+					if ( ! $start_date ) {
+						$all_dates  = self::get_date( $tour_id );
+						$start_date = self::get_effective_booking_date( $tour_id, $all_dates );
+					}
+					$filtered_prices = array();
+					$raw_prices      = array();
+					foreach ( $ticket_list as $ticket ) {
+						if ( ! is_array( $ticket ) ) {
+							continue;
+						}
+						$ticket_name = $ticket['ticket_type_name'] ?? '';
+						$price       = $ticket['ticket_type_price'] ?? '';
+						if ( ! empty( $ticket['sale_price'] ) && is_numeric( $ticket['sale_price'] ) && floatval( $ticket['sale_price'] ) > 0 ) {
+							$price = $ticket['sale_price'];
+						}
+						$raw = self::normalize_positive_price( $price );
+						if ( $raw !== '' ) {
+							$raw_prices[] = floatval( $raw );
+						}
+						$filtered = apply_filters( 'ttbm_filter_ticket_price', $price, $tour_id, $start_date, $ticket_name );
+						$filtered = apply_filters( 'ttbm_price_by_name_filter', $filtered, $tour_id, 1, $start_date, $ticket_name );
+						$filtered = self::normalize_positive_price( $filtered );
+						if ( $filtered !== '' ) {
+							$filtered_prices[] = floatval( $filtered );
+						}
+					}
+					if ( ! empty( $filtered_prices ) ) {
+						$start_price = min( $filtered_prices );
+					} elseif ( ! empty( $raw_prices ) ) {
+						$start_price = min( $raw_prices );
+					}
+				}
+
+				if ( $start_price === '' || $start_price === null || (float) $start_price <= 0 ) {
+					$start_price = $manual_price;
+				}
+
+				return $start_price === '' || $start_price === null ? '' : (string) $start_price;
+			}
+
+			/**
+			 * Booking Form Style: true = Open (expanded on arrival), false = Collapse.
+			 *
+			 * 'ttbm_ticketing_system' also decides whether the ticket rows are pre-rendered
+			 * by PHP ('regular_ticket') or fetched over AJAX after "Check Availability"
+			 * ('availability_section'). Reads the same default as the render path in
+			 * templates/ticket/tour_default_selection.php so the editor and the page agree.
+			 */
+			public static function booking_form_opens_expanded( $tour_id ): bool {
+				return TTBM_Global_Function::get_post_info( $tour_id, 'ttbm_ticketing_system', 'regular_ticket' ) !== 'availability_section';
+			}
+
+			/**
+			 * Whether the inline booking / ticket-picker block may be rendered for a tour.
+			 *
+			 * Two switches feed it, deliberately kept separate:
+			 *  - 'ttbm_display_registration' (Pricing & Services) turns the whole booking
+			 *    feature off -- sidebar CTA, hero price and this block with it.
+			 *  - 'ttbm_display_booking_section' (Display settings) hides only this block, so
+			 *    a tour can still be booked from the sidebar "Check Availability" CTA.
+			 *
+			 * Themes must ask this before printing the section wrapper: the templates inside
+			 * return nothing when booking is off, which used to leave an empty bordered card
+			 * with a "Choose the Ticket..." heading and no ticket picker under it.
+			 */
+			public static function show_booking_section( $post_id ): bool {
+				if ( TTBM_Global_Function::get_post_info( $post_id, 'ttbm_display_registration', 'on' ) === 'off' ) {
+					return false;
+				}
+				return TTBM_Global_Function::get_post_info( $post_id, 'ttbm_display_booking_section', 'on' ) !== 'off';
+			}
+
+			/**
+			 * Whether the "starting price" block may be shown for a tour.
+			 *
+			 * Single home for the 'ttbm_display_price_start' switch (tour editor -> Overview
+			 * -> General Information -> Starting Price) so every hero, card and list price
+			 * honours it identically. Takes the id the template is rendering, translated or
+			 * not, matching how the surrounding templates read their other display switches.
+			 */
+			public static function show_start_price( $post_id ): bool {
+				return TTBM_Global_Function::get_post_info( $post_id, 'ttbm_display_price_start', 'on' ) !== 'off';
+			}
+
+			/**
+			 * Admin-entered starting price for a tour, '' when none is set.
+			 *
+			 * Set from the tour editor (Overview -> General Information -> Starting Price).
+			 * Deliberately a key of its own rather than the older 'ttbm_travel_start_price',
+			 * which is a derived fallback other code writes to and would hijack the display.
+			 */
+			public static function get_manual_start_price( $tour_id ): string {
+				$tour_id = self::post_id_multi_language( $tour_id );
+				return self::normalize_positive_price(
+					TTBM_Global_Function::get_post_info( $tour_id, 'ttbm_manual_start_price' )
+				);
+			}
+
+			/**
+			 * Keep a usable numeric price; empty / non-numeric / zero become ''.
+			 */
+			private static function normalize_positive_price( $price ): string {
+				if ( $price === '' || $price === null || ! is_numeric( $price ) ) {
+					return '';
+				}
+				$price = floatval( $price );
+				return $price > 0 ? (string) $price : '';
+			}
+
+			/**
+			 * Regular price for the ticket that provides get_tour_start_price(), when that ticket is on sale.
+			 */
+			public static function get_tour_start_regular_price( $tour_id, $start_date = '' ): string {
+				/* A manual starting price is a flat advertised amount -- nothing to strike through. */
+				if ( self::get_manual_start_price( $tour_id ) !== '' ) {
+					return '';
+				}
+
+				if ( self::get_tour_type( $tour_id ) === 'hotel' ) {
+					$start_price = self::get_tour_start_price( $tour_id, $start_date );
+					if ( $start_price === '' ) {
+						return '';
+					}
+					$start_price_f = floatval( $start_price );
+					foreach ( self::get_hotel_list( $tour_id ) as $hotel_id ) {
+						$room_lists = TTBM_Global_Function::get_post_info( $hotel_id, 'ttbm_room_details', array() );
+						if ( empty( $room_lists ) || ! is_array( $room_lists ) ) {
+							continue;
+						}
+						foreach ( $room_lists as $room ) {
+							$regular = isset( $room['ttbm_hotel_room_price'] ) ? floatval( $room['ttbm_hotel_room_price'] ) : 0;
+							$sale    = ! empty( $room['sale_price'] ) ? floatval( $room['sale_price'] ) : 0;
+							if ( $sale > 0 && $regular > $sale && $sale === $start_price_f ) {
+								return (string) $regular;
+							}
+						}
+					}
+					return '';
+				}
+
+				$ticket_list = self::get_ticket_type( $tour_id );
+				if ( empty( $ticket_list ) ) {
+					return '';
+				}
+
+				if ( ! $start_date ) {
+					$all_dates  = self::get_date( $tour_id );
+					$start_date = self::get_effective_booking_date( $tour_id, $all_dates );
+				}
+
+				$start_price = self::get_tour_start_price( $tour_id, $start_date );
+				if ( $start_price === '' ) {
+					return '';
+				}
+
+				$start_price_f = floatval( $start_price );
+
+				foreach ( $ticket_list as $ticket ) {
+					$ticket_name = $ticket['ticket_type_name'];
+					$regular     = isset( $ticket['ticket_type_price'] ) ? floatval( $ticket['ticket_type_price'] ) : 0;
+					$sale        = ! empty( $ticket['sale_price'] ) ? floatval( $ticket['sale_price'] ) : 0;
+
+					if ( ! $sale || $sale >= $regular ) {
+						continue;
+					}
+
+					$effective = apply_filters( 'ttbm_filter_ticket_price', $sale, $tour_id, $start_date, $ticket_name );
+					$effective = apply_filters( 'ttbm_price_by_name_filter', $effective, $tour_id, 1, $start_date, $ticket_name );
+
+					if ( floatval( $effective ) === $start_price_f ) {
+						return (string) $regular;
+					}
+				}
+
+				return '';
+			}
+
+			public static function get_hotel_room_min_price($hotel_id) {
+				$room_lists = TTBM_Global_Function::get_post_info( $hotel_id, 'ttbm_room_details', array() );
+				if ( empty( $room_lists ) || ! is_array( $room_lists ) ) {
+					return 0;
+				}
+				$prices = array();
+				foreach ( $room_lists as $room_list ) {
+					$regular = array_key_exists( 'ttbm_hotel_room_price', $room_list ) ? floatval( $room_list['ttbm_hotel_room_price'] ) : 0;
+					$sale    = ! empty( $room_list['sale_price'] ) ? floatval( $room_list['sale_price'] ) : 0;
+					if ( $sale > 0 && ( $regular <= 0 || $sale < $regular ) ) {
+						$prices[] = $sale;
+					} elseif ( $regular > 0 ) {
+						$prices[] = $regular;
+					}
+				}
+				return ! empty( $prices ) ? min( $prices ) : 0;
+			}
+			public static function get_price_by_name($ticket_name, $tour_id, $hotel_id = '', $qty = '', $start_date = '') {
+				$ttbm_type = self::get_tour_type($tour_id);
+				$price = '';
+				if ($ttbm_type == 'general') {
+					$ticket_types = self::get_ticket_type($tour_id);
+					foreach ($ticket_types as $ticket_type) {
+						if ($ticket_type['ticket_type_name'] == $ticket_name) {
+							$price = $ticket_type['ticket_type_price'];
+							$price = array_key_exists('sale_price', $ticket_type) && $ticket_type['sale_price'] ? $ticket_type['sale_price'] : $price;
+							$price = apply_filters('ttbm_filter_ticket_price', $price, $tour_id, $start_date, $ticket_name);
+							$price = apply_filters('ttbm_price_by_name_filter', $price, $tour_id, $qty, $start_date, $ticket_name);
+						}
+					}
+				}
+				if ($ttbm_type == 'hotel') {
+					$room_lists = TTBM_Global_Function::get_post_info($hotel_id, 'ttbm_room_details', array());
+					foreach ($room_lists as $room_list) {
+						if ($room_list['ttbm_hotel_room_name'] == $ticket_name) {
+							$price = $room_list['ttbm_hotel_room_price'];
+						}
+					}
+				}
+				return $price;
+			}
+			public static function check_discount_price_exit($tour_id, $ticket_name = '', $hotel_id = '', $qty = '', $start_date = '') {
+				$ttbm_type = self::get_tour_type($tour_id);
+				$price = '';
+				if ($ttbm_type == 'general') {
+					$ticket_types = self::get_ticket_type($tour_id);
+					foreach ($ticket_types as $ticket_type) {
+						if (!$ticket_name || $ticket_type['ticket_type_name'] == $ticket_name) {
+							$regular_price = $ticket_type['ticket_type_price'];
+							$sale_price = array_key_exists('sale_price', $ticket_type) && $ticket_type['sale_price'] ? $ticket_type['sale_price'] : '';
+							$price = $regular_price && $sale_price ? $regular_price : '';
+							return apply_filters('ttbm_filter_ticket_discount_price_check', $price, $tour_id, $start_date, $ticket_name);
+							//$price = apply_filters( 'ttbm_price_by_name_filter', $price, $tour_id, $qty );
+						}
+					}
+				}
+				return $price;
+			}
+			public static function get_extra_service_price_by_name($tour_id, $service_name) {
+				$extra_services = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_extra_service_data', array());
+				$price = '';
+				if (sizeof($extra_services) > 0) {
+					foreach ($extra_services as $service) {
+						if ($service['service_name'] == $service_name) {
+							return $service['service_price'];
+						}
+					}
+				}
+				return $price;
+			}
+			public static function get_extra_service_available($tour_id, $tour_date, $service_name) {
+				$extra_services = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_extra_service_data', array());
+				if (!is_array($extra_services) || empty($extra_services) || $service_name === '') {
+					return 0;
+				}
+				foreach ($extra_services as $service) {
+					if (($service['service_name'] ?? '') !== $service_name) {
+						continue;
+					}
+					$service_inventory = max(0, (int) ($service['service_qty'] ?? 0));
+					if ($service_inventory <= 0) {
+						return 0;
+					}
+					$reserve = (int) apply_filters('ttbm_service_reserve_qty', 0);
+					$sold = (int) TTBM_Query::query_all_service_sold($tour_id, $tour_date, $service_name);
+					$per_order_max = (int) apply_filters('ttbm_service_type_max_qty', 0);
+					$available = max(0, $service_inventory - ($sold + $reserve));
+					return $per_order_max > 0 ? min($per_order_max, $available) : $available;
+				}
+				return 0;
+			}
+			//************************************//
+			public static function get_submit_info($key, $default = '') {
+				return self::data_sanitize($_POST[$key] ?? $default);
+			}
+			//***********Duration*************************//
+			public static function get_duration($tour_id) {
+				$duration = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_duration', 0);
+				return apply_filters('ttbm_tour_duration', $duration, $tour_id);
+			}
+			public static function get_all_duration(): array {
+				$cache_key = 'ttbm_all_durations';
+				$cached = get_transient($cache_key);
+				if ($cached !== false) {
+					return $cached;
+				}
+				$tour_ids = TTBM_Global_Function::get_all_post_id(TTBM_Function::get_cpt_name());
+				$duration = array();
+				foreach ($tour_ids as $tour_id) {
+					$duration[] = self::get_duration($tour_id);
+				}
+				$duration = array_unique($duration);
+				natsort($duration);
+				set_transient($cache_key, $duration, HOUR_IN_SECONDS);
+				return $duration;
+			}
+			//************Price range (sidebar price-per-person filter)***********************//
+			public static function get_price_range(): array {
+				$cache_key = 'ttbm_price_range';
+				$cached = get_transient($cache_key);
+				if ($cached !== false) {
+					return $cached;
+				}
+				$tour_ids = TTBM_Global_Function::get_all_post_id(TTBM_Function::get_cpt_name());
+				$prices = array();
+				foreach ($tour_ids as $tour_id) {
+					$price = (float) self::get_tour_start_price($tour_id);
+					if ($price > 0) {
+						$prices[] = $price;
+					}
+				}
+				$range = $prices
+					? array('min' => (float) floor(min($prices)), 'max' => (float) ceil(max($prices)))
+					: array('min' => 0, 'max' => 0);
+				set_transient($cache_key, $range, HOUR_IN_SECONDS);
+				return $range;
+			}
+			//************Seat***********************//
+			public static function get_total_seat($tour_id) {
+				$total_seat = 0;
+				$tour_type = self::get_tour_type($tour_id);
+				if ($tour_type == 'general') {
+					$ticket_list = self::get_ticket_type($tour_id);
+					if (sizeof($ticket_list) > 0) {
+						foreach ($ticket_list as $_ticket_list) {
+							$total_seat = $_ticket_list['ticket_type_qty'] + $total_seat;
+						}
+					}
+				}
+				return apply_filters('ttbm_get_total_seat_filter', $total_seat, $tour_id);
+			}
+			public static function get_total_reserve($tour_id) {
+				$reserve = 0;
+				$tour_type = self::get_tour_type($tour_id);
+				if ($tour_type == 'general') {
+					$ticket_list = self::get_ticket_type($tour_id);
+					if (sizeof($ticket_list) > 0) {
+						foreach ($ticket_list as $_ticket_list) {
+							if (array_key_exists('ticket_type_resv_qty', $_ticket_list) && $_ticket_list['ticket_type_resv_qty'] > 0) {
+								$reserve = $_ticket_list['ticket_type_resv_qty'] + $reserve;
+							}
+						}
+					}
+				}
+				return apply_filters('ttbm_get_total_reserve_filter', $reserve, $tour_id);
+			}
+			/**
+			 * Pre-load every booking row for a set of tours in one query.
+			 *
+			 * Without this, get_total_sold() issues its own WP_Query per
+			 * (tour, date, ticket type) -- a list page with 300 cards and three
+			 * ticket types each fires 900 booking queries, and a sold-out tour adds
+			 * one more per departure date via get_any_date_seat_available(). The
+			 * rows are identical no matter which of those combinations asks for
+			 * them, so fetch them once and let get_total_sold() narrow them in PHP.
+			 *
+			 * Falls back silently (leaving the per-call queries in place) when the
+			 * result set would be too large to hold, so a huge booking archive
+			 * degrades to today's behaviour instead of exhausting memory.
+			 *
+			 * @param int[] $tour_ids Tours about to be rendered.
+			 */
+			public static function prime_sold_cache($tour_ids): void {
+				$tour_ids = array_values(array_unique(array_filter(array_map('intval', (array) $tour_ids))));
+				if (empty($tour_ids)) {
+					return;
+				}
+				if (!is_array(self::$sold_rows)) {
+					self::$sold_rows = array();
+				}
+				$pending = array_diff($tour_ids, array_keys(self::$sold_rows));
+				if (empty($pending)) {
+					return;
+				}
+				$_seat_booked_status = self::get_general_settings('ttbm_set_book_status', array('processing', 'completed'));
+				$seat_booked_status = !empty($_seat_booked_status) ? $_seat_booked_status : array();
+				$limit = (int) apply_filters('ttbm_prime_sold_cache_limit', 20000);
+				$booking_ids = get_posts(array(
+					'fields' => 'ids',
+					'post_type' => 'ttbm_booking',
+					'post_status' => 'publish',
+					/* Fetch one past the limit purely to detect truncation. */
+					'posts_per_page' => $limit + 1,
+					'no_found_rows' => true,
+					'ignore_sticky_posts' => true,
+					'meta_query' => array(
+						'relation' => 'AND',
+						array('key' => 'ttbm_id', 'value' => $pending, 'compare' => 'IN'),
+						array('key' => 'ttbm_order_status', 'value' => $seat_booked_status, 'compare' => 'IN'),
+					),
+				));
+				/*
+				 * A truncated result set would silently undercount sold seats and show
+				 * sold-out departures as bookable, so bail out entirely rather than
+				 * cache a partial answer: leaving these tours unprimed just means
+				 * get_total_sold() keeps issuing its own (correct) per-call queries.
+				 */
+				if (count($booking_ids) > $limit) {
+					return;
+				}
+				/* Mark every requested tour primed, so tours with no bookings skip the query too. */
+				foreach ($pending as $pending_id) {
+					self::$sold_rows[$pending_id] = array();
+				}
+				if (empty($booking_ids)) {
+					return;
+				}
+				update_meta_cache('post', $booking_ids);
+				foreach ($booking_ids as $booking_id) {
+					$row_tour_id = (int) TTBM_Global_Function::get_post_info($booking_id, 'ttbm_id');
+					if (!isset(self::$sold_rows[$row_tour_id])) {
+						continue;
+					}
+					self::$sold_rows[$row_tour_id][] = array(
+						'order_id' => TTBM_Global_Function::get_post_info($booking_id, 'ttbm_order_id'),
+						'ticket_name' => TTBM_Global_Function::get_post_info($booking_id, 'ttbm_ticket_name'),
+						'ticket_qty' => TTBM_Global_Function::get_post_info($booking_id, 'ttbm_ticket_qty', 1),
+						'date' => TTBM_Global_Function::get_post_info($booking_id, 'ttbm_date'),
+						'hotel' => TTBM_Global_Function::get_post_info($booking_id, 'ttbm_hotel_id'),
+					);
+				}
+			}
+			/**
+			 * Booking rows for one tour, or null when that tour has not been primed.
+			 */
+			private static function get_primed_sold_rows($tour_id) {
+				$tour_id = (int) $tour_id;
+				return is_array(self::$sold_rows) && isset(self::$sold_rows[$tour_id]) ? self::$sold_rows[$tour_id] : null;
+			}
+			/**
+			 * PHP-side equivalent of the meta_query comparisons in
+			 * TTBM_Query::query_all_sold(). Matches MySQL's default case- and
+			 * trailing-space-insensitive string collation rather than PHP's stricter
+			 * ===, so a primed count can never diverge from a queried one.
+			 */
+			private static function sold_value_matches($row_value, $filter_value): bool {
+				return strcasecmp(rtrim((string) $row_value), rtrim((string) $filter_value)) === 0;
+			}
+			public static function get_total_sold($tour_id, $tour_date = '', $type = '', $hotel_id = ''): int {
+				$tour_date = $tour_date ?: TTBM_Global_Function::get_post_info($tour_id, 'ttbm_upcoming_date');
+				$type = apply_filters('ttbm_type_filter', $type, $tour_id);
+				$sold_cache_key = (int) $tour_id . '|' . (string) $tour_date . '|' . (is_array($type) ? wp_json_encode($type) : (string) $type) . '|' . (string) $hotel_id;
+				if (self::cache_has('sold', $sold_cache_key)) {
+					return self::cache_get('sold', $sold_cache_key);
+				}
+				$primed_rows = self::get_primed_sold_rows($tour_id);
+				$booking_rows = null === $primed_rows
+					? self::query_sold_rows($tour_id, $tour_date, $type, $hotel_id)
+					: self::filter_sold_rows($primed_rows, $tour_date, $type, $hotel_id);
+				// Booking rows can be duplicated per attendee while storing the same line quantity.
+				// Count each order/ticket/date/hotel line once to avoid over-counting.
+				$total_sold = 0;
+				$line_qty_map = array();
+				foreach ($booking_rows as $booking_row) {
+					$order_id = $booking_row['order_id'];
+					$ticket_name = $booking_row['ticket_name'];
+					$ticket_qty = $booking_row['ticket_qty'];
+					$ticket_qty = max(1, intval($ticket_qty));
+					// Convert purchased group count to actual seat count when group tickets are enabled.
+					$ticket_qty = apply_filters('ttbm_group_ticket_qty_actual', $ticket_qty, $tour_id, $ticket_name);
+					$ticket_qty = max(1, intval($ticket_qty));
+					$booked_date = $booking_row['date'];
+					$booked_hotel = $booking_row['hotel'];
+
+					$key = $order_id ? $order_id . '|' . $ticket_name . '|' . $booked_date . '|' . $booked_hotel : '';
+					if ($key) {
+						if (!array_key_exists($key, $line_qty_map)) {
+							$line_qty_map[$key] = $ticket_qty;
+						} else {
+							$line_qty_map[$key] = max($line_qty_map[$key], $ticket_qty);
+						}
+					} else {
+						$total_sold += $ticket_qty;
+					}
+				}
+				$total_sold += array_sum($line_qty_map);
+				return self::cache_set('sold', $sold_cache_key, $total_sold);
+			}
+			/**
+			 * Booking rows straight from the database -- the original, unprimed path.
+			 */
+			private static function query_sold_rows($tour_id, $tour_date, $type, $hotel_id): array {
+				$sold_query = TTBM_Query::query_all_sold($tour_id, $tour_date, $type, $hotel_id);
+				$rows = array();
+				if ($sold_query->have_posts()) {
+					foreach ($sold_query->posts as $booking_post) {
+						$rows[] = array(
+							'order_id' => TTBM_Global_Function::get_post_info($booking_post->ID, 'ttbm_order_id'),
+							'ticket_name' => TTBM_Global_Function::get_post_info($booking_post->ID, 'ttbm_ticket_name'),
+							'ticket_qty' => TTBM_Global_Function::get_post_info($booking_post->ID, 'ttbm_ticket_qty', 1),
+							'date' => TTBM_Global_Function::get_post_info($booking_post->ID, 'ttbm_date'),
+							'hotel' => TTBM_Global_Function::get_post_info($booking_post->ID, 'ttbm_hotel_id'),
+						);
+					}
+				}
+				wp_reset_postdata();
+				return $rows;
+			}
+			/**
+			 * Narrow pre-loaded rows the same way TTBM_Query::query_all_sold() narrows
+			 * them in SQL: exact ticket name / hotel match, and a date match that is
+			 * exact when a time component is present and a substring match otherwise
+			 * (mirroring that query's LIKE fallback for date-only lookups).
+			 */
+			private static function filter_sold_rows($rows, $tour_date, $type, $hotel_id): array {
+				$filter_type = (!empty($type) && !is_array($type)) ? $type : '';
+				$filter_hotel = !empty($hotel_id) ? $hotel_id : '';
+				$date_is_exact = !empty($tour_date) && TTBM_Global_Function::check_time_exit_date($tour_date);
+				$matched = array();
+				foreach ($rows as $row) {
+					if ('' !== $filter_type && !self::sold_value_matches($row['ticket_name'], $filter_type)) {
+						continue;
+					}
+					if ('' !== $filter_hotel && !self::sold_value_matches($row['hotel'], $filter_hotel)) {
+						continue;
+					}
+					if (!empty($tour_date)) {
+						if ($date_is_exact) {
+							if (!self::sold_value_matches($row['date'], $tour_date)) {
+								continue;
+							}
+						} elseif (stripos((string) $row['date'], (string) $tour_date) === false) {
+							continue;
+						}
+					}
+					$matched[] = $row;
+				}
+				return $matched;
+			}
+			public static function get_total_available($tour_id, $tour_date = '') {
+				$available_cache_key = (int) $tour_id . '|' . (string) $tour_date;
+				if (self::cache_has('available', $available_cache_key)) {
+					return self::cache_get('available', $available_cache_key);
+				}
+				return self::cache_set('available', $available_cache_key, self::build_total_available($tour_id, $tour_date));
+			}
+			private static function build_total_available($tour_id, $tour_date = '') {
+				$tour_type = self::get_tour_type($tour_id);
+
+				if ($tour_type == 'general') {
+					$ticket_lists = self::get_ticket_type($tour_id);
+					if (sizeof($ticket_lists) > 0) {
+						$total_available = 0;
+						foreach ($ticket_lists as $ticket) {
+							$ticket_name = array_key_exists('ticket_type_name', $ticket) ? $ticket['ticket_type_name'] : '';
+							$ticket_qty = array_key_exists('ticket_type_qty', $ticket) && $ticket['ticket_type_qty'] > 0 ? $ticket['ticket_type_qty'] : 0;
+							$ticket_qty = apply_filters('ttbm_ticket_capacity', intval($ticket_qty), $tour_id, $tour_date, $ticket_name);
+							$reserve = array_key_exists('ticket_type_resv_qty', $ticket) && $ticket['ticket_type_resv_qty'] > 0 ? $ticket['ticket_type_resv_qty'] : 0;
+							
+							$sold_type = self::get_total_sold($tour_id, $tour_date, $ticket_name);
+							$sold_type = apply_filters('ttbm_sold_qty', $sold_type, $tour_id, $tour_date, $ticket_name);
+							
+							$available = (int)$ticket_qty - ($sold_type + (int)$reserve);
+							$available = apply_filters('ttbm_group_ticket_qty', $available, $tour_id, $ticket_name, $tour_date);
+							$total_available += max(0, floor($available));
+						}
+						return apply_filters('ttbm_total_available_qty', $total_available, $tour_id, $tour_date, $ticket_lists);
+					}
+				}
+
+				$total = self::get_total_seat($tour_id);
+				$reserve = self::get_total_reserve($tour_id);
+				$sold = self::get_total_sold($tour_id, $tour_date);
+				$available = $total - ($reserve + $sold);
+				return max(0, $available);
+			}
+			//************Time-wise Stock***********************//
+			/**
+			 * Whether this tour manages its inventory per time slot instead of
+			 * (only) per ticket type.
+			 *
+			 * Restricted to repeated general tours: those are the only ones whose
+			 * schedule is built from the reusable `mep_ticket_times_*` slot rows that
+			 * carry a per-slot stock value. Hotel tours have their own room
+			 * inventory and fixed/particular tours have one departure per date, so
+			 * per-slot stock would have nothing to attach to.
+			 */
+			public static function is_timewise_stock_enabled($tour_id): bool {
+				$tour_id = (int) $tour_id;
+				if (!$tour_id) {
+					return false;
+				}
+				if (self::cache_has('timewise_enabled', $tour_id)) {
+					return self::cache_get('timewise_enabled', $tour_id);
+				}
+				$enabled = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_enable_timewise_stock', 'off') === 'on'
+					&& self::get_travel_type($tour_id) === 'repeated'
+					&& self::get_tour_type($tour_id) === 'general';
+				return self::cache_set('timewise_enabled', $tour_id, (bool) apply_filters('ttbm_is_timewise_stock_enabled', $enabled, $tour_id));
+			}
+			/**
+			 * Capacity configured for one time slot on one date, or 0 when that slot
+			 * has no stock of its own.
+			 *
+			 * Resolution order matches how get_repeated_time_slots() picks the slot
+			 * list itself: the weekday-specific rows win when that weekday defines
+			 * any, otherwise the default ("global") rows apply. Returning 0 is the
+			 * documented "not configured" answer -- callers then fall back to the
+			 * regular per-ticket-type capacity, so switching the feature on without
+			 * filling in stock values changes nothing.
+			 *
+			 * @param int    $tour_id
+			 * @param string $date      Y-m-d (a date-time is accepted and truncated).
+			 * @param string $time_slot H:i as stored on the slot row.
+			 */
+			public static function get_timewise_stock($tour_id, $date, $time_slot): int {
+				$tour_id = (int) $tour_id;
+				$time_slot = self::normalize_time_value($time_slot);
+				if (!$tour_id || !$date || !$time_slot || strtotime($date) === false) {
+					return 0;
+				}
+				$date = gmdate('Y-m-d', strtotime($date));
+				$stock_cache_key = $tour_id . '|' . $date . '|' . $time_slot;
+				if (self::cache_has('timewise_stock', $stock_cache_key)) {
+					return self::cache_get('timewise_stock', $stock_cache_key);
+				}
+				$day_name = strtolower(gmdate('D', strtotime($date)));
+				$day_slots = TTBM_Global_Function::get_post_info($tour_id, 'mep_ticket_times_' . $day_name, array());
+				$slot_rows = (is_array($day_slots) && count($day_slots) > 0)
+					? $day_slots
+					: TTBM_Global_Function::get_post_info($tour_id, 'mep_ticket_times_global', array());
+				$stock = 0;
+				if (is_array($slot_rows)) {
+					foreach ($slot_rows as $slot_row) {
+						if (!is_array($slot_row)) {
+							continue;
+						}
+						$row_time = isset($slot_row['mep_ticket_time']) ? (string) $slot_row['mep_ticket_time'] : '';
+						if ($row_time === '' || !self::same_slot_time($row_time, $time_slot)) {
+							continue;
+						}
+						$stock = isset($slot_row['mep_ticket_time_stock']) ? (int) $slot_row['mep_ticket_time_stock'] : 0;
+						break;
+					}
+				}
+				$stock = max(0, (int) apply_filters('ttbm_timewise_slot_stock', $stock, $tour_id, $date, $time_slot));
+				return self::cache_set('timewise_stock', $stock_cache_key, $stock);
+			}
+			/**
+			 * Compare two slot times tolerantly: rows saved by an <input type="time">
+			 * are "09:30", but older data (and hand-edited meta) can carry "9:30" or
+			 * "09:30:00", and the value coming back from the frontend is re-formatted
+			 * from a full date. Comparing the minute-of-day avoids treating those as
+			 * different slots.
+			 */
+			private static function same_slot_time($left, $right): bool {
+				if ((string) $left === (string) $right) {
+					return true;
+				}
+				$left_ts = strtotime('1970-01-01 ' . $left);
+				$right_ts = strtotime('1970-01-01 ' . $right);
+				return $left_ts !== false && $right_ts !== false && gmdate('H:i', $left_ts) === gmdate('H:i', $right_ts);
+			}
+			/**
+			 * Availability for a single departure (date + time slot) under time-wise
+			 * stock.
+			 *
+			 * This is the single source every consumer resolves to: the availability
+			 * filters in TTBM_Timewise_Stock, the time slot chips, and the cart
+			 * validator all read it, so a slot's number can never drift between the
+			 * chip, the ticket table and checkout. It must therefore stay free of
+			 * calls back into get_total_available() / get_ticket_availability_info(),
+			 * which are themselves filtered through this value.
+			 *
+			 * @return array{enabled:bool,capacity:int,sold:int,available:int,datetime:string}
+			 */
+			public static function get_timewise_slot_availability($tour_id, $date, $time_slot): array {
+				$time_slot = self::normalize_time_value($time_slot);
+				$empty = array('enabled' => false, 'capacity' => 0, 'sold' => 0, 'available' => 0, 'datetime' => '');
+				if (!self::is_timewise_stock_enabled($tour_id) || !$date || !$time_slot || strtotime($date) === false) {
+					return $empty;
+				}
+				$capacity = self::get_timewise_stock($tour_id, $date, $time_slot);
+				if ($capacity < 1) {
+					return $empty;
+				}
+				$slot_timestamp = strtotime(gmdate('Y-m-d', strtotime($date)) . ' ' . $time_slot);
+				if ($slot_timestamp === false) {
+					return $empty;
+				}
+				$datetime = gmdate('Y-m-d H:i', $slot_timestamp);
+				$sold = self::get_timewise_sold($tour_id, $datetime);
+				return array(
+					'enabled' => true,
+					'capacity' => $capacity,
+					'sold' => $sold,
+					'available' => max(0, $capacity - $sold),
+					'datetime' => $datetime,
+				);
+			}
+			/**
+			 * Seats already sold on one departure, across every ticket type.
+			 *
+			 * Per-slot stock is one shared pool, so the whole departure is counted
+			 * once instead of per ticket type -- which also keeps this to a single
+			 * cached lookup no matter how many ticket types the tour sells.
+			 */
+			public static function get_timewise_sold($tour_id, $datetime): int {
+				return (int) self::get_total_sold($tour_id, $datetime, '');
+			}
+			public static function get_any_date_seat_available($tour_id) {
+				if (self::cache_has('any_available', (int) $tour_id)) {
+					return self::cache_get('any_available', (int) $tour_id);
+				}
+				return self::cache_set('any_available', (int) $tour_id, self::build_any_date_seat_available($tour_id));
+			}
+			private static function build_any_date_seat_available($tour_id) {
+				$travel_type = TTBM_Function::get_travel_type($tour_id);
+				if ($travel_type != 'fixed') {
+					$total = self::get_total_seat($tour_id);
+					$reserve = self::get_total_reserve($tour_id);
+					$all_dates = TTBM_Function::get_date($tour_id);
+					if (sizeof($all_dates) > 0) {
+						foreach ($all_dates as $date) {
+							$time_slots = TTBM_Function::get_time($tour_id, $date);
+							$slot_length = is_array($time_slots) && sizeof($time_slots) > 0 ? sizeof($time_slots) : 1;
+							$date_total = $total * $slot_length;
+							$date_reserve = $reserve * $slot_length;
+							$sold = self::get_total_sold($tour_id, $date);
+							$available = $date_total - ($date_reserve + $sold);
+							$available = max(0, $available);
+							if ($available > 0) {
+								return $available;
+							}
+						}
+					}
+					return 0;
+				} else {
+					return self::get_total_available($tour_id);
+				}
+			}
+			//*********************************//
+			public static function get_ticket_type($tour_id) {
+				/*
+				 * Reading this meta runs the whole ticket array through
+				 * TTBM_Global_Function::data_sanitize() (recursive sanitize_text_field),
+				 * and every card asks for it from get_total_seat(), get_total_reserve(),
+				 * get_total_available(), get_tour_start_price() and
+				 * check_discount_price_exit(). Resolve it once per tour per request.
+				 */
+				if (self::cache_has('ticket_type', (int) $tour_id)) {
+					return self::cache_get('ticket_type', (int) $tour_id);
+				}
+				$ttbm_type = self::get_tour_type($tour_id);
+				$tickets = array();
+				if ($ttbm_type == 'general') {
+					$tickets = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_ticket_type', array());
+					$tickets = apply_filters('ttbm_ticket_type_filter', $tickets, $tour_id);
+				}
+			return self::cache_set('ticket_type', (int) $tour_id, $tickets);
+		}
+		
+		//******* Enhanced Availability Functions *******//
+		public static function get_ticket_availability_info($tour_id, $tour_date = '', $ticket_type_name = '') {
+			if (!$tour_date) {
+				$tour_date = current(self::get_date($tour_id));
+			}
+			
+			// Preserve time component if present for time-slot specific availability
+			$has_time = TTBM_Global_Function::check_time_exit_date($tour_date);
+			if ($has_time) {
+				$tour_date = date('Y-m-d H:i', strtotime($tour_date));
+			} else {
+				$tour_date = date('Y-m-d', strtotime($tour_date));
+			}
+			
+			$ticket_types = self::get_ticket_type($tour_id);
+			$availability_info = array();
+			
+			foreach ($ticket_types as $ticket) {
+				$type_name = $ticket['ticket_type_name'];
+				
+				// Skip if specific ticket type requested and this isn't it
+				if ($ticket_type_name && $ticket_type_name !== $type_name) {
+					continue;
+				}
+				
+				$total_capacity = intval($ticket['ticket_type_qty']);
+				$total_capacity = apply_filters('ttbm_ticket_capacity', $total_capacity, $tour_id, $tour_date, $type_name);
+				$reserved_qty = intval($ticket['ticket_type_resv_qty'] ?? 0);
+				$sold_qty = self::get_total_sold($tour_id, $tour_date, $type_name);
+				$sold_qty = apply_filters('ttbm_sold_qty', $sold_qty, $tour_id, $tour_date, $type_name);
+				$available_qty = max(0, $total_capacity - ($reserved_qty + $sold_qty));
+				
+				$percentage_sold = $total_capacity > 0 ? round(($sold_qty / $total_capacity) * 100, 2) : 0;
+				$stock_status = self::get_stock_status($available_qty, $total_capacity);
+				
+				$availability_info[$type_name] = array(
+					'ticket_type_name' => $type_name,
+					'total_capacity' => $total_capacity,
+					'reserved_qty' => $reserved_qty,
+					'sold_qty' => $sold_qty,
+					'available_qty' => $available_qty,
+					'percentage_sold' => $percentage_sold,
+					'is_sold_out' => $available_qty <= 0,
+					'stock_status' => $stock_status,
+					'tour_date' => $tour_date,
+					'price' => self::get_price_by_name($type_name, $tour_id, '', '', $tour_date),
+					'regular_price' => self::check_discount_price_exit($tour_id, $type_name, '', '', $tour_date)
+				);
+			}
+			
+			return apply_filters('ttbm_ticket_availability_info', $availability_info, $tour_id, $tour_date, $ticket_type_name);
+		}
+		
+		public static function get_stock_status($available_qty, $total_capacity) {
+			if ($available_qty <= 0) {
+				return 'sold_out';
+			} else {
+				return 'in_stock';
+			}
+		}
+		
+		public static function get_ticket_availability_for_date_range($tour_id, $start_date, $end_date) {
+			$travel_type = self::get_travel_type($tour_id);
+			$availability_data = array();
+			
+			if ($travel_type === 'repeated') {
+				$current_date = strtotime($start_date);
+				$end_timestamp = strtotime($end_date);
+				
+				while ($current_date <= $end_timestamp) {
+					$date_string = date('Y-m-d', $current_date);
+					$availability_data[$date_string] = self::get_ticket_availability_info($tour_id, $date_string);
+					$current_date = strtotime('+1 day', $current_date);
+				}
+			} else {
+				$availability_data[$start_date] = self::get_ticket_availability_info($tour_id, $start_date);
+			}
+			
+			return $availability_data;
+		}
+		
+		public static function format_availability_display($availability_info) {
+			if (empty($availability_info)) {
+				return '';
+			}
+			
+			$output = '<div class="ttbm_availability_display">';
+			
+			foreach ($availability_info as $ticket_name => $info) {
+				$status_class = 'ttbm_status_' . $info['stock_status'];
+				
+				$output .= '<div class="ttbm_ticket_availability ' . $status_class . '">';
+				$output .= '<span class="ttbm_ticket_name">' . esc_html($ticket_name) . '</span>';
+				
+				if ($info['is_sold_out']) {
+					$output .= '<span class="ttbm_sold_out_badge">' . esc_html__('Sold Out', 'tour-booking-manager') . '</span>';
+				} else {
+					$output .= '<span class="ttbm_available_count">';
+					$output .= '<strong>' . $info['available_qty'] . '</strong> ';
+					$output .= ($info['available_qty'] == 1) ? 
+						esc_html__('ticket left', 'tour-booking-manager') : 
+						esc_html__('tickets left', 'tour-booking-manager');
+					$output .= '</span>';
+				}
+				
+				$output .= '</div>';
+			}
+			
+			$output .= '</div>';
+			return $output;
+		}
+		
+		//*********************************//
+			public static function tour_type() {
+				$type = array(
+					'general' => [
+						'icon'=>'fas fa-route',
+						'title'=> __('General Tour (Ticket-Based)', 'tour-booking-manager'),
+						'description'=> __('Set ticket types and pricing for your tour. Visitors purchase tickets to join the tour.', 'tour-booking-manager'),
+					], 
+					'hotel' => [
+						'icon'=>'mi mi-hotel',
+						'title'=> __('Hotel-Based Tour Package', 'tour-booking-manager'),
+						'description'=> __('A special pricing option where the same tour destination can have multiple packages based on different hotel categories or room types.', 'tour-booking-manager'),
+					]
+				);
+				return apply_filters('add_ttbm_tour_type', $type);
+			}
+			public static function get_tour_type($tour_id) {
+				if (self::cache_has('tour_type', (int) $tour_id)) {
+					return self::cache_get('tour_type', (int) $tour_id);
+				}
+				$tour_type = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_type', 'general');
+				if ($tour_type == 'hiphop') {
+					update_post_meta($tour_id, 'ttbm_type', 'general');
+					$tour_type = 'general';
+				}
+				return self::cache_set('tour_type', (int) $tour_id, $tour_type);
+			}
+			public static function get_travel_type($tour_id) {
+				if (self::cache_has('travel_type', (int) $tour_id)) {
+					return self::cache_get('travel_type', (int) $tour_id);
+				}
+				$type = TTBM_Global_Function::get_post_info(self::schedule_source_id($tour_id), 'ttbm_travel_type', 'fixed');
+				return self::cache_set('travel_type', (int) $tour_id, apply_filters('ttbm_tour_type', $type, $tour_id));
+			}
+			public static function travel_type_array(): array {
+				return array('fixed' => __('Fixed Dates', 'tour-booking-manager'), 'particular' => __('Particular Dates', 'tour-booking-manager'), 'repeated' => __('Repeated Dates', 'tour-booking-manager'));
+			}
+			public static function travel_repeat_array(): array {
+				return array('1' => __('Daily', 'tour-booking-manager'), '7' => __('Weekly', 'tour-booking-manager'), '30' => __('Monthly', 'tour-booking-manager'));
+			}
+			public static function get_tour_status($tour_id, $status = 'active') {
+				$tour_type = self::get_tour_type($tour_id);
+				$date_type = TTBM_Function::get_travel_type($tour_id);
+				if ($tour_type == 'general' && $date_type == 'fixed') {
+					$now = current_time('Y-m-d H:i:s');
+					$reg_end_date = self::get_reg_end_date($tour_id);
+					$end_time = gmdate('Y-m-d H:i:s', strtotime($reg_end_date));
+					$_status = strtotime($now) < strtotime($end_time) ? 'active' : 'expired';
+					$status = !empty($reg_end_date) ? $_status : 'active';
+				}
+				return $status;
+			}
+			//***********Location & Place*************************//
+			public static function get_all_location(): array {
+				$locations = TTBM_Global_Function::get_taxonomy('ttbm_tour_location');
+				$arr = array();
+				foreach ($locations as $_terms) {
+					$arr[$_terms->name] = $_terms->name;
+				}
+				return $arr;
+			}
+			public static function get_full_location($tour_id): string {
+				$city = trim( (string) TTBM_Global_Function::get_post_info($tour_id, 'ttbm_location_name') );
+				$country = trim( (string) self::get_country($tour_id) );
+				$full_location = $city && $country ? $city . ', ' . $country : '';
+				$full_location = $city && !$country ? $city : $full_location;
+				$full_location = is_array($full_location) ? '' : $full_location;
+				return !$city && $country ? $country : $full_location;
+			}
+			public static function get_country($tour_id) {
+				$location = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_location_name');
+				$country = '';
+				if ($location) {
+					$term = self::get_term_by_name_cached($location, 'ttbm_tour_location');
+					$name = $term && $term->term_id ? get_term_meta($term->term_id, 'ttbm_country_location') : array();
+					if (is_array($name) && sizeof($name) > 0) {
+						$country = $name[0];
+					}
+				}
+				return $country;
+			}
+			public static function get_all_country(): array {
+				$locations = TTBM_Global_Function::get_taxonomy('ttbm_tour_location');
+				$country = [];
+				if (sizeof($locations) > 0) {
+					foreach ($locations as $location) {
+						$name = get_term_meta($location->term_id, 'ttbm_country_location');
+						if (is_array($name) && sizeof($name) > 0) {
+							$country[] = $name[0];
+						}
+					}
+				}
+				return array_unique($country);
+			}
+			public static function filter_valid_tour_ids( $tour_ids, $exclude_id = 0 ) {
+				$exclude_id = (int) $exclude_id;
+				$tour_ids   = array_filter( array_map( 'absint', (array) $tour_ids ) );
+				$valid      = array();
+				foreach ( $tour_ids as $id ) {
+					if ( ! $id || $id === $exclude_id ) {
+						continue;
+					}
+					if ( get_post_type( $id ) === self::get_cpt_name() && get_post_status( $id ) === 'publish' ) {
+						$valid[] = $id;
+					}
+				}
+				return array_values( array_unique( $valid ) );
+			}
+			public static function get_auto_related_tour_ids( $tour_id, $limit = 12 ) {
+				$tour_id = (int) $tour_id;
+				if ( ! $tour_id ) {
+					return array();
+				}
+				$limit     = max( 1, (int) $limit );
+				$base_args = array(
+					'post_type'      => self::get_cpt_name(),
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+					'post_status'    => 'publish',
+					'post__not_in'   => array( $tour_id ),
+					'orderby'        => 'date',
+					'order'          => 'DESC',
+					'no_found_rows'  => true,
+				);
+				$related_ids = array();
+
+				$location_name = TTBM_Global_Function::get_post_info( $tour_id, 'ttbm_location_name' );
+				if ( $location_name ) {
+					$related_ids = self::merge_unique_ids(
+						$related_ids,
+						self::filter_valid_tour_ids(
+							get_posts(
+								array_merge(
+									$base_args,
+									array(
+										'meta_query' => array(
+											array(
+												'key'     => 'ttbm_location_name',
+												'value'   => $location_name,
+												'compare' => 'LIKE',
+											),
+										),
+									)
+								),
+								$tour_id
+							)
+						)
+					);
+				}
+				$location_term_ids = wp_get_post_terms( $tour_id, 'ttbm_tour_location', array( 'fields' => 'ids' ) );
+				if ( ( empty( $location_term_ids ) || is_wp_error( $location_term_ids ) ) && $location_name ) {
+					$location_term = get_term_by( 'name', $location_name, 'ttbm_tour_location' );
+					if ( $location_term && ! is_wp_error( $location_term ) ) {
+						$location_term_ids = array( (int) $location_term->term_id );
+					}
+				}
+				if ( ! empty( $location_term_ids ) && ! is_wp_error( $location_term_ids ) ) {
+					$related_ids = self::merge_unique_ids(
+						$related_ids,
+						self::filter_valid_tour_ids(
+							get_posts(
+								array_merge(
+									$base_args,
+									array(
+										'tax_query' => array(
+											array(
+												'taxonomy' => 'ttbm_tour_location',
+												'field'    => 'term_id',
+												'terms'    => $location_term_ids,
+											),
+										),
+									)
+								),
+								$tour_id
+							)
+						)
+					);
+				}
+
+				$activity_ids = array_filter(
+					array_map(
+						'absint',
+						(array) TTBM_Global_Function::get_post_info( $tour_id, 'ttbm_tour_activities', array() )
+					)
+				);
+				$activity_terms = wp_get_post_terms( $tour_id, 'ttbm_tour_activities', array( 'fields' => 'ids' ) );
+				if ( ! empty( $activity_terms ) && ! is_wp_error( $activity_terms ) ) {
+					$activity_ids = array_unique( array_merge( $activity_ids, array_map( 'absint', $activity_terms ) ) );
+				}
+				if ( ! empty( $activity_ids ) ) {
+					$activity_meta_query = array( 'relation' => 'OR' );
+					foreach ( $activity_ids as $activity_id ) {
+						$activity_meta_query[] = array(
+							'key'     => 'ttbm_tour_activities',
+							'value'   => '"' . $activity_id . '"',
+							'compare' => 'LIKE',
+						);
+					}
+					$related_ids = self::merge_unique_ids(
+						$related_ids,
+						self::filter_valid_tour_ids(
+							get_posts(
+								array_merge(
+									$base_args,
+									array(
+										'meta_query' => $activity_meta_query,
+									)
+								)
+							),
+							$tour_id
+						)
+					);
+					$related_ids = self::merge_unique_ids(
+						$related_ids,
+						self::filter_valid_tour_ids(
+							get_posts(
+								array_merge(
+									$base_args,
+									array(
+										'tax_query' => array(
+											array(
+												'taxonomy' => 'ttbm_tour_activities',
+												'field'    => 'term_id',
+												'terms'    => $activity_ids,
+											),
+										),
+									)
+								)
+							),
+							$tour_id
+						)
+					);
+				}
+
+				$category_ids = wp_get_post_terms( $tour_id, 'ttbm_tour_cat', array( 'fields' => 'ids' ) );
+				if ( ! empty( $category_ids ) && ! is_wp_error( $category_ids ) ) {
+					$related_ids = self::merge_unique_ids(
+						$related_ids,
+						self::filter_valid_tour_ids(
+							get_posts(
+								array_merge(
+									$base_args,
+									array(
+										'tax_query' => array(
+											array(
+												'taxonomy' => 'ttbm_tour_cat',
+												'field'    => 'term_id',
+												'terms'    => $category_ids,
+											),
+										),
+									)
+								),
+								$tour_id
+							)
+						)
+					);
+				}
+
+				return array_slice( $related_ids, 0, $limit );
+			}
+			public static function merge_unique_ids( ...$lists ) {
+				$merged = array();
+				foreach ( $lists as $list ) {
+					foreach ( (array) $list as $id ) {
+						$id = (int) $id;
+						if ( $id && ! in_array( $id, $merged, true ) ) {
+							$merged[] = $id;
+						}
+					}
+				}
+				return $merged;
+			}
+			public static function get_related_tour_ids( $tour_id, $limit = 12 ) {
+				$tour_id = (int) self::post_id_multi_language( $tour_id );
+				if ( ! $tour_id || TTBM_Global_Function::get_post_info( $tour_id, 'ttbm_display_related', 'on' ) === 'off' ) {
+					return array();
+				}
+				$assigned = self::filter_valid_tour_ids(
+					TTBM_Global_Function::get_post_info( $tour_id, 'ttbm_related_tour', array() ),
+					$tour_id
+				);
+				if ( ! empty( $assigned ) ) {
+					return array_slice( $assigned, 0, (int) $limit );
+				}
+				if ( TTBM_Global_Function::get_post_info( $tour_id, 'ttbm_auto_related_tour', 'on' ) === 'off' ) {
+					return array();
+				}
+				return self::get_auto_related_tour_ids( $tour_id, $limit );
+			}
+			//*******************************//
+			public static function get_hotel_list($tour_id) {
+				$type = self::get_tour_type($tour_id);
+				$hotel_lists = array();
+				if ($type == 'hotel') {
+					$hotel_lists = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_hotels', $hotel_lists);
+				}
+				return $hotel_lists;
+			}
+			//**********************//
+			public static function get_feature_list($tour_id, $name): array {
+				$services = TTBM_Global_Function::get_post_info($tour_id, $name);
+				if (is_array($services) && sizeof($services) > 0) {
+					$terms = array();
+					foreach ($services as $service) {
+						if (is_array($service) && array_key_exists('name', $service)) {
+							$terms[] = $service['name'];
+						} else {
+							if (is_array($service)) {
+								$terms[] = $service['ttbm_feature_item'];
+							} else {
+								$terms[] = $service;
+							}
+						}
+					}
+					$services = $terms;
+				} else {
+					$services = self::feature_id_to_array($services);
+				}
+				return $services;
+			}
+			public static function feature_id_to_array($ids): array {
+				$ids = $ids ? explode(',', $ids) : array();
+				$data = array();
+				foreach ($ids as $id) {
+					if ($id) {
+						$term = get_term_by('id', $id, 'ttbm_tour_features_list');
+						if ($term) {
+							$data[] = $term->name;
+						}
+					}
+				}
+				return $data;
+			}
+			public static function feature_array_to_string($features): string {
+				$ids = '';
+				if (sizeof($features) > 0) {
+					foreach ($features as $feature) {
+						$term = self::get_term_by_name_cached($feature, 'ttbm_tour_features_list');
+						if ($term) {
+							$ids = $ids ? $ids . ',' . $term->term_id : $term->term_id;
+						}
+					}
+				}
+				return $ids;
+			}
+			public static function check_exit_feature($features, $features_name): bool {
+				if (sizeof($features) > 0) {
+					foreach ($features as $feature) {
+						if ($feature == $features_name) {
+							return true;
+						}
+					}
+				}
+				return false;
+			}
+			/********************/
+			public static function get_tag_id($tags) {
+				if (is_array($tags)) {
+					$term_id = '';
+					foreach ($tags as $tag) {
+						$term_id = $term_id ? $term_id . ',' . $tag->term_id : $tag->term_id;
+					}
+					$tags = $term_id;
+				}
+				return $tags;
+			}
+			//*******************************//
+			public static function get_taxonomy_name_to_id_string_old($tour_id, $key, $taxonomy) {
+				$infos = TTBM_Global_Function::get_post_info($tour_id, $key, array());
+				$id = '';
+				if ($infos && sizeof($infos) > 0) {
+					foreach ($infos as $info) {
+						$term = get_term_by('name', $info, $taxonomy);
+						if ($term && $term->term_id) {
+							$id = $id ? $id . ',' . $term->term_id : $term->term_id;
+						}
+					}
+				}
+				return $id;
+			}
+			public static function get_taxonomy_name_to_id_string($tour_id, $key, $taxonomy) {
+				$infos = TTBM_Global_Function::get_post_info($tour_id, $key, array());
+				$id = '';
+				if ($infos && sizeof($infos) > 0) {
+					foreach ($infos as $info) {
+						$id = $id . ',' . $info;
+					}
+					$id = ltrim($id, ',');
+				}
+				return $id;
+			}
+			public static function get_taxonomy_id_string($tour_id, $taxonomy) {
+				$infos = get_the_terms($tour_id, $taxonomy);
+				$id = '';
+				if (is_array($infos) && sizeof($infos) > 0) {
+					foreach ($infos as $info) {
+						$id = $id ? $id . ',' . $info->term_id : $info->term_id;
+					}
+				}
+				return $id;
+			}
+			public static function get_taxonomy_string($tour_id, $taxonomy) {
+				$infos = get_the_terms($tour_id, $taxonomy);
+				$id = '';
+				if (is_array($infos) && sizeof($infos) > 0) {
+					foreach ($infos as $info) {
+						$id = $id ? $id . ' , ' . $info->name : $info->name;
+					}
+				}
+				return $id;
+			}
+			//************************//
+			public static function get_settings($key, $option_name, $default = '') {
+				$options = get_option($option_name);
+				return self::get_ttbm_settings($options, $key, $default);
+			}
+			public static function get_ttbm_settings($options, $key, $default = '') {
+				if (isset($options[$key]) && $options[$key]) {
+					$default = $options[$key];
+				}
+				return $default;
+			}
+			public static function get_general_settings($key, $default = '') {
+				$options = get_option('ttbm_basic_gen_settings');
+				return self::get_ttbm_settings($options, $key, $default);
+			}
+			public static function get_translation_settings($key, $default = '') {
+				$options = get_option('ttbm_basic_translation_settings');
+				return self::get_ttbm_settings($options, $key, $default);
+			}
+			public static function translation_settings($key, $default = '') {
+				$options = get_option('ttbm_basic_translation_settings');
+				echo esc_html(self::get_ttbm_settings($options, $key, $default));
+			}
+			//***************************//
+			public static function get_map_api() {
+				$options = get_option('ttbm_basic_gen_settings');
+				$default = '';
+				if (isset($options['ttbm_gmap_api_key']) && $options['ttbm_gmap_api_key']) {
+					$default = $options['ttbm_gmap_api_key'];
+				}
+				return $default;
+			}
+			public static function ticket_name_text() {
+				return self::get_translation_settings('ttbm_string_ticket_name', esc_html__('Name', 'tour-booking-manager'));
+			}
+			public static function ticket_price_text() {
+				return self::get_translation_settings('ttbm_string_ticket_price', esc_html__('Price', 'tour-booking-manager'));
+			}
+			public static function ticket_qty_text() {
+				return self::get_translation_settings('ttbm_string_ticket_qty', esc_html__('Qty', 'tour-booking-manager'));
+			}
+			public static function service_name_text() {
+				return self::get_translation_settings('ttbm_string_service_name', esc_html__('Name', 'tour-booking-manager'));
+			}
+			public static function service_price_text() {
+				return self::get_translation_settings('ttbm_string_service_price', esc_html__('Price', 'tour-booking-manager'));
+			}
+			public static function service_qty_text() {
+				return self::get_translation_settings('ttbm_string_service_qty', esc_html__('Qty', 'tour-booking-manager'));
+			}
+			public static function cancellation_policy_text() {
+				return self::get_translation_settings('ttbm_string_cancellation_policy', esc_html__('Free cancellation up to 24 hours before the experience starts (local time)', 'tour-booking-manager'));
+			}
+			public static function reserve_pay_later_text() {
+				return self::get_translation_settings('ttbm_string_reserve_pay_later', esc_html__('Reserve Now and Pay Later - Secure your spot while staying flexible', 'tour-booking-manager'));
+			}
+			//*****************//
+			public static function get_cpt_name(): string {
+				return 'ttbm_tour';
+			}
+			public static function get_name() {
+				return self::get_general_settings('ttbm_travel_label', 'Tour');
+			}
+			public static function get_slug() {
+				return self::get_general_settings('ttbm_travel_slug', 'tour');
+			}
+			public static function get_icon() {
+				return self::get_general_settings('ttbm_travel_icon', 'dashicons-admin-site-alt2');
+			}
+			public static function get_category_label() {
+				return self::get_general_settings('ttbm_travel_cat_label', 'Category');
+			}
+			public static function get_category_slug() {
+				return self::get_general_settings('ttbm_travel_cat_slug', 'travel-category');
+			}
+			public static function get_organizer_label() {
+				return self::get_general_settings('ttbm_travel_org_label', 'Organizer');
+			}
+			public static function get_organizer_slug() {
+				return self::get_general_settings('ttbm_travel_org_slug', 'travel-organizer');
+			}
+			//***********************//
+			public static function recurring_check($tour_id) {
+				$travel_type = self::get_travel_type($tour_id);
+				$tour_type = self::get_tour_type($tour_id);
+				if ($tour_type == 'general' && ($travel_type == 'particular' || $travel_type == 'repeated')) {
+					return true;
+				}
+				return '';
+			}
+			//******************************************************************** Remove nearly no use any where***********//
+			public static function get_post_info($tour_id, $key, $default = '') {
+				$data = get_post_meta($tour_id, $key, true) ?: $default;
+				return TTBM_Global_Function::data_sanitize($data);
+			}
+			public static function data_sanitize($data) {
+				if (is_array($data)) {
+					foreach ($data as &$value) {
+						if (is_array($value)) {
+							$value = self::data_sanitize($value);
+						} else {
+							$value = sanitize_text_field($value);
+						}
+					}
+					return $data;
+				}
+				if (is_string($data) && !empty($data)) {
+					$unserialized = @unserialize($data, ['allowed_classes' => false]);
+					if ($unserialized !== false || $data === 'b:0;') {
+						return self::data_sanitize($unserialized);
+					}
+					return sanitize_text_field($data);
+				}
+				return $data;
+			}
+			public static function get_image_url($post_id = '', $image_id = '', $size = 'full') {
+				if ($post_id) {
+					$image_id = TTBM_Global_Function::get_post_info($post_id, 'ttbm_list_thumbnail');
+					$image_id = $image_id ?: get_post_thumbnail_id($post_id);
+				}
+				return wp_get_attachment_image_url($image_id, $size);
+			}
+			public static function check_time($tour_id, $date): bool {
+				$time_slots = self::get_time($tour_id, $date);
+				if ($time_slots) {
+					if (is_array($time_slots)) {
+						if (sizeof($time_slots) > 0) {
+							return true;
+						} else {
+							return false;
+						}
+					} else {
+						return true;
+					}
+				}
+				return false;
+			}
+			public static function price_convert_raw($price) {
+				$price = wp_strip_all_tags($price);
+				$price = str_replace(get_woocommerce_currency_symbol(), '', $price);
+				$price = str_replace(wc_get_price_thousand_separator(), 't_s', $price);
+				$price = str_replace(wc_get_price_decimal_separator(), 'd_s', $price);
+				$price = str_replace('t_s', '', $price);
+				$price = str_replace('d_s', '.', $price);
+				return max($price, 0);
+			}
+			public static function get_active_tours($args) {
+				$tours = array();
+				$query = new WP_Query($args);
+				if ($query->have_posts()) {
+					/*
+					 * This pass asks every candidate tour for its dates and remaining
+					 * seats, so warm both caches in one query each first -- otherwise the
+					 * availability check alone costs a booking query per ticket type per
+					 * tour before a single card has been rendered.
+					 */
+					$candidate_ids = wp_list_pluck($query->posts, 'ID');
+					if (!empty($candidate_ids)) {
+						update_meta_cache('post', $candidate_ids);
+						self::prime_sold_cache($candidate_ids);
+					}
+					while ($query->have_posts()) {
+						$query->the_post();
+						$tour_id = '';
+						$tour_id = get_the_ID();
+						$tour_id = TTBM_Function::post_id_multi_language($tour_id);
+						$dates = TTBM_Function::get_date($tour_id);
+						$ticket_lists = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_ticket_type', array());
+						$available_seat = TTBM_Function::get_total_available($tour_id);
+						if (is_array($dates) && count($dates)) {
+							if ($available_seat > 0 && sizeof($ticket_lists) > 0) {
+								$tours[] = $tour_id;
+							}
+						}
+					}
+					wp_reset_postdata();
+					if (count($tours)) {
+						$args['post__in'] = $tours;
+						$args['orderby'] = 'post__in';
+						return new WP_Query($args);
+					}
+					return $query;
+				}
+				return $query;
+			}
+			public static function esc_html($string): string {
+				$allow_attr = array(
+					'input' => ['type' => [], 'class' => [], 'id' => [], 'name' => [], 'value' => [], 'size' => [], 'placeholder' => [], 'min' => [], 'max' => [], 'checked' => [], 'required' => [], 'disabled' => [], 'readonly' => [], 'step' => [], 'data-default-color' => [], 'data-price' => [],],
+					'p' => ['class' => []],
+					'img' => ['class' => [], 'id' => [], 'src' => [], 'alt' => [],],
+					'fieldset' => ['class' => []],
+					'label' => ['for' => [], 'class' => []],
+					'select' => ['class' => [], 'name' => [], 'id' => [], 'data-price' => [],],
+					'option' => ['class' => [], 'value' => [], 'id' => [], 'selected' => [],],
+					'textarea' => ['class' => [], 'rows' => [], 'id' => [], 'cols' => [], 'name' => [],],
+					'h2' => ['class' => [], 'id' => [],],
+					'a' => ['class' => [], 'id' => [], 'href' => [],],
+					'div' => ['class' => [], 'id' => [], 'data-ticket-type-name' => [],],
+					'span' => ['class' => [], 'id' => [], 'data' => [], 'data-input-change' => [],],
+					'i' => ['class' => [], 'id' => [], 'data' => [],],
+					'table' => ['class' => [], 'id' => [], 'data' => [],],
+					'tr' => ['class' => [], 'id' => [], 'data' => [],],
+					'td' => ['class' => [], 'id' => [], 'data' => [],],
+					'thead' => ['class' => [], 'id' => [], 'data' => [],],
+					'tbody' => ['class' => [], 'id' => [], 'data' => [],],
+					'th' => ['class' => [], 'id' => [], 'data' => [],],
+					'svg' => ['class' => [], 'id' => [], 'width' => [], 'height' => [], 'viewBox' => [], 'xmlns' => [],],
+					'g' => ['fill' => [],],
+					'path' => ['d' => [],],
+					'br' => array(),
+					'em' => array(),
+					'strong' => array(),
+				);
+				return wp_kses($string, $allow_attr);
+			}
+			public static function get_meta_values($meta_key = '', $post_type = 'post', $post_status = 'publish') {
+				if (empty($meta_key) || !is_string($meta_key)) {
+					return false;
+				}
+				/* The sidebar filter builder asks for the same key several times per render. */
+				$meta_cache_key = $meta_key . '|' . $post_type . '|' . $post_status;
+				if (self::cache_has('meta_values', $meta_cache_key)) {
+					return self::cache_get('meta_values', $meta_cache_key);
+				}
+				return self::cache_set('meta_values', $meta_cache_key, self::query_meta_values($meta_key, $post_type, $post_status));
+			}
+			private static function query_meta_values($meta_key, $post_type, $post_status) {
+				global $wpdb;
+				$values = $wpdb->get_col($wpdb->prepare(
+					"SELECT DISTINCT pm.meta_value FROM {$wpdb->postmeta} pm
+					INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+					WHERE pm.meta_key = %s
+					AND p.post_type = %s
+					AND p.post_status = %s
+					AND pm.meta_value IS NOT NULL
+					AND pm.meta_value != ''",
+					$meta_key,
+					$post_type,
+					$post_status
+				));
+				return $values ? $values : [];
+			}
+			public static function get_travel_analytical_data() {
+				$result_date = array();
+				$travel_args = array(
+					'post_type' => 'ttbm_tour',
+					'post_status' => 'publish',
+					'posts_per_page' => -1,
+					'orderby' => 'date',
+					'order' => 'DESC',
+				);
+				$all_travel_query = new WP_Query($travel_args);
+				$active_tour = $expired_tour = $total_price = $price_count = $average_price = 0;
+				$location_counts = array();
+				$top_destination = '';
+				if ($all_travel_query->have_posts()) {
+					while ($all_travel_query->have_posts()) {
+						$all_travel_query->the_post();
+						$travel_post_id = get_the_ID();
+						$status = TTBM_Function::get_tour_status($travel_post_id);
+						if ($status === 'active') {
+							$active_tour = $active_tour + 1;
+						} else {
+							$expired_tour = $expired_tour + 1;
+						}
+						$get_price = get_post_meta($travel_post_id, 'ttbm_travel_start_price', true);
+						if ($get_price > 0) {
+							$price_count++;
+							$total_price = $total_price + $get_price;
+						}
+						// Count locations for top destination
+						$location = get_post_meta($travel_post_id, 'ttbm_location_name', true);
+						if (!empty($location)) {
+							if (isset($location_counts[$location])) {
+								$location_counts[$location]++;
+							} else {
+								$location_counts[$location] = 1;
+							}
+						}
+					}
+				}
+				if ($price_count > 0 && $total_price > 0) {
+					$average_price = $total_price / $price_count;
+				}
+				// Find top destination
+				if (!empty($location_counts)) {
+					arsort($location_counts);
+					$top_destination = array_key_first($location_counts);
+				}
+				$all_location = TTBM_Function::get_all_location();
+				unset($all_location['']);
+				$location_count = count($all_location);
+				return array(
+					'location_count' => $location_count,
+					'average_price' => $average_price,
+					'active_tour' => $active_tour,
+					'expired_tour' => $expired_tour,
+					'top_destination' => $top_destination,
+				);
+			}
+			public static function get_top_deals_post_ids($type) {
+				$allowed_types = array('popular', 'trending', 'feature', 'deal-discount');
+				if (!in_array($type, $allowed_types)) {
+					return array();
+				}
+				$args = array(
+					'post_type' => 'ttbm_tour', // Change to your post type if needed
+					'posts_per_page' => -1,
+					'fields' => 'ids', // Only return post IDs
+					'meta_query' => array(
+						array(
+							'key' => 'ttbm_top_picks_deals',
+							'value' => $type,
+							'compare' => 'LIKE',
+						),
+					),
+				);
+				$query = new WP_Query($args);
+				return $query->posts;
+			}
+			/* Tour ids for [wptravelly-tour-list cat="..."]. Reuses the [travel-list] query so a
+			   category shows the same tours (same expired-tour rule) in both, newest first;
+			   $type optionally narrows it to one Top Picks & Deals label. */
+			public static function get_category_tour_ids($cat, $type = '') {
+				$loop = TTBM_Query::ttbm_query(-1, 'DESC', $cat);
+				$ids = wp_list_pluck($loop->posts, 'ID');
+				if ($type) {
+					$ids = array_values(array_intersect($ids, self::get_top_deals_post_ids($type)));
+				}
+				return $ids;
+			}
+			public static function get_city_place_ids_with_post_ids($num_of_places = 0) {
+				$args = [
+					'post_type' => 'ttbm_tour',
+					'posts_per_page' => -1,
+					'meta_query' => [
+						[
+							'key' => 'ttbm_hiphop_places',
+							'compare' => 'EXISTS',
+						],
+					],
+					'fields' => 'ids',
+				];
+				$query = new WP_Query($args);
+				$city_place_map = [];
+				if ($query->have_posts()) {
+					foreach ($query->posts as $post_id) {
+						$places = get_post_meta($post_id, 'ttbm_hiphop_places', true);
+						$places = maybe_unserialize($places);
+						if (is_array($places)) {
+							foreach ($places as $place) {
+								if (isset($place['ttbm_city_place_id'])) {
+									$place_id = $place['ttbm_city_place_id'];
+									if (!isset($city_place_map[$place_id])) {
+										$city_place_map[$place_id] = [];
+									}
+									if (!in_array($post_id, $city_place_map[$place_id])) {
+										$city_place_map[$place_id][] = $post_id;
+									}
+								}
+							}
+						}
+					}
+				}
+				uasort($city_place_map, function ($a, $b) {
+					return count($b) - count($a);
+				});
+				/*if ( $num_of_places > 0 ) {
+					$city_place_map = array_slice( $city_place_map, 0, $num_of_places, true );
+				}*/
+				return $city_place_map;
+			}
+			public static function get_all_activity_ids_from_posts_old($num_of_ids = 0) {
+				$query = new WP_Query(array(
+					'post_type' => 'ttbm_tour', // আপনার CPT
+					'post_status' => 'publish',
+					'posts_per_page' => -1,
+					'meta_key' => 'ttbm_tour_activities',
+					'fields' => 'ids',
+				));
+				$activity_ids = [];
+				foreach ($query->posts as $post_id) {
+					$meta_value = get_post_meta($post_id, 'ttbm_tour_activities', true);
+					if (!empty($meta_value)) {
+						// unserialize the value
+						$unserialized = maybe_unserialize($meta_value);
+						if (is_array($unserialized)) {
+							foreach ($unserialized as $activity_id) {
+								$activity_ids[] = $activity_id;
+							}
+						}
+					}
+				}
+				// FIXED: Removed excessive blank lines - 2025-01-21 by Shahnur Alam
+				$activity_ids = array_unique($activity_ids);
+				if ($num_of_ids > 0) {
+					$activity_ids = array_slice($activity_ids, 0, $num_of_ids, true);
+				}
+				return $activity_ids;
+			}
+			public static function get_all_category_with_assign_post($taxonomy) {
+				$cache_key = 'ttbm_cat_posts_' . $taxonomy;
+				$cached = get_transient($cache_key);
+				if ($cached !== false) {
+					return $cached;
+				}
+				$terms = get_terms([
+					'taxonomy' => $taxonomy,
+					'hide_empty' => true,
+				]);
+				$result = [];
+				if (!is_wp_error($terms) && !empty($terms)) {
+					$term_map = [];
+					foreach ($terms as $term) {
+						$term_map[$term->term_id] = $term;
+					}
+					global $wpdb;
+					$term_ids = array_keys($term_map);
+					$term_ids_placeholders = implode(',', array_fill(0, count($term_ids), '%d'));
+					$posts = $wpdb->get_results($wpdb->prepare(
+						"SELECT p.ID as post_id, t.term_id FROM {$wpdb->posts} p
+						INNER JOIN {$wpdb->term_relationships} tr ON tr.object_id = p.ID
+						INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
+						WHERE p.post_type = 'ttbm_tour'
+						AND p.post_status = 'publish'
+						AND tt.taxonomy = %s
+						AND tt.term_id IN ($term_ids_placeholders)",
+						$taxonomy,
+						...$term_ids
+					));
+					$term_posts = [];
+					foreach ($posts as $row) {
+						$term_posts[$row->term_id][] = $row->post_id;
+					}
+					foreach ($term_map as $term_id => $term) {
+						if (!empty($term_posts[$term_id])) {
+							$result[] = [
+								'term_id' => $term->term_id,
+								'term_name' => $term->name,
+								'term_slug' => $term->slug,
+								'term_description' => $term->description,
+								'post_ids' => $term_posts[$term_id],
+							];
+						}
+					}
+				}
+				set_transient($cache_key, $result, HOUR_IN_SECONDS);
+				return $result;
+			}
+			public static function get_all_activity_ids_from_posts($num_of_ids = 0) {
+				$query = new WP_Query(array(
+					'post_type' => 'ttbm_tour', // CPT ঠিক দিন
+					'post_status' => 'publish',
+					'posts_per_page' => -1,
+					'meta_key' => 'ttbm_tour_activities',
+					'fields' => 'ids',
+				));
+				$activity_posts = [];
+				foreach ($query->posts as $post_id) {
+					$meta_value = get_post_meta($post_id, 'ttbm_tour_activities', true);
+					if (!empty($meta_value)) {
+						$unserialized = maybe_unserialize($meta_value);
+						if (is_array($unserialized)) {
+							foreach ($unserialized as $activity_id) {
+								if (!isset($activity_posts[$activity_id])) {
+									$activity_posts[$activity_id] = [];
+								}
+								$activity_posts[$activity_id][] = $post_id;
+							}
+						}
+					}
+				}
+				// Optional: Limit number of activity IDs returned
+				/*if ($num_of_ids > 0) {
+					$activity_posts = array_slice($activity_posts, 0, $num_of_ids, true);
+				}*/
+				return $activity_posts;
+			}
+			public static function get_location_feature($taxonomy, $num_of_ids = 0) {
+				$query = new WP_Query(array(
+					'post_type' => 'ttbm_tour', // CPT ঠিক দিন
+					'post_status' => 'publish',
+					'posts_per_page' => -1,
+					'meta_key' => $taxonomy,
+					'fields' => 'ids',
+				));
+				$activity_posts = [];
+				foreach ($query->posts as $post_id) {
+					$meta_value = get_post_meta($post_id, $taxonomy, true);
+					if (!empty($meta_value)) {
+						$unserialized = maybe_unserialize($meta_value);
+						if (is_array($unserialized)) {
+							foreach ($unserialized as $activity_id) {
+								if (!isset($activity_posts[$activity_id])) {
+									$activity_posts[$activity_id] = [];
+								}
+								$activity_posts[$activity_id][] = $post_id;
+							}
+						}
+					}
+				}
+				$terms_data = [];
+				$taxonomy_name = 'ttbm_tour_features_list';
+				if (is_array($activity_posts) && !empty($activity_posts)) {
+					foreach ($activity_posts as $term_name => $post_ids) {
+						$term = get_term_by('name', $term_name, $taxonomy_name);
+						if ($term && !is_wp_error($term)) {
+							$terms_data[] = [
+								'term_id' => $term->term_id,
+								'term_name' => $term->name,
+								'term_slug' => $term->slug,
+								'term_description' => $term->description,
+								'post_ids' => $post_ids,
+							];
+						}
+					}
+				}
+				return $terms_data;
+			}
+			public static function ttbm_get_term_data($term_type, $term_ids = []) {
+				$args = [
+					'taxonomy' => $term_type,
+					'hide_empty' => false,
+				];
+				if (!empty($term_ids)) {
+					$args['include'] = $term_ids;
+				}
+				return get_terms($args);
+			}
+		}
+		new TTBM_Function();
+	}
+	if (!function_exists('mep_esc_html')) {
+		function mep_esc_html($string): string {
+			$allow_attr = array(
+				'input' => [
+					'type' => [],
+					'class' => [],
+					'id' => [],
+					'name' => [],
+					'value' => [],
+					'size' => [],
+					'placeholder' => [],
+					'min' => [],
+					'max' => [],
+					'checked' => [],
+					'required' => [],
+					'disabled' => [],
+					'readonly' => [],
+					'step' => [],
+					'data-default-color' => [],
+					'data-price' => [],
+				],
+				'p' => ['class' => [], 'style' => []],
+				'img' => ['class' => [], 'id' => [], 'src' => [], 'alt' => [], 'style' => []],
+				'fieldset' => ['class' => [], 'style' => []],
+				'label' => ['for' => [], 'class' => [], 'style' => []],
+				'select' => [
+					'class' => [],
+					'name' => [],
+					'id' => [],
+					'data-price' => [],
+					'style' => [],
+				],
+				'option' => [
+					'class' => [],
+					'value' => [],
+					'id' => [],
+					'selected' => [],
+					'style' => [],
+				],
+				'textarea' => [
+					'class' => [],
+					'rows' => [],
+					'id' => [],
+					'cols' => [],
+					'name' => [],
+					'style' => []
+				],
+				'h2' => ['class' => [], 'id' => [], 'style' => []],
+				'a' => ['class' => [], 'id' => [], 'href' => [], 'style' => []],
+				'div' => [
+					'class' => [], 'style' => [],
+					'id' => [],
+					'data-ticket-type-name' => [],
+				],
+				'span' => [
+					'class' => [], 'style' => [],
+					'id' => [],
+					'data' => [],
+				],
+				'i' => [
+					'class' => [], 'style' => [],
+					'id' => [],
+					'data' => [],
+				],
+				'table' => [
+					'class' => [], 'style' => [],
+					'id' => [],
+					'data' => [],
+				],
+				'tr' => [
+					'class' => [], 'style' => [],
+					'id' => [],
+					'data' => [],
+				],
+				'td' => [
+					'class' => [], 'style' => [],
+					'id' => [],
+					'data' => [],
+				],
+				'thead' => [
+					'class' => [], 'style' => [],
+					'id' => [],
+					'data' => [],
+				],
+				'tbody' => [
+					'class' => [], 'style' => [],
+					'id' => [],
+					'data' => [],
+				],
+				'th' => [
+					'class' => [], 'style' => [],
+					'id' => [],
+					'data' => [],
+				],
+				'svg' => [
+					'class' => [], 'style' => [],
+					'id' => [],
+					'width' => [],
+					'height' => [],
+					'viewBox' => [],
+					'xmlns' => [],
+				],
+				'g' => [
+					'fill' => [], 'style' => [],
+				],
+				'path' => [
+					'd' => [], 'style' => [],
+				],
+				'br' => array(),
+				'em' => array(),
+				'strong' => array(),
+			);
+			return wp_kses($string, $allow_attr);
+		}
+	}
+	function ttbm_elementor_get_tax_term($tax, $type = 'id'): array {
+		$terms = get_terms(array(
+			'taxonomy' => $tax,
+			'hide_empty' => false,
+		));
+		$list = array('0' => __('Show All', 'tour-booking-manager'));
+		foreach ($terms as $_term) {
+			if ($type == 'id') {
+				$list[$_term->term_id] = $_term->name;
+			} else {
+				$list[$_term->slug] = $_term->name;
+			}
+		}
+		return $list;
+	}
+	function ttbm_get_coutnry_arr(): array {
+		$countries = array(
+			"Afghanistan",
+			"Albania",
+			"Algeria",
+			"American Samoa",
+			"Andorra",
+			"Angola",
+			"Anguilla",
+			"Antarctica",
+			"Antigua and Barbuda",
+			"Argentina",
+			"Armenia",
+			"Aruba",
+			"Australia",
+			"Austria",
+			"Azerbaijan",
+			"Bahamas",
+			"Bahrain",
+			"Bangladesh",
+			"Barbados",
+			"Belarus",
+			"Belgium",
+			"Belize",
+			"Benin",
+			"Bermuda",
+			"Bhutan",
+			"Bolivia",
+			"Bosnia and Herzegowina",
+			"Botswana",
+			"Bouvet Island",
+			"Brazil",
+			"British Indian Ocean Territory",
+			"Brunei Darussalam",
+			"Bulgaria",
+			"Burkina Faso",
+			"Burundi",
+			"Cambodia",
+			"Cameroon",
+			"Canada",
+			"Cape Verde",
+			"Cayman Islands",
+			"Central African Republic",
+			"Chad",
+			"Chile",
+			"China",
+			"Christmas Island",
+			"Cocos (Keeling) Islands",
+			"Colombia",
+			"Comoros",
+			"Congo",
+			"Congo, the Democratic Republic of the",
+			"Cook Islands",
+			"Costa Rica",
+			"Cote d'Ivoire",
+			"Croatia (Hrvatska)",
+			"Cuba",
+			"Cyprus",
+			"Czech Republic",
+			"Denmark",
+			"Djibouti",
+			"Dominica",
+			"Dominican Republic",
+			"East Timor",
+			"Ecuador",
+			"Egypt",
+			"El Salvador",
+			"Equatorial Guinea",
+			"Eritrea",
+			"Estonia",
+			"Ethiopia",
+			"Falkland Islands (Malvinas)",
+			"Faroe Islands",
+			"Fiji",
+			"Finland",
+			"France",
+			"France Metropolitan",
+			"French Guiana",
+			"French Polynesia",
+			"French Southern Territories",
+			"Gabon",
+			"Gambia",
+			"Georgia",
+			"Germany",
+			"Ghana",
+			"Gibraltar",
+			"Greece",
+			"Greenland",
+			"Grenada",
+			"Guadeloupe",
+			"Guam",
+			"Guatemala",
+			"Guinea",
+			"Guinea-Bissau",
+			"Guyana",
+			"Haiti",
+			"Heard and Mc Donald Islands",
+			"Holy See (Vatican City State)",
+			"Honduras",
+			"Hong Kong",
+			"Hungary",
+			"Iceland",
+			"India",
+			"Indonesia",
+			"Iran (Islamic Republic of)",
+			"Iraq",
+			"Ireland",
+			"Israel",
+			"Italy",
+			"Jamaica",
+			"Japan",
+			"Jordan",
+			"Kazakhstan",
+			"Kenya",
+			"Kiribati",
+			"Korea, Democratic People's Republic of",
+			"Korea, Republic of",
+			"Kuwait",
+			"Kyrgyzstan",
+			"Lao, People's Democratic Republic",
+			"Latvia",
+			"Lebanon",
+			"Lesotho",
+			"Liberia",
+			"Libyan Arab Jamahiriya",
+			"Liechtenstein",
+			"Lithuania",
+			"Luxembourg",
+			"Macau",
+			"Macedonia, The Former Yugoslav Republic of",
+			"Madagascar",
+			"Malawi",
+			"Malaysia",
+			"Maldives",
+			"Mali",
+			"Malta",
+			"Marshall Islands",
+			"Martinique",
+			"Mauritania",
+			"Mauritius",
+			"Mayotte",
+			"Mexico",
+			"Micronesia, Federated States of",
+			"Moldova, Republic of",
+			"Monaco",
+			"Mongolia",
+			"Montserrat",
+			"Morocco",
+			"Mozambique",
+			"Myanmar",
+			"Namibia",
+			"Nauru",
+			"Nepal",
+			"Netherlands",
+			"Netherlands Antilles",
+			"New Caledonia",
+			"New Zealand",
+			"Nicaragua",
+			"Niger",
+			"Nigeria",
+			"Niue",
+			"Norfolk Island",
+			"Northern Mariana Islands",
+			"Norway",
+			"Oman",
+			"Pakistan",
+            "Palestine",
+			"Palau",
+			"Panama",
+			"Papua New Guinea",
+			"Paraguay",
+			"Peru",
+			"Philippines",
+			"Pitcairn",
+			"Poland",
+			"Portugal",
+			"Puerto Rico",
+			"Qatar",
+			"Reunion",
+			"Romania",
+			"Russian Federation",
+			"Rwanda",
+			"Saint Kitts and Nevis",
+			"Saint Lucia",
+			"Saint Vincent and the Grenadines",
+			"Samoa",
+			"San Marino",
+			"Sao Tome and Principe",
+			"Saudi Arabia",
+			"Senegal",
+			"Seychelles",
+			"Sierra Leone",
+			"Singapore",
+			"Slovakia (Slovak Republic)",
+			"Slovenia",
+			"Solomon Islands",
+			"Somalia",
+			"South Africa",
+			"South Georgia and the South Sandwich Islands",
+			"Spain",
+			"Sri Lanka",
+			"St. Helena",
+			"St. Pierre and Miquelon",
+			"Sudan",
+			"Suriname",
+			"Svalbard and Jan Mayen Islands",
+			"Swaziland",
+			"Sweden",
+			"Switzerland",
+			"Syrian Arab Republic",
+			"Taiwan, Province of China",
+			"Tajikistan",
+			"Tanzania, United Republic of",
+			"Thailand",
+			"Togo",
+			"Tokelau",
+			"Tonga",
+			"Trinidad and Tobago",
+			"Tunisia",
+			"Turkey",
+			"Turkmenistan",
+			"Turks and Caicos Islands",
+			"Tuvalu",
+			"Uganda",
+			"Ukraine",
+			"United Arab Emirates",
+			"United Kingdom",
+			"United States",
+			"United States Minor Outlying Islands",
+			"Uruguay",
+			"Uzbekistan",
+			"Vanuatu",
+			"Venezuela",
+			"Vietnam",
+			"Virgin Islands (British)",
+			"Virgin Islands (U.S.)",
+			"Wallis and Futuna Islands",
+			"Western Sahara",
+			"Yemen",
+			"Yugoslavia",
+			"Zambia",
+			"Zimbabwe"
+		);
+		$arr = array(
+			'' => esc_html__('Please Select a Country', 'tour-booking-manager')
+		);
+		foreach ($countries as $_terms) {
+			$arr[$_terms] = $_terms;
+		}
+		return $arr;
+	}
+

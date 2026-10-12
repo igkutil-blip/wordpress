@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A – pomoćnik za kopiju
  * Description:       SAMO ZA KOPIJU STRANICE (staging). Sve mailove kopije preusmjerava na jednu adresu (ili ih blokira). Claudeu omogućuje da preko REST API-ja postavlja i ažurira naše dodatke (plan-a-*), pokreće našu automatiku i čita zapis grešaka. Na srd-plan-a.hr odbija sve.
- * Version:           1.2.0
+ * Version:           1.3.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -190,7 +190,7 @@ final class Plan_A_Pomocnik {
 		$ok = array( __CLASS__, 'allowed' );
 		register_rest_route( self::NS, '/status', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'status' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/plugin', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'install' ), 'permission_callback' => $ok ) );
-		register_rest_route( self::NS, '/plugin/(?P<slug>plan-a-[a-z0-9-]+)/(?P<do>activate|deactivate)', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'toggle' ), 'permission_callback' => $ok ) );
+		register_rest_route( self::NS, '/plugin/(?P<slug>plan-a-[a-z0-9-]+|tour-booking-manager)/(?P<do>activate|deactivate)', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'toggle' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/cron', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'cron' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/log', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'log' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/meta/(?P<id>\d+)', array(

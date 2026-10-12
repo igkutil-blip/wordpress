@@ -1,12 +1,40 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
 
-== Faza 2 (ova verzija) ==
+== Faza 3 (ova verzija) ==
+
+Stranica izleta, prijava i narudžbe rade i kad je WpTravelly isključen. Dok je WpTravelly
+uključen, on ima prednost i sve radi kao dosad (ovaj dio se tada uopće ne učitava).
+
+U mapi ttbm/ je skraćena kopija WpTravellyja 2.3.4 (GPL, mage-people.com), samo ono što
+Plan A koristi:
+* vrste sadržaja i taksonomije s istim imenima i adresama (/planinarenje-i-avantura/…);
+* stranica izleta s predloškom „smart”: isti HTML i CSS kao kod WpTravellyja (galerija, info
+  kartice, opis, uključeno/isključeno, aktivnosti, Važno, FAQ, prijava, Zašto s nama, upit,
+  vodiči, „Odaberi sljedeću avanturu”), isti tekstovi i prijevodi (domena tour-booking-manager);
+* prijava u WooCommerce košaricu i narudžba s istim podacima (_ttbm_id, _ttbm_date,
+  _ttbm_ticket_info, _ttbm_service_info …), nakon „Rezervirajte” ravno na blagajnu;
+* zapisi ttbm_booking (po osobi) i ttbm_service_booking, promjena stanja narudžbe i kuka
+  ttbm_wc_order_status_change, pa se slobodna mjesta i „Popunjeno” računaju isto;
+* klase TTBM_Function, TTBM_Global_Function, TTBM_Filter_Pagination i konstante
+  TTBM_PLUGIN_DIR/URL/VERSION pod istim imenima (za naše dodatke);
+* skriveni WooCommerce proizvod za nove izlete, upiti („Pošaljite upit”) s popisom u adminu,
+  klasični uređivač za izlete, „Duplicate”, HTML oblik mailova (kao WpTravelly), dnevno
+  osvježavanje datuma izleta, bočna traka stranice izleta;
+* stari WpTravellyjevi kratki kodovi ([travel-list] i sl.) prikazuju naš popis izleta
+  ([plan-a-izleti]), a hotelski ne prikazuju ništa.
+
+Namjerno izostavljeno: popis želja (srce na karticama), hoteli, WpTravellyjeve postavke,
+vlastita blagajna, tražilica i ostali kratki kodovi, prikupljanje podataka o korištenju.
+
+Povratak: WpTravelly se može ponovno uključiti bilo kad (podaci su isti) i odmah preuzima.
+
+== Faza 2 ==
 
 Obrazac za uređivanje izleta na hrvatskom umjesto WpTravellyjevog. Sprema iste podatke
 kao WpTravelly, pa WpTravellyjeva stranica izleta, prijava i naši dodaci rade bez promjena.
@@ -29,6 +57,9 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.3.0 =
+* Faza 3: stranica izleta, prijava i narudžbe bez WpTravellyja (kad je on isključen).
 
 = 0.2.0 =
 * Faza 2: obrazac za uređivanje izleta.

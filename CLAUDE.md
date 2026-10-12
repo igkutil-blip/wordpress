@@ -27,7 +27,8 @@ prvo predloži tekstualno, kad to traži. Shortcodeovi i HTML idu u Flatsome HTM
   Alati → Plan A – mailovi kopije (izvorni primatelji u naslovu); bez upisane adrese sve blokira.
   Pomoćnik se na kopiji nikad ne isključuje. Disable Emails se više ne koristi (blokirao bi i preusmjerene mailove).
 - Na kopiji je dodatak **plan-a-pomocnik** (grana `prijave`): REST `PROBA_URL/wp-json/plan-a-pomocnik/v1/`
-  (`status`, `mail`, `mail/test`, `plugin` – postavljanje našeg zipa, `plugin/{slug}/activate|deactivate`, `cron`, `log`,
+  (`status`, `mail`, `mail/test`, `plugin` – postavljanje našeg zipa, `plugin/{slug}/activate|deactivate` – i za
+  `tour-booking-manager` (WpTravelly), `cron`, `log`,
   `meta/{id}`, `option/{ime}`), prijava `PROBA_WP_USER` + `PROBA_WP_APP_PASSWORD`. Na živoj stranici odbija sve.
 - Iz ove sesije internet ide samo preko HTTPS-a (FTP/SSH ne rade).
 - Kopija koristi **kopije Google tablica** („Kopija datoteke Članovi Plan A nova” i
@@ -58,10 +59,15 @@ Dokument s popisom i planom: https://claude.ai/code/artifact/e688755a-5ea4-46bb-
 2. **Obrazac za uređivanje izleta** – gotovo (0.2.0). Sprema iste podatke kao WpTravelly (`ttbm_*`),
    zaključava termine/karte/usluge s prijavama, gasi WpTravellyjev obrazac i automatsko spremanje na
    ekranu izleta, vraća standardne WordPressove okvire, „Kopiraj izlet”.
-3. **Stranica izleta i prijava bez WpTravellyja** – sljedeće. Isti izgled kao sada; prijava u WooCommerce
-   košaricu s istim podacima u narudžbi (`_ttbm_id`, `_ttbm_date`, `_ttbm_ticket_info`,
-   `_ttbm_service_info`); zapisi `ttbm_booking` / `ttbm_service_booking` za brojanje mjesta;
-   zamjenske klase `TTBM_Function` i dr. pod istim imenima jer ih koriste naši dodaci.
+3. **Stranica izleta i prijava bez WpTravellyja** – gotovo (0.3.0). Mapa `plan-a-prijave/ttbm/` je skraćena
+   kopija WpTravellyja 2.3.4 (isti HTML/CSS/JS, klase `TTBM_*`, kuke, tekstovi u domeni `tour-booking-manager`),
+   učitava se samo kad je WpTravelly isključen; dok je uključen, on ima prednost. Provjereno lokalno
+   (WordPress + SQLite + WooCommerce + WpTravelly s GitHuba u privremenoj mapi): HTML stranica izleta jednak
+   (osim namjerno izbačenog srca za popis želja), ista narudžba (`_ttbm_*`), isti `ttbm_booking`/
+   `ttbm_service_booking`, ista slobodna mjesta i promjena stanja, isti ispis naših dodataka.
+   Važno: WpTravelly svim mailovima stavlja HTML oblik (`wp_mail_content_type`) – zadržano.
+   Stari WpTravellyjevi kratki kodovi (`[travel-list]` …) prikazuju `[plan-a-izleti]`.
+   Izvorni kod WpTravellyja: `github.com/magepeopleteam/tour-booking-manager` (2.3.4 = commit prije „Bump to 2.3.5”).
 4. **Usporedni rad na kopiji stranice.**
 5. **Prelazak** (mjesec dogovoriti s korisnikom); WpTravelly ostaje instaliran za povratak.
 
