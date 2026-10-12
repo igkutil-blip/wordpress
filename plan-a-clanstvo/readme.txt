@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.14.7
+Stable tag: 1.14.8
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.14.8 =
+* Mail s ostatkom za drugu ratu (i podsjetnik): 2D kod je ugrađen u sam mail, pa se vidi u tekstu (do sada je slika na stranici obrisana odmah nakon slanja, pa se u mailu nije prikazivala, nego samo kao privitak).
 
 = 1.14.7 =
 * Kvačica „Otkazao” u tablici agencije: kupac dobiva mail o otkazivanju (cijela prijava ili pojedini sudionik), a za pojedinog sudionika i mi kopiju (za cijelu narudžbu nama i dalje javlja WooCommerce). Ako je bilo uplaćeno, u mailu piše da ćemo se javiti oko povrata.

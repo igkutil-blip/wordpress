@@ -410,7 +410,9 @@ final class Plan_A_Clanstvo_Agency {
 			$table .= '<tr><td style="padding:5px 10px 5px 0;color:#5f6b77;white-space:nowrap">' . esc_html( $k ) . '</td><td style="padding:5px 0;font-weight:bold">' . esc_html( $v ) . '</td></tr>';
 		}
 		$table .= '</table>';
-		$img    = $code && $code['url'] ? '<img src="' . esc_url( $code['url'] ) . '" alt="2D kod za uplatu druge rate" style="display:block;width:100%;max-width:420px;height:auto;margin:0 auto 14px">' : '';
+		// 2D kod ugrađen u mail: datoteka se nakon slanja briše, pa poveznica na stranicu ne bi radila.
+		$src    = $code && $code['path'] ? Plan_A_Clanstvo_Mail::embed( $code['path'], 'pac2d' ) : ( $code['url'] ?? '' );
+		$img    = $src ? '<img src="' . esc_attr( $src ) . '" alt="2D kod za uplatu druge rate" style="display:block;width:100%;max-width:420px;height:auto;margin:0 auto 14px">' : '';
 		$intro  = 'first' === $kind
 			? 'Primili smo <strong>uplatu prve rate</strong> za tvoju prijavu. Hvala!'
 			: 'podsjećamo te da <strong>druga rata</strong> za tvoj izlet još nije uplaćena.';
@@ -420,10 +422,9 @@ final class Plan_A_Clanstvo_Agency {
 			. Plan_A_Clanstvo_Mail::p( '<span style="color:#5f6b77;font-size:14px">Ako si ostatak već uplatio/la, zanemari ovu poruku. Pitanja: info@srd-plan-a.hr.</span>' );
 		$subj   = 'first' === $kind ? 'Uplaćena prva rata – druga rata ' . $when : 'Podsjetnik: druga rata ' . $when;
 		$title  = 'first' === $kind ? 'Uplaćena prva rata' : 'Druga rata';
-		$files  = $code && $code['path'] ? array( $code['path'] ) : array();
-		$ok     = Plan_A_Clanstvo_Mail::send( $to, $subj, Plan_A_Clanstvo_Mail::wrap( $title, $inner, 'Plan A · uplata' ), $files );
-		foreach ( $files as $f ) {
-			wp_delete_file( $f );
+		$ok     = Plan_A_Clanstvo_Mail::send( $to, $subj, Plan_A_Clanstvo_Mail::wrap( $title, $inner, 'Plan A · uplata' ) );
+		if ( $code && $code['path'] ) {
+			wp_delete_file( $code['path'] );
 		}
 		if ( $ok ) {
 			if ( 'first' === $kind ) {
