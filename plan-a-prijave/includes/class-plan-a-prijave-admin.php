@@ -28,6 +28,8 @@ final class Plan_A_Prijave_Admin {
 		add_action( 'admin_head-edit.php', array( __CLASS__, 'list_css' ) );
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ), 99 );
 		add_filter( 'post_row_actions', array( __CLASS__, 'row_actions' ), 20, 2 );
+		add_action( 'admin_post_pap_status', array( __CLASS__, 'set_status' ) );
+		add_filter( 'removable_query_args', static fn( $a ) => array_merge( (array) $a, array( 'pap_done' ) ) );
 	}
 
 	/* ---------- Nazivi ---------- */
@@ -268,8 +270,32 @@ final class Plan_A_Prijave_Admin {
 					'private' => 'Privatan',
 				);
 				echo '<span class="pap-st is-' . esc_attr( $st ) . '">' . esc_html( $l[ $st ] ?? $st ) . '</span>';
+				if ( current_user_can( 'edit_post', $id ) ) {
+					$to   = 'publish' === $st ? 'draft' : 'publish';
+					$link = wp_nonce_url( admin_url( 'admin-post.php?action=pap_status&id=' . $id . '&to=' . $to ), 'pap_status_' . $id );
+					echo '<span class="pap-quick">';
+					echo '<a class="button button-small" href="' . esc_url( $link ) . '">' . ( 'draft' === $to ? 'U skicu' : 'Objavi' ) . '</a>';
+				}
+				if ( current_user_can( 'delete_post', $id ) ) {
+					echo '<a class="button button-small pap-trash" href="' . esc_url( get_delete_post_link( $id ) ) . '" onclick="return confirm(\'Premjestiti izlet u smeće? Može se vratiti iz Smeća.\')">Smeće</a>';
+				}
+				echo current_user_can( 'edit_post', $id ) ? '</span>' : '';
 				break;
 		}
+	}
+
+	/** Gumb „U skicu” / „Objavi” u popisu izleta. */
+	public static function set_status() {
+		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+		$to = isset( $_GET['to'] ) && 'publish' === $_GET['to'] ? 'publish' : 'draft';
+		check_admin_referer( 'pap_status_' . $id );
+		if ( ! $id || 'ttbm_tour' !== get_post_type( $id ) || ! current_user_can( 'publish' === $to ? 'publish_post' : 'edit_post', $id ) ) {
+			wp_die( 'Nemaš ovlasti za ovaj izlet.' );
+		}
+		wp_update_post( array( 'ID' => $id, 'post_status' => $to ) );
+		$back = wp_get_referer() ?: admin_url( 'edit.php?post_type=ttbm_tour' );
+		wp_safe_redirect( add_query_arg( 'pap_done', $to, remove_query_arg( 'pap_done', $back ) ) );
+		exit;
 	}
 
 	/** Zbirne kartice iznad popisa izleta. */
@@ -309,6 +335,9 @@ final class Plan_A_Prijave_Admin {
 			array( 'Slobodnih mjesta', $free, 'dashicons-tickets-alt' ),
 			array( 'Popunjeni', $full, 'dashicons-lock' ),
 		);
+		if ( isset( $_GET['pap_done'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			echo '<div class="notice notice-success is-dismissible"><p>' . ( 'publish' === $_GET['pap_done'] ? 'Izlet je objavljen.' : 'Izlet je premješten u skice (više se ne vidi na stranici).' ) . '</p></div>'; // phpcs:ignore WordPress.Security.NonceVerification
+		}
 		echo '<div class="pap-cards">';
 		foreach ( $cards as $c ) {
 			echo '<div class="pap-card"><span class="dashicons ' . esc_attr( $c[2] ) . '"></span><div><b>' . (int) $c[1] . '</b><small>' . esc_html( $c[0] ) . '</small></div></div>';
@@ -332,6 +361,9 @@ final class Plan_A_Prijave_Admin {
 .pap-st{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;background:#f0f0f1;color:#50575e}
 .pap-st.is-publish{background:#e6f5ea;color:#1d6b33}.pap-st.is-draft{background:#fdf1e4;color:#8a4a0b}.pap-st.is-future{background:#e8f4fb;color:#1e7fc4}
 .wp-list-table td{vertical-align:middle}
+.pap-quick{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.pap-quick .button-small{min-height:26px;line-height:24px}
+.pap-quick .pap-trash{color:#b32d2e;border-color:#e3b4b4}
+.wp-list-table .column-pap_status{width:150px}
 </style>';
 	}
 }
