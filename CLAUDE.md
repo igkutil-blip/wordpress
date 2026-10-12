@@ -77,3 +77,18 @@ Dokument s popisom i planom: https://claude.ai/code/artifact/e688755a-5ea4-46bb-
 5. **Prelazak** (mjesec dogovoriti s korisnikom); WpTravelly ostaje instaliran za povratak.
 
 Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate”); druga rata 30 dana prije izleta.
+
+## Za živu stranicu – na čekanju (odraditi zajedno pri prelasku)
+
+Igor ne pamti ništa od ovoga: kad završimo s kopijom, **ja** pripremim sve zipove za živu stranicu i
+napišem redoslijed (što isključiti, što instalirati, što provjeriti). Do tada na živoj ništa ne tražiti.
+
+- **plan-a-clanstvo 1.14.6** (zadana grana i `prijave`, isti zip): druga rata = puna cijena − prva rata po
+  osobi, osiguranje se ne odbija; ispravak pune cijene (`ticket_type_price`, do 1.14.5 ostatak je bio 0 € i
+  mail za drugu ratu nije odlazio). Nakon instalacije se propušteni mail jednom ponovi – na živoj to je
+  narudžba **#8989** (prva rata 12.10.2026.). Prije instalacije pitati Igora želi li to slanje.
+- **plan-a-prijave** (novi sustav, faza 5): zajednička mjesta za sve karte (karta „prve rate” nema svoja
+  mjesta). Prije prelaska pregledati izlete s prvom ratom – npr. Doček Nove godine (7935) ima Uplata 5 +
+  prva rata 20: ako treba 25 mjesta, upisati 25 kod Uplate. Usluge (osiguranje) nisu ograničene.
+- Pri prelasku: ostali dodaci iz `prijave` sa oznakom `-prijave` u verziji, WpTravelly isključiti (ne
+  brisati), SEO se popunjava pri spremanju izleta, ikonice aktivnosti postave se pri prvom ulasku u admin.
