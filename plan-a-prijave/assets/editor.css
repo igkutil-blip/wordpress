@@ -128,3 +128,9 @@ body.pap-layout .pap-sec .pap-table th{background:var(--soft)}
 .pap .pap-gf-fields input,.pap .pap-gf-fields textarea{display:block;width:100%}
 .pap .pap-gf-msg{color:#646970}
 @media (max-width:600px){.pap .pap-gf-row{flex-direction:column;align-items:stretch}}
+.pap-icons{width:430px;max-width:calc(100vw - 16px);box-sizing:border-box}
+.pap-icons-q{width:100%;margin:0 0 8px}
+.pap-icons-grid{grid-template-columns:repeat(auto-fill,minmax(38px,1fr));max-height:300px;overflow-y:auto;padding-right:2px}
+.pap-icons-none{grid-column:1/-1;margin:8px 0;color:#646970}
+.pap-icons p{display:flex;justify-content:space-between;align-items:center}
+.pap-icons-count{color:#646970;font-size:12px}

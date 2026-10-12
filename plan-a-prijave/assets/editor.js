@@ -187,13 +187,44 @@ jQuery(function ($) {
 		'utensils', 'mug-hot', 'wine-glass', 'beer-mug-empty', 'bread-slice', 'apple-whole', 'bottle-water', 'bed', 'hotel', 'house',
 		'wifi', 'square-parking', 'toilet', 'shower', 'hand-holding-dollar', 'euro-sign', 'gift', 'star', 'heart', 'music',
 		'graduation-cap', 'book', 'clock', 'calendar-days', 'circle-info', 'triangle-exclamation', 'check', 'xmark', 'plus', 'minus'];
+	// Hrvatske riječi za traženje (nazivi ikonica su engleski).
+	var HR = { planin: 'mountain hiking', vrh: 'mountain', hod: 'walking hiking', penj: 'hand mountain', alpin: 'mountain', ferat: 'helmet link',
+		more: 'water umbrella-beach ship sailboat anchor', jedr: 'sailboat ship anchor wind', kajak: 'water', plivan: 'swimming water', ronj: 'water fish',
+		snijeg: 'snowflake skiing', zim: 'snowflake temperature', skij: 'skiing', bicik: 'bicycle biking', biciklizam: 'bicycle biking', spilj: 'dungeon',
+		sunce: 'sun', kiša: 'cloud umbrella', kisa: 'cloud umbrella', vjetar: 'wind', šuma: 'tree', suma: 'tree', drvo: 'tree', cvijet: 'seedling leaf', priroda: 'leaf tree seedling',
+		kamp: 'campground tent', šator: 'tent', sator: 'tent', vatra: 'fire', karta: 'map ticket', kompas: 'compass', zastav: 'flag', dalekozor: 'binoculars',
+		foto: 'camera', povijest: 'landmark monument', crkv: 'church', grad: 'city', muzej: 'landmark building-columns',
+		autobus: 'bus', bus: 'bus', kombi: 'van-shuttle', auto: 'car', vlak: 'train', avion: 'plane', brod: 'ship ferry', prijevoz: 'bus van-shuttle car',
+		ulaznic: 'ticket', osigur: 'shield', ljekar: 'kit-medical', prva: 'kit-medical', vodič: 'user compass', vodic: 'user compass', skiper: 'anchor ship',
+		ljudi: 'users people', grupa: 'users people-group', dijete: 'child', djeca: 'child children', pas: 'dog paw',
+		hrana: 'utensils bowl-food', ručak: 'utensils', rucak: 'utensils', večer: 'utensils moon', vecer: 'utensils moon', doručak: 'mug-hot bread-slice', dorucak: 'mug-hot bread-slice',
+		piće: 'wine-glass beer-mug-empty bottle-water mug-hot', pice: 'wine-glass beer-mug-empty bottle-water mug-hot', voda: 'bottle-water water', kava: 'mug-hot', vino: 'wine',
+		smješt: 'bed hotel house', smjest: 'bed hotel house', spava: 'bed', noć: 'moon bed', noc: 'moon bed', hotel: 'hotel', kuć: 'house', kuc: 'house',
+		oprema: 'helmet toolbox bag', ruksak: 'bag', kaciga: 'helmet', kacig: 'helmet', uže: 'link', uze: 'link',
+		novac: 'euro money coins', cijen: 'euro tag', poklon: 'gift', glazb: 'music', knjig: 'book', škol: 'graduation-cap school', skol: 'graduation-cap school',
+		vrijeme: 'clock', sat: 'clock', datum: 'calendar', info: 'circle-info', upozor: 'triangle-exclamation', kvačic: 'check', kvacic: 'check', križ: 'xmark', kriz: 'xmark', srce: 'heart', zvijezd: 'star' };
 	var pick = null, pickFor = null;
+	function fill(q) {
+		var grid = pick.find('.pap-icons-grid').empty(), list = q ? [] : ICONS.slice();
+		q = $.trim(q || '').toLowerCase();
+		if (q) {
+			var words = [q.replace(/\s+/g, '-')];
+			$.each(HR, function (k, v) { if (q.length > 1 && (q.indexOf(k) === 0 || k.indexOf(q) === 0)) { words = words.concat(v.split(' ')); } });
+			list = (window.papIcons || ICONS).filter(function (n) { return words.some(function (w) { return n.indexOf(w) >= 0; }); });
+		} else {
+			// Prvo izbor za izlete, zatim sve ostale ikonice.
+			list = list.concat((window.papIcons || []).filter(function (n) { return ICONS.indexOf(n) < 0; }));
+		}
+		var html = list.map(function (n) { return '<button type="button" data-icon="fas fa-' + n + '" title="' + n + '"><i class="fas fa-' + n + '"></i></button>'; }).join('');
+		grid.html(html || '<p class="pap-icons-none">Nema ikonice za tu riječ – probaj drugu (i engleski, npr. „boat”).</p>');
+		pick.find('.pap-icons-count').text(list.length + ' ikonica');
+	}
 	function picker(btn) {
 		if (!pick) {
-			pick = $('<div class="pap-icons" role="dialog" aria-label="Odaberi ikonicu"><div class="pap-icons-grid"></div><p><button type="button" class="button-link pap-icons-close">Zatvori</button></p></div>').appendTo(document.body);
-			ICONS.forEach(function (n) {
-				$('<button type="button">').attr({ 'data-icon': 'fas fa-' + n, title: n }).append($('<i>').addClass('fas fa-' + n)).appendTo(pick.find('.pap-icons-grid'));
-			});
+			pick = $('<div class="pap-icons" role="dialog" aria-label="Odaberi ikonicu"><input type="search" class="pap-icons-q" placeholder="Traži (npr. planina, autobus, hrana, boat)"><div class="pap-icons-grid"></div><p><span class="pap-icons-count"></span><button type="button" class="button-link pap-icons-close">Zatvori</button></p></div>').appendTo(document.body);
+			var t = null;
+			pick.on('input', '.pap-icons-q', function () { var v = this.value; clearTimeout(t); t = setTimeout(function () { fill(v); }, 120); });
+			pick.on('keydown', '.pap-icons-q', function (e) { if (e.key === 'Enter') { e.preventDefault(); } });
 			pick.on('click', '.pap-icons-close', function () { pick.hide(); });
 			pick.on('click', '[data-icon]', function () { choose($(this).data('icon')); });
 			$(document).on('mousedown keydown', function (e) {
@@ -202,10 +233,14 @@ jQuery(function ($) {
 				if (e.type === 'mousedown' && $(e.target).closest('.pap-icons, .pap-ico').length) { return; }
 				pick.hide();
 			});
+			fill('');
 		}
 		pickFor = $(btn);
 		var o = pickFor.offset();
-		pick.css({ top: o.top + pickFor.outerHeight() + 4, left: Math.max(8, Math.min(o.left, $(window).width() - 330)) }).show();
+		pick.css({ top: o.top + pickFor.outerHeight() + 4, left: Math.max(8, Math.min(o.left, $(window).width() - 440)) }).show();
+		pick.find('.pap-icons-q').val('').trigger('focus');
+		fill('');
+		pick.find('.pap-icons-grid').scrollTop(0);
 	}
 	function setIcon(btn, icon) { btn.removeClass('is-empty').find('i').attr('class', icon); }
 	function choose(icon) {
@@ -261,10 +296,20 @@ jQuery(function ($) {
 		gf.find('h4').text(c ? 'Uredi vodiča' : 'Novi vodič');
 		gf.find('.pap-gf-id').val(c ? c.data('id') : 0);
 		gf.find('.pap-gf-name').val(c ? c.attr('data-name') : '');
-		gf.find('.pap-gf-desc').val(c ? c.attr('data-desc') : '');
 		gfImg(c ? c.data('img') : 0, c ? c.find('.pap-guide-img img').attr('src') : '');
 		gf.find('.pap-gf-msg').text('');
 		gf.prop('hidden', false);
+		// Opis: uređivač s karticama Vizualno / Tekst (HTML), kao kod običnih stranica.
+		var ta = document.getElementById('pap-gf-desc');
+		if (window.wp && wp.editor) { wp.editor.remove('pap-gf-desc'); }
+		ta.value = c ? c.attr('data-desc') : '';
+		if (window.wp && wp.editor) {
+			wp.editor.initialize('pap-gf-desc', {
+				tinymce: { wpautop: true, height: 220, toolbar1: 'formatselect,bold,italic,bullist,numlist,alignleft,aligncenter,alignright,link,unlink,undo,redo' },
+				quicktags: { buttons: 'strong,em,link,ul,ol,li,p' },
+				mediaButtons: false
+			});
+		}
 		gf.find('.pap-gf-name').trigger('focus');
 	}
 	box.on('click', '.pap-guide-new', function () { gfOpen(null); });
@@ -285,7 +330,7 @@ jQuery(function ($) {
 		if (!$.trim(gf.find('.pap-gf-name').val())) { gf.find('.pap-gf-name').trigger('focus'); return; }
 		btn.prop('disabled', true);
 		gf.find('.pap-gf-msg').text('Spremam …');
-		$.post(papEd.ajax, { action: 'pap_save_guide', nonce: papEd.nonce, id: id, name: gf.find('.pap-gf-name').val(), desc: gf.find('.pap-gf-desc').val(), img: gf.find('.pap-gf-img').val() })
+		$.post(papEd.ajax, { action: 'pap_save_guide', nonce: papEd.nonce, id: id, name: gf.find('.pap-gf-name').val(), desc: (window.wp && wp.editor && wp.editor.getContent) ? wp.editor.getContent('pap-gf-desc') : $('#pap-gf-desc').val(), img: gf.find('.pap-gf-img').val() })
 			.done(function (r) {
 				if (!r || !r.success) { gf.find('.pap-gf-msg').text((r && r.data && r.data.message) || 'Nije spremljeno.'); return; }
 				var card = $(r.data.html), old = box.find('.pap-guide[data-id="' + r.data.id + '"]');

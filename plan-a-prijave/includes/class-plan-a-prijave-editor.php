@@ -34,6 +34,7 @@ final class Plan_A_Prijave_Editor {
 		add_action( 'admin_notices', array( __CLASS__, 'notices' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'no_ttbm_autosave' ), 100 );
 		add_action( 'wp_ajax_ttbm_autosave_tour', array( __CLASS__, 'block_ttbm_autosave' ), 1 );
+		add_action( 'admin_init', array( __CLASS__, 'default_icons' ) );
 		add_action( 'wp_ajax_pap_add_term', array( __CLASS__, 'ajax_add_term' ) );
 		add_action( 'wp_ajax_pap_term_icon', array( __CLASS__, 'ajax_term_icon' ) );
 		add_action( 'wp_ajax_pap_save_guide', array( __CLASS__, 'ajax_save_guide' ) );
@@ -100,7 +101,8 @@ final class Plan_A_Prijave_Editor {
 		wp_enqueue_media();
 		wp_enqueue_editor();
 		wp_enqueue_style( 'pap-editor', PLAN_A_PRIJAVE_URL . 'assets/editor.css', array(), PLAN_A_PRIJAVE_VERSION );
-		wp_enqueue_script( 'pap-editor', PLAN_A_PRIJAVE_URL . 'assets/editor.js', array( 'jquery', 'jquery-ui-sortable', 'wp-util' ), PLAN_A_PRIJAVE_VERSION, true );
+		wp_enqueue_script( 'pap-icons', PLAN_A_PRIJAVE_URL . 'assets/icons.js', array(), PLAN_A_PRIJAVE_VERSION, true );
+		wp_enqueue_script( 'pap-editor', PLAN_A_PRIJAVE_URL . 'assets/editor.js', array( 'jquery', 'jquery-ui-sortable', 'wp-util', 'pap-icons' ), PLAN_A_PRIJAVE_VERSION, true );
 		// Ikonice (Font Awesome 6) – ista datoteka i oznaka kao kod WpTravellyja i naše kopije.
 		if ( defined( 'TTBM_PLUGIN_URL' ) ) {
 			wp_enqueue_style( 'mp_font_awesome', TTBM_PLUGIN_URL . '/assets/all.min.css', array(), '6.7.2' );
@@ -113,6 +115,69 @@ final class Plan_A_Prijave_Editor {
 				'nonce' => wp_create_nonce( 'pap_ajax' ),
 			)
 		);
+	}
+
+	/** Prijedlog ikonice po nazivu pojma (prvi pogodak; dio riječi, bez obzira na velika slova). */
+	const ICON_GUESS = array(
+		'planinar'   => 'fas fa-person-hiking',
+		'alpin'      => 'fas fa-mountain',
+		'ferat'      => 'fas fa-helmet-safety',
+		'penjanj'    => 'fas fa-hand-back-fist',
+		'zimsk'      => 'fas fa-snowflake',
+		'skij'       => 'fas fa-person-skiing',
+		'bicik'      => 'fas fa-person-biking',
+		'jedren'     => 'fas fa-sailboat',
+		'kajak'      => 'fas fa-water',
+		'ronj'       => 'fas fa-fish',
+		'plivan'     => 'fas fa-person-swimming',
+		'piljar'     => 'fas fa-dungeon',
+		'povijest'   => 'fas fa-landmark',
+		'kultur'     => 'fas fa-landmark',
+		'osigur'     => 'fas fa-shield-halved',
+		'prijevoz'   => 'fas fa-van-shuttle',
+		'autobus'    => 'fas fa-bus',
+		'trajekt'    => 'fas fa-ship',
+		'smješt'     => 'fas fa-bed',
+		'noćen'      => 'fas fa-bed',
+		'hrana'      => 'fas fa-utensils',
+		'ručak'      => 'fas fa-utensils',
+		'večer'      => 'fas fa-utensils',
+		'doručak'    => 'fas fa-mug-hot',
+		'piće'       => 'fas fa-wine-glass',
+		'skiper'     => 'fas fa-anchor',
+		'vodič'      => 'fas fa-compass',
+		'oprema'     => 'fas fa-toolbox',
+		'ulaznic'    => 'fas fa-ticket',
+		'karta'      => 'fas fa-ticket',
+		'ljekar'     => 'fas fa-kit-medical',
+		'fotograf'   => 'fas fa-camera',
+	);
+
+	/** Jednom (i nakon nadogradnje popisa): pojmovima bez ikonice dodaj odgovarajuću. Postojeće ikonice se ne diraju. */
+	public static function default_icons() {
+		if ( 1 === (int) get_option( 'pap_default_icons' ) || ! current_user_can( 'manage_categories' ) ) {
+			return;
+		}
+		foreach ( self::ICON_META as $tax => $key ) {
+			if ( ! taxonomy_exists( $tax ) ) {
+				return; // pojmovi još nisu registrirani – probaj kasnije
+			}
+		}
+		foreach ( self::ICON_META as $tax => $key ) {
+			foreach ( self::terms( $tax ) as $t ) {
+				if ( '' !== (string) get_term_meta( $t->term_id, $key, true ) ) {
+					continue;
+				}
+				$name = mb_strtolower( $t->name );
+				foreach ( self::ICON_GUESS as $w => $icon ) {
+					if ( false !== mb_strpos( $name, $w ) ) {
+						update_term_meta( $t->term_id, $key, $icon );
+						break;
+					}
+				}
+			}
+		}
+		update_option( 'pap_default_icons', 1, false );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -431,7 +496,7 @@ final class Plan_A_Prijave_Editor {
 		echo '<p><button type="button" class="button pap-guide-new">+ Dodaj vodiča</button></p>';
 		echo '<div class="pap-guide-form" hidden><h4>Novi vodič</h4><input type="hidden" class="pap-gf-id" value="0"><input type="hidden" class="pap-gf-img" value="0">'
 			. '<div class="pap-gf-row"><div class="pap-gf-photo"><span class="pap-gf-prev"></span><button type="button" class="button pap-gf-pick">Odaberi sliku</button><button type="button" class="button-link pap-gf-noimg">Makni sliku</button></div>'
-			. '<div class="pap-gf-fields"><label>Ime i prezime<input type="text" class="pap-gf-name"></label><label>Opis<textarea class="pap-gf-desc" rows="5" placeholder="npr. licencirani planinarski vodič, iskustvo, zanimljivosti"></textarea></label></div></div>'
+			. '<div class="pap-gf-fields"><label>Ime i prezime<input type="text" class="pap-gf-name"></label><label for="pap-gf-desc">Opis</label><textarea class="pap-gf-desc" id="pap-gf-desc" rows="8" placeholder="npr. licencirani planinarski vodič, iskustvo, zanimljivosti"></textarea></div></div>'
 			. '<p><button type="button" class="button button-primary pap-gf-save">Spremi vodiča</button> <button type="button" class="button pap-gf-cancel">Odustani</button> <span class="pap-gf-msg"></span></p></div>';
 		echo '</section>';
 
