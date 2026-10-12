@@ -17,7 +17,7 @@ if ( ! class_exists( 'Plan_A_Email' ) ) {
 
 	final class Plan_A_Email {
 
-		const V = '1.0.0';
+		const V = '1.0.1';
 
 		const FONT  = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 		const TEXT  = '#24323f';
@@ -195,6 +195,17 @@ if ( ! class_exists( 'Plan_A_Email' ) ) {
 			return self::card( (string) ( $d['title'] ?? 'Podaci za plaćanje' ), $h );
 		}
 
+		/**
+		 * Ikona u krugu kao slika (uvijek okrugla, u svakom programu za poštu). Bez slika ostaje
+		 * znak u alt tekstu.
+		 */
+		public static function icon_html( string $icon ): string {
+			$icon = isset( self::ICONS[ $icon ] ) ? $icon : 'info';
+			$src  = plugins_url( 'mail-icons/' . $icon . '.png', __FILE__ );
+			return '<table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 12px;"><tr><td align="center" width="56" height="56" style="width:56px;height:56px;">'
+				. '<img src="' . esc_url( $src ) . '" width="56" height="56" alt="' . esc_attr( html_entity_decode( self::ICONS[ $icon ], ENT_QUOTES, 'UTF-8' ) ) . '" style="display:block;width:56px;height:56px;border:0;margin:0 auto;"></td></tr></table>';
+		}
+
 		/* ---------------- Cijeli mail ---------------- */
 
 		/**
@@ -221,7 +232,7 @@ if ( ! class_exists( 'Plan_A_Email' ) ) {
 				// Naslov.
 				. '<tr><td style="background:#ffffff;border-radius:0 0 14px 14px;padding:26px 24px 22px;text-align:center;">';
 			if ( '' !== $icon && isset( self::ICONS[ $icon ] ) ) {
-				$h .= '<table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 12px;"><tr><td align="center" width="56" height="56" style="width:56px;height:56px;border-radius:28px;background:' . esc_attr( $color ) . ';color:#ffffff;font-family:' . self::FONT . ';font-size:28px;font-weight:700;line-height:56px;text-align:center;">' . self::ICONS[ $icon ] . '</td></tr></table>';
+				$h .= self::icon_html( $icon );
 			}
 			if ( ! empty( $a['label'] ) ) {
 				$h .= '<p style="margin:0 0 6px;color:#c96a12;font-family:' . self::FONT . ';font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">' . esc_html( (string) $a['label'] ) . '</p>';

@@ -1,5 +1,5 @@
 === Plan A – pomoćnik za kopiju ===
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv2 or later
 
 SAMO ZA KOPIJU STRANICE (staging). Na srd-plan-a.hr odbija sve i prikazuje upozorenje da ga treba obrisati.
@@ -24,6 +24,9 @@ Claude (administrator prijavljen lozinkom aplikacije) preko REST API-ja (plan-a-
 Ne može: dirati druge dodatke (osim uključivanja i isključivanja WpTravellyja), temu ni WordPress, raditi na živoj stranici.
 
 == Promjene ==
+= 1.4.1 =
+* Ikona iznad naslova maila je okrugla slika (u Gmailu na mobitelu se krug više ne razvlači u elipsu), ista u svim mailovima.
+
 = 1.4.0 =
 * Primjerci svih mailova (REST mail/samples, samo kopija); probni mail u Plan A izgledu.
 

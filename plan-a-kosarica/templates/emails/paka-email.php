@@ -149,9 +149,7 @@ $paka_rows = static function ( array $rows ) use ( $paka_label, $paka_value ): s
 				<!-- Naslov -->
 				<tr>
 					<td style="background:#ffffff;border-radius:0 0 14px 14px;padding:26px 24px 22px;text-align:center;">
-						<table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 12px;">
-							<tr><td align="center" width="56" height="56" style="width:56px;height:56px;border-radius:28px;background:<?php echo $paka_admin ? esc_attr( $paka_s['accent'] ) : '#1e9e4a'; ?>;color:#ffffff;font-family:<?php echo esc_attr( $paka_font ); ?>;font-size:30px;font-weight:700;line-height:56px;text-align:center;"><?php echo $paka_admin ? '&#43;' : '&#10003;'; ?></td></tr>
-						</table>
+						<?php echo Plan_A_Email::icon_html( $paka_admin ? 'plus' : 'check' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- isti krug kao u svim Plan A mailovima. ?>
 						<h1 class="paka-mail-h1" style="margin:0 0 8px;color:<?php echo esc_attr( $paka_navy ); ?>;font-family:<?php echo esc_attr( $paka_font ); ?>;font-size:24px;line-height:1.3;font-weight:800;text-align:center;"><?php echo esc_html( $paka_heading ); ?></h1>
 						<p style="margin:0;color:<?php echo esc_attr( $paka_muted ); ?>;font-family:<?php echo esc_attr( $paka_font ); ?>;font-size:15px;line-height:1.5;">
 							<?php if ( $paka_admin ) : ?>

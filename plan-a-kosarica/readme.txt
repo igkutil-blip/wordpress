@@ -104,6 +104,10 @@ WooCommerceovi mailovi (otkazana narudžba, povrat, napomena kupcu, lozinka, nov
 dobivaju isto zaglavlje s logom, naslov s ikonom, karticu i podnožje (predlošci email-header.php i
 email-footer.php).
 
+== Okrugla ikona (1.6.1) ==
+
+Ikona iznad naslova maila je okrugla slika (u Gmailu na mobitelu se krug više ne razvlači u elipsu), ista u svim mailovima.
+
 == Postavke ==
 
 Postavke → Plan A košarica: uključivanje, koraci (koraci teme Flatsome se tada skrivaju),

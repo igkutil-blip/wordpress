@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A newsletter
  * Description:       Slanje newslettera članovima i sudionicima izleta iz sučelja weba: grupe primatelja iz baze članova i narudžbi, nadolazeći izleti u mailu, polagano slanje u paketima i odjava jednim klikom.
- * Version:           1.1.0
+ * Version:           1.1.1
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_NEWSLETTER_VERSION', '1.1.0' );
+define( 'PLAN_A_NEWSLETTER_VERSION', '1.1.1' );
 define( 'PLAN_A_NEWSLETTER_FILE', __FILE__ );
 define( 'PLAN_A_NEWSLETTER_DIR', plugin_dir_path( __FILE__ ) );
 
