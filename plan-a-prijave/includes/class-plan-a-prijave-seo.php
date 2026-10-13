@@ -231,20 +231,15 @@ final class Plan_A_Prijave_Seo {
 		$sep   = ' – ';
 		$tail  = trim( implode( ', ', array_filter( array( $dur, $date ) ) ) );
 		$cands = array();
-		if ( '' !== $tail ) {
-			$cands[] = $title . $sep . $tail . ' %sep% %sitename%';
-			$cands[] = $title . $sep . $tail;
+		$sites = array( ' – Plan A planinarski izleti', ' – Plan A', '' );
+		foreach ( array_filter( array( '' !== $tail ? $sep . $tail : null, '' !== $date ? $sep . $date : null, '' ) , 'is_string' ) as $mid ) {
+			foreach ( $sites as $site ) {
+				$cands[] = $title . $mid . $site;
+			}
 		}
-		if ( '' !== $date ) {
-			$cands[] = $title . $sep . $date;
-		}
-		$cands[] = $title . ' %sep% %sitename%';
-		$cands[] = $title;
-		$site    = self::clean( get_bloginfo( 'name' ) );
-		$seo     = $title;
+		$seo = self::cut( $title, self::TITLE_MAX );
 		foreach ( $cands as $c ) {
-			$real = str_replace( array( ' %sep% ', '%sitename%' ), array( ' - ', $site ), $c );
-			if ( self::len( $real ) <= self::TITLE_MAX ) {
+			if ( self::len( $c ) <= self::TITLE_MAX ) {
 				$seo = $c;
 				break;
 			}

@@ -30,6 +30,7 @@ prvo predloži tekstualno, kad to traži. Shortcodeovi i HTML idu u Flatsome HTM
   (`status`, `mail`, `mail/test`, `plugin` – postavljanje našeg zipa, `plugin/{slug}/activate|deactivate` – i za
   `tour-booking-manager` (WpTravelly), `cron`, `log`,
   `meta/{id}`, `option/{ime}`), prijava `PROBA_WP_USER` + `PROBA_WP_APP_PASSWORD`. Na živoj stranici odbija sve.
+  Od 1.4.4 kopija je uvijek noindex (meta, Rank Math, X-Robots-Tag, robots.txt bez sitemapa).
 - Iz ove sesije internet ide samo preko HTTPS-a (FTP/SSH ne rade).
 - Kopija koristi **kopije Google tablica** („Kopija datoteke Članovi Plan A nova” i
   „Kopija datoteke Prijave na izlete nova”), nikad prave tablice. Spojeno 12.10.2026.: kopija stranice ima
@@ -84,6 +85,18 @@ Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate�
 WpTravelly 2.3.4 isključen (ne brisati – povratak). Stranice izleta služi plan-a-prijave (provjereno). #8989 je dobila
 mail s ostatkom (400 €) 13.10. u 06:22. Zimsko III: 12 mjesta. Doček nakon prelaska pokazivao 0 slobodnih – Igoru
 rečeno da kod „Uplata” upiše 25. Grana za živu stranicu sada ima i plan-a-prijave (razlika prema `prijave` samo pomoćnik).
+
+## Plan A SEO (13.10.2026.) – `plan-a-seo` 1.0.0 (obje grane, isti zip) + plan-a-prijave 0.6.3
+
+Uz Rank Math: ključna riječ, SEO naslov („Naslov – Plan A planinarenje”; izleti „– Plan A planinarski izleti”, jedrenje
+„– Plan A jedrenje”) i opis za stranice/objave/vodiče; alt svih slika (iz stranice gdje se koristi, inače naziv izleta
+pogođen iz imena datoteke, inače ime datoteke); noindex + izvan sitemapa: probne stranice (popis u Alati → Plan A SEO),
+košarica/blagajna/račun, blokovi teme, portfolio, mjesta/hoteli WpTravellyja, skriveni proizvodi; JSON-LD: udruga
+(adresa, kontakt, mreže), izlet = Event po terminu (cijena, slobodna mjesta) + FAQPage; /llms.txt za AI.
+Ručno upisano se ne dira (osim: opis = naslov/prekratak, ostatak predloška, duplikat s druge stranice; vlasnik
+duplikata = najstarija stranica). Naslovnica se ne dira. „Vrati sve” vraća sve upisano. REST za provjeru:
+/wp-json/plan-a-seo/v1/{stats,preview,images-preview,llms,run,undo}. Na kopiji popunjeno i provjereno 13.10.
+Živa: instalirati plan-a-seo + prijave 0.6.3, Alati → Plan A SEO → 1, 2, 3, SpeedyCache očistiti, u Search Consoleu ponovno sitemap.
 
 ### Plan prelaska (arhiva)
 
