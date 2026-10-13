@@ -351,7 +351,7 @@ final class Plan_A_Prijave_Editor {
 
 	/** Kartica (lijevi izbornik) u kojoj je pojedini dio obrasca. */
 	const TAB_OF = array(
-		'osnovno'    => 'opis',
+		'osnovno'    => 'osnovno',
 		'termini'    => 'termini',
 		'karte'      => 'cijene',
 		'usluge'     => 'cijene',
@@ -368,7 +368,8 @@ final class Plan_A_Prijave_Editor {
 
 	/** Kartice: ključ => [naziv, dashicon, kratki opis]. */
 	const TABS = array(
-		'opis'     => array( 'Opis', 'dashicons-edit-page', 'Naslov, opis i osnovni podaci' ),
+		'opis'     => array( 'Opis', 'dashicons-edit-page', 'Naslov i opis izleta' ),
+		'osnovno'  => array( 'Osnovni podaci', 'dashicons-location', 'Lokacija, trajanje, broj osoba' ),
 		'termini'  => array( 'Termini', 'dashicons-calendar-alt', 'Datumi i prijave do' ),
 		'cijene'   => array( 'Cijene i usluge', 'dashicons-tickets-alt', 'Karte, rate i osiguranje' ),
 		'sadrzaj'  => array( 'Uključeno i aktivnosti', 'dashicons-yes-alt', 'Što je u cijeni, aktivnosti' ),

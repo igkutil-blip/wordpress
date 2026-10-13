@@ -77,7 +77,8 @@ jQuery(function ($) {
 			nav.find('a').removeClass('is-active').filter('[data-tab="' + tab + '"]').addClass('is-active');
 			box.find('.pap-sec').each(function () { this.hidden = $(this).data('tab') !== tab; });
 			others.toggle(tab === 'ostalo');
-			$('#pap_editor').toggle(tab !== 'ostalo');
+			// Okvir obrasca samo kad u kartici ima naših polja (na „Opis” su samo WordPressovi naslov i opis).
+			$('#pap_editor').toggle(tab !== 'ostalo' && box.find('.pap-sec').filter(function () { return !this.hidden; }).length > 0);
 			wpOpis.toggle(tab === 'opis');
 			try { sessionStorage.setItem('pap-tab', tab); } catch (e) {}
 			if (history.replaceState) { history.replaceState(null, '', '#' + tab); }
