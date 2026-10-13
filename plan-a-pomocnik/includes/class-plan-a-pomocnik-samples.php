@@ -77,7 +77,7 @@ final class Plan_A_Pomocnik_Samples {
 					array(
 						'WC_Email_Customer_On_Hold_Order'    => 'Prijava zaprimljena (kupac, s uplatnicom)',
 						'WC_Email_Customer_Processing_Order' => 'U obradi (kupac)',
-						'WC_Email_Customer_Completed_Order'  => 'Cijelokupni iznos uplaćen (kupac)',
+						'WC_Email_Customer_Completed_Order'  => 'Cjelokupni iznos uplaćen (kupac)',
 						'WC_Email_New_Order'                 => 'Nova prijava (nama)',
 						'WC_Email_Cancelled_Order'           => 'Otkazana narudžba (nama, WooCommerce)',
 						'WC_Email_Customer_Invoice'          => 'Račun / podaci za plaćanje (kupac, ručno iz narudžbe)',

@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.6.2
+Stable tag: 1.6.3
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -114,6 +114,10 @@ Otkazana narudžba, povrat, napomena kupcu, račun: umjesto WooCommerceove tabli
 proizvoda i uskim stupcima) isti sažetak kao u mailu „Prijava zaprimljena” (kartice „Vaš izlet”
 i „Vaši podaci”). Uplatnica i 2D kod (WSB HUB3) samo u mailu „Prijava zaprimljena” i u računu.
 Slike u mailovima nikad nisu šire od kartice (i na mobitelu).
+
+== Pravopis (1.6.3) ==
+
+Naslov maila i stranice nakon uplate: „Cjelokupni iznos je uplaćen, vidimo se na izletu”.
 
 == Postavke ==
 

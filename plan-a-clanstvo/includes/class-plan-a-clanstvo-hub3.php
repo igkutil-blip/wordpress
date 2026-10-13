@@ -51,7 +51,11 @@ final class Plan_A_Clanstvo_Hub3 {
 	 * @return array{url: string, path: string}|null
 	 */
 	public static function for_order( WC_Order $order, float $amount ): ?array {
-		$s = Plan_A_Clanstvo_Data::get();
+		$s   = Plan_A_Clanstvo_Data::get();
+		$ag  = self::agency( $order );
+		if ( ! $ag ) {
+			return null;
+		}
 		// Nikad ne šalje zajednički kod (slika ili rezerva): on nosi iznos članarine, ne ostatka.
 		if ( 'ne' === $s['barcode'] || 'slika' === $s['barcode'] || $amount <= 0 ) {
 			return null;
@@ -74,13 +78,14 @@ final class Plan_A_Clanstvo_Hub3 {
 					'street' => self::cut( trim( $order->get_billing_address_1() ), 27 ),
 					'place'  => self::cut( trim( $order->get_billing_postcode() . ' ' . $order->get_billing_city() ), 27 ),
 				),
+				// Izlet se plaća agenciji (isti primatelj kao uplatnica za prijavu), nikad udruzi.
 				'receiver'    => array(
-					'name'      => self::cut( $s['primatelj'], 25 ),
-					'street'    => self::cut( $s['adresa'], 25 ),
-					'place'     => self::cut( $s['mjesto'], 27 ),
-					'iban'      => preg_replace( '/\s+/', '', (string) $s['iban'] ),
-					'model'     => preg_replace( '/\D/', '', (string) $s['model'] ),
-					'reference' => self::cut( (string) $order->get_order_number(), 22 ),
+					'name'      => self::cut( $ag['primatelj'], 25 ),
+					'street'    => self::cut( $ag['adresa'], 25 ),
+					'place'     => self::cut( $ag['mjesto'], 27 ),
+					'iban'      => $ag['iban'],
+					'model'     => substr( $ag['model'], 2 ),
+					'reference' => self::cut( $ag['poziv'], 22 ),
 				),
 				'purpose'     => 'OTHR',
 				'description' => self::cut( 'Druga rata ' . $order->get_order_number(), 35 ),
@@ -102,6 +107,46 @@ final class Plan_A_Clanstvo_Hub3 {
 		return array(
 			'url'  => $base . '/' . $file,
 			'path' => $dir . '/' . $file,
+		);
+	}
+
+	/**
+	 * Primatelj za uplate izleta (druga rata): agencija, isti podaci kao uplatnica dodatka
+	 * WSB HUB3 za prijavu. Udruga (postavke članstva) prima samo članarinu.
+	 * Bez podataka agencije vraća null (tada mail nema uplatnicu ni 2D kod).
+	 *
+	 * @return array{primatelj:string,adresa:string,mjesto:string,iban:string,model:string,poziv:string}|null
+	 */
+	public static function agency( WC_Order $order ): ?array {
+		$iban = strtoupper( (string) preg_replace( '/\s+/', '', (string) get_option( 'wsb_hub3_receiver_iban', '' ) ) );
+		$name = trim( (string) get_option( 'wsb_hub3_receiver_name', '' ) );
+		$club = strtoupper( (string) preg_replace( '/\s+/', '', (string) Plan_A_Clanstvo_Data::value( 'iban' ) ) );
+		if ( ! preg_match( '/^HR\d{19}$/', $iban ) || 'HR0000000000000000000' === $iban || '' === $name || $iban === $club ) {
+			return null;
+		}
+		$model = preg_replace( '/\D/', '', (string) get_option( 'wsb_hub3_receiver_model', '' ) );
+		// Poziv na broj kao na uplatnici za prijavu (oblik iz postavki dodatka WSB), inače broj narudžbe.
+		$poziv = (string) $order->get_order_number();
+		global $wp_filter;
+		foreach ( (array) ( isset( $wp_filter['woocommerce_email_after_order_table'] ) ? $wp_filter['woocommerce_email_after_order_table']->callbacks : array() ) as $cbs ) {
+			foreach ( $cbs as $cb ) {
+				$fn = $cb['function'];
+				if ( is_array( $fn ) && is_object( $fn[0] ) && is_callable( array( $fn[0], 'get_reference' ) ) && 0 === strpos( (string) $fn[1], 'wsb_hub3_' ) ) {
+					$ref = trim( html_entity_decode( (string) $fn[0]->get_reference( $order->get_id() ), ENT_QUOTES, 'UTF-8' ) );
+					if ( '' !== $ref ) {
+						$poziv = $ref;
+					}
+					break 2;
+				}
+			}
+		}
+		return array(
+			'primatelj' => $name,
+			'adresa'    => trim( (string) get_option( 'wsb_hub3_receiver_address', '' ) ),
+			'mjesto'    => trim( get_option( 'wsb_hub3_receiver_postcode', '' ) . ' ' . get_option( 'wsb_hub3_receiver_city', '' ) ),
+			'iban'      => $iban,
+			'model'     => 'HR' . ( '' !== $model ? str_pad( substr( $model, 0, 2 ), 2, '0', STR_PAD_LEFT ) : '00' ),
+			'poziv'     => $poziv,
 		);
 	}
 

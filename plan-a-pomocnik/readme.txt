@@ -1,5 +1,5 @@
 === Plan A – pomoćnik za kopiju ===
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 License: GPLv2 or later
 
 SAMO ZA KOPIJU STRANICE (staging). Na srd-plan-a.hr odbija sve i prikazuje upozorenje da ga treba obrisati.
@@ -24,6 +24,9 @@ Claude (administrator prijavljen lozinkom aplikacije) preko REST API-ja (plan-a-
 Ne može: dirati druge dodatke (osim uključivanja i isključivanja WpTravellyja), temu ni WordPress, raditi na živoj stranici.
 
 == Promjene ==
+= 1.4.3 =
+* Naziv primjerka „Cjelokupni iznos uplaćen”.
+
 = 1.4.2 =
 * mail/samples s pokazi=1 vraća HTML mailova bez slanja; /source/{slug} – čitanje koda našeg dodatka. Zajednički izgled maila 1.0.2 (prava uplatnica).
 
