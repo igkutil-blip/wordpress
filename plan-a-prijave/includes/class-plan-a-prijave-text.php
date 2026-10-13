@@ -174,7 +174,9 @@ final class Plan_A_Prijave_Text {
 			. '#ttbm_content [style*="line-height"]{line-height:inherit!important}'
 			. '#ttbm_content .ttbm_wp_editor [style*="background"],#ttbm_content .ttbm_wp_editor [style*="color"]{background:transparent!important;color:inherit!important}'
 			// Sav tekst izleta crn i iste veličine (opis, Važno za izlet, Važno, Zašto s nama); poveznice ostaju u boji poveznica.
-			. self::black_css() . '';
+			. self::black_css()
+			// Popunjen izlet: jasna oznaka umjesto prijave.
+			. '#ttbm_content .pap-popunjeno{display:inline-block;padding:6px 14px;border-radius:999px;background:#fde8e8;color:#b32d2e!important;font-weight:700;font-size:15px;white-space:nowrap}';
 		wp_register_style( 'pap-text', false, array(), PLAN_A_PRIJAVE_VERSION );
 		wp_enqueue_style( 'pap-text' );
 		wp_add_inline_style( 'pap-text', $css );

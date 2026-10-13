@@ -131,7 +131,7 @@ if (!defined('ABSPATH')) {
 												<?php if ( ! $is_sold_out ) { ?>
 													<span class="ttbm_stock_left">- <?php echo esc_html( $available ); ?> <?php esc_html_e( 'left', 'tour-booking-manager' ); ?></span>
 												<?php } else { ?>
-													<span class="ttbm_stock_left ttbm_stock_sold_out"><?php esc_html_e( 'Sold out', 'tour-booking-manager' ); ?></span>
+													<span class="ttbm_stock_left ttbm_stock_sold_out pap-popunjeno">Popunjeno</span>
 												<?php } ?>
 											</div>
 											<?php do_action( 'ttbm_after_ticket_price', $tour_id, $ticket_name, $tour_date ); ?>
