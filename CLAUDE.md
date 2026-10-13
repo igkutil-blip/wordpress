@@ -106,6 +106,7 @@ Struktura od Igora (redom kako šalje):
    Polja su **prazna i obavezna** – obrazac se ne može predati dok svi odgovori nisu upisani.
 7. **Važno (uvjeti, agencija, izjava):** kolege **ne vide**; dolazi iz predloška. Sadržaj predloška Igor i Claude uređuju
    **kasnije, kad sve proradi** (standardno, sitne izmjene).
+8. **Zašto s nama i kontakt:** kolege **ne vide**; uvijek isto – popunjava se iz predloška.
 
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
