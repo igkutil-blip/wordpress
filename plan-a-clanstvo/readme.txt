@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.15.4
+Stable tag: 1.15.5
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.15.5 =
+* Skripta tablice v18: osoba koju ste ručno dodali u tablicu za agenciju dobiva u Napomeni „unesen ručno” (i već dodane, pri sljedećem osvježavanju). Ostatak napomene ostaje.
 
 = 1.15.4 =
 * VAŽNO: uplatnica i 2D kod za drugu ratu glase na agenciju (primatelj, IBAN, model i poziv na broj kao na uplatnici za prijavu, iz dodatka WSB HUB3), ne na udrugu. Račun udruge je samo za članarinu. Bez podataka agencije mail nema uplatnicu, nego uputu da se plati kao prva rata.
