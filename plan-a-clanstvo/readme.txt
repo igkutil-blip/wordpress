@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.15.6
+Stable tag: 1.15.7
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.15.7 =
+* Skripta tablice v20: narudžba s više osoba ima svoju boju i na kućicama „Uplaćeno” (prva rata) i „2. rata”, ne samo na broju narudžbe.
 
 = 1.15.6 =
 * Skripta tablice v19: u tablici za agenciju novi stupac „Iznos 2. rate” iza „Iznos” (prvi red narudžbe s prvom ratom: ostatak = puna cijena − prva rata, osiguranje se ne oduzima). Postojeća tablica (i Arhiva) dobije stupac sama, a iznose za već upisane narudžbe upiše stranica pri sljedećem osvježavanju.
