@@ -93,8 +93,10 @@ Struktura od Igora (redom kako šalje):
 2. **Osnovni podaci:** samo lokacija – padajući izbornik postojećih (bez dodavanja nove) i trajanje – samo broj **dana**
    (bez sati/minuta). **Bez noćenja i bez „najviše osoba”** – broj osoba kolege upisuju samo na karti (mjesta); „najviše
    osoba” se pri spremanju upiše isto kao mjesta na karti. Kvačica „slobodna mjesta” se ne prikazuje (ostaje uključena).
-3. **Termini:** samo **jedan termin od–do** (bez „više datuma”): početak (datum), sat polaska, kraj (prazno = isti dan),
-   prijave do (prazno = do početka). Datumi hrvatski (21.11.2026.), sat 24 h.
+3. **Termini (0.7.1):** samo **početak (datum) i sat polaska**; kraj = početak + (broj dana − 1), prijave do početka izleta.
+   Datumi hrvatski (21.11.2026.), sat 24 h.
+   **Poveznice (0.7.1):** telefoni → tel:, „pristupnica…” → stranica pristupnice (Plan_A_Prijave_Text::links; sprema se kod
+   unosa kolega, a za sve izlete i pri prikazu opisa i „Važno za izlet”).
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →

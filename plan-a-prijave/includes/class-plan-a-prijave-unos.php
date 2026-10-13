@@ -553,9 +553,7 @@ final class Plan_A_Prijave_Unos {
 		$h .= '<section class="papu-sec"><h3>Termin</h3><div class="papu-grid">';
 		$h .= self::field( 'start', 'Početak', $date( 'start', true ) );
 		$h .= self::field( 'time', 'Sat polaska', '<input type="text" name="time" inputmode="numeric" placeholder="npr. 06:30" maxlength="5" required>' );
-		$h .= self::field( 'end', 'Kraj <span class="papu-opt">opcija</span>', $date( 'end', false ), 'prazno = isti dan' );
-		$h .= self::field( 'reg_end', 'Prijave do <span class="papu-opt">opcija</span>', $date( 'reg_end', false ), 'prazno = do početka' );
-		$h .= '</div></section>';
+		$h .= '</div><p class="papu-hint">Kraj izleta računa se iz trajanja (broja dana), a prijave su otvorene do početka izleta.</p></section>';
 
 		// Cijena.
 		$h .= '<section class="papu-sec"><h3>Cijena i mjesta</h3><div class="papu-grid">';
@@ -664,7 +662,7 @@ final class Plan_A_Prijave_Unos {
 		$html = wp_kses( (string) $html, $allowed );
 		$html = preg_replace( '#<(\w+)>\s*(&nbsp;|\xC2\xA0)?\s*</\1>#u', '', (string) $html ); // prazne oznake
 		$html = Plan_A_Prijave_Text::clean( (string) $html );
-		return trim( (string) $html );
+		return trim( Plan_A_Prijave_Text::links( (string) $html ) );
 	}
 
 	private static function rich_post( $v ): string {
@@ -756,16 +754,9 @@ final class Plan_A_Prijave_Unos {
 		if ( '' === $time ) {
 			self::fail( 'Upiši sat polaska (npr. 06:30).', 'time' );
 		}
-		$end_in = self::txt( 'end', 20 );
-		$end    = '' === $end_in ? $start : self::hr_date( $end_in );
-		if ( '' === $end || $end < $start ) {
-			self::fail( 'Kraj mora biti isti dan ili nakon početka (npr. 22.11.2026.).', 'end' );
-		}
-		$reg_in = self::txt( 'reg_end', 20 );
-		$reg    = '' === $reg_in ? $start : self::hr_date( $reg_in );
-		if ( '' === $reg || $reg > $start ) {
-			self::fail( 'Prijave mogu trajati najkasnije do početka izleta.', 'reg_end' );
-		}
+		// Kraj prema broju dana (1 dan = isti dan); prijave do početka izleta.
+		$end = gmdate( 'Y-m-d', strtotime( $start . ' 12:00:00 +' . ( $days - 1 ) . ' days' ) );
+		$reg = $start;
 		$price = self::money( self::txt( 'price', 20 ) );
 		if ( '' === $price ) {
 			self::fail( 'Upiši cijenu po osobi (npr. 185).', 'price' );

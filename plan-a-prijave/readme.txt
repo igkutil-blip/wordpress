@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.7.0
+Stable tag: 0.7.1
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,10 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.7.1 =
+* Unos izleta: kolege upisuju samo početak i sat polaska – kraj se računa iz broja dana, prijave su otvorene do početka izleta.
+* Brojevi telefona u tekstu izleta i odgovorima „Važno za izlet” postaju poveznice za poziv (tel:), riječ „pristupnica” (PRISTUPNICA, pristupnicu…) poveznica na stranicu pristupnice. Kod unosa kolega sprema se u tekst; za sve izlete (i postojeće) radi i pri prikazu stranice. IBAN, OIB, datumi i postojeće poveznice se ne diraju.
 
 = 0.7.0 =
 * Novo: „Unos izleta” za kolege – stranica s kratkim kodom [plan-a-unos-izleta] (Plan A → Unos izleta (kolege): šifra, mail, stranica, predložak). Zajednička šifra (prijava vrijedi 60 dana), noindex, izvan sitemapa i predmemorije.
