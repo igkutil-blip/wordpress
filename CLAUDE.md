@@ -83,8 +83,8 @@ Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate�
 
 Stranica `[plan-a-unos-izleta]` u plan-a-prijave: noindex, izvan sitemapa, bez predmemorije; pristup **jednom zajedničkom
 šifrom** (Igorova odluka, dva kolege); skraćeni obrazac → izlet „Na čekanju” + mail Igoru → Igor pregleda i objavi.
-Igor šalje slike i opise željenog izgleda – **ne kretati u izradu dok ne pošalje strukturu.** Otvoreno: upisuju li kolege
-cijenu, koji izlet je predložak (Važno, uvjeti, agencija, izjava).
+Igor šalje slike i opise željenog izgleda – **ne kretati u izradu dok ne pošalje strukturu.** Kolege upisuju i **cijenu**.
+Predložak (Važno, uvjeti, agencija, izjava…) bit će **poseban predložak, nevezan za ijedan izlet** – radimo ga zajedno.
 
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
