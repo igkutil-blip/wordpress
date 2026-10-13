@@ -79,6 +79,13 @@ Dokument s popisom i planom: https://claude.ai/code/artifact/e688755a-5ea4-46bb-
 
 Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate”); druga rata 30 dana prije izleta.
 
+## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
+
+WooCommerce 11.2.1 (baza 11.2.1), plan-a-kontakt 1.0.0 (Kontakt HTML v3 s `[plan-a-kontakt]`), seo 1.0.0, prijave 0.6.3,
+clanstvo 1.15.7, kosarica 1.6.5, izleti 1.22.1, jedrenje 1.9.2, aplikacija 1.4.0, kalkulator 1.0.1, **newsletter 1.1.1 aktivan**
+(Igor ga je sam instalirao). Obrisani CF7, WPForms, CFDB7, YITH, Nextend, smtp-mailer, KEKS, Borgun, Imsanity, Say What,
+poklon-bon (stranica /poklon-bon/ još pokazuje `[plan-a-poklon-bon]`). Kopija = živa (+ pomoćnik).
+
 ## PRELAZAK NA ŽIVU – NAPRAVLJEN 13.10.2026. (noću, Igor)
 
 Živa sada: clanstvo 1.15.7, kosarica 1.6.5, izleti 1.22.1, jedrenje 1.9.2, plan-a-prijave 0.6.1 (aktivan; 0.6.2 poslan – SEO pri otvaranju izleta + gumb),
