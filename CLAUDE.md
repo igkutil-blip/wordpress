@@ -100,6 +100,7 @@ Struktura od Igora (redom kako šalje):
    **Ispravak (0.7.2):** popis „Tvoji poslani izleti” samo za odabranog „Tko unosi”; izlet na čekanju → „Ispravi” (AJAX
    pap_unos_get) → isti izlet se ažurira (edit_id, keep_<slot> za nepromijenjene slike), mail „Ispravljen izlet…”.
    Ispravak prepisuje i ono što je Igor u međuvremenu promijenio u adminu dok je izlet na čekanju.
+   **Galerija (0.7.3):** najmanje 4, „+ Dodaj sliku” do 20 (gcount; okviri g1…gN po redu, × briše dodatni okvir).
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →
@@ -117,7 +118,7 @@ Struktura od Igora (redom kako šalje):
    (novi vodič u adminu → odmah na popisu). Barem jedan vodič obavezan (zajednička šifra – ne znamo tko unosi).
 10. **Povezani izleti:** kolege ne vide – automatski izbor (kao sada kad nije ništa označeno). **SEO** automatski (plan-a-seo/prijave).
 11. **Kategorija:** sama prema trajanju (1 → Izlet 1 dan, 2 → Izlet 2 dana, 3 → Izlet 3 dana, 4+ → Višednevni izleti).
-12. **Slike:** obavezno **glavna slika + točno/barem 4 slike galerije (ukupno 5)**; kolege učitavaju **bilo kakve slike**
+12. **Slike:** obavezno **glavna slika + najmanje 4 slike galerije** (do 20, gumb „+ Dodaj sliku”); kolege učitavaju **bilo kakve slike**
    (bilo koji omjer/veličina, s mobitela ili računala) – **sustav sam obreže na 3:2 (sredina) i smanji na 1800×1200 JPG**
    (u pregledniku prije slanja + na poslužitelju), okrene prema EXIF-u; premale (< 1200 px) prihvati, ali napomena Igoru.
    Alt/SEO slika automatski (plan-a-seo). Igor dobiva draft s već pripremljenim slikama.
