@@ -92,6 +92,8 @@ Struktura od Igora (redom kako šalje):
 2. **Osnovni podaci:** samo lokacija – padajući izbornik postojećih (bez dodavanja nove) i trajanje – samo broj **dana**
    (bez sati/minuta). **Bez noćenja i bez „najviše osoba”** – broj osoba kolege upisuju samo na karti (mjesta); „najviše
    osoba” se pri spremanju upiše isto kao mjesta na karti. Kvačica „slobodna mjesta” se ne prikazuje (ostaje uključena).
+3. **Termini:** samo **jedan termin od–do** (bez „više datuma”): početak (datum), sat polaska, kraj (prazno = isti dan),
+   prijave do (prazno = do početka). Datumi hrvatski (21.11.2026.), sat 24 h.
 
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
