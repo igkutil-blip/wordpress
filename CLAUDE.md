@@ -30,6 +30,7 @@ prvo predloži tekstualno, kad to traži. Shortcodeovi i HTML idu u Flatsome HTM
   (`status`, `mail`, `mail/test`, `plugin` – postavljanje našeg zipa, `plugin/{slug}/activate|deactivate` – i za
   `tour-booking-manager` (WpTravelly), `cron`, `log`,
   `meta/{id}`, `option/{ime}`), prijava `PROBA_WP_USER` + `PROBA_WP_APP_PASSWORD`. Na živoj stranici odbija sve.
+  Od 1.4.4 kopija je uvijek noindex (meta, Rank Math, X-Robots-Tag, robots.txt bez sitemapa).
 - Iz ove sesije internet ide samo preko HTTPS-a (FTP/SSH ne rade).
 - Kopija koristi **kopije Google tablica** („Kopija datoteke Članovi Plan A nova” i
   „Kopija datoteke Prijave na izlete nova”), nikad prave tablice. Spojeno 12.10.2026.: kopija stranice ima

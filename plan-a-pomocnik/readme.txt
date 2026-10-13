@@ -1,5 +1,5 @@
 === Plan A – pomoćnik za kopiju ===
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 License: GPLv2 or later
 
 SAMO ZA KOPIJU STRANICE (staging). Na srd-plan-a.hr odbija sve i prikazuje upozorenje da ga treba obrisati.
@@ -24,6 +24,9 @@ Claude (administrator prijavljen lozinkom aplikacije) preko REST API-ja (plan-a-
 Ne može: dirati druge dodatke (osim uključivanja i isključivanja WpTravellyja), temu ni WordPress, raditi na živoj stranici.
 
 == Promjene ==
+= 1.4.4 =
+* Kopija se ne indeksira: noindex/nofollow (meta, Rank Math, zaglavlje X-Robots-Tag), „Onemogući indeksiranje” uvijek uključeno, robots.txt bez sitemapa. Radi i kad se kopija ponovno napravi iz žive stranice.
+
 = 1.4.3 =
 * Naziv primjerka „Cjelokupni iznos uplaćen”.
 

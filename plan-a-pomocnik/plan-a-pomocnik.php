@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A – pomoćnik za kopiju
  * Description:       SAMO ZA KOPIJU STRANICE (staging). Sve mailove kopije preusmjerava na jednu adresu (ili ih blokira). Claudeu omogućuje da preko REST API-ja postavlja i ažurira naše dodatke (plan-a-*), pokreće našu automatiku i čita zapis grešaka. Na srd-plan-a.hr odbija sve.
- * Version:           1.4.3
+ * Version:           1.4.4
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -35,7 +35,38 @@ final class Plan_A_Pomocnik {
 			add_action( 'phpmailer_init', array( __CLASS__, 'mail_phpmailer' ), PHP_INT_MAX );
 			add_filter( 'wp_mail_from', array( __CLASS__, 'mail_from' ), PHP_INT_MAX );
 			add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
+			// Kopija nikad ne ide u Google (ni kad se ponovno napravi iz žive stranice).
+			add_filter( 'pre_option_blog_public', array( __CLASS__, 'no_index_option' ), PHP_INT_MAX );
+			add_filter( 'wp_robots', 'wp_robots_no_robots', PHP_INT_MAX );
+			add_filter( 'rank_math/frontend/robots', array( __CLASS__, 'no_index_rank_math' ), PHP_INT_MAX );
+			add_action( 'send_headers', array( __CLASS__, 'no_index_header' ) );
+			add_filter( 'robots_txt', array( __CLASS__, 'no_index_robots_txt' ), PHP_INT_MAX );
 		}
+	}
+
+	public static function no_index_option() {
+		return '0';
+	}
+
+	public static function no_index_rank_math( $robots ) {
+		$robots          = is_array( $robots ) ? $robots : array();
+		$robots['index']  = 'noindex';
+		$robots['follow'] = 'nofollow';
+		return $robots;
+	}
+
+	public static function no_index_header() {
+		if ( ! headers_sent() ) {
+			header( 'X-Robots-Tag: noindex, nofollow', true );
+		}
+	}
+
+	/**
+	 * robots.txt kopije bez sitemapa. Pretraživanje se ne zabranjuje, da Google vidi „noindex”
+	 * i izbaci stranice kopije koje je možda već zabilježio.
+	 */
+	public static function no_index_robots_txt( $txt ) {
+		return "# KOPIJA STRANICE (staging) – stranice imaju noindex\nUser-agent: *\nDisallow: /wp-admin/\n";
 	}
 
 	public static function is_live(): bool {
