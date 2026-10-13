@@ -99,6 +99,8 @@ Struktura od Igora (redom kako šalje):
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →
    usluga „Osiguranje” 9,95 €** automatski; **> 350 €** iznos računaju kolegice (agencija) → Igoru napomena u mailu, upisuje sam.
    Detalje unosa osiguranja Igor dogovara poslije, kad završimo prednji dio.
+5. **Uključeno / nije uključeno i aktivnosti:** sve postojeće stavke s kvačicama i ikonicama, **bez dodavanja novih**
+   i bez mijenjanja ikonica (to radi Igor u adminu). Kvačica u jednom stupcu miče istu stavku iz drugog.
 
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
