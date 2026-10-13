@@ -116,6 +116,15 @@ nakon instalacije clanstva unutar sat-dva, sada s uplatnicom na agenciju) · 4) 
 instalirati i uključiti (WpTravelly još uključen) · 6) isključiti WpTravelly (ne brisati) · 7) SpeedyCache očistiti
 · 8) provjere · Povratak: uključiti WpTravelly, isključiti plan-a-prijave (podaci su isti ttbm_*).
 
+## Plan A kontakt (13.10.2026.) – `plan-a-kontakt` 1.0.0 (obje grane, isti zip)
+
+Zamjena za obrisane Contact Form 7 / WPForms / CFDB7. `[plan-a-kontakt]` (atributi predmet, izlet, telefon, gumb,
+poruka, okvir; `?izlet=ID`). Mail na primatelja (prazno = WooCommerce adresa pošiljatelja, info@), Reply-To pošiljatelj,
+potvrda pošiljatelju bez njegova teksta; poruke spremljene u admin → Poruke (privatni `plan_a_poruka`, brišu se nakon
+24 mj.). Spam: skriveno polje, JS + 3 s, 5/10 min po IP-u, 40/h ukupno, ≤2 poveznice. Na kopiji instaliran i probano.
+Živa: instalirati, Kontakt (624) zamijeniti `[contact-form-7 …]` s `[plan-a-kontakt]`, objava „Poziv na avanturu”
+`[wpforms id="3136"]` → `[plan-a-kontakt predmet="…" okvir="da"]`, SpeedyCache očistiti.
+
 ## Za živu stranicu – na čekanju (odraditi zajedno pri prelasku)
 
 Igor ne pamti ništa od ovoga: kad završimo s kopijom, **ja** pripremim sve zipove za živu stranicu i
