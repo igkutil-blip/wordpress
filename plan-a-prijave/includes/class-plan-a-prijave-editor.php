@@ -369,14 +369,14 @@ final class Plan_A_Prijave_Editor {
 	/** Kartice: ključ => [naziv, dashicon, kratki opis]. */
 	const TABS = array(
 		'opis'     => array( 'Opis', 'dashicons-edit-page', 'Naslov i opis izleta' ),
-		'osnovno'  => array( 'Osnovni podaci', 'dashicons-location', 'Lokacija, trajanje, broj osoba' ),
+		'osnovno'  => array( 'Osnovni podaci', 'dashicons-location', 'Lokacija i trajanje' ),
 		'termini'  => array( 'Termini', 'dashicons-calendar-alt', 'Datumi i prijave do' ),
 		'cijene'   => array( 'Cijene i usluge', 'dashicons-tickets-alt', 'Karte, rate i osiguranje' ),
-		'sadrzaj'  => array( 'Uključeno i aktivnosti', 'dashicons-yes-alt', 'Što je u cijeni, aktivnosti' ),
 		'izlet'    => array( 'Važno za izlet', 'dashicons-flag', 'Na stranici prvo, na otvaranje' ),
 		'vodici'   => array( 'Vodiči', 'dashicons-groups', 'Tko vodi izlet, slike i opisi' ),
 		'galerija' => array( 'Galerija', 'dashicons-format-gallery', 'Slike na vrhu stranice' ),
 		'vazno'    => array( 'Važno', 'dashicons-info-outline', 'Uvjeti, agencija, izjava' ),
+		'sadrzaj'  => array( 'Uključeno i aktivnosti', 'dashicons-yes-alt', 'Što je u cijeni, aktivnosti' ),
 		'kontakt'  => array( 'Zašto s nama i kontakt', 'dashicons-email-alt', 'Razlozi, okvir za upit' ),
 		'povezani' => array( 'Povezani izleti', 'dashicons-admin-links', '„Odaberi sljedeću avanturu”' ),
 		'ostalo'   => array( 'Ostalo (SEO …)', 'dashicons-admin-generic', 'Okviri drugih dodataka' ),
@@ -401,7 +401,7 @@ final class Plan_A_Prijave_Editor {
 		echo '</nav>';
 
 		/* Osnovno */
-		self::section( 'osnovno', 'Osnovni podaci', 'Prikazuju se u karticama ispod galerije (lokacija, trajanje, najviše osoba, slobodna mjesta). Glavna slika i kategorija su u desnom stupcu.' );
+		self::section( 'osnovno', 'Osnovni podaci', 'Prikazuju se u karticama ispod galerije (lokacija, trajanje, slobodna mjesta). Glavna slika i kategorija su u desnom stupcu.' );
 		$loc = (string) $m( 'ttbm_location_name' );
 		echo '<div class="pap-grid">';
 		// Lokacija (zemlja): padajući izbornik postojećih + nova (pojam se stvara pri spremanju).
@@ -416,15 +416,9 @@ final class Plan_A_Prijave_Editor {
 		}
 		echo '<option value="__new__">+ Dodaj novu lokaciju…</option></select>'
 			. '<span class="pap-loc-new" hidden><input type="text" class="pap-loc-name" placeholder="npr. Španjolska"><button type="button" class="button pap-loc-add">Dodaj</button></span></label>';
-		echo '<label>Trajanje<span class="pap-inline"><input type="number" min="0" step="0.5" name="pap[duration]" value="' . self::e( $m( 'ttbm_travel_duration' ) ) . '"><select name="pap[duration_type]">';
-		foreach ( array( 'day' => 'dana', 'hour' => 'sati', 'min' => 'minuta' ) as $k => $l ) {
-			echo '<option value="' . esc_attr( $k ) . '"' . selected( $m( 'ttbm_travel_duration_type', 'day' ), $k, false ) . '>' . esc_html( $l ) . '</option>';
-		}
-		echo '</select></span></label>';
-		echo '<label>Noćenja<input type="number" min="0" name="pap[nights]" value="' . self::e( $m( 'ttbm_travel_duration_night' ) ) . '"><small>prazno = ne prikazuje se</small></label>';
-		echo '<label>Najviše osoba<input type="number" min="0" name="pap[max_people]" value="' . self::e( $m( 'ttbm_travel_max_people_allow' ) ) . '"><small>informacija na stranici; stvarna mjesta su kod karata</small></label>';
+		echo '<label>Trajanje (dana)<input type="number" min="1" step="1" name="pap[duration]" value="' . self::e( $m( 'ttbm_travel_duration' ) ) . '"><small>kraj izleta računa se iz broja dana</small></label>';
 		echo '</div>';
-		echo '<label class="pap-check"><input type="checkbox" name="pap[seats]" value="1"' . checked( 'off' !== $m( 'ttbm_display_seat_details', 'on' ), true, false ) . '> Na stranici prikaži slobodna mjesta (npr. 3/25)</label>';
+		echo '<p class="pap-hint">Broj osoba upisuje se kod karata (Cijene i usluge – mjesta); na stranici se uvijek prikazuju slobodna mjesta (npr. 3/25).</p>';
 		echo '</section>';
 
 		/* Termini */
@@ -736,18 +730,14 @@ final class Plan_A_Prijave_Editor {
 		update_post_meta( $id, 'ttbm_display_location', self::on( '' !== $loc ) );
 		$dur = sanitize_text_field( (string) ( $p['duration'] ?? '' ) );
 		update_post_meta( $id, 'ttbm_travel_duration', $dur );
-		update_post_meta( $id, 'ttbm_travel_duration_type', in_array( $p['duration_type'] ?? '', array( 'day', 'hour', 'min' ), true ) ? $p['duration_type'] : 'day' );
+		update_post_meta( $id, 'ttbm_travel_duration_type', 'day' ); // trajanje je uvijek u danima
 		update_post_meta( $id, 'ttbm_display_duration', self::on( '' !== $dur ) );
-		$nights = sanitize_text_field( (string) ( $p['nights'] ?? '' ) );
-		update_post_meta( $id, 'ttbm_travel_duration_night', $nights );
-		update_post_meta( $id, 'ttbm_display_duration_night', self::on( '' !== $nights && (int) $nights > 0 ) );
-		$max = sanitize_text_field( (string) ( $p['max_people'] ?? '' ) );
-		update_post_meta( $id, 'ttbm_travel_max_people_allow', $max );
-		update_post_meta( $id, 'ttbm_display_max_people', self::on( '' !== $max ) );
-		update_post_meta( $id, 'ttbm_display_seat_details', self::on( ! empty( $p['seats'] ) ) );
+		update_post_meta( $id, 'ttbm_travel_duration_night', '' ); // noćenja se ne prodaju – ne prikazuju se
+		update_post_meta( $id, 'ttbm_display_duration_night', 'off' );
+		update_post_meta( $id, 'ttbm_display_seat_details', 'on' ); // slobodna mjesta uvijek (npr. 3/25)
 
 		/* Termini (kraj iz trajanja u danima, prijave do početka) */
-		$days_n = 'day' === ( $p['duration_type'] ?? 'day' ) && is_numeric( str_replace( ',', '.', $dur ) ) ? (int) ceil( (float) str_replace( ',', '.', $dur ) ) : 1;
+		$days_n = is_numeric( str_replace( ',', '.', $dur ) ) ? (int) ceil( (float) str_replace( ',', '.', $dur ) ) : 1;
 		$end_of = static fn( string $start ) => $start ? gmdate( 'Y-m-d', strtotime( $start . ' 12:00:00 +' . max( 0, $days_n - 1 ) . ' days' ) ) : '';
 		$type   = 'fixed' === ( $p['travel_type'] ?? '' ) ? 'fixed' : 'particular';
 		$old  = Plan_A_Prijave_Tour::dates( $id );
@@ -842,6 +832,9 @@ final class Plan_A_Prijave_Editor {
 			}
 		}
 		update_post_meta( $id, 'ttbm_ticket_type', $tickets );
+		// „Najviše osoba” na stranici = mjesta na kartama (bez karte za prvu ratu).
+		update_post_meta( $id, 'ttbm_travel_max_people_allow', $pool > 0 ? (string) $pool : '' );
+		update_post_meta( $id, 'ttbm_display_max_people', self::on( $pool > 0 ) );
 
 		/* Usluge */
 		$services = array();

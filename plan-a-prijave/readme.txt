@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.7.5
+Stable tag: 0.7.6
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,10 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.7.6 =
+* Osnovni podaci izleta: samo lokacija i trajanje u danima (maknuti noćenja, izbor sati/minuta, „Najviše osoba” i kvačica slobodnih mjesta). „Najviše osoba” na stranici = mjesta na kartama; slobodna mjesta (npr. 3/25) uvijek se prikazuju.
+* Lijeva traka: „Uključeno i aktivnosti” ispod „Važno”.
 
 = 0.7.5 =
 * „Popunjeno”: izlet na popisu izleta dobiva crvenu oznaku POPUNJENO i ide na kraj popisa (filtar plan_a_izleti_sold_out); gumb osvježi popis i predmemoriju stranice izleta. Na stranici izleta uz cijenu piše „Popunjeno” (umjesto „Sold out” / crtice).
