@@ -103,6 +103,7 @@ Struktura od Igora (redom kako šalje):
    i bez mijenjanja ikonica (to radi Igor u adminu). Kvačica u jednom stupcu miče istu stavku iz drugog.
 6. **Važno za izlet:** pitanja su **fiksna** (iz predloška, uvijek istim redoslijedom), kolege ih ne mogu mijenjati,
    premještati ni brisati; svi blokovi otvoreni; ispod svakog pitanja polje samo za zalijepiti (isto kao opis).
+   Polja su **prazna i obavezna** – obrazac se ne može predati dok svi odgovori nisu upisani.
 
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
