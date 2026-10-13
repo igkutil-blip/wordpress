@@ -105,7 +105,9 @@ Struktura od Igora (redom kako šalje):
 admin Termini: samo početak, kraj = početak + (dani − 1), prijave do početka (i za „više datuma”); popis izleta: gumb
 „Popunjeno” / „Otvori prijave” (meta `_pap_full`; filtri u Plan_A_Prijave_Seats: dostupno 0, kapacitet = prodano, košarica odbija).
 **0.7.5:** Popunjeno i na popisu izleta (filtar `plan_a_izleti_sold_out` → oznaka + na kraj; gumb briše cache popisa i radi wp_update_post),
-na karti „Popunjeno” umjesto „Sold out”; lijeva traka: … Važno za izlet, Vodiči, Galerija, Važno, Zašto s nama, Povezani, Ostalo.
+na karti „Popunjeno” umjesto „Sold out”.
+**0.7.6:** lijeva traka: Opis, Osnovni, Termini, Cijene, Važno za izlet, Vodiči, Galerija, Važno, Uključeno i aktivnosti, Zašto s nama,
+Povezani, Ostalo; Osnovni podaci = lokacija + trajanje (dana); max_people = mjesta karata; noćenja off; slobodna mjesta uvijek on.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →
