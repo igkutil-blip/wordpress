@@ -85,6 +85,9 @@ Stranica `[plan-a-unos-izleta]` u plan-a-prijave: noindex, izvan sitemapa, bez p
 šifrom** (Igorova odluka, dva kolege); skraćeni obrazac → izlet „Na čekanju” + mail Igoru → Igor pregleda i objavi.
 Igor šalje slike i opise željenog izgleda – **ne kretati u izradu dok ne pošalje strukturu.** Kolege upisuju i **cijenu**.
 Predložak (Važno, uvjeti, agencija, izjava…) bit će **poseban predložak, nevezan za ijedan izlet** – radimo ga zajedno.
+Struktura od Igora (redom kako šalje):
+1. **Opis:** samo dva polja – naslov izleta i tekst izleta; bez alata za uređivanje, samo zalijepi (copy-paste);
+   tekst se sprema jednoobrazno (Plan_A_Prijave_Text::clean – font, veličina, boje van).
 
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
