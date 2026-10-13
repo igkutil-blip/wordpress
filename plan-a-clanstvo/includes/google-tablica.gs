@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 19;
+var SCRIPT_VERSION = 20;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -1124,6 +1124,9 @@ function agLinks_(sh) {
   var nc = agC_('narudzba'), xc = agC_('otkazao') - 1, ic = agC_('iznos') - 1, pc = agC_('prijavio') - 1;
   var notes = sh.getRange(1, nc, ix.last, 1).getNotes();
   var bgs = sh.getRange(1, nc, ix.last, 1).getBackgrounds();
+  // Ista boja narudžbe i na kućicama „Uplaćeno” (prva rata) i „2. rata”: lakše se prati tko je platio.
+  var uc = agC_('uplaceno'), rc = agC_('rata2');
+  var ubg = sh.getRange(1, uc, ix.last, 1).getBackgrounds(), rbg = sh.getRange(1, rc, ix.last, 1).getBackgrounds();
   var by = {};
   for (var r = 2; r <= ix.last; r++) {
     var info = ix.info[r];
@@ -1163,8 +1166,17 @@ function agLinks_(sh) {
       var bg = String(bgs[r - 1][0] || '').toLowerCase();
       if (color && bg !== color) get().setBackground(color);
       if (!color && AG_LINK_COLORS.indexOf(bg) >= 0) get().setBackground(ix.data[r - 1][xc] === true ? AG_GREY : null);
+      agLinkBox_(sh, r, uc, String(ubg[r - 1][0] || '').toLowerCase(), color, ix.data[r - 1][xc] === true);
+      // „2. rata” samo gdje je kućica (izlet bez rata ima isključeno, sivo polje).
+      if (typeof ix.data[r - 1][rc - 1] === 'boolean') agLinkBox_(sh, r, rc, String(rbg[r - 1][0] || '').toLowerCase(), color, ix.data[r - 1][xc] === true);
     });
   });
+}
+
+/** Boja narudžbe na kućici (ili vraćanje boje kad narudžba više nije višestruka). */
+function agLinkBox_(sh, r, c, bg, color, gone) {
+  if (color && bg !== color) sh.getRange(r, c).setBackground(color);
+  if (!color && AG_LINK_COLORS.indexOf(bg) >= 0) sh.getRange(r, c).setBackground(gone ? AG_GREY : null);
 }
 
 /* ---------- Popis za vodiča, dnevni sažetak, bilješke ---------- */
