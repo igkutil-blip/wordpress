@@ -89,6 +89,8 @@ Struktura od Igora (redom kako šalje):
 1. **Opis:** samo dva polja – naslov izleta i tekst izleta; bez alata za uređivanje, samo zalijepi (copy-paste);
    tekst se sprema jednoobrazno (Plan_A_Prijave_Text::clean – font, veličina, boje van). Odabrano: polje bez gumba
    koje pri lijepljenju **čuva podebljano, odlomke i popise** (contenteditable + čišćenje), ne goli tekst.
+2. **Osnovni podaci:** lokacija – padajući izbornik postojećih (bez dodavanja nove); trajanje – samo broj **dana** (bez
+   izbora sati/minuta); **bez noćenja**; najviše osoba (broj). Kvačica „slobodna mjesta” se ne prikazuje (ostaje uključena).
 
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
