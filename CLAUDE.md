@@ -78,6 +78,24 @@ Dokument s popisom i planom: https://claude.ai/code/artifact/e688755a-5ea4-46bb-
 
 Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate”); druga rata 30 dana prije izleta.
 
+## PLAN PRELASKA NA ŽIVU (pripremljeno 13.10.2026., Igor radi noću kad stigne)
+
+Stanje žive 13.10.2026. (WC system_status): clanstvo 1.14.5, kosarica 1.5.5, izleti 1.21.1, jedrenje 1.8.2,
+aplikacija 1.4.0, kalkulator 1.0.1, poklon-bon 1.3.0 (isključen), newsletter NIJE instaliran, WpTravelly 2.3.4,
+WSB HUB3 3.0.2, Rank Math, Backuply, SpeedyCache. Plaćanje: samo bankovni prijenos (Teya/KEKS isključeni).
+Zipovi (zadana grana = prijave, isti): clanstvo 1.15.7, kosarica 1.6.5, izleti 1.22.1, jedrenje 1.9.2 + plan-a-prijave 0.6.1.
+plan-a-pomocnik NIKAD na živu. Newsletter ne instalirati bez Igorova dogovora.
+
+Mjesta kod izleta s ratama (nova pravila: mjesta su samo na karti „Uplata”, prva rata ih dijeli):
+7935 Doček – prodano 20 prve rate + 4 Uplata = 24 → kod „Uplata” upisati 25 (ili koliko je stvarno mjesta) PRIJE gašenja WpTravellyja;
+7730 Zimsko III – Uplata 12 + prva rata 12 (prodano 3) → Igor odlučuje 12 ili 24; 9001 Hvar – 8 + 8 (prodano 2) → 8.
+
+Redoslijed: 0) Backuply puna kopija · 1) dodaci (clanstvo, kosarica, izleti, jedrenje) zajedno · 2) skripta v20 u tablici
+članova + ukljuciBrzoOsvjezavanje + Provjeri vezu (prave tablice!) · 3) #8989: odluka o ponovnom mailu (ide automatski
+nakon instalacije clanstva unutar sat-dva, sada s uplatnicom na agenciju) · 4) mjesta kod rata · 5) plan-a-prijave
+instalirati i uključiti (WpTravelly još uključen) · 6) isključiti WpTravelly (ne brisati) · 7) SpeedyCache očistiti
+· 8) provjere · Povratak: uključiti WpTravelly, isključiti plan-a-prijave (podaci su isti ttbm_*).
+
 ## Za živu stranicu – na čekanju (odraditi zajedno pri prelasku)
 
 Igor ne pamti ništa od ovoga: kad završimo s kopijom, **ja** pripremim sve zipove za živu stranicu i
