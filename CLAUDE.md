@@ -87,7 +87,8 @@ Igor šalje slike i opise željenog izgleda – **ne kretati u izradu dok ne po�
 Predložak (Važno, uvjeti, agencija, izjava…) bit će **poseban predložak, nevezan za ijedan izlet** – radimo ga zajedno.
 Struktura od Igora (redom kako šalje):
 1. **Opis:** samo dva polja – naslov izleta i tekst izleta; bez alata za uređivanje, samo zalijepi (copy-paste);
-   tekst se sprema jednoobrazno (Plan_A_Prijave_Text::clean – font, veličina, boje van).
+   tekst se sprema jednoobrazno (Plan_A_Prijave_Text::clean – font, veličina, boje van). Odabrano: polje bez gumba
+   koje pri lijepljenju **čuva podebljano, odlomke i popise** (contenteditable + čišćenje), ne goli tekst.
 
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
