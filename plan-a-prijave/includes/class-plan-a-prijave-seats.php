@@ -22,6 +22,38 @@ final class Plan_A_Prijave_Seats {
 		add_filter( 'ttbm_ticket_availability_info', array( __CLASS__, 'availability_info' ), 20, 2 );
 		add_filter( 'woocommerce_add_to_cart_validation', array( __CLASS__, 'validate' ), 95, 2 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'script' ), 30 );
+		// Gumb „Popunjeno” u popisu izleta: nema slobodnih mjesta, mjesta karata ostaju upisana.
+		add_filter( 'ttbm_total_available_qty', array( __CLASS__, 'full_available' ), 99, 2 );
+		add_filter( 'ttbm_ticket_capacity', array( __CLASS__, 'full_capacity' ), 99, 4 );
+		add_filter( 'woocommerce_add_to_cart_validation', array( __CLASS__, 'full_validate' ), 90, 2 );
+	}
+
+	const FULL = '_pap_full';
+
+	/** Je li izlet ručno zatvoren gumbom „Popunjeno”. */
+	public static function is_full( int $tour_id ): bool {
+		return $tour_id > 0 && (bool) get_post_meta( $tour_id, self::FULL, true );
+	}
+
+	public static function full_available( $total, $tour_id ) {
+		return self::is_full( (int) $tour_id ) ? 0 : $total;
+	}
+
+	/** Kapacitet karte = već prodano (slobodno 0). */
+	public static function full_capacity( $cap, $tour_id, $date = '', $name = '' ) {
+		return self::is_full( (int) $tour_id ) ? (int) TTBM_Function::get_total_sold( (int) $tour_id, $date, (string) $name ) : $cap;
+	}
+
+	public static function full_validate( $passed, $product_id ) {
+		$tour_id = isset( $_POST['ttbm_id'] ) ? absint( wp_unslash( $_POST['ttbm_id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! $tour_id ) {
+			$tour_id = absint( get_post_meta( (int) $product_id, 'link_ttbm_id', true ) );
+		}
+		if ( $passed && self::is_full( $tour_id ) ) {
+			wc_add_notice( 'Izlet je popunjen – prijave više nisu moguće.', 'error' );
+			return false;
+		}
+		return $passed;
 	}
 
 	/** Karta za prvu ratu (dogovor: naziv sadrži „prve rate”). */

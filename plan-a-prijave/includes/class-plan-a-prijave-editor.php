@@ -430,9 +430,9 @@ final class Plan_A_Prijave_Editor {
 		/* Termini */
 		$type = (string) $m( 'ttbm_travel_type', 'particular' );
 		$type = 'fixed' === $type ? 'fixed' : 'particular';
-		self::section( 'termini', 'Termini', 'Termin na koji već postoje prijave ne može se promijeniti ni obrisati (prijave bi ostale na krivom datumu). Ako se izlet seli, javi pa ćemo prijave prebaciti.' );
+		self::section( 'termini', 'Termini', 'Upisuje se samo <strong>početak</strong> – kraj izleta računa se iz trajanja (Osnovni podaci, broj dana), a prijave su otvorene <strong>do početka izleta</strong>. Termin na koji već postoje prijave ne može se promijeniti ni obrisati (prijave bi ostale na krivom datumu). Ako se izlet seli, javi pa ćemo prijave prebaciti.' );
 		echo '<p class="pap-radio"><label><input type="radio" name="pap[travel_type]" value="particular"' . checked( $type, 'particular', false ) . '> Jedan ili više datuma</label> <label><input type="radio" name="pap[travel_type]" value="fixed"' . checked( $type, 'fixed', false ) . '> Jedan termin od–do</label></p>';
-		echo '<div class="pap-type pap-type-particular"' . ( 'fixed' === $type ? ' hidden' : '' ) . '><table class="pap-table"><thead><tr><th>Datum polaska</th><th>Datum povratka</th><th>Sat polaska</th><th>Prijave</th><th></th></tr></thead><tbody data-rows="dates">';
+		echo '<div class="pap-type pap-type-particular"' . ( 'fixed' === $type ? ' hidden' : '' ) . '><table class="pap-table"><thead><tr><th>Datum polaska</th><th>Sat polaska</th><th>Prijave</th><th></th></tr></thead><tbody data-rows="dates">';
 		$rows = Plan_A_Prijave_Tour::rows( $id, 'ttbm_particular_dates' );
 		if ( 'fixed' === $type ) {
 			$rows = array();
@@ -449,8 +449,6 @@ final class Plan_A_Prijave_Editor {
 		echo '<div class="pap-type pap-type-fixed"' . ( 'fixed' !== $type ? ' hidden' : '' ) . '><div class="pap-grid">'
 			. '<label>Početak<input type="date" name="pap[fixed][start]" value="' . self::e( $fd ) . '"' . ( $flck ? ' readonly' : '' ) . '></label>'
 			. '<label>Sat polaska<input type="time" name="pap[fixed][time]" value="' . self::e( $m( 'ttbm_travel_start_time' ) ) . '"></label>'
-			. '<label>Kraj<input type="date" name="pap[fixed][end]" value="' . self::e( substr( (string) $m( 'ttbm_travel_end_date' ), 0, 10 ) ) . '"></label>'
-			. '<label>Prijave do<input type="date" name="pap[fixed][reg_end]" value="' . self::e( substr( (string) $m( 'ttbm_travel_reg_end_date' ), 0, 10 ) ) . '"><small>prazno = do početka</small></label>'
 			. '</div>' . ( $flck ? '<p class="pap-lock">Na ovaj termin ima prijava (' . (int) $booked['dates'][ $fd ] . '), pa se početak ne može mijenjati.</p>' : '' ) . '</div>';
 		echo '</section>';
 
@@ -626,7 +624,6 @@ final class Plan_A_Prijave_Editor {
 	private static function date_row( string $k, string $start, string $end, string $time, int $n, bool $lock ): string {
 		$ro = $lock ? ' readonly' : '';
 		return '<tr' . ( $lock ? ' class="pap-locked"' : '' ) . '><td><input type="date" name="pap[dates][' . esc_attr( $k ) . '][start]" value="' . self::e( $start ) . '"' . $ro . '></td>'
-			. '<td><input type="date" name="pap[dates][' . esc_attr( $k ) . '][end]" value="' . self::e( $end ) . '"></td>'
 			. '<td><input type="time" name="pap[dates][' . esc_attr( $k ) . '][time]" value="' . self::e( $time ) . '"></td>'
 			. '<td>' . ( $n ? '<strong>' . $n . '</strong>' : '–' ) . '</td>' . self::tools( ! $lock ) . '</tr>';
 	}
@@ -749,8 +746,10 @@ final class Plan_A_Prijave_Editor {
 		update_post_meta( $id, 'ttbm_display_max_people', self::on( '' !== $max ) );
 		update_post_meta( $id, 'ttbm_display_seat_details', self::on( ! empty( $p['seats'] ) ) );
 
-		/* Termini */
-		$type = 'fixed' === ( $p['travel_type'] ?? '' ) ? 'fixed' : 'particular';
+		/* Termini (kraj iz trajanja u danima, prijave do početka) */
+		$days_n = 'day' === ( $p['duration_type'] ?? 'day' ) && is_numeric( str_replace( ',', '.', $dur ) ) ? (int) ceil( (float) str_replace( ',', '.', $dur ) ) : 1;
+		$end_of = static fn( string $start ) => $start ? gmdate( 'Y-m-d', strtotime( $start . ' 12:00:00 +' . max( 0, $days_n - 1 ) . ' days' ) ) : '';
+		$type   = 'fixed' === ( $p['travel_type'] ?? '' ) ? 'fixed' : 'particular';
 		$old  = Plan_A_Prijave_Tour::dates( $id );
 		$was  = 'fixed' === Plan_A_Prijave_Tour::meta( $id, 'ttbm_travel_type', 'particular' ) ? 'fixed' : 'particular';
 		if ( $was !== $type && array_intersect( $old, array_keys( $booked['dates'] ) ) ) {
@@ -766,10 +765,10 @@ final class Plan_A_Prijave_Editor {
 					continue;
 				}
 				$seen[ $s ] = 1;
-				$e          = self::date( $r['end'] ?? '' );
+				$e          = $end_of( $s );
 				$rows[]     = array(
 					'ttbm_particular_start_date' => $s,
-					'ttbm_particular_end_date'   => $e && $e >= $s ? $e : '',
+					'ttbm_particular_end_date'   => $e > $s ? $e : '',
 					'ttbm_particular_start_time' => preg_match( '/^\d{2}:\d{2}$/', (string) ( $r['time'] ?? '' ) ) ? (string) $r['time'] : '',
 				);
 			}
@@ -795,12 +794,10 @@ final class Plan_A_Prijave_Editor {
 				$start   = $prev;
 				$notes[] = 'Početak termina ima prijave i nije promijenjen.';
 			}
-			$end = self::date( $f['end'] ?? '' );
-			$reg = self::date( $f['reg_end'] ?? '' );
 			update_post_meta( $id, 'ttbm_travel_start_date', $start );
 			update_post_meta( $id, 'ttbm_travel_start_time', preg_match( '/^\d{2}:\d{2}$/', (string) ( $f['time'] ?? '' ) ) ? (string) $f['time'] : '' );
-			update_post_meta( $id, 'ttbm_travel_end_date', $end && $end >= $start ? $end : $start );
-			update_post_meta( $id, 'ttbm_travel_reg_end_date', $reg ?: $start );
+			update_post_meta( $id, 'ttbm_travel_end_date', $end_of( $start ) ?: $start );
+			update_post_meta( $id, 'ttbm_travel_reg_end_date', $start );
 		}
 		update_post_meta( $id, 'ttbm_travel_type', $type );
 

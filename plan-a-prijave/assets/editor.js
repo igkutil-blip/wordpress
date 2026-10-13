@@ -71,10 +71,25 @@ jQuery(function ($) {
 		if (!others.length) { nav.find('[data-tab="ostalo"]').remove(); }
 		var wpOpis = $('#titlediv, #postdivrich, #postexcerpt').attr('data-tab', 'opis');
 
+		// Tablice (karte, usluge, termini) na mobitelu: svako polje dobiva natpis iz zaglavlja stupca.
+		function labelTables() {
+			$('.pap-table').each(function () {
+				var heads = $(this).find('thead th').map(function () { return $.trim($(this).text()); }).get();
+				$(this).find('tbody tr').each(function () {
+					$(this).children('td').each(function (i) { if (heads[i]) { $(this).attr('data-l', heads[i]); } });
+				});
+			});
+		}
+		labelTables();
+		$(document).on('click', '.pap-add, .pap-add-rate', function () { setTimeout(labelTables, 0); });
+
 		var tabs = nav.find('a').map(function () { return $(this).data('tab'); }).get();
 		function show(tab, scroll) {
 			if (tabs.indexOf(tab) < 0) { tab = 'opis'; }
 			nav.find('a').removeClass('is-active').filter('[data-tab="' + tab + '"]').addClass('is-active');
+			// Na mobitelu (izbornik u jednom redu): aktivna kartica vidljiva u sredini reda.
+			var act = nav.find('a.is-active')[0];
+			if (act && nav[0].scrollWidth > nav[0].clientWidth + 4) { nav[0].scrollLeft = act.offsetLeft - (nav[0].clientWidth - act.offsetWidth) / 2; }
 			box.find('.pap-sec').each(function () { this.hidden = $(this).data('tab') !== tab; });
 			others.toggle(tab === 'ostalo');
 			// Okvir obrasca samo kad u kartici ima naših polja (na „Opis” su samo WordPressovi naslov i opis).
