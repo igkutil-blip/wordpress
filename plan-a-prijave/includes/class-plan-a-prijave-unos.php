@@ -45,6 +45,8 @@ final class Plan_A_Prijave_Unos {
 		add_filter( 'rank_math/sitemap/posts_to_exclude', array( __CLASS__, 'sitemap' ), 999 );
 		add_action( 'wp_ajax_pap_unos_send', array( __CLASS__, 'send' ) );
 		add_action( 'wp_ajax_nopriv_pap_unos_send', array( __CLASS__, 'send' ) );
+		add_action( 'wp_ajax_pap_unos_get', array( __CLASS__, 'get' ) );
+		add_action( 'wp_ajax_nopriv_pap_unos_get', array( __CLASS__, 'get' ) );
 		add_action( 'save_post_page', array( __CLASS__, 'remember_page' ), 10, 2 );
 		// Predložak se nikad ne objavljuje.
 		add_filter( 'wp_insert_post_data', array( __CLASS__, 'keep_template_draft' ), 30, 2 );
@@ -523,6 +525,7 @@ final class Plan_A_Prijave_Unos {
 
 		$h  = '<div class="papu"><form class="papu-form" novalidate>';
 		$h .= '<div class="papu-top"><button type="submit" class="papu-logout" form="papu-logout">Odjava</button></div>';
+		$h .= '<input type="hidden" name="edit_id" value=""><div class="papu-editbar" hidden><span>Ispravljaš izlet <strong></strong> – promijeni što želiš i klikni <strong>Spremi ispravke</strong>.</span><button type="button" class="papu-edit-cancel">Odustani</button></div>';
 		$h .= '<p class="papu-intro">Upiši izlet i klikni <strong>Pošalji na pregled</strong>. Izlet se ne objavljuje odmah – Igor ga pregleda i pusti na stranicu. Sva polja su obavezna osim onih gdje piše „opcija”.</p>';
 
 		// Tko unosi.
@@ -613,28 +616,27 @@ final class Plan_A_Prijave_Unos {
 		return $h;
 	}
 
-	/** Zadnji poslani izleti (samo pregled stanja). */
+	/** Poslani izleti; prikazuju se samo izleti odabranog „Tko unosi”; dok čekaju pregled, mogu se ispraviti. */
 	private static function sent_list(): string {
 		$list = get_posts(
 			array(
 				'post_type'      => Plan_A_Prijave_Tour::CPT,
 				'post_status'    => array( 'pending', 'publish', 'draft', 'future' ),
-				'posts_per_page' => 15,
+				'posts_per_page' => 60,
 				'meta_key'       => self::UNOS_META, // phpcs:ignore WordPress.DB.SlowDBQuery
 				'orderby'        => 'date',
 				'order'          => 'DESC',
 			)
 		);
-		if ( ! $list ) {
-			return '';
-		}
 		$st = array( 'pending' => 'čeka pregled', 'publish' => 'objavljen', 'draft' => 'u doradi', 'future' => 'zakazan' );
-		$h  = '<div class="papu papu-sent"><h3>Poslani izleti</h3><ul>';
+		$h  = '<div class="papu papu-sent" hidden><h3>Tvoji poslani izleti</h3><p class="papu-sent-none" hidden>Još nisi poslao nijedan izlet.</p><ul>';
 		foreach ( $list as $p ) {
 			$u  = (array) get_post_meta( $p->ID, self::UNOS_META, true );
-			$h .= '<li><span class="papu-st papu-st-' . esc_attr( $p->post_status ) . '">' . esc_html( $st[ $p->post_status ] ?? $p->post_status ) . '</span> '
-				. ( 'publish' === $p->post_status ? '<a href="' . esc_url( (string) get_permalink( $p ) ) . '" target="_blank">' . esc_html( $p->post_title ) . '</a>' : esc_html( $p->post_title ) )
-				. ' <small>– ' . esc_html( (string) ( $u['by_name'] ?? '' ) ) . ', ' . esc_html( get_the_date( 'j. n. Y.', $p ) ) . '</small></li>';
+			$h .= '<li data-by="' . (int) ( $u['by'] ?? 0 ) . '"><span class="papu-st papu-st-' . esc_attr( $p->post_status ) . '">' . esc_html( $st[ $p->post_status ] ?? $p->post_status ) . '</span> '
+				. ( 'publish' === $p->post_status ? '<a href="' . esc_url( (string) get_permalink( $p ) ) . '" target="_blank">' . esc_html( $p->post_title ) . '</a>' : '<span class="papu-sent-t">' . esc_html( $p->post_title ) . '</span>' )
+				. ' <small>– ' . esc_html( get_the_date( 'j. n. Y.', $p ) ) . '</small>'
+				. ( 'pending' === $p->post_status ? ' <button type="button" class="papu-edit" data-id="' . (int) $p->ID . '"><i class="fas fa-pen" aria-hidden="true"></i> Ispravi</button>' : '' )
+				. '</li>';
 		}
 		return $h . '</ul></div>';
 	}
@@ -788,8 +790,24 @@ final class Plan_A_Prijave_Unos {
 		$act   = array_values( array_intersect( array_map( 'absint', (array) ( $_POST['act'] ?? array() ) ), wp_list_pluck( self::terms( 'ttbm_tour_activities' ), 'term_id' ) ) );
 		$note  = isset( $_POST['note'] ) ? sanitize_textarea_field( wp_unslash( (string) $_POST['note'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 		$small = array_map( 'sanitize_key', (array) ( $_POST['small'] ?? array() ) );
+		// Ispravak izleta koji još čeka pregled.
+		$edit = absint( $_POST['edit_id'] ?? 0 );
+		$prev = array();
+		if ( $edit ) {
+			if ( ! self::editable( $edit ) ) {
+				self::fail( 'Ovaj izlet se više ne može ispravljati (Igor ga je već pregledao). Javi se Igoru.' );
+			}
+			$prev = self::images_of( $edit );
+		}
+		$keep = array();
 		foreach ( self::IMG_SLOTS as $slot ) {
-			if ( empty( $_FILES[ 'img_' . $slot ]['tmp_name'] ) ) {
+			$has = ! empty( $_FILES[ 'img_' . $slot ]['tmp_name'] );
+			$k   = absint( $_POST[ 'keep_' . $slot ] ?? 0 );
+			if ( ! $has && $edit && $k && in_array( $k, $prev, true ) ) {
+				$keep[ $slot ] = $k; // slika ostaje kakva je
+				continue;
+			}
+			if ( ! $has ) {
 				self::fail( 'main' === $slot ? 'Dodaj glavnu sliku.' : 'Dodaj sve 4 slike za galeriju.', 'img_' . $slot );
 			}
 		}
@@ -797,39 +815,62 @@ final class Plan_A_Prijave_Unos {
 		set_transient( $key, $tries + 1, HOUR_IN_SECONDS );
 
 		$guide = get_post( $who );
-		$id    = wp_insert_post(
-			array(
-				'post_type'    => Plan_A_Prijave_Tour::CPT,
-				'post_status'  => 'pending',
-				'post_title'   => $title,
-				'post_content' => $content,
-				'post_author'  => self::author(),
-			),
-			true
-		);
+		if ( $edit ) {
+			$id = wp_update_post( array( 'ID' => $edit, 'post_title' => $title, 'post_content' => $content ), true );
+		} else {
+			$id = wp_insert_post(
+				array(
+					'post_type'    => Plan_A_Prijave_Tour::CPT,
+					'post_status'  => 'pending',
+					'post_title'   => $title,
+					'post_content' => $content,
+					'post_author'  => self::author(),
+				),
+				true
+			);
+		}
 		if ( is_wp_error( $id ) ) {
 			self::fail( 'Izlet nije spremljen: ' . $id->get_error_message() );
 		}
 		$id = (int) $id;
 
-		// Slike (prije ostalog: ako ne uspiju, izlet se briše i ništa ne ostaje).
-		$imgs = array();
+		// Slike (ako ne uspiju: novi izlet se briše, kod ispravka ostaje kakav je bio).
+		$imgs  = array();
+		$added = array();
 		foreach ( self::IMG_SLOTS as $n => $slot ) {
+			if ( isset( $keep[ $slot ] ) ) {
+				$imgs[ $slot ] = $keep[ $slot ];
+				continue;
+			}
 			$a = self::save_image( 'img_' . $slot, $id, $title, $n + 1 );
 			if ( is_wp_error( $a ) ) {
-				foreach ( $imgs as $old ) {
+				foreach ( $added as $old ) {
 					wp_delete_attachment( $old, true );
 				}
-				wp_delete_post( $id, true );
+				if ( ! $edit ) {
+					wp_delete_post( $id, true );
+				}
 				self::fail( 'Slika „' . ( 'main' === $slot ? 'glavna' : $slot ) . '” nije spremljena: ' . $a->get_error_message(), 'img_' . $slot );
 			}
 			$imgs[ $slot ] = (int) $a;
+			$added[]       = (int) $a;
+		}
+		// Zamijenjene slike ne ostaju u medijima.
+		foreach ( array_diff( $prev, array_values( $imgs ) ) as $old ) {
+			wp_delete_attachment( (int) $old, true );
 		}
 
-		$warn = self::store( $id, compact( 'loc', 'term', 'days', 'start', 'time', 'end', 'reg', 'price', 'seats', 'rate', 'faq', 'guides', 'inc', 'exc', 'act', 'imgs' ) );
-		foreach ( $small as $s ) {
-			if ( in_array( $s, self::IMG_SLOTS, true ) ) {
-				$warn[] = ( 'main' === $s ? 'Glavna slika' : 'Slika ' . array_search( $s, self::IMG_SLOTS, true ) ) . ' je mala (manje od ' . self::IMG_MIN . ' px) – na stranici će biti mutnija.';
+		$warn  = self::store( $id, compact( 'loc', 'term', 'days', 'start', 'time', 'end', 'reg', 'price', 'seats', 'rate', 'faq', 'guides', 'inc', 'exc', 'act', 'imgs' ) );
+		$old_u = $edit ? (array) get_post_meta( $id, self::UNOS_META, true ) : array();
+		$small = array_values( array_intersect( $small, self::IMG_SLOTS ) );
+		foreach ( (array) ( $old_u['small'] ?? array() ) as $s ) {
+			if ( isset( $keep[ $s ] ) && ! in_array( $s, $small, true ) ) {
+				$small[] = $s; // zadržana mala slika ostaje mala
+			}
+		}
+		foreach ( self::IMG_SLOTS as $i => $s ) {
+			if ( in_array( $s, $small, true ) ) {
+				$warn[] = ( 'main' === $s ? 'Glavna slika' : 'Slika ' . $i ) . ' je mala (manje od ' . self::IMG_MIN . ' px) – na stranici će biti mutnija.';
 			}
 		}
 		update_post_meta(
@@ -840,14 +881,94 @@ final class Plan_A_Prijave_Unos {
 				'by_name' => $guide ? $guide->post_title : '',
 				'note'    => $note,
 				'warn'    => $warn,
-				'time'    => current_time( 'j. n. Y. H:i' ),
+				'small'   => $small,
+				'time'    => $old_u['time'] ?? current_time( 'j. n. Y. H:i' ),
+				'edited'  => $edit ? current_time( 'j. n. Y. H:i' ) : '',
 			)
 		);
 		// SEO i ostalo što se radi nakon spremanja (s već upisanim podacima).
 		wp_update_post( array( 'ID' => $id ) );
-		self::mail( $id, $guide ? $guide->post_title : '', $note, $warn );
+		self::mail( $id, $guide ? $guide->post_title : '', $note, $warn, (bool) $edit );
 
-		wp_send_json_success( array( 'message' => 'Hvala! Izlet „' . $title . '” je poslan na pregled. Igor će ga pregledati i objaviti.' ) );
+		wp_send_json_success(
+			array(
+				'message' => $edit
+					? 'Ispravke su spremljene. Izlet „' . $title . '” i dalje čeka Igorov pregled.'
+					: 'Hvala! Izlet „' . $title . '” je poslan na pregled. Igor će ga pregledati i objaviti.',
+			)
+		);
+	}
+
+	/** Izlet s unosa koji još čeka pregled (samo takav kolege mogu ispravljati). */
+	private static function editable( int $id ): bool {
+		return Plan_A_Prijave_Tour::CPT === get_post_type( $id ) && 'pending' === get_post_status( $id ) && is_array( get_post_meta( $id, self::UNOS_META, true ) );
+	}
+
+	/** Slike izleta: [glavna, galerija…] (ID-evi). */
+	private static function images_of( int $id ): array {
+		return array_values( array_filter( array_map( 'intval', array_merge( array( get_post_thumbnail_id( $id ) ), (array) get_post_meta( $id, 'ttbm_gallery_images', true ) ) ) ) );
+	}
+
+	/** Podaci izleta za ponovno otvaranje u obrascu (ispravak). */
+	public static function get() {
+		nocache_headers();
+		if ( ! self::allowed() ) {
+			self::fail( 'Prijava je istekla. Osvježi stranicu i upiši šifru.' );
+		}
+		$id = absint( $_POST['id'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! self::editable( $id ) ) {
+			self::fail( 'Ovaj izlet se više ne može ispravljati (Igor ga je već pregledao).' );
+		}
+		$m    = static fn( $k ) => get_post_meta( $id, $k, true );
+		$u    = (array) $m( self::UNOS_META );
+		$tk   = Plan_A_Prijave_Tour::rows( $id, 'ttbm_ticket_type' );
+		$rate = '';
+		foreach ( $tk as $t ) {
+			if ( Plan_A_Prijave_Seats::is_rate( (string) ( $t['ticket_type_name'] ?? '' ) ) ) {
+				$rate = (string) $t['ticket_type_price'];
+			}
+		}
+		$faq = array();
+		foreach ( Plan_A_Prijave_Tour::rows( $id, 'mep_event_faq' ) as $f ) {
+			$faq[ (string) ( $f['ttbm_faq_title'] ?? '' ) ] = (string) ( $f['ttbm_faq_content'] ?? '' );
+		}
+		$answers = array();
+		foreach ( self::questions() as $i => $q ) {
+			$answers[ $i ] = $faq[ $q ] ?? '';
+		}
+		$imgs = array();
+		$ids  = array_merge( array( (int) get_post_thumbnail_id( $id ) ), array_map( 'intval', (array) $m( 'ttbm_gallery_images' ) ) );
+		foreach ( self::IMG_SLOTS as $n => $slot ) {
+			$a = (int) ( $ids[ $n ] ?? 0 );
+			$src = $a ? wp_get_attachment_image_src( $a, 'full' ) : false;
+			if ( $src ) {
+				$imgs[ $slot ] = array( 'id' => $a, 'url' => $src[0] );
+			}
+		}
+		$start = (string) $m( 'ttbm_travel_start_date' );
+		wp_send_json_success(
+			array(
+				'id'       => $id,
+				'title'    => html_entity_decode( get_the_title( $id ), ENT_QUOTES, 'UTF-8' ),
+				'who'      => (int) ( $u['by'] ?? 0 ),
+				'content'  => (string) get_post_field( 'post_content', $id ),
+				'location' => (string) $m( 'ttbm_location_name' ),
+				'days'     => (string) $m( 'ttbm_travel_duration' ),
+				'start'    => $start ? gmdate( 'd.m.Y.', strtotime( $start . ' 12:00' ) ) : '',
+				'time'     => (string) $m( 'ttbm_travel_start_time' ),
+				'price'    => str_replace( '.', ',', (string) ( $tk[0]['ticket_type_price'] ?? '' ) ),
+				'seats'    => (string) ( $tk[0]['ticket_type_qty'] ?? '' ),
+				'rate'     => str_replace( '.', ',', $rate ),
+				'inc'      => array_values( (array) $m( 'ttbm_service_included_in_price' ) ),
+				'exc'      => array_values( (array) $m( 'ttbm_service_excluded_in_price' ) ),
+				'act'      => array_values( array_map( 'strval', (array) $m( 'ttbm_tour_activities' ) ) ),
+				'guides'   => array_values( array_map( 'strval', (array) $m( 'ttbm_tour_guide' ) ) ),
+				'faq'      => $answers,
+				'note'     => (string) ( $u['note'] ?? '' ),
+				'imgs'     => $imgs,
+				'small'    => array_values( (array) ( $u['small'] ?? array() ) ),
+			)
+		);
 	}
 
 	/** Autor izleta: korisnik s adresom primatelja maila, inače prvi administrator. */
@@ -1006,7 +1127,7 @@ final class Plan_A_Prijave_Unos {
 		return $warn;
 	}
 
-	private static function mail( int $id, string $by, string $note, array $warn ): bool {
+	private static function mail( int $id, string $by, string $note, array $warn, bool $edit = false ): bool {
 		$to = self::recipient();
 		if ( ! is_email( $to ) ) {
 			return false;
@@ -1018,7 +1139,7 @@ final class Plan_A_Prijave_Unos {
 		$term  = wp_date( 'j. n. Y.', strtotime( $start . ' 12:00' ) ) . ' u ' . get_post_meta( $id, 'ttbm_travel_start_time', true ) . ( $end && $end !== $start ? ' – ' . wp_date( 'j. n. Y.', strtotime( $end . ' 12:00' ) ) : '' );
 		$rows  = array(
 			array( 'Izlet', '<strong>' . esc_html( $p->post_title ) . '</strong>' ),
-			array( 'Unio', esc_html( $by ) ),
+			array( $edit ? 'Ispravio' : 'Unio', esc_html( $by ) ),
 			array( 'Termin', esc_html( $term ) ),
 			array( 'Lokacija', esc_html( get_post_meta( $id, 'ttbm_location_name', true ) . ', ' . get_post_meta( $id, 'ttbm_travel_duration', true ) . ' dana' ) ),
 			array( 'Cijena', esc_html( self::hr_money( (string) ( $tk[0]['ticket_type_price'] ?? 0 ) ) . ( isset( $tk[1] ) ? ' (prva rata ' . self::hr_money( (string) $tk[1]['ticket_type_price'] ) . ')' : '' ) ) ),
@@ -1038,16 +1159,16 @@ final class Plan_A_Prijave_Unos {
 		);
 		$html = Plan_A_Email::render(
 			array(
-				'title'     => 'Novi izlet na pregled',
+				'title'     => $edit ? 'Ispravljen izlet na pregled' : 'Novi izlet na pregled',
 				'subtitle'  => esc_html( $p->post_title ),
 				'icon'      => 'plus',
 				'label'     => 'Unos izleta',
-				'preheader' => $by . ' je unio izlet ' . $p->post_title,
+				'preheader' => $by . ( $edit ? ' je ispravio izlet ' : ' je unio izlet ' ) . $p->post_title,
 			),
 			$body
 		);
 		$from = sanitize_email( (string) get_option( 'woocommerce_email_from_address', '' ) ) ?: (string) get_option( 'admin_email' );
 		$name = str_replace( array( '"', "\r", "\n" ), '', trim( wp_strip_all_tags( (string) get_option( 'woocommerce_email_from_name', '' ) ) ) ?: 'Plan A' );
-		return (bool) wp_mail( $to, 'Novi izlet na pregled: ' . wp_specialchars_decode( $p->post_title, ENT_QUOTES ) . ' (' . $by . ')', $html, array( 'Content-Type: text/html; charset=UTF-8', 'From: "' . $name . '" <' . $from . '>' ) );
+		return (bool) wp_mail( $to, ( $edit ? 'Ispravljen izlet na pregled: ' : 'Novi izlet na pregled: ' ) . wp_specialchars_decode( $p->post_title, ENT_QUOTES ) . ' (' . $by . ')', $html, array( 'Content-Type: text/html; charset=UTF-8', 'From: "' . $name . '" <' . $from . '>' ) );
 	}
 }
