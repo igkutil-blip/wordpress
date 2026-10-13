@@ -29,6 +29,7 @@ final class Plan_A_Prijave_Admin {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ), 99 );
 		add_filter( 'post_row_actions', array( __CLASS__, 'row_actions' ), 20, 2 );
 		add_action( 'admin_post_pap_status', array( __CLASS__, 'set_status' ) );
+		add_action( 'admin_post_pap_full', array( __CLASS__, 'set_full' ) );
 		add_filter( 'removable_query_args', static fn( $a ) => array_merge( (array) $a, array( 'pap_done' ) ) );
 	}
 
@@ -270,12 +271,21 @@ final class Plan_A_Prijave_Admin {
 					'private' => 'Privatan',
 				);
 				echo '<span class="pap-st is-' . esc_attr( $st ) . '">' . esc_html( $l[ $st ] ?? $st ) . '</span>';
+				if ( Plan_A_Prijave_Seats::is_full( (int) $id ) ) {
+					echo ' <span class="pap-st is-full">Popunjeno</span>';
+				}
 				if ( current_user_can( 'edit_post', $id ) ) {
 					$to   = 'publish' === $st ? 'draft' : 'publish';
 					$link = wp_nonce_url( admin_url( 'admin-post.php?action=pap_status&id=' . $id . '&to=' . $to ), 'pap_status_' . $id );
 					echo '<span class="pap-quick">';
 					if ( ! Plan_A_Prijave_Unos::is_template( (int) $id ) ) { // predložak se ne objavljuje
 						echo '<a class="button button-small" href="' . esc_url( $link ) . '">' . ( 'draft' === $to ? 'U skicu' : 'Objavi' ) . '</a>';
+					}
+					// Zatvori / otvori prijave (izlet se prikazuje kao popunjen).
+					if ( in_array( $st, array( 'publish', 'future' ), true ) ) {
+						$full = Plan_A_Prijave_Seats::is_full( (int) $id );
+						$fl   = wp_nonce_url( admin_url( 'admin-post.php?action=pap_full&id=' . $id . '&to=' . ( $full ? 0 : 1 ) ), 'pap_full_' . $id );
+						echo '<a class="button button-small ' . ( $full ? 'pap-open' : 'pap-full' ) . '" href="' . esc_url( $fl ) . '"' . ( $full ? '' : ' onclick="return confirm(\'Zatvoriti prijave? Izlet će na stranici pisati kao popunjen. Može se vratiti gumbom Otvori prijave.\')"' ) . '>' . ( $full ? 'Otvori prijave' : 'Popunjeno' ) . '</a>';
 					}
 				}
 				if ( current_user_can( 'delete_post', $id ) ) {
@@ -297,6 +307,25 @@ final class Plan_A_Prijave_Admin {
 		wp_update_post( array( 'ID' => $id, 'post_status' => $to ) );
 		$back = wp_get_referer() ?: admin_url( 'edit.php?post_type=ttbm_tour' );
 		wp_safe_redirect( add_query_arg( 'pap_done', $to, remove_query_arg( 'pap_done', $back ) ) );
+		exit;
+	}
+
+	/** Gumb „Popunjeno” / „Otvori prijave”. */
+	public static function set_full() {
+		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+		check_admin_referer( 'pap_full_' . $id );
+		if ( ! $id || 'ttbm_tour' !== get_post_type( $id ) || ! current_user_can( 'edit_post', $id ) ) {
+			wp_die( 'Nemaš dozvolu.' );
+		}
+		if ( ! empty( $_GET['to'] ) ) {
+			update_post_meta( $id, Plan_A_Prijave_Seats::FULL, current_time( 'mysql' ) );
+		} else {
+			delete_post_meta( $id, Plan_A_Prijave_Seats::FULL );
+		}
+		clean_post_cache( $id );
+		do_action( 'plan_a_prijave_full_changed', $id, ! empty( $_GET['to'] ) );
+		$back = wp_get_referer() ?: admin_url( 'edit.php?post_type=ttbm_tour' );
+		wp_safe_redirect( add_query_arg( 'pap_done', empty( $_GET['to'] ) ? 'open' : 'full', remove_query_arg( 'pap_done', $back ) ) );
 		exit;
 	}
 
@@ -338,7 +367,13 @@ final class Plan_A_Prijave_Admin {
 			array( 'Popunjeni', $full, 'dashicons-lock' ),
 		);
 		if ( isset( $_GET['pap_done'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			echo '<div class="notice notice-success is-dismissible"><p>' . ( 'publish' === $_GET['pap_done'] ? 'Izlet je objavljen.' : 'Izlet je premješten u skice (više se ne vidi na stranici).' ) . '</p></div>'; // phpcs:ignore WordPress.Security.NonceVerification
+			$done = sanitize_key( wp_unslash( $_GET['pap_done'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+			$msgs = array(
+				'publish' => 'Izlet je objavljen.',
+				'full'    => 'Prijave su zatvorene – izlet na stranici piše kao popunjen.',
+				'open'    => 'Prijave su ponovno otvorene.',
+			);
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $msgs[ $done ] ?? 'Izlet je premješten u skice (više se ne vidi na stranici).' ) . '</p></div>';
 		}
 		echo '<div class="pap-cards">';
 		foreach ( $cards as $c ) {
@@ -361,7 +396,7 @@ final class Plan_A_Prijave_Admin {
 .wp-list-table .column-title{width:34%}.wp-list-table .column-title .row-title{font-size:14px}
 .pap-date.is-past,.pap-seats.is-full{color:#b32d2e}.pap-seats.is-low{color:#b26200}
 .pap-st{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;background:#f0f0f1;color:#50575e}
-.pap-st.is-publish{background:#e6f5ea;color:#1d6b33}.pap-st.is-draft{background:#fdf1e4;color:#8a4a0b}.pap-st.is-future{background:#e8f4fb;color:#1e7fc4}
+.pap-st.is-full{background:#fde8e8;color:#b32d2e}.pap-quick .pap-full{color:#b32d2e;border-color:#e3b4b4}.pap-quick .pap-open{color:#1d6b33;border-color:#9fd3ad}.pap-st.is-publish{background:#e6f5ea;color:#1d6b33}.pap-st.is-draft{background:#fdf1e4;color:#8a4a0b}.pap-st.is-future{background:#e8f4fb;color:#1e7fc4}
 .wp-list-table td{vertical-align:middle}
 .pap-quick{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.pap-quick .button-small{min-height:26px;line-height:24px}
 .pap-quick .pap-trash{color:#b32d2e;border-color:#e3b4b4}

@@ -101,6 +101,9 @@ Struktura od Igora (redom kako šalje):
    pap_unos_get) → isti izlet se ažurira (edit_id, keep_<slot> za nepromijenjene slike), mail „Ispravljen izlet…”.
    Ispravak prepisuje i ono što je Igor u međuvremenu promijenio u adminu dok je izlet na čekanju.
    **Galerija (0.7.3):** najmanje 4, „+ Dodaj sliku” do 20 (gcount; okviri g1…gN po redu, × briše dodatni okvir).
+**0.7.4:** admin ekran izleta prilagođen mobitelu (editor.css @media 782/600, natpisi polja tablica iz zaglavlja – JS labelTables);
+admin Termini: samo početak, kraj = početak + (dani − 1), prijave do početka (i za „više datuma”); popis izleta: gumb
+„Popunjeno” / „Otvori prijave” (meta `_pap_full`; filtri u Plan_A_Prijave_Seats: dostupno 0, kapacitet = prodano, košarica odbija).
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →
