@@ -18,6 +18,7 @@ final class Plan_A_Prijave_Text {
 		add_filter( 'wp_insert_post_data', array( __CLASS__, 'post_data' ), 20, 2 );
 		add_filter( 'tiny_mce_before_init', array( __CLASS__, 'tinymce' ), 20, 2 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'front_css' ), 40 );
+		add_filter( 'the_content', array( __CLASS__, 'content_links' ), 30 );
 	}
 
 	/** Očisti HTML (opis izleta, blokovi Važno, opis vodiča). */
@@ -54,6 +55,78 @@ final class Plan_A_Prijave_Text {
 			$html = preg_replace( '#<span>(.*?)</span>#is', '$1', $html );
 		}
 		return $html;
+	}
+
+	/**
+	 * Brojevi telefona → poveznica za poziv (tel:), riječ „pristupnica” → stranica pristupnice.
+	 * Samo u tekstu izvan postojećih poveznica; IBAN, OIB i datumi se ne diraju.
+	 */
+	public static function links( string $html ): string {
+		if ( '' === trim( $html ) ) {
+			return $html;
+		}
+		$join = self::join_url();
+		$out  = '';
+		$in_a = 0;
+		foreach ( preg_split( '/(<[^>]+>)/', $html, -1, PREG_SPLIT_DELIM_CAPTURE ) as $part ) {
+			if ( '' !== $part && '<' === $part[0] ) {
+				if ( preg_match( '#^<a\b#i', $part ) ) {
+					++$in_a;
+				} elseif ( preg_match( '#^</a\s*>#i', $part ) ) {
+					$in_a = max( 0, $in_a - 1 );
+				}
+				$out .= $part;
+				continue;
+			}
+			if ( $in_a ) {
+				$out .= $part;
+				continue;
+			}
+			$part = self::phones( $part );
+			if ( '' !== $join ) {
+				$part = preg_replace( '/(?<![\p{L}\d\/-])(pristupnic\p{L}*)(?![\p{L}\d])/iu', '<a href="' . esc_url( $join ) . '">$1</a>', $part );
+			}
+			$out .= $part;
+		}
+		return $out;
+	}
+
+	/** Adresa stranice pristupnice (stranica „pristupnica”, inače /pristupnica/). */
+	public static function join_url(): string {
+		static $url = null;
+		if ( null === $url ) {
+			$p   = get_page_by_path( 'pristupnica' );
+			$url = $p && 'publish' === $p->post_status ? (string) get_permalink( $p ) : home_url( '/pristupnica/' );
+		}
+		return $url;
+	}
+
+	/** Hrvatski brojevi (091 520 4508, 095/906-0556, +385 91 …, 01 2345 678) → <a href="tel:+385…">. */
+	private static function phones( string $text ): string {
+		return (string) preg_replace_callback(
+			'/(?<![\p{L}\d+\/.,:-])((?:\+|00)385[ \/-]?\d{1,2}|0\d{1,2})((?:[ \/-]?\d{2,4}){1,3})(?![\p{L}\d\/:-]|[.,]\d)/u',
+			static function ( $m ) use ( $text ) {
+				$digits = preg_replace( '/\D/', '', $m[0] );
+				$nat    = preg_replace( '/^(00385|385)/', '0', $digits );
+				if ( strlen( $nat ) < 9 || strlen( $nat ) > 10 || '0' !== $nat[0] ) {
+					return $m[0];
+				}
+				// Bez razmaka samo mobiteli (09…), da OIB ili drugi brojevi ne postanu poveznica.
+				if ( ! preg_match( '/[ \/-]/', $m[0] ) && 0 !== strpos( $nat, '09' ) && ! preg_match( '/^(\+|00)/', $m[0] ) ) {
+					return $m[0];
+				}
+				return '<a href="tel:+385' . substr( $nat, 1 ) . '">' . $m[0] . '</a>';
+			},
+			$text
+		);
+	}
+
+	/** Opis izleta na stranici: telefoni i pristupnica kao poveznice (i za već upisane izlete). */
+	public static function content_links( $content ) {
+		if ( is_singular( Plan_A_Prijave_Tour::CPT ) && in_the_loop() ) {
+			return self::links( (string) $content );
+		}
+		return $content;
 	}
 
 	/** Opis izleta i vodiča pri spremanju. */

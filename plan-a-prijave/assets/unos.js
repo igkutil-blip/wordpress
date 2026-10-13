@@ -237,8 +237,6 @@
 			if (!v) { return [n, need[i][1]]; }
 		}
 		if (!toIso(form.elements.start.value)) { return ['start', 'Datum upiši ovako: 21.11.2026.']; }
-		if (form.elements.end.value.trim() && !toIso(form.elements.end.value)) { return ['end', 'Datum upiši ovako: 22.11.2026.']; }
-		if (form.elements.reg_end.value.trim() && !toIso(form.elements.reg_end.value)) { return ['reg_end', 'Datum upiši ovako: 13.11.2026.']; }
 		var faqs = $$('.papu-rich[data-name^="faq"]', form);
 		for (var j = 0; j < faqs.length; j++) {
 			if (!faqs[j].textContent.trim()) { return [faqs[j].closest('.papu-f').getAttribute('data-f'), 'Upiši odgovor.']; }
