@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A – pomoćnik za kopiju
  * Description:       SAMO ZA KOPIJU STRANICE (staging). Sve mailove kopije preusmjerava na jednu adresu (ili ih blokira). Claudeu omogućuje da preko REST API-ja postavlja i ažurira naše dodatke (plan-a-*), pokreće našu automatiku i čita zapis grešaka. Na srd-plan-a.hr odbija sve.
- * Version:           1.4.4
+ * Version:           1.4.5
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -222,6 +222,7 @@ final class Plan_A_Pomocnik {
 		register_rest_route( self::NS, '/status', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'status' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/plugin', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'install' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/plugin/(?P<slug>plan-a-[a-z0-9-]+|tour-booking-manager)/(?P<do>activate|deactivate)', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'toggle' ), 'permission_callback' => $ok ) );
+		register_rest_route( self::NS, '/plugin/(?P<slug>[a-z0-9-]+)/update', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'update' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/cron', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'cron' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/log', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'log' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/meta/(?P<id>\d+)', array(
@@ -321,6 +322,44 @@ final class Plan_A_Pomocnik {
 			'version' => $data['Version'] ?? '',
 			'active'  => $file && is_plugin_active( $file ),
 		);
+	}
+
+	/**
+	 * Dodatak treće strane na točno određenu verziju s wordpress.org (kao na živoj stranici).
+	 * Preko postojećeg (overwrite), pa postavke ostaju; ne briše i ne pokreće uninstall.
+	 */
+	public static function update( WP_REST_Request $req ) {
+		$slug    = (string) $req['slug'];
+		$version = (string) $req->get_param( 'version' );
+		if ( 0 === strpos( $slug, 'plan-a-' ) ) {
+			return new WP_Error( 'pap_ours', 'Naši dodaci se postavljaju zipom (POST /plugin).', array( 'status' => 400 ) );
+		}
+		if ( ! preg_match( '/^\d+(\.\d+){0,4}$/', $version ) ) {
+			return new WP_Error( 'pap_version', 'Upiši verziju (npr. 3.1.2).', array( 'status' => 400 ) );
+		}
+		$was = self::plugin_file( $slug );
+		if ( ! $was ) {
+			return new WP_Error( 'pap_none', 'Dodatak nije instaliran.', array( 'status' => 404 ) );
+		}
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/misc.php';
+		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		if ( 'direct' !== get_filesystem_method() ) {
+			return new WP_Error( 'pap_fs', 'Hosting ne dopušta izravno pisanje datoteka (FS_METHOD).', array( 'status' => 500 ) );
+		}
+		$active = is_plugin_active( $was );
+		$up     = new Plugin_Upgrader( new WP_Ajax_Upgrader_Skin() );
+		$res    = $up->install( 'https://downloads.wordpress.org/plugin/' . $slug . '.' . $version . '.zip', array( 'overwrite_package' => true ) );
+		if ( is_wp_error( $res ) || ! $res ) {
+			$err = is_wp_error( $res ) ? $res->get_error_message() : implode( ' ', (array) $up->skin->get_error_messages() );
+			return new WP_Error( 'pap_install', 'Nadogradnja nije uspjela: ' . $err, array( 'status' => 500 ) );
+		}
+		$file = self::plugin_file( $slug );
+		if ( $file && $active && ! is_plugin_active( $file ) ) {
+			activate_plugin( $file );
+		}
+		$data = $file ? get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false ) : array();
+		return array( 'ok' => true, 'plugin' => $file, 'version' => $data['Version'] ?? '', 'active' => $file && is_plugin_active( $file ) );
 	}
 
 	public static function toggle( WP_REST_Request $req ) {

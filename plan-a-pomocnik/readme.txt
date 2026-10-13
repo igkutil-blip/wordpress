@@ -1,5 +1,5 @@
 === Plan A – pomoćnik za kopiju ===
-Stable tag: 1.4.4
+Stable tag: 1.4.5
 License: GPLv2 or later
 
 SAMO ZA KOPIJU STRANICE (staging). Na srd-plan-a.hr odbija sve i prikazuje upozorenje da ga treba obrisati.
@@ -21,9 +21,12 @@ Claude (administrator prijavljen lozinkom aplikacije) preko REST API-ja (plan-a-
 * /meta/{id} – čitati i upisivati podatke uz zapis (izlet, narudžba…);
 * /option/{ime} – čitati naše postavke (plan_a*, ttbm*, pan_*, pac_*).
 
-Ne može: dirati druge dodatke (osim uključivanja i isključivanja WpTravellyja), temu ni WordPress, raditi na živoj stranici.
+Ne može: dirati druge dodatke (osim uključivanja i isključivanja WpTravellyja i postavljanja točne verzije s wordpress.org, kao na živoj), temu ni WordPress, raditi na živoj stranici.
 
 == Promjene ==
+= 1.4.5 =
+* REST plugin/{slug}/update (version=…): dodatak treće strane na točnu verziju s wordpress.org, kao na živoj (postavke ostaju).
+
 = 1.4.4 =
 * Kopija se ne indeksira: noindex/nofollow (meta, Rank Math, zaglavlje X-Robots-Tag), „Onemogući indeksiranje” uvijek uključeno, robots.txt bez sitemapa. Radi i kad se kopija ponovno napravi iz žive stranice.
 

@@ -28,7 +28,7 @@ prvo predloži tekstualno, kad to traži. Shortcodeovi i HTML idu u Flatsome HTM
   Pomoćnik se na kopiji nikad ne isključuje. Disable Emails se više ne koristi (blokirao bi i preusmjerene mailove).
 - Na kopiji je dodatak **plan-a-pomocnik** (grana `prijave`): REST `PROBA_URL/wp-json/plan-a-pomocnik/v1/`
   (`status`, `mail`, `mail/test`, `plugin` – postavljanje našeg zipa, `plugin/{slug}/activate|deactivate` – i za
-  `tour-booking-manager` (WpTravelly), `cron`, `log`,
+  `tour-booking-manager` (WpTravelly), `plugin/{slug}/update` (version=…, dodatak treće strane na točnu verziju s wordpress.org), `cron`, `log`,
   `meta/{id}`, `option/{ime}`), prijava `PROBA_WP_USER` + `PROBA_WP_APP_PASSWORD`. Na živoj stranici odbija sve.
   Od 1.4.4 kopija je uvijek noindex (meta, Rank Math, X-Robots-Tag, robots.txt bez sitemapa).
 - Iz ove sesije internet ide samo preko HTTPS-a (FTP/SSH ne rade).
@@ -124,6 +124,11 @@ potvrda pošiljatelju bez njegova teksta; poruke spremljene u admin → Poruke (
 24 mj.). Spam: skriveno polje, JS + 3 s, 5/10 min po IP-u, 40/h ukupno, ≤2 poveznice. Na kopiji instaliran i probano.
 Živa: instalirati, Kontakt (624) zamijeniti `[contact-form-7 …]` s `[plan-a-kontakt]`, objava „Poziv na avanturu”
 `[wpforms id="3136"]` → `[plan-a-kontakt predmet="…" okvir="da"]`, SpeedyCache očistiti.
+
+**Kopija ujednačena sa živom 13.10.2026.:** obrisani isti dodaci kao na živoj (CF7 + dodaci, CFDB7, WPForms, YITH, Nextend,
+smtp-mailer, KEKS, Borgun, Aircash, Imsanity, Say What, poklon-bon, …), verzije dodataka iste kao na živoj (pomoćnik 1.4.5),
+u smeću iste stranice (aaa, find, grid, wishlist, hotel-search…), „Poziv na avanturu” bez ankete, Doček Uplata 25.
+Na kopiji ostaju i pomoćnik, plan-a-newsletter i plan-a-kontakt (Kontakt već ima `[plan-a-kontakt]`).
 
 ## Za živu stranicu – na čekanju (odraditi zajedno pri prelasku)
 
