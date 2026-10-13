@@ -104,6 +104,8 @@ Struktura od Igora (redom kako šalje):
 6. **Važno za izlet:** pitanja su **fiksna** (iz predloška, uvijek istim redoslijedom), kolege ih ne mogu mijenjati,
    premještati ni brisati; svi blokovi otvoreni; ispod svakog pitanja polje samo za zalijepiti (isto kao opis).
    Polja su **prazna i obavezna** – obrazac se ne može predati dok svi odgovori nisu upisani.
+7. **Važno (uvjeti, agencija, izjava):** kolege **ne vide**; dolazi iz predloška. Sadržaj predloška Igor i Claude uređuju
+   **kasnije, kad sve proradi** (standardno, sitne izmjene).
 
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
