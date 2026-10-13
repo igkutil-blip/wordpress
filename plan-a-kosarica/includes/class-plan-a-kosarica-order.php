@@ -105,6 +105,22 @@ final class Plan_A_Kosarica_Order {
 		);
 	}
 
+	/** Podnožje mailova bez WooCommerceova engleskog „Built with WooCommerce”. */
+	public static function footer_hr( $text ) {
+		$text = trim( (string) preg_replace( '/\s*(?:&mdash;|&#8212;|—|–|-)?\s*Built\s+with\s+\{?WooCommerce\}?\.?/iu', '', (string) $text ) );
+		if ( '' === $text || '{site_title}' === $text ) {
+			$text = 'S.R.D. Plan A · Celovečka 60b, 10040 Zagreb · info@srd-plan-a.hr · 095 90 60 556';
+		}
+		return $text;
+	}
+
+	/** Oznaka jezika u zaglavlju svakog maila. */
+	public static function mail_language( $phpmailer ) {
+		if ( is_object( $phpmailer ) && method_exists( $phpmailer, 'addCustomHeader' ) ) {
+			$phpmailer->addCustomHeader( 'Content-Language', 'hr' );
+		}
+	}
+
 	/** @var bool Upravo se iscrtava naša stranica ili e-mail (za prijevode). */
 	private static $rendering = false;
 
@@ -113,6 +129,9 @@ final class Plan_A_Kosarica_Order {
 			return;
 		}
 		add_action( 'admin_post_plan_a_kosarica_test_email', array( __CLASS__, 'test_email' ) );
+		// Svi mailovi su na hrvatskom (Gmail inače nudi prijevod s engleskog).
+		add_filter( 'woocommerce_email_footer_text', array( __CLASS__, 'footer_hr' ), 5 );
+		add_action( 'phpmailer_init', array( __CLASS__, 'mail_language' ) );
 		if ( ! Plan_A_Kosarica_Settings::get( 'order' ) ) {
 			return;
 		}

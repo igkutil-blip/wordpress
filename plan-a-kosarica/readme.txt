@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.6.4
+Stable tag: 1.6.5
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -122,6 +122,10 @@ Naslov maila i stranice nakon uplate: „Cjelokupni iznos je uplaćen, vidimo se
 == Bez uplatnice kad je sve plaćeno (1.6.4) ==
 
 Mail „Cjelokupni iznos je uplaćen” nikad nema uplatnicu ni 2D kod.
+
+== Mailovi na hrvatskom (1.6.5) ==
+
+Iz podnožja svih mailova maknut je WooCommerceov engleski tekst „Built with WooCommerce” (bez drugog teksta podnožja ide „S.R.D. Plan A · adresa · e-mail · telefon”), a svaki mail ima oznaku jezika hr. Gmail zato više ne nudi prijevod s engleskog.
 
 == Postavke ==
 
