@@ -107,6 +107,8 @@ Struktura od Igora (redom kako šalje):
 7. **Važno (uvjeti, agencija, izjava):** kolege **ne vide**; dolazi iz predloška. Sadržaj predloška Igor i Claude uređuju
    **kasnije, kad sve proradi** (standardno, sitne izmjene).
 8. **Zašto s nama i kontakt:** kolege **ne vide**; uvijek isto – popunjava se iz predloška.
+9. **Vodiči:** samo **imena s kvačicama** (bez slika, opisa i dodavanja novog); popis se sam puni iz Plan A → Vodiči
+   (novi vodič u adminu → odmah na popisu). Barem jedan vodič obavezan (zajednička šifra – ne znamo tko unosi).
 
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
