@@ -134,7 +134,7 @@ napišem redoslijed (što isključiti, što instalirati, što provjeriti). Do ta
 - **Pravilo za otkaz (12.10.2026.):** agencija ne vraća novac za otkazani izlet/jedrenje; s osiguranjem od otkaza kupac
   se obraća osiguranju. Nigdje ne smije pisati da vraćamo novac ili postotak (mailovi, uvjeti jedrenja). U novim
   uputama za agenciju maknuti „povrat radite kao i dosad”.
-- **Upute (PDF) za agenciju i Krešu** napraviti nove **nakon prelaska, prema živoj stranici** (dogovor s Igorom; popis razlika napisan mu 12.10.2026.): naslov maila
+- **Upute (PDF) za agenciju i Krešu – NAPRAVLJENE 13.10.2026.** (izvor HTML u privremenoj mapi sesije, upute/), prije: napraviti nove **nakon prelaska, prema živoj stranici** (dogovor s Igorom; popis razlika napisan mu 12.10.2026.): naslov maila
   „Cjelokupni iznos je uplaćen…”, novi izlet samo za termine u 120 dana (najviše 3), zaštićeni stupci pitaju
   „jeste li sigurni”, mail s ostatkom 1–2 h nakon kvačice, stupac 2. rata postoji svugdje (siv), POPUNJEN /
   skoro pun (≤3) / nitko nije platio (10 dana), Krešo: kopija podsjetnika i 3 dana prije izleta; novo:
