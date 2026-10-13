@@ -374,10 +374,10 @@ final class Plan_A_Prijave_Editor {
 		'cijene'   => array( 'Cijene i usluge', 'dashicons-tickets-alt', 'Karte, rate i osiguranje' ),
 		'sadrzaj'  => array( 'Uključeno i aktivnosti', 'dashicons-yes-alt', 'Što je u cijeni, aktivnosti' ),
 		'izlet'    => array( 'Važno za izlet', 'dashicons-flag', 'Na stranici prvo, na otvaranje' ),
-		'vazno'    => array( 'Važno', 'dashicons-info-outline', 'Uvjeti, agencija, izjava' ),
-		'kontakt'  => array( 'Zašto s nama i kontakt', 'dashicons-email-alt', 'Razlozi, okvir za upit' ),
 		'vodici'   => array( 'Vodiči', 'dashicons-groups', 'Tko vodi izlet, slike i opisi' ),
 		'galerija' => array( 'Galerija', 'dashicons-format-gallery', 'Slike na vrhu stranice' ),
+		'vazno'    => array( 'Važno', 'dashicons-info-outline', 'Uvjeti, agencija, izjava' ),
+		'kontakt'  => array( 'Zašto s nama i kontakt', 'dashicons-email-alt', 'Razlozi, okvir za upit' ),
 		'povezani' => array( 'Povezani izleti', 'dashicons-admin-links', '„Odaberi sljedeću avanturu”' ),
 		'ostalo'   => array( 'Ostalo (SEO …)', 'dashicons-admin-generic', 'Okviri drugih dodataka' ),
 	);
