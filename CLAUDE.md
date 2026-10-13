@@ -28,7 +28,7 @@ prvo predloži tekstualno, kad to traži. Shortcodeovi i HTML idu u Flatsome HTM
   Pomoćnik se na kopiji nikad ne isključuje. Disable Emails se više ne koristi (blokirao bi i preusmjerene mailove).
 - Na kopiji je dodatak **plan-a-pomocnik** (grana `prijave`): REST `PROBA_URL/wp-json/plan-a-pomocnik/v1/`
   (`status`, `mail`, `mail/test`, `plugin` – postavljanje našeg zipa, `plugin/{slug}/activate|deactivate` – i za
-  `tour-booking-manager` (WpTravelly), `cron`, `log`,
+  `tour-booking-manager` (WpTravelly), `plugin/{slug}/update` (version=…, dodatak treće strane na točnu verziju s wordpress.org; bez version = najnovija), `updates`, `errors` (PHP greške/upozorenja iz dodataka i teme, DELETE briše), `cron`, `log`,
   `meta/{id}`, `option/{ime}`), prijava `PROBA_WP_USER` + `PROBA_WP_APP_PASSWORD`. Na živoj stranici odbija sve.
   Od 1.4.4 kopija je uvijek noindex (meta, Rank Math, X-Robots-Tag, robots.txt bez sitemapa).
 - Iz ove sesije internet ide samo preko HTTPS-a (FTP/SSH ne rade).
@@ -78,6 +78,48 @@ Dokument s popisom i planom: https://claude.ai/code/artifact/e688755a-5ea4-46bb-
 5. **Prelazak** (mjesec dogovoriti s korisnikom); WpTravelly ostaje instaliran za povratak.
 
 Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate”); druga rata 30 dana prije izleta.
+
+## „Unos izleta” za kolege – IZRAĐENO u plan-a-prijave 0.7.0 (13.10.2026.)
+
+Stranica `[plan-a-unos-izleta]` u plan-a-prijave: noindex, izvan sitemapa, bez predmemorije; pristup **jednom zajedničkom
+šifrom** (Igorova odluka, dva kolege); skraćeni obrazac → izlet „Na čekanju” + mail Igoru → Igor pregleda i objavi.
+Klasa `Plan_A_Prijave_Unos`, assets/unos.js|css; postavke Plan A → Unos izleta (kolege) (opcija `pap_unos`: hash, to, pages, template);
+predložak = skica s `_pap_template`; izlet kolege = pending s `_pap_unos` (by, by_name, note, warn). Lokalno sve isprobano. Kolege upisuju i **cijenu**.
+Predložak (Važno, uvjeti, agencija, izjava…) bit će **poseban predložak, nevezan za ijedan izlet** – radimo ga zajedno.
+Struktura od Igora (redom kako šalje):
+1. **Opis:** samo dva polja – naslov izleta i tekst izleta; bez alata za uređivanje, samo zalijepi (copy-paste);
+   tekst se sprema jednoobrazno (Plan_A_Prijave_Text::clean – font, veličina, boje van). Odabrano: polje bez gumba
+   koje pri lijepljenju **čuva podebljano, odlomke i popise** (contenteditable + čišćenje), ne goli tekst.
+2. **Osnovni podaci:** samo lokacija – padajući izbornik postojećih (bez dodavanja nove) i trajanje – samo broj **dana**
+   (bez sati/minuta). **Bez noćenja i bez „najviše osoba”** – broj osoba kolege upisuju samo na karti (mjesta); „najviše
+   osoba” se pri spremanju upiše isto kao mjesta na karti. Kvačica „slobodna mjesta” se ne prikazuje (ostaje uključena).
+3. **Termini:** samo **jedan termin od–do** (bez „više datuma”): početak (datum), sat polaska, kraj (prazno = isti dan),
+   prijave do (prazno = do početka). Datumi hrvatski (21.11.2026.), sat 24 h.
+4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
+   prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
+   upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →
+   usluga „Osiguranje” 9,95 €** automatski; **> 350 €** iznos računaju kolegice (agencija) → Igoru napomena u mailu, upisuje sam.
+   Detalje unosa osiguranja Igor dogovara poslije, kad završimo prednji dio.
+5. **Uključeno / nije uključeno i aktivnosti:** sve postojeće stavke s kvačicama i ikonicama, **bez dodavanja novih**
+   i bez mijenjanja ikonica (to radi Igor u adminu). Kvačica u jednom stupcu miče istu stavku iz drugog.
+6. **Važno za izlet:** pitanja su **fiksna** (iz predloška, uvijek istim redoslijedom), kolege ih ne mogu mijenjati,
+   premještati ni brisati; svi blokovi otvoreni; ispod svakog pitanja polje samo za zalijepiti (isto kao opis).
+   Polja su **prazna i obavezna** – obrazac se ne može predati dok svi odgovori nisu upisani.
+7. **Važno (uvjeti, agencija, izjava):** kolege **ne vide**; dolazi iz predloška. Sadržaj predloška Igor i Claude uređuju
+   **kasnije, kad sve proradi** (standardno, sitne izmjene).
+8. **Zašto s nama i kontakt:** kolege **ne vide**; uvijek isto – popunjava se iz predloška.
+9. **Vodiči:** samo **imena s kvačicama** (bez slika, opisa i dodavanja novog); popis se sam puni iz Plan A → Vodiči
+   (novi vodič u adminu → odmah na popisu). Barem jedan vodič obavezan (zajednička šifra – ne znamo tko unosi).
+10. **Povezani izleti:** kolege ne vide – automatski izbor (kao sada kad nije ništa označeno). **SEO** automatski (plan-a-seo/prijave).
+11. **Kategorija:** sama prema trajanju (1 → Izlet 1 dan, 2 → Izlet 2 dana, 3 → Izlet 3 dana, 4+ → Višednevni izleti).
+12. **Slike:** obavezno **glavna slika + točno/barem 4 slike galerije (ukupno 5)**; kolege učitavaju **bilo kakve slike**
+   (bilo koji omjer/veličina, s mobitela ili računala) – **sustav sam obreže na 3:2 (sredina) i smanji na 1800×1200 JPG**
+   (u pregledniku prije slanja + na poslužitelju), okrene prema EXIF-u; premale (< 1200 px) prihvati, ali napomena Igoru.
+   Alt/SEO slika automatski (plan-a-seo). Igor dobiva draft s već pripremljenim slikama.
+   **Okvir 3:2 za svaku sliku:** kolega mišem (ili prstom na mobitelu) **povlači sliku u okviru** i bira koji dio ostaje
+   (+ klizač za povećanje); izrez koji vidi = izrez koji se sprema (rezanje u pregledniku na 1800×1200).
+0. **Na vrhu stranice: „Tko unosi izlet”** – obavezan izbor, **isti popis kao Vodiči** (Krešimir Gracin, Igor Kutil,
+   Ivan Videk, Sonja Papeš; novi vodič → sam se doda); ime ide u mail Igoru i u izlet; taj vodič se sam označi u Vodičima.
 
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
@@ -131,6 +173,14 @@ potvrda pošiljatelju bez njegova teksta; poruke spremljene u admin → Poruke (
 24 mj.). Spam: skriveno polje, JS + 3 s, 5/10 min po IP-u, 40/h ukupno, ≤2 poveznice. Na kopiji instaliran i probano.
 Živa: instalirati, Kontakt (624) zamijeniti `[contact-form-7 …]` s `[plan-a-kontakt]`, objava „Poziv na avanturu”
 `[wpforms id="3136"]` → `[plan-a-kontakt predmet="…" okvir="da"]`, SpeedyCache očistiti.
+
+**Kopija ujednačena sa živom 13.10.2026.:** obrisani isti dodaci kao na živoj (CF7 + dodaci, CFDB7, WPForms, YITH, Nextend,
+smtp-mailer, KEKS, Borgun, Aircash, Imsanity, Say What, poklon-bon, …), verzije dodataka iste kao na živoj (pomoćnik 1.4.5),
+u smeću iste stranice (aaa, find, grid, wishlist, hotel-search…), „Poziv na avanturu” bez ankete, Doček Uplata 25.
+Na kopiji ostaju i pomoćnik, plan-a-newsletter i plan-a-kontakt (Kontakt već ima `[plan-a-kontakt]`, HTML v3).
+**WooCommerce 11.2.1 na kopiji 13.10.2026.:** baza se sama nadogradila; prije i poslije iste provjere (13 stranica, narudžba
+bankovnom uplatom #9057/#9060 → Završeno, 31 primjerak maila, 0 PHP grešaka) – bez razlike. Predlošci 11.2 se mijenjaju samo
+za varijante proizvoda/dostavu (ne utječe na naše). Flatsome ima zastarjele kopije predložaka (samo obavijest). Živa: može se nadograditi.
 
 ## Za živu stranicu – na čekanju (odraditi zajedno pri prelasku)
 

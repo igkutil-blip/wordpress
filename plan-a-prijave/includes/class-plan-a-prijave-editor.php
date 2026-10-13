@@ -576,7 +576,7 @@ final class Plan_A_Prijave_Editor {
 				'posts_per_page' => 300,
 				'orderby'        => 'title',
 				'order'          => 'ASC',
-				'post__not_in'   => array( $id ),
+				'post__not_in'   => array_filter( array( $id, Plan_A_Prijave_Unos::template_id() ) ),
 			)
 		);
 		self::section( 'povezani', 'Odaberi sljedeću avanturu', 'Izleti na dnu stranice. Ako ne označiš nijedan, stranica sama odabere slične izlete.' );
