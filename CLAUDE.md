@@ -28,7 +28,7 @@ prvo predloži tekstualno, kad to traži. Shortcodeovi i HTML idu u Flatsome HTM
   Pomoćnik se na kopiji nikad ne isključuje. Disable Emails se više ne koristi (blokirao bi i preusmjerene mailove).
 - Na kopiji je dodatak **plan-a-pomocnik** (grana `prijave`): REST `PROBA_URL/wp-json/plan-a-pomocnik/v1/`
   (`status`, `mail`, `mail/test`, `plugin` – postavljanje našeg zipa, `plugin/{slug}/activate|deactivate` – i za
-  `tour-booking-manager` (WpTravelly), `plugin/{slug}/update` (version=…, dodatak treće strane na točnu verziju s wordpress.org), `cron`, `log`,
+  `tour-booking-manager` (WpTravelly), `plugin/{slug}/update` (version=…, dodatak treće strane na točnu verziju s wordpress.org; bez version = najnovija), `updates`, `errors` (PHP greške/upozorenja iz dodataka i teme, DELETE briše), `cron`, `log`,
   `meta/{id}`, `option/{ime}`), prijava `PROBA_WP_USER` + `PROBA_WP_APP_PASSWORD`. Na živoj stranici odbija sve.
   Od 1.4.4 kopija je uvijek noindex (meta, Rank Math, X-Robots-Tag, robots.txt bez sitemapa).
 - Iz ove sesije internet ide samo preko HTTPS-a (FTP/SSH ne rade).
@@ -128,7 +128,10 @@ potvrda pošiljatelju bez njegova teksta; poruke spremljene u admin → Poruke (
 **Kopija ujednačena sa živom 13.10.2026.:** obrisani isti dodaci kao na živoj (CF7 + dodaci, CFDB7, WPForms, YITH, Nextend,
 smtp-mailer, KEKS, Borgun, Aircash, Imsanity, Say What, poklon-bon, …), verzije dodataka iste kao na živoj (pomoćnik 1.4.5),
 u smeću iste stranice (aaa, find, grid, wishlist, hotel-search…), „Poziv na avanturu” bez ankete, Doček Uplata 25.
-Na kopiji ostaju i pomoćnik, plan-a-newsletter i plan-a-kontakt (Kontakt već ima `[plan-a-kontakt]`).
+Na kopiji ostaju i pomoćnik, plan-a-newsletter i plan-a-kontakt (Kontakt već ima `[plan-a-kontakt]`, HTML v3).
+**WooCommerce 11.2.1 na kopiji 13.10.2026.:** baza se sama nadogradila; prije i poslije iste provjere (13 stranica, narudžba
+bankovnom uplatom #9057/#9060 → Završeno, 31 primjerak maila, 0 PHP grešaka) – bez razlike. Predlošci 11.2 se mijenjaju samo
+za varijante proizvoda/dostavu (ne utječe na naše). Flatsome ima zastarjele kopije predložaka (samo obavijest). Živa: može se nadograditi.
 
 ## Za živu stranicu – na čekanju (odraditi zajedno pri prelasku)
 

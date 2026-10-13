@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A – pomoćnik za kopiju
  * Description:       SAMO ZA KOPIJU STRANICE (staging). Sve mailove kopije preusmjerava na jednu adresu (ili ih blokira). Claudeu omogućuje da preko REST API-ja postavlja i ažurira naše dodatke (plan-a-*), pokreće našu automatiku i čita zapis grešaka. Na srd-plan-a.hr odbija sve.
- * Version:           1.4.5
+ * Version:           1.4.6
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -41,7 +41,88 @@ final class Plan_A_Pomocnik {
 			add_filter( 'rank_math/frontend/robots', array( __CLASS__, 'no_index_rank_math' ), PHP_INT_MAX );
 			add_action( 'send_headers', array( __CLASS__, 'no_index_header' ) );
 			add_filter( 'robots_txt', array( __CLASS__, 'no_index_robots_txt' ), PHP_INT_MAX );
+			// Upozorenja i greške PHP-a iz dodataka i teme (za provjeru nakon nadogradnji).
+			self::$prev_handler = set_error_handler( array( __CLASS__, 'on_error' ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions
+			register_shutdown_function( array( __CLASS__, 'on_shutdown' ) );
 		}
+	}
+
+	/* ---------------- Zapis PHP grešaka (samo kopija) ---------------- */
+
+	const ERR_OPT = 'plan_a_pomocnik_errors';
+
+	/** @var callable|null */
+	private static $prev_handler = null;
+
+	/** @var array Greške ovog zahtjeva. */
+	private static $errors = array();
+
+	private static function err_add( int $no, string $msg, string $file, int $line ) {
+		$root = wp_normalize_path( WP_CONTENT_DIR );
+		$file = wp_normalize_path( $file );
+		if ( 0 !== strpos( $file, $root . '/plugins/' ) && 0 !== strpos( $file, $root . '/themes/' ) && 0 !== strpos( $file, $root . '/mu-plugins/' ) ) {
+			return;
+		}
+		$types = array( E_ERROR => 'fatal', E_PARSE => 'fatal', E_CORE_ERROR => 'fatal', E_COMPILE_ERROR => 'fatal', E_USER_ERROR => 'error', E_RECOVERABLE_ERROR => 'error', E_WARNING => 'warning', E_USER_WARNING => 'warning', E_NOTICE => 'notice', E_USER_NOTICE => 'notice', E_DEPRECATED => 'deprecated', E_USER_DEPRECATED => 'deprecated' );
+		$short = substr( $file, strlen( $root ) + 1 );
+		$key   = md5( $short . ':' . $line . ':' . $msg );
+		$uri   = isset( $_SERVER['REQUEST_URI'] ) ? substr( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), 0, 150 ) : 'cli/cron';
+		self::$errors[ $key ] = array(
+			'type' => $types[ $no ] ?? (string) $no,
+			'file' => $short,
+			'line' => $line,
+			'msg'  => substr( $msg, 0, 500 ),
+			'url'  => $uri,
+		);
+	}
+
+	public static function on_error( $no, $msg, $file = '', $line = 0 ) {
+		if ( error_reporting() & $no ) { // phpcs:ignore WordPress.PHP.DevelopmentFunctions
+			self::err_add( (int) $no, (string) $msg, (string) $file, (int) $line );
+		}
+		return self::$prev_handler ? call_user_func( self::$prev_handler, $no, $msg, $file, $line ) : false;
+	}
+
+	public static function on_shutdown() {
+		$e = error_get_last();
+		if ( $e && in_array( $e['type'], array( E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR ), true ) ) {
+			self::err_add( (int) $e['type'], (string) $e['message'], (string) $e['file'], (int) $e['line'] );
+		}
+		if ( ! self::$errors || ! function_exists( 'get_option' ) ) {
+			return;
+		}
+		$all = (array) get_option( self::ERR_OPT, array() );
+		$now = current_time( 'mysql' );
+		foreach ( self::$errors as $k => $err ) {
+			$err['count'] = (int) ( $all[ $k ]['count'] ?? 0 ) + 1;
+			$err['first'] = $all[ $k ]['first'] ?? $now;
+			$err['last']  = $now;
+			$all[ $k ]    = $err;
+		}
+		uasort( $all, static fn( $a, $b ) => strcmp( (string) $b['last'], (string) $a['last'] ) );
+		update_option( self::ERR_OPT, array_slice( $all, 0, 200, true ), false );
+	}
+
+	public static function errors_get() {
+		return array( 'errors' => array_values( (array) get_option( self::ERR_OPT, array() ) ) );
+	}
+
+	public static function errors_clear() {
+		delete_option( self::ERR_OPT );
+		return array( 'ok' => true );
+	}
+
+	/** Dostupne nadogradnje dodataka (kako ih vidi WordPress kopije). */
+	public static function updates() {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		require_once ABSPATH . 'wp-admin/includes/update.php';
+		wp_clean_plugins_cache( true );
+		wp_update_plugins();
+		$out = array();
+		foreach ( (array) ( get_site_transient( 'update_plugins' )->response ?? array() ) as $file => $u ) {
+			$out[] = array( 'plugin' => $file, 'new_version' => $u->new_version ?? '', 'requires' => $u->requires ?? '', 'requires_php' => $u->requires_php ?? '', 'tested' => $u->tested ?? '' );
+		}
+		return array( 'wp' => get_bloginfo( 'version' ), 'php' => PHP_VERSION, 'updates' => $out );
 	}
 
 	public static function no_index_option() {
@@ -223,6 +304,11 @@ final class Plan_A_Pomocnik {
 		register_rest_route( self::NS, '/plugin', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'install' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/plugin/(?P<slug>plan-a-[a-z0-9-]+|tour-booking-manager)/(?P<do>activate|deactivate)', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'toggle' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/plugin/(?P<slug>[a-z0-9-]+)/update', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'update' ), 'permission_callback' => $ok ) );
+		register_rest_route( self::NS, '/updates', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'updates' ), 'permission_callback' => $ok ) );
+		register_rest_route( self::NS, '/errors', array(
+			array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'errors_get' ), 'permission_callback' => $ok ),
+			array( 'methods' => 'DELETE', 'callback' => array( __CLASS__, 'errors_clear' ), 'permission_callback' => $ok ),
+		) );
 		register_rest_route( self::NS, '/cron', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'cron' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/log', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'log' ), 'permission_callback' => $ok ) );
 		register_rest_route( self::NS, '/meta/(?P<id>\d+)', array(
@@ -334,8 +420,8 @@ final class Plan_A_Pomocnik {
 		if ( 0 === strpos( $slug, 'plan-a-' ) ) {
 			return new WP_Error( 'pap_ours', 'Naši dodaci se postavljaju zipom (POST /plugin).', array( 'status' => 400 ) );
 		}
-		if ( ! preg_match( '/^\d+(\.\d+){0,4}$/', $version ) ) {
-			return new WP_Error( 'pap_version', 'Upiši verziju (npr. 3.1.2).', array( 'status' => 400 ) );
+		if ( '' !== $version && ! preg_match( '/^\d+(\.\d+){0,4}$/', $version ) ) {
+			return new WP_Error( 'pap_version', 'Upiši verziju (npr. 3.1.2) ili ništa za najnoviju.', array( 'status' => 400 ) );
 		}
 		$was = self::plugin_file( $slug );
 		if ( ! $was ) {
@@ -349,7 +435,16 @@ final class Plan_A_Pomocnik {
 		}
 		$active = is_plugin_active( $was );
 		$up     = new Plugin_Upgrader( new WP_Ajax_Upgrader_Skin() );
-		$res    = $up->install( 'https://downloads.wordpress.org/plugin/' . $slug . '.' . $version . '.zip', array( 'overwrite_package' => true ) );
+		$package = 'https://downloads.wordpress.org/plugin/' . $slug . '.' . $version . '.zip';
+		if ( '' === $version ) {
+			$u = self::updates()['updates'];
+			$u = array_values( array_filter( $u, static fn( $x ) => $x['plugin'] === $was ) );
+			if ( ! $u ) {
+				return new WP_Error( 'pap_latest', 'Nema novije verzije.', array( 'status' => 400 ) );
+			}
+			$package = 'https://downloads.wordpress.org/plugin/' . $slug . '.' . $u[0]['new_version'] . '.zip';
+		}
+		$res    = $up->install( $package, array( 'overwrite_package' => true ) );
 		if ( is_wp_error( $res ) || ! $res ) {
 			$err = is_wp_error( $res ) ? $res->get_error_message() : implode( ' ', (array) $up->skin->get_error_messages() );
 			return new WP_Error( 'pap_install', 'Nadogradnja nije uspjela: ' . $err, array( 'status' => 500 ) );
