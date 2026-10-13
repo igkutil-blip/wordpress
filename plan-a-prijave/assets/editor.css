@@ -1,0 +1,147 @@
+/* Plan A izleti – obrazac za uređivanje izleta */
+#pap_editor .inside{margin:0;padding:0}
+.pap{--navy:#12304b;--line:#e3e8ee;--soft:#f4f7fa;--muted:#5f6b77;--orange:#e8862a;color:#24323f}
+.pap-sec{padding:18px 20px 22px;border-bottom:1px solid var(--line)}
+.pap-sec[hidden]{display:none}
+.pap-sec h3{margin:0 0 6px;font-size:15px;color:var(--navy)}
+.pap-sec h4{margin:14px 0 8px;font-size:13px;color:var(--navy)}
+.pap-hint{margin:0 0 12px;color:var(--muted);font-size:12.5px}
+.pap label{display:block;font-weight:600;font-size:12.5px;color:var(--navy)}
+.pap label input,.pap label select,.pap label textarea{display:block;width:100%;margin-top:4px;font-weight:400}
+.pap label small{display:block;font-weight:400;color:var(--muted);margin-top:3px}
+.pap .pap-check,.pap .pap-radio label,.pap .pap-checks label{display:flex;align-items:center;gap:6px;font-weight:400;color:#24323f}
+.pap .pap-check input,.pap .pap-checks input,.pap .pap-radio input{width:auto;margin:0}
+.pap-radio{display:flex;gap:18px}
+.pap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin:0 0 12px}
+.pap-inline{display:flex;gap:6px}.pap-inline input{width:90px!important}.pap-inline select{width:auto!important}
+.pap-table{width:100%;border-collapse:collapse;margin:4px 0 8px}
+.pap-table th{text-align:left;font-size:11.5px;color:var(--muted);font-weight:600;padding:4px 6px;border-bottom:1px solid var(--line)}
+.pap-table td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.pap-table input{width:100%}
+.pap-table td:nth-child(2) input[type=number]{max-width:110px}
+.pap-locked{background:#fdf1e4}.pap-locked input[readonly]{background:#fdf1e4;border-color:#f0d3b3}
+.pap-lock{color:#8a4a0b;font-size:12.5px}
+.pap-tools{white-space:nowrap;text-align:right}
+.pap-tools button{border:1px solid var(--line);background:#fff;border-radius:6px;width:26px;height:26px;margin-left:3px;cursor:pointer;color:var(--navy)}
+.pap-tools .pap-del{color:#b32d2e}
+.pap-two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.pap-checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px 14px;margin:0 0 10px}
+.pap-scroll{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:10px}
+.pap-two input[type=text],.pap-sec>input[type=text]{width:100%;max-width:420px}
+.pap-block{border:1px solid var(--line);border-radius:10px;padding:10px;margin:0 0 12px;background:#fff}
+.pap-block-head{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.pap-block-head input[type=text]{flex:1;font-weight:600}
+.pap-li{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}.pap-li textarea{flex:1}
+.pap-gallery{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px;padding:0;list-style:none}
+.pap-gallery li{position:relative;width:96px;height:96px;margin:0;cursor:move}
+.pap-gallery img{width:96px;height:96px;object-fit:cover;border-radius:8px;display:block}
+.pap-gdel{position:absolute;top:4px;right:4px;border:0;border-radius:50%;width:22px;height:22px;background:rgba(0,0,0,.6);color:#fff;cursor:pointer}
+@media (max-width:900px){.pap-two{grid-template-columns:1fr}.pap-table thead{display:none}.pap-table td{display:block;border:0}.pap-table tr{display:block;border-bottom:1px solid var(--line);padding:6px 0}}
+
+/* WpTravellyjeva traka (Natrag / Pregled / Spremi) ovdje ne treba: sprema se gumbom u okviru Objava. */
+body.post-type-ttbm_tour #ttbm-admin-page-header{display:none!important}
+
+/* ---------- Zaslon izleta: gornja traka, lijevi izbornik, kartice (0.4.0) ---------- */
+body.pap-layout{--navy:#12304b;--blue:#1e7fc4;--line:#e3e8ee;--soft:#f4f7fa;--muted:#5f6b77}
+body.pap-layout .wrap>h1.wp-heading-inline,body.pap-layout .wrap>.page-title-action,body.pap-layout .wrap>hr.wp-header-end+.notice-info:empty{display:none}
+.pap-bar{position:sticky;top:32px;z-index:20;display:flex;align-items:center;gap:12px;margin:8px 0 14px;padding:10px 16px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 8px rgba(18,48,75,.06)}
+.pap-back{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}
+.pap-back:hover{color:var(--blue)}
+.pap-bar-title{flex:1;font-size:16px;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pap-badge{padding:3px 10px;border-radius:999px;background:#fdf1e4;color:#8a4a0b;font-size:12px;font-weight:600}
+.pap-badge.is-pub{background:#e6f5ea;color:#1d6b33}
+.pap-bar-btns{display:flex;gap:8px}
+.pap-bar-btns .button{min-height:34px;padding:0 16px;border-radius:8px}
+body.pap-layout #poststuff #post-body.columns-2{display:grid;grid-template-columns:230px minmax(0,1fr) 290px;gap:0 20px;margin-right:0}
+body.pap-layout #post-body .pap-nav{grid-column:1;grid-row:1;align-self:start;position:sticky;top:96px;display:flex;flex-direction:column;gap:4px;padding:10px;background:#fff;border:1px solid var(--line);border-radius:12px}
+.pap-nav a{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:9px;color:var(--navy);text-decoration:none}
+.pap-nav a .dashicons{flex:none;margin-top:2px;color:var(--muted)}
+.pap-nav-t{display:flex;flex-direction:column;line-height:1.25}
+.pap-nav-t b{font-size:13px;font-weight:600}
+.pap-nav-t small{font-size:11.5px;color:var(--muted)}
+.pap-nav a:hover{background:var(--soft)}
+.pap-nav a.is-active{background:var(--blue);color:#fff}
+.pap-nav a.is-active .dashicons,.pap-nav a.is-active small{color:#e8f4fb}
+body.pap-layout .pap-main{grid-column:2;grid-row:1;min-width:0}
+body.pap-layout #post-body-content,body.pap-layout #postbox-container-2{float:none;width:auto;margin:0}
+body.pap-layout #postbox-container-1{grid-column:3;grid-row:1;float:none;width:auto;margin:0}
+body.pap-layout #post-body>br.clear{display:none}
+body.pap-layout #pap_editor{border-radius:12px;overflow:hidden}
+body.pap-layout #pap_editor .postbox-header{display:none}
+body.pap-layout #titlediv,body.pap-layout #postdivrich{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px}
+body.pap-layout #titlediv #title{border-radius:8px}
+body.pap-layout #postbox-container-1 .postbox{border-radius:12px;overflow:hidden}
+@media (max-width:1250px){
+ body.pap-layout #poststuff #post-body.columns-2{grid-template-columns:minmax(0,1fr) 270px}
+ body.pap-layout #post-body .pap-nav{grid-column:1/span 2;grid-row:1;position:static;flex-direction:row;flex-wrap:wrap;margin-bottom:16px}
+ .pap-nav a small{display:none}
+ body.pap-layout .pap-main{grid-column:1;grid-row:2}
+ body.pap-layout #postbox-container-1{grid-column:2;grid-row:2}
+}
+@media (max-width:850px){
+ body.pap-layout #poststuff #post-body.columns-2{display:block}
+ .pap-bar{position:static;flex-wrap:wrap}
+}
+
+/* Tablice karata, usluga i termina: dovoljno široka polja */
+.pap-table{table-layout:auto}
+.pap-table td input[type=text]{min-width:120px}
+.pap-table td input[type=number]{min-width:70px}
+body.pap-layout .pap-sec{overflow-x:auto}
+.pap-table td input[type=date]{min-width:140px}
+.pap-table td:nth-child(2) input[type=number]{max-width:none}
+body.pap-layout .pap-sec{background:#fff}
+body.pap-layout .pap-sec .pap-table th{background:var(--soft)}
+.pap-bar-btns .pap-bar-trash{color:#b32d2e;border-color:#e3b4b4}
+.pap-bar-btns .pap-bar-trash:hover{background:#fcf0f1;color:#8a2424;border-color:#b32d2e}
+/* Pojmovi s ikonicama (aktivnosti, uključeno/isključeno) */
+.pap .pap-term{display:flex;align-items:center;gap:6px}
+.pap .pap-ico{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:0 0 28px;padding:0;border:1px solid #c3c4c7;border-radius:6px;background:#fff;color:#2271b1;cursor:pointer;font-size:14px}
+.pap .pap-ico:hover,.pap .pap-ico:focus{border-color:#2271b1;box-shadow:0 0 0 1px #2271b1;outline:0}
+.pap .pap-ico.is-empty{color:#a7aaad}
+.pap .pap-term.is-new span,.pap .pap-guide.is-new b{color:#00a32a}
+.pap .pap-addterm{display:flex;gap:6px;align-items:center;margin-top:10px;max-width:520px}
+.pap .pap-addterm .pap-ico{width:32px;height:32px;flex-basis:32px}
+.pap .pap-addterm-name{flex:1;min-width:0}
+.pap-icons{position:absolute;z-index:100100;width:320px;background:#fff;border:1px solid #c3c4c7;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);padding:10px}
+.pap-icons-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.pap-icons-grid button{height:32px;border:1px solid transparent;border-radius:6px;background:#f6f7f7;color:#1d2327;cursor:pointer;font-size:15px}
+.pap-icons-grid button:hover,.pap-icons-grid button:focus{border-color:#2271b1;color:#2271b1;background:#fff;outline:0}
+.pap-icons p{margin:8px 0 0;text-align:right}
+/* Vodiči */
+.pap .pap-guides{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.pap .pap-guide{position:relative;border:1px solid #dcdcde;border-radius:8px;background:#fff;padding:10px;text-align:center}
+.pap .pap-guide label{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;margin:0}
+.pap .pap-guide input[type=checkbox]{position:absolute;top:10px;left:10px;margin:0;width:16px;height:16px;min-width:0;padding:0}
+.pap .pap-guide:has(input:checked){border-color:#2271b1;box-shadow:0 0 0 1px #2271b1;background:#f0f6fc}
+.pap .pap-guide-img,.pap .pap-gf-prev{display:flex;align-items:center;justify-content:center;width:84px;height:84px;border-radius:50%;overflow:hidden;background:#f0f0f1;color:#a7aaad}
+.pap .pap-guide-img img,.pap .pap-gf-prev img{width:100%;height:100%;object-fit:cover}
+.pap .pap-guide-img .dashicons,.pap .pap-gf-prev .dashicons{font-size:40px;width:40px;height:40px}
+.pap .pap-guide small{color:#646970;line-height:1.35}
+.pap .pap-guide-edit{margin-top:6px}
+.pap .pap-guide-form{margin-top:12px;padding:14px;border:1px solid #c3c4c7;border-radius:8px;background:#f6f7f7}
+.pap .pap-guide-form h4{margin-top:0}
+.pap .pap-gf-row{display:flex;gap:16px;align-items:flex-start}
+.pap .pap-gf-photo{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pap .pap-gf-fields{flex:1;min-width:0}
+.pap .pap-gf-fields label{display:block;margin-bottom:8px}
+.pap .pap-gf-fields input,.pap .pap-gf-fields textarea{display:block;width:100%}
+.pap .pap-gf-msg{color:#646970}
+@media (max-width:600px){.pap .pap-gf-row{flex-direction:column;align-items:stretch}}
+.pap-icons{width:430px;max-width:calc(100vw - 16px);box-sizing:border-box}
+.pap-icons-q{width:100%;margin:0 0 8px}
+.pap-icons-grid{grid-template-columns:repeat(auto-fill,minmax(38px,1fr));max-height:300px;overflow-y:auto;padding-right:2px}
+.pap-icons-none{grid-column:1/-1;margin:8px 0;color:#646970}
+.pap-icons p{display:flex;justify-content:space-between;align-items:center}
+.pap-icons-count{color:#646970;font-size:12px}
+.pap-icons-grid button.is-own{background:#eef4fb;color:#1d3c78}
+/* Zajednička mjesta */
+.pap .pap-shared{display:none;color:#646970;font-style:italic}
+.pap tr.pap-rate .pap-seat input{display:none}
+.pap tr.pap-rate .pap-seat .pap-shared{display:inline}
+.pap .pap-pool{margin:8px 0 4px;font-size:14px}
+.pap .pap-pool-n{font-size:16px}
+.pap .pap-loc-new{display:flex;gap:6px;margin-top:6px}
+.pap .pap-loc-new[hidden]{display:none}
+.pap .pap-loc-new input{flex:1;min-width:0}
+.pap .pap-gallery li.pap-gwarn{outline:3px solid #dba617;outline-offset:-3px}

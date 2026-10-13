@@ -23,13 +23,21 @@ prvo predloži tekstualno, kad to traži. Shortcodeovi i HTML idu u Flatsome HTM
   U novoj sesiji prvo provjeri da je ključ samo za čitanje (upis mora biti odbijen).
 - **Kopija stranice (staging)** `PROBA_URL`: puni pristup, korisnik `PROBA_WP_USER` +
   `PROBA_WP_APP_PASSWORD`, FTP `PROBA_FTP_*` ograničen na mapu kopije (ako su upisani).
-  Na kopiji je uključen dodatak **Disable Emails** – ne isključivati.
+  Mailovi na kopiji: **plan-a-pomocnik** (od 1.1.0) sve mailove preusmjerava na Igorovu adresu upisanu u
+  Alati → Plan A – mailovi kopije (izvorni primatelji u naslovu); bez upisane adrese sve blokira.
+  Pomoćnik se na kopiji nikad ne isključuje. Disable Emails se više ne koristi (blokirao bi i preusmjerene mailove).
 - Na kopiji je dodatak **plan-a-pomocnik** (grana `prijave`): REST `PROBA_URL/wp-json/plan-a-pomocnik/v1/`
-  (`status`, `plugin` – postavljanje našeg zipa, `plugin/{slug}/activate|deactivate`, `cron`, `log`,
+  (`status`, `mail`, `mail/test`, `plugin` – postavljanje našeg zipa, `plugin/{slug}/activate|deactivate` – i za
+  `tour-booking-manager` (WpTravelly), `cron`, `log`,
   `meta/{id}`, `option/{ime}`), prijava `PROBA_WP_USER` + `PROBA_WP_APP_PASSWORD`. Na živoj stranici odbija sve.
 - Iz ove sesije internet ide samo preko HTTPS-a (FTP/SSH ne rade).
 - Kopija koristi **kopije Google tablica** („Kopija datoteke Članovi Plan A nova” i
-  „Kopija datoteke Prijave na izlete nova”), nikad prave tablice.
+  „Kopija datoteke Prijave na izlete nova”), nikad prave tablice. Spojeno 12.10.2026.: kopija stranice ima
+  svoj ključ (Članstvo → „Novi ključ”), vlastitu objavu skripte u kopiji tablice članova (Web app URL
+  `…AKfycbwb1mz…/exec`) i tablicu za agenciju `…/d/1fIOcuG71XDa…`. Prava tablica za agenciju je `…/d/1z53LwhYgw87…`.
+  **Prije svakog slanja u tablice provjeri** (`option/plan_a_clanstvo`: `agency_url`, `sheet_url`) da nije upisana prava.
+  Iz sesije se do Googlea ne može (script.google.com je blokiran); vezu provjerava Igor gumbom „Provjeri vezu”.
+- Na kopiji je probni izlet 9013 „PROBNI IZLET – test tablice (ne prijavljivati)”, 22.11.2026., proizvod 9014.
 - Lozinke i ključeve korisnik upisuje u postavke okruženja; **nikad ih ne traži u chatu**.
 
 ## Osobni podaci i sigurnost
@@ -56,11 +64,76 @@ Dokument s popisom i planom: https://claude.ai/code/artifact/e688755a-5ea4-46bb-
 2. **Obrazac za uređivanje izleta** – gotovo (0.2.0). Sprema iste podatke kao WpTravelly (`ttbm_*`),
    zaključava termine/karte/usluge s prijavama, gasi WpTravellyjev obrazac i automatsko spremanje na
    ekranu izleta, vraća standardne WordPressove okvire, „Kopiraj izlet”.
-3. **Stranica izleta i prijava bez WpTravellyja** – sljedeće. Isti izgled kao sada; prijava u WooCommerce
-   košaricu s istim podacima u narudžbi (`_ttbm_id`, `_ttbm_date`, `_ttbm_ticket_info`,
-   `_ttbm_service_info`); zapisi `ttbm_booking` / `ttbm_service_booking` za brojanje mjesta;
-   zamjenske klase `TTBM_Function` i dr. pod istim imenima jer ih koriste naši dodaci.
+3. **Stranica izleta i prijava bez WpTravellyja** – gotovo (0.3.0). Mapa `plan-a-prijave/ttbm/` je skraćena
+   kopija WpTravellyja 2.3.4 (isti HTML/CSS/JS, klase `TTBM_*`, kuke, tekstovi u domeni `tour-booking-manager`),
+   učitava se samo kad je WpTravelly isključen; dok je uključen, on ima prednost. Provjereno lokalno
+   (WordPress + SQLite + WooCommerce + WpTravelly s GitHuba u privremenoj mapi): HTML stranica izleta jednak
+   (osim namjerno izbačenog srca za popis želja), ista narudžba (`_ttbm_*`), isti `ttbm_booking`/
+   `ttbm_service_booking`, ista slobodna mjesta i promjena stanja, isti ispis naših dodataka.
+   Važno: WpTravelly svim mailovima stavlja HTML oblik (`wp_mail_content_type`) – zadržano.
+   Stari WpTravellyjevi kratki kodovi (`[travel-list]` …) prikazuju `[plan-a-izleti]`.
+   Izvorni kod WpTravellyja: `github.com/magepeopleteam/tour-booking-manager` (2.3.4 = commit prije „Bump to 2.3.5”).
 4. **Usporedni rad na kopiji stranice.**
 5. **Prelazak** (mjesec dogovoriti s korisnikom); WpTravelly ostaje instaliran za povratak.
 
 Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate”); druga rata 30 dana prije izleta.
+
+## PLAN PRELASKA NA ŽIVU (pripremljeno 13.10.2026., Igor radi noću kad stigne)
+
+Stanje žive 13.10.2026. (WC system_status): clanstvo 1.14.5, kosarica 1.5.5, izleti 1.21.1, jedrenje 1.8.2,
+aplikacija 1.4.0, kalkulator 1.0.1, poklon-bon 1.3.0 (isključen), newsletter NIJE instaliran, WpTravelly 2.3.4,
+WSB HUB3 3.0.2, Rank Math, Backuply, SpeedyCache. Plaćanje: samo bankovni prijenos (Teya/KEKS isključeni).
+Zipovi (zadana grana = prijave, isti): clanstvo 1.15.7, kosarica 1.6.5, izleti 1.22.1, jedrenje 1.9.2 + plan-a-prijave 0.6.1.
+plan-a-pomocnik NIKAD na živu. Newsletter ne instalirati bez Igorova dogovora.
+
+Mjesta kod izleta s ratama (nova pravila: mjesta su samo na karti „Uplata”, prva rata ih dijeli):
+7935 Doček – prodano 20 prve rate + 4 Uplata = 24 → kod „Uplata” upisati 25 (ili koliko je stvarno mjesta) PRIJE gašenja WpTravellyja;
+7730 Zimsko III – Uplata 12 + prva rata 12 (prodano 3) → Igor odlučuje 12 ili 24; 9001 Hvar – 8 + 8 (prodano 2) → 8.
+
+Redoslijed: 0) Backuply puna kopija · 1) dodaci (clanstvo, kosarica, izleti, jedrenje) zajedno · 2) skripta v20 u tablici
+članova + ukljuciBrzoOsvjezavanje + Provjeri vezu (prave tablice!) · 3) #8989: odluka o ponovnom mailu (ide automatski
+nakon instalacije clanstva unutar sat-dva, sada s uplatnicom na agenciju) · 4) mjesta kod rata · 5) plan-a-prijave
+instalirati i uključiti (WpTravelly još uključen) · 6) isključiti WpTravelly (ne brisati) · 7) SpeedyCache očistiti
+· 8) provjere · Povratak: uključiti WpTravelly, isključiti plan-a-prijave (podaci su isti ttbm_*).
+
+## Za živu stranicu – na čekanju (odraditi zajedno pri prelasku)
+
+Igor ne pamti ništa od ovoga: kad završimo s kopijom, **ja** pripremim sve zipove za živu stranicu i
+napišem redoslijed (što isključiti, što instalirati, što provjeriti). Do tada na živoj ništa ne tražiti.
+
+- **Jednak izgled svih mailova (12.10.2026.)** – zadana grana i `prijave`, isti zipovi: plan-a-kosarica 1.6.5,
+  plan-a-clanstvo 1.15.7, plan-a-jedrenje 1.9.2, plan-a-newsletter 1.1.1, plan-a-izleti 1.22.1 (zajednička
+  datoteka `includes/plan-a-email.php`, klasa `Plan_A_Email`, mora biti ista u svim dodacima). Na kopiji
+  primjerci: pomoćnik REST `mail/samples` (grupa all|wc|clanstvo|jedrenje|ostalo, order, rate_order,
+  member_email, samo, pokazi=1 = samo HTML bez slanja). 1.6.2/1.15.2: ostali WooCommerceovi mailovi (otkaz,
+  povrat, napomena, račun) imaju sažetak umjesto tablice sa sličicama, uplatnica WSB samo u „Prijava zaprimljena”
+  i računu, slike nikad šire od kartice; druga rata i članarina imaju pravu sliku uplatnice HUB-3A (GD, predložak
+  i fontovi se čitaju iz dodatka WSB HUB3).
+- **PRAVILO (13.10.2026.): račun udruge (S.R.D. Plan A, HR33…) je SAMO za članarinu.** Sve ostale uplatnice
+  (izleti, druga rata, jedrenje) glase na agenciju Adventure Donkey j.d.o.o. (podaci iz dodatka WSB HUB3).
+  Ispravljeno u plan-a-clanstvo 1.15.4 (do tada je druga rata išla na račun udruge – i na živoj!).
+- **Skripta tablice v20 (1.15.7):** v20 – boja višestruke narudžbe i na kućicama Uplaćeno i 2. rata; v18 – ručno dodana osoba dobiva napomenu „unesen ručno”; v19 – novi stupac „Iznos 2. rate” iza „Iznos” (stara tablica i Arhiva se same prošire, provjereno na lažnoj tablici). Na živoj nakon instalacije zamijeniti skriptu u tablici članova (Kopiraj skriptu → Apps Script → New version).
+- **Pravopis**: „Nova godina” (blagdan) velikim slovom, „Cjelokupni” (ne „Cijelokupni”, ispravljeno u 1.6.3/1.15.4).
+- **plan-a-clanstvo (sada 1.15.7)** (zadana grana i `prijave`, isti zip): druga rata = puna cijena − prva rata po
+  osobi, osiguranje se ne odbija; ispravak pune cijene (`ticket_type_price`, do 1.14.5 ostatak je bio 0 € i
+  mail za drugu ratu nije odlazio). Nakon instalacije se propušteni mail jednom ponovi – na živoj to je
+  narudžba **#8989** (prva rata 12.10.2026.). Prije instalacije pitati Igora želi li to slanje.
+  1.14.8: 2D kod u mailu za drugu ratu. 1.14.7: kvačica Otkazao → mail kupcu (+ kopija nama za pojedinog sudionika), osiguranje po osobi,
+  zamjena bez međukoraka, vraćanje iz tablice ne šalje „Nova prijava”.
+- **Prije uključivanja plaćanja karticom** (sada je na živoj samo uplata na račun): popraviti dvostruki mail
+  „Cjelokupni iznos je uplaćen” (U obradi → Završeno) i prvu ratu plaćenu karticom (krivi mail, nema maila
+  s ostatkom ni podsjetnika). Ostatak druge rate računa se po današnjoj cijeni pune karte (bolje zapamtiti
+  cijenu pri prijavi).
+- **Pravilo za otkaz (12.10.2026.):** agencija ne vraća novac za otkazani izlet/jedrenje; s osiguranjem od otkaza kupac
+  se obraća osiguranju. Nigdje ne smije pisati da vraćamo novac ili postotak (mailovi, uvjeti jedrenja). U novim
+  uputama za agenciju maknuti „povrat radite kao i dosad”.
+- **Upute (PDF) za agenciju i Krešu** napraviti nove **nakon prelaska, prema živoj stranici** (dogovor s Igorom; popis razlika napisan mu 12.10.2026.): naslov maila
+  „Cjelokupni iznos je uplaćen…”, novi izlet samo za termine u 120 dana (najviše 3), zaštićeni stupci pitaju
+  „jeste li sigurni”, mail s ostatkom 1–2 h nakon kvačice, stupac 2. rata postoji svugdje (siv), POPUNJEN /
+  skoro pun (≤3) / nitko nije platio (10 dana), Krešo: kopija podsjetnika i 3 dana prije izleta; novo:
+  mail kupcu pri otkazivanju.
+- **plan-a-prijave** (novi sustav, faza 5): zajednička mjesta za sve karte (karta „prve rate” nema svoja
+  mjesta). Prije prelaska pregledati izlete s prvom ratom – npr. Doček Nove godine (7935) ima Uplata 5 +
+  prva rata 20: ako treba 25 mjesta, upisati 25 kod Uplate. Usluge (osiguranje) nisu ograničene.
+- Pri prelasku: ostali dodaci iz `prijave` sa oznakom `-prijave` u verziji, WpTravelly isključiti (ne
+  brisati), SEO se popunjava pri spremanju izleta, ikonice aktivnosti postave se pri prvom ulasku u admin.

@@ -1,0 +1,183 @@
+<?php
+	if (!defined('ABSPATH')) {
+		die;
+	} // Cannot access pages directly.
+	if (!class_exists('TTBM_Booking')) {
+		class TTBM_Booking {
+			public function __construct() {
+				add_action('wp_ajax_get_ttbm_ticket', array($this, 'get_ttbm_ticket'));
+				add_action('wp_ajax_nopriv_get_ttbm_ticket', array($this, 'get_ttbm_ticket'));
+				add_action('wp_ajax_get_ttbm_sold_ticket', array($this, 'get_ttbm_sold_ticket'));
+				add_action('wp_ajax_nopriv_get_ttbm_sold_ticket', array($this, 'get_ttbm_sold_ticket'));
+			    add_action('wp_ajax_get_ttbm_hotel_room_list', array($this, 'get_ttbm_hotel_room_list'));
+			    add_action('wp_ajax_nopriv_get_ttbm_hotel_room_list', array($this, 'get_ttbm_hotel_room_list'));
+			    add_action('wp_ajax_get_ticket_availability', array($this, 'get_ticket_availability'));
+			    add_action('wp_ajax_nopriv_get_ticket_availability', array($this, 'get_ticket_availability'));
+				add_action('ttbm_booking_panel', array($this, 'booking_panel'), 10, 4);
+			}
+			private function normalize_tour_date($tour_id, $date): string {
+				$date = str_replace('/', '-', (string)$date);
+				if (!$date || strtotime($date) === false) {
+					return '';
+				}
+				if (TTBM_Global_Function::check_time_exit_date($date)) {
+					return date('Y-m-d H:i', strtotime($date));
+				}
+
+				$date_only = date('Y-m-d', strtotime($date));
+				$times = TTBM_Function::get_time($tour_id, $date_only, 'yes');
+				$first_time = '';
+				if (is_array($times) && !empty($times)) {
+					$first_time = is_array($times[0]) ? ($times[0]['time'] ?? '') : $times[0];
+				} elseif (!is_array($times) && !empty($times)) {
+					$first_time = $times;
+				}
+				if ($first_time) {
+					return date('Y-m-d H:i', strtotime($date_only . ' ' . $first_time));
+				}
+				return $date_only;
+			}
+			public function get_ttbm_ticket() {
+				if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'ttbm_frontend_nonce')) {
+					wp_send_json_error(['message' => 'Invalid nonce']);
+					die;
+				}
+				$tour_id = isset($_REQUEST['tour_id']) ? sanitize_text_field(wp_unslash($_REQUEST['tour_id'])) : '';
+				$hotel_id = isset($_REQUEST['hotel_id']) ? sanitize_text_field(wp_unslash($_REQUEST['hotel_id'])) : '';
+				$date = isset($_REQUEST['tour_date']) ? sanitize_text_field(wp_unslash($_REQUEST['tour_date'])) : '';
+				$date = $this->normalize_tour_date($tour_id, $date);
+				do_action('ttbm_booking_panel', $tour_id, $date, $hotel_id);
+				die();
+			}
+			public function get_ttbm_sold_ticket() {
+				if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'ttbm_frontend_nonce')) {
+					wp_send_json_error(['message' => 'Invalid nonce']);
+					die;
+				}
+				$tour_id = isset($_REQUEST['tour_id']) ? sanitize_text_field(wp_unslash($_REQUEST['tour_id'])) : '';
+				$date = isset($_REQUEST['tour_date']) ? sanitize_text_field(wp_unslash($_REQUEST['tour_date'])) : '';
+				$date = $this->normalize_tour_date($tour_id, $date);
+				echo esc_html(TTBM_Function::get_total_available($tour_id, $date));
+				die();
+			}
+			public function get_ttbm_hotel_room_list() {
+				if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'ttbm_frontend_nonce')) {
+					wp_send_json_error(['message' => 'Invalid nonce']);
+					die;
+				}
+
+				$tour_id = isset($_REQUEST['tour_id']) ? absint(wp_unslash($_REQUEST['tour_id'])) : 0;
+				$hotel_id = isset($_REQUEST['hotel_id']) ? absint(wp_unslash($_REQUEST['hotel_id'])) : 0;
+				$date_range = isset($_REQUEST['date_range']) ? sanitize_text_field(wp_unslash($_REQUEST['date_range'])) : '';
+				$date = TTBM_Global_Function::parse_date_range_string($date_range);
+				$assigned_hotels = $tour_id ? TTBM_Function::get_hotel_list($tour_id) : array();
+				$assigned_hotels = is_array($assigned_hotels) ? array_map('absint', $assigned_hotels) : array();
+				if (!$tour_id || !$hotel_id || !$date || !in_array($hotel_id, $assigned_hotels, true)) {
+					?>
+					<div class="ttbm_hotel_no_rooms dLayout allCenter _mT_bgWarning" data-placeholder>
+						<h3 class="textWhite"><?php esc_html_e('Please select valid hotel dates.', 'tour-booking-manager'); ?></h3>
+					</div>
+					<?php
+					die;
+				}
+				$start_date = $date[0];
+				do_action('ttbm_booking_panel', $tour_id, $start_date, $hotel_id);
+			die();
+		}
+		public function get_ticket_availability() {
+			if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'ttbm_frontend_nonce')) {
+				wp_send_json_error(['message' => 'Invalid nonce']);
+				die;
+			}
+			
+			$tour_id = isset($_REQUEST['tour_id']) ? intval($_REQUEST['tour_id']) : 0;
+			$tour_date = isset($_REQUEST['tour_date']) ? sanitize_text_field($_REQUEST['tour_date']) : '';
+			$tour_time = isset($_REQUEST['tour_time']) ? sanitize_text_field($_REQUEST['tour_time']) : '';
+			
+			if (!$tour_id) {
+				wp_send_json_error(['message' => 'Invalid tour ID']);
+				die;
+			}
+
+			$tour_date = $this->normalize_tour_date($tour_id, $tour_date);
+			
+			$availability_info = TTBM_Function::get_ticket_availability_info($tour_id, $tour_date);
+			
+			wp_send_json_success([
+				'availability' => $availability_info,
+				'tour_date' => $tour_date,
+				'tour_time' => $tour_time
+			]);
+		}
+		public function booking_panel($tour_id, $tour_date = '', $hotel_id = '') {
+				// Bookable when WooCommerce checkout exists, or when an addon (e.g.
+				// the Pro custom PayPal/Stripe/Offline checkout) filters this true.
+				if (!apply_filters('ttbm_booking_available', TTBM_Global_Function::has_woocommerce(), $tour_id)) {
+					?>
+					<div class="ttbm_booking_status ttbm_booking_status--unavailable" role="status">
+						<div class="ttbm_booking_status__icon" aria-hidden="true">
+							<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.75"/>
+								<path d="M8 3v4M16 3v4M3 10h18" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+								<circle cx="12" cy="15.5" r="1.25" fill="currentColor"/>
+							</svg>
+						</div>
+						<h3 class="ttbm_booking_status__title"><?php esc_html_e("Booking isn't available yet", 'tour-booking-manager'); ?></h3>
+						<p class="ttbm_booking_status__desc"><?php esc_html_e("Tickets aren't open for this tour right now. Please check back soon.", 'tour-booking-manager'); ?></p>
+					</div>
+					<?php
+					return;
+				}
+				$tour_date = $tour_date ?: current(TTBM_Function::get_date($tour_id));
+				$ttbm_type = TTBM_Function::get_tour_type($tour_id);
+				if ($ttbm_type != 'hotel') {
+					$tour_date = TTBM_Function::get_date_by_time_check($tour_id, $tour_date, '');
+				}
+				$tour_start_datetime = $this->normalize_tour_date($tour_id, $tour_date);
+				$tour_start_datetime = $tour_start_datetime ?: $tour_date;
+				$tour_end_date = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_end_date');
+				$tour_end_time = TTBM_Global_Function::get_post_info($tour_id, 'ttbm_travel_end_time');
+				$tour_end_datetime = $tour_end_date ? $tour_end_date . ( $tour_end_time ? ' ' . $tour_end_time : '' ) : '';
+				if ($tour_date) {
+					$action = apply_filters('ttbm_form_submit_path', '', $tour_id);
+					?>
+                    <form action="<?php echo esc_attr($action); ?>" method='post' class="mp_tour_ticket_form">
+						<?php wp_nonce_field('ttbm_form_nonce', 'ttbm_form_nonce'); ?>
+                        <input type="hidden" name='ttbm_start_date' id='ttbm_tour_datetime' value='<?php echo esc_attr($tour_start_datetime); ?>'/>
+                        <input type="hidden" name='ttbm_end_date' id='ttbm_tour_end_datetime' value='<?php echo esc_attr($tour_end_datetime); ?>'/>
+                        <input type="hidden" name='ttbm_total_price' id="ttbm_total_price" value='0'/>
+						<?php do_action('ttbm_booking_panel_inside_form', $tour_id, $hotel_id); ?>
+						<?php
+							$ttbm_type = TTBM_Function::get_tour_type($tour_id);
+							if ($ttbm_type == 'general') {
+								$file = TTBM_Function::template_path('ticket/regular_ticket.php');
+								$file = apply_filters('ttbm_regular_ticket_file', $file, $tour_id);
+								require_once $file;
+							}
+							if ($ttbm_type == 'hotel') {
+								$file = TTBM_Function::template_path('ticket/hotel_ticket.php');
+								$file = apply_filters('ttbm_hotel_ticket_file', $file, $tour_id);
+								require_once $file;
+							}
+						?>
+                    </form>
+					<?php do_action('ttbm_tour_reg_form_hidden', $tour_id, $hotel_id); ?>
+					<?php
+				} else {
+					?>
+					<div class="ttbm_booking_status ttbm_booking_status--expired" role="status">
+						<div class="ttbm_booking_status__icon" aria-hidden="true">
+							<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75"/>
+								<path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+							</svg>
+						</div>
+						<h3 class="ttbm_booking_status__title"><?php esc_html_e('This tour has expired', 'tour-booking-manager'); ?></h3>
+						<p class="ttbm_booking_status__desc"><?php esc_html_e('Booking dates for this tour are no longer available.', 'tour-booking-manager'); ?></p>
+					</div>
+					<?php
+				}
+			}
+		}
+		new TTBM_Booking();
+	}

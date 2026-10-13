@@ -1,0 +1,21 @@
+<?php
+	if ( ! defined( 'ABSPATH' ) ) {
+		die;
+	}
+	$ttbm_post_id = $ttbm_post_id ?? get_the_id();
+	$age_range = TTBM_Global_Function::get_post_info($ttbm_post_id, 'ttbm_travel_min_age');
+	$tour_type = TTBM_Function::get_tour_type( $ttbm_post_id );
+	$count = $count ?? 0;
+	if ( $age_range && $tour_type == 'general' && TTBM_Global_Function::get_post_info( $ttbm_post_id, 'ttbm_display_min_age', 'on' ) != 'off' ) {
+?>
+	
+<div class="item_icon<?php echo esc_attr( TTBM_Function::hero_stat_item_class() ); ?>" title="<?php esc_html_e( 'Age Limit', 'tour-booking-manager' ); ?>">
+	<i class="mi mi-age"></i>
+	<span><?php echo esc_html( $age_range ); ?>+</span>
+</div>
+
+<?php
+// FIXED: Removed indentation before PHP tags to prevent whitespace output - 2025-01-21 by Shahnur Alam
+$count ++;
+}
+	?>
