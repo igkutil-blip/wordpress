@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 18;
+var SCRIPT_VERSION = 19;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -290,8 +290,8 @@ function upsertMany_(sh, items) {
  * Napomena i sve što dopišete ostaje.
  * ======================================================================== */
 var AG_SHEET = 'Prijave';
-var AG_HEAD = ['Br.', 'Ime', 'Prezime', 'OIB', 'Datum rođenja', 'Adresa', 'Mjesto', 'Mobitel', 'E-mail', 'Prijavio/la', 'Iznos', 'Osiguranje', 'Uplaćeno', '2. rata', 'Otkazao', 'Ugovor', 'Polica', 'Pristupnica', 'Članarina', 'Iskaznica', 'Napomena', 'Narudžba', 'ključ'];
-var AG_KEYS = ['', 'ime', 'prezime', 'oib', 'datum', 'adresa', 'mjesto', 'mobitel', 'email', 'prijavio', 'iznos', 'osiguranje', 'uplaceno', 'rata2', 'otkazao', 'ugovor', 'polica', 'pristupnica', 'clanarina', 'iskaznica', 'napomena', 'narudzba'];
+var AG_HEAD = ['Br.', 'Ime', 'Prezime', 'OIB', 'Datum rođenja', 'Adresa', 'Mjesto', 'Mobitel', 'E-mail', 'Prijavio/la', 'Iznos', 'Iznos 2. rate', 'Osiguranje', 'Uplaćeno', '2. rata', 'Otkazao', 'Ugovor', 'Polica', 'Pristupnica', 'Članarina', 'Iskaznica', 'Napomena', 'Narudžba', 'ključ'];
+var AG_KEYS = ['', 'ime', 'prezime', 'oib', 'datum', 'adresa', 'mjesto', 'mobitel', 'email', 'prijavio', 'iznos', 'iznos2', 'osiguranje', 'uplaceno', 'rata2', 'otkazao', 'ugovor', 'polica', 'pristupnica', 'clanarina', 'iskaznica', 'napomena', 'narudzba'];
 var AG_BOX = { osiguranje: 1, uplaceno: 1, rata2: 1, otkazao: 1, ugovor: 1, polica: 1, clanarina: 1, iskaznica: 1 };
 var AG_PERSON = ['oib', 'datum', 'adresa', 'mjesto', 'mobitel', 'email']; // iz tablice članova
 var AG_KEY_COL = AG_HEAD.length; // skriveni stupac
@@ -445,7 +445,7 @@ function agSheet_(id) {
     sh.setFrozenRows(1);
     sh.getRange(1, AG_KEY_COL).setValue('ključ');
     sh.hideColumns(AG_KEY_COL);
-    var w = [45, 110, 130, 105, 95, 170, 130, 115, 190, 140, 80, 85, 80, 80, 80, 80, 80, 115, 90, 85, 260, 80];
+    var w = [45, 110, 130, 105, 95, 170, 130, 115, 190, 140, 80, 90, 85, 80, 80, 80, 80, 80, 115, 90, 85, 260, 80];
     w.forEach(function (px, i) { sh.setColumnWidth(i + 1, px); });
     sh.getRange('D:D').setNumberFormat('@');
     sh.getRange('H:H').setNumberFormat('@');
@@ -463,9 +463,13 @@ function agMigrate_(sh) {
   var kc = 0;
   for (var c = 1; c <= AG_KEY_COL; c++) { if (String(sh.getRange(1, c).getValue()) === 'ključ') { kc = c; break; } }
   if (!kc) return;
-  var missing = AG_KEY_COL - kc;                  // koliko stupaca fali
-  var rc = agC_('rata2');
   var rows = Math.max(sh.getMaxRows() - 1, 1);
+  // v19: stupac „Iznos 2. rate” iza „Iznos” (nema ga ni u jednom starijem rasporedu). Iznose upiše stranica.
+  agAddIznos2_(sh, kc);
+  kc++;
+  var missing = AG_KEY_COL - kc;                  // koliko stupaca još fali (stariji rasporedi)
+  if (missing < 2) return;
+  var rc = agC_('rata2');
   // Novi stupac preuzima kvačice susjednog stupca – makni ih, kućice se dodaju samo gdje trebaju.
   if (missing >= 3) { sh.insertColumnBefore(rc); sh.setColumnWidth(rc, 80); sh.getRange(2, rc, rows, 1).clearDataValidations().clearContent(); }
   var uc = agC_('ugovor');
@@ -487,6 +491,16 @@ function agMigrate_(sh) {
     }
   });
   agPolicyRule_(sh);
+}
+
+/** Umetni stupac „Iznos 2. rate” iza „Iznos” (list u rasporedu prije v19; kc = stupac „ključ”). */
+function agAddIznos2_(sh, kc) {
+  var i2 = agC_('iznos2'), rows = Math.max(sh.getMaxRows() - 1, 1);
+  sh.insertColumnBefore(i2);
+  sh.setColumnWidth(i2, 90);
+  sh.getRange(2, i2, rows, 1).clearDataValidations().clearContent().setFontWeight('normal');
+  var keys = sh.getRange(1, kc + 1, Math.max(sh.getLastRow(), 1), 1).getValues();
+  keys.forEach(function (row, i) { if (String(row[0] || '').indexOf('H|') === 0) sh.getRange(i + 1, i2).setValue('Iznos 2. rate').setFontWeight('bold'); });
 }
 
 /**
@@ -821,10 +835,11 @@ function agAdd_(sh, rows) {
 }
 
 /**
- * Osvježavanje sa stranice: items [{k, u, p, c, i, x}] (null = ne mijenjaj). Obrisani redovi
+ * Osvježavanje sa stranice: items [{k, u, p, c, i, x, r2}] (null = ne mijenjaj; r2 = iznos 2. rate). Obrisani redovi
  * se preskaču, a zamjene (drugo ime nego na stranici) zadržavaju stanje iz tablice članova.
  */
 function agStatus_(sh, items) {
+  var i2c = agC_('iznos2');
   var ix = agIndex_(sh), n = 0, touched = {};
   items.forEach(function (it) {
     var r = ix.persons[String(it.k).replace(/\|/g, '_')];
@@ -836,6 +851,10 @@ function agStatus_(sh, items) {
       row[agC_(k) - 1] = !!val;
     };
     if (it.u === true) set('uplaceno', true);
+    if (typeof it.r2 === 'string' && str_(row[i2c - 1]) !== it.r2) {
+      sh.getRange(r, i2c).setValue(it.r2);
+      row[i2c - 1] = it.r2;
+    }
     if (it.rt && typeof row[agC_('rata2') - 1] !== 'boolean') {
       agRateOn_(sh.getRange(r, agC_('rata2')));
       row[agC_('rata2') - 1] = false;
@@ -1241,14 +1260,18 @@ function agBefore_(date, cut) {
 
 function agArhSheet_(ss) {
   var a = ss.getSheetByName(ARH_SHEET);
-  if (a) return a;
+  if (a) {
+    // Arhiva iz v18 i starije: isti novi stupac kao glavni list, da se blokovi kopiraju na ista mjesta.
+    if (String(a.getRange(1, AG_KEY_COL).getValue()) !== 'ključ' && String(a.getRange(1, AG_KEY_COL - 1).getValue()) === 'ključ') agAddIznos2_(a, AG_KEY_COL - 1);
+    return a;
+  }
   a = ss.insertSheet(ARH_SHEET);
   a.getRange(1, 1).setValue('Arhiva – izleti stariji od 30 dana (najnoviji na vrhu) · 12 mjeseci nakon izleta brišu se OIB, datum rođenja, adresa i mobitel');
   a.getRange(1, 1, 1, AG_LAST).merge().setFontStyle('italic').setFontColor('#5f6b77').setWrap(true);
   a.setFrozenRows(1);
   a.getRange(1, AG_KEY_COL).setValue('ključ');
   a.hideColumns(AG_KEY_COL);
-  var w = [45, 110, 130, 105, 95, 170, 130, 115, 190, 140, 80, 85, 80, 80, 115, 90, 85, 260, 80];
+  var w = [45, 110, 130, 105, 95, 170, 130, 115, 190, 140, 80, 90, 85, 80, 80, 115, 90, 85, 260, 80];
   w.forEach(function (px, i) { a.setColumnWidth(i + 1, px); });
   a.getRange('D:D').setNumberFormat('@');
   a.getRange('H:H').setNumberFormat('@');
@@ -1318,5 +1341,5 @@ function protect_(sh, ranges) {
 function zastiti_(ss, ash) {
   var mem = ss.getSheetByName(SHEET_NAME);
   if (mem) protect_(mem, ['A:' + colA1_(HEAD.length)]);
-  protect_(ash, [colA1_(agC_('oib')) + ':' + colA1_(agC_('iznos')), colA1_(agC_('narudzba')) + ':' + colA1_(AG_KEY_COL)]);
+  protect_(ash, [colA1_(agC_('oib')) + ':' + colA1_(agC_('iznos2')), colA1_(agC_('narudzba')) + ':' + colA1_(AG_KEY_COL)]);
 }
