@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 17;
+var SCRIPT_VERSION = 18;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -297,7 +297,8 @@ var AG_PERSON = ['oib', 'datum', 'adresa', 'mjesto', 'mobitel', 'email']; // iz 
 var AG_KEY_COL = AG_HEAD.length; // skriveni stupac
 var AG_LAST = AG_HEAD.length - 1; // zadnji vidljivi stupac
 var AG_GREY = '#e6e6e6';
-var AG_AUTO = /^(nije član – |više članova s tim imenom|zamjena za )/; // napomene koje piše skripta
+var AG_AUTO = /^(nije član – |više članova s tim imenom|zamjena za |unesen ručno$)/; // napomene koje piše skripta
+var AG_MANUAL = 'unesen ručno'; // napomena uz osobu koju ste dodali ručno (nema narudžbu na stranici)
 
 /** Broj stupca za ključ iz AG_KEYS. */
 function agC_(k) {
@@ -978,6 +979,7 @@ function agRename_(sh, ix, r, mi, year, oldValue, col) {
   var same = info.kind === 'P' && info.orig !== '?' && agNorm_(info.orig) === agNorm_(name);
   var f = memFind_(mi, row, true);
   if (!same || f.m) agApply_(sh, r, row, f, year, true);
+  if (info.kind === 'M') agNote_(sh, r, row, AG_MANUAL, null);
   if (info.kind === 'P') {
     var ph = /^\d+\. osoba/.test(info.orig);
     agNote_(sh, r, row, same || ph ? '' : 'zamjena za ' + (info.orig === '?' ? 'osobu s prijave' : info.orig), /^zamjena za /);
@@ -1026,6 +1028,7 @@ function agLocalRefresh_(sh, ix, mi) {
       if (!agIsLocal_(ix, r) || agName_(ix.data[r - 1]) === '') continue;
       mi = mi || memIndex_();
       agApply_(sh, r, ix.data[r - 1], memFind_(mi, ix.data[r - 1], false), year, false);
+      if ((ix.info[r] || {}).kind === 'M') agNote_(sh, r, ix.data[r - 1], AG_MANUAL, null);
       n++;
     }
   });
