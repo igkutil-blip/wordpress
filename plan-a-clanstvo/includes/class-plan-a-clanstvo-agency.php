@@ -276,21 +276,36 @@ final class Plan_A_Clanstvo_Agency {
 	public static function balance( WC_Order $order ): float {
 		$sum = 0.0;
 		foreach ( $order->get_items() as $item ) {
-			if ( ! $item instanceof WC_Order_Item_Product || ! self::first_rate( $item ) ) {
-				continue;
-			}
-			$full = self::full_price( (int) $item->get_meta( '_ttbm_id' ) );
-			foreach ( (array) $item->get_meta( '_ttbm_ticket_info' ) as $t ) {
-				$name = (string) ( $t['ticket_name'] ?? $t['ticket_type_name'] ?? '' );
-				if ( ! preg_match( '/prve\s+rate/iu', $name ) ) {
-					continue;
-				}
-				$qty  = max( 1, (int) ( $t['ticket_qty'] ?? 1 ) );
-				$rate = isset( $t['ticket_price'] ) ? (float) $t['ticket_price'] : self::rate_paid_fallback( $item, $qty );
-				$sum += max( 0.0, ( $full - $rate ) * $qty );
+			if ( $item instanceof WC_Order_Item_Product ) {
+				$sum += self::item_balance( $item );
 			}
 		}
 		return round( $sum, 2 );
+	}
+
+	/** Ostatak (druga rata) za jednu stavku narudžbe (izlet); 0 ako stavka nema prvu ratu. */
+	public static function item_balance( WC_Order_Item_Product $item ): float {
+		if ( ! self::first_rate( $item ) ) {
+			return 0.0;
+		}
+		$sum  = 0.0;
+		$full = self::full_price( (int) $item->get_meta( '_ttbm_id' ) );
+		foreach ( (array) $item->get_meta( '_ttbm_ticket_info' ) as $t ) {
+			$name = (string) ( $t['ticket_name'] ?? $t['ticket_type_name'] ?? '' );
+			if ( ! preg_match( '/prve\s+rate/iu', $name ) ) {
+				continue;
+			}
+			$qty  = max( 1, (int) ( $t['ticket_qty'] ?? 1 ) );
+			$rate = isset( $t['ticket_price'] ) ? (float) $t['ticket_price'] : self::rate_paid_fallback( $item, $qty );
+			$sum += max( 0.0, ( $full - $rate ) * $qty );
+		}
+		return round( $sum, 2 );
+	}
+
+	/** Iznos druge rate za stupac „Iznos 2. rate” (npr. „90,00 €”) ili ''. */
+	public static function item_balance_text( WC_Order $order, WC_Order_Item_Product $item ): string {
+		$b = self::item_balance( $item );
+		return $b > 0 ? html_entity_decode( wp_strip_all_tags( wc_price( $b, array( 'currency' => $order->get_currency() ) ) ), ENT_QUOTES, 'UTF-8' ) : '';
 	}
 
 	/** Stari zapis bez cijene karte: uplaćeno po osobi = stavka bez dodatnih usluga / osobe. */
@@ -568,6 +583,7 @@ final class Plan_A_Clanstvo_Agency {
 				$v    = self::person_values( $p, $m ) + ( empty( $p['ph'] ) ? self::status( $m, $tour['year'] ) : array() );
 				$v   += array(
 					'iznos'      => 0 === $n ? html_entity_decode( wp_strip_all_tags( wc_price( (float) $item->get_total() + (float) $item->get_total_tax(), array( 'currency' => $order->get_currency() ) ) ), ENT_QUOTES, 'UTF-8' ) : '',
+					'iznos2'     => 0 === $n && $rate ? self::item_balance_text( $order, $item ) : '',
 					'osiguranje' => $n < $ins,
 					'uplaceno'   => $order->is_paid(),
 					'narudzba'   => '#' . $order->get_order_number(),
@@ -692,6 +708,14 @@ final class Plan_A_Clanstvo_Agency {
 				}
 				$it['u'] = $cache[ $oid ][0] ? true : null; // neplaćenu ne diraj: kvačicu stavlja agencija
 				$it['x'] = $cache[ $oid ][1];
+				// Iznos druge rate u prvom redu stavke (i za narudžbe upisane prije tog stupca).
+				if ( ! empty( $r['rt'] ) && preg_match( '/^o\d+-(\d+)-1$/', (string) $pkey, $pm ) ) {
+					$o   = wc_get_order( $oid );
+					$itm = $o ? $o->get_item( (int) $pm[1] ) : null;
+					if ( $itm instanceof WC_Order_Item_Product ) {
+						$it['r2'] = self::item_balance_text( $o, $itm );
+					}
+				}
 			}
 			$items[] = $it;
 		}
