@@ -110,6 +110,11 @@ Struktura od Igora (redom kako šalje):
 9. **Vodiči:** samo **imena s kvačicama** (bez slika, opisa i dodavanja novog); popis se sam puni iz Plan A → Vodiči
    (novi vodič u adminu → odmah na popisu). Barem jedan vodič obavezan (zajednička šifra – ne znamo tko unosi).
 10. **Povezani izleti:** kolege ne vide – automatski izbor (kao sada kad nije ništa označeno). **SEO** automatski (plan-a-seo/prijave).
+11. **Kategorija:** sama prema trajanju (1 → Izlet 1 dan, 2 → Izlet 2 dana, 3 → Izlet 3 dana, 4+ → Višednevni izleti).
+12. **Slike:** obavezno **glavna slika + točno/barem 4 slike galerije (ukupno 5)**; kolege učitavaju **bilo kakve slike**
+   (bilo koji omjer/veličina, s mobitela ili računala) – **sustav sam obreže na 3:2 (sredina) i smanji na 1800×1200 JPG**
+   (u pregledniku prije slanja + na poslužitelju), okrene prema EXIF-u; premale (< 1200 px) prihvati, ali napomena Igoru.
+   Alt/SEO slika automatski (plan-a-seo). Igor dobiva draft s već pripremljenim slikama.
 0. **Na vrhu stranice: „Tko unosi izlet”** – obavezan izbor, **isti popis kao Vodiči** (Krešimir Gracin, Igor Kutil,
    Ivan Videk, Sonja Papeš; novi vodič → sam se doda); ime ide u mail Igoru i u izlet; taj vodič se sam označi u Vodičima.
 
