@@ -130,7 +130,7 @@
 			img.style.height = (st.h * s) + 'px';
 			img.style.transform = 'translate(' + (f.w / 2 - st.cx * s) + 'px,' + (f.h / 2 - st.cy * s) + 'px)';
 			var sw = f.w / s;
-			st.small = sw < (cfg.min || 1200);
+			st.small = st.keep ? !!st.keepSmall : sw < (cfg.min || 1200);
 			smallNote.hidden = !st.small;
 		}
 		st.draw = draw;
@@ -143,35 +143,41 @@
 		function pick() { file.click(); }
 		$('.papu-pick', box).addEventListener('click', pick);
 		$('.papu-change', box).addEventListener('click', pick);
+		// Učitaj sliku u okvir (nova datoteka ili već spremljena slika izleta kod ispravka).
+		function load(url, keepId, revoke) {
+			var test = new Image();
+			test.onload = function () {
+				if (st.url && st.url.indexOf('blob:') === 0) { URL.revokeObjectURL(st.url); }
+				st.url = url; st.ok = true; st.w = test.naturalWidth; st.h = test.naturalHeight; st.z = 1;
+				st.cx = st.w / 2; st.cy = st.h / 2; zoom.value = 1; st.keep = keepId || 0;
+				img.src = url; img.hidden = false;
+				frame.classList.add('has-img'); tools.hidden = false; box.classList.remove('is-err'); err.textContent = '';
+				draw();
+				if (keepId) { smallNote.hidden = !st.keepSmall; st.small = !!st.keepSmall; }
+			};
+			test.onerror = function () {
+				if (revoke) { URL.revokeObjectURL(url); }
+				err.textContent = 'Ova slika se ne može otvoriti (npr. HEIC s iPhonea na računalu). Spremi je kao JPG ili je pošalji s mobitela.';
+			};
+			test.src = url;
+		}
+		st.load = load;
 		file.addEventListener('change', function () {
 			var f = file.files && file.files[0];
 			if (!f) { return; }
 			err.textContent = '';
 			box.classList.remove('is-err');
-			var url = URL.createObjectURL(f);
-			var test = new Image();
-			test.onload = function () {
-				if (st.url) { URL.revokeObjectURL(st.url); }
-				st.url = url; st.ok = true; st.w = test.naturalWidth; st.h = test.naturalHeight; st.z = 1;
-				st.cx = st.w / 2; st.cy = st.h / 2; zoom.value = 1;
-				img.src = url; img.hidden = false;
-				frame.classList.add('has-img'); tools.hidden = false; box.classList.remove('is-err'); err.textContent = '';
-				draw();
-			};
-			test.onerror = function () {
-				URL.revokeObjectURL(url);
-				err.textContent = 'Ova slika se ne može otvoriti (npr. HEIC s iPhonea na računalu). Spremi je kao JPG ili je pošalji s mobitela.';
-			};
-			test.src = url;
+			load(URL.createObjectURL(f), 0, true);
 			file.value = '';
 		});
-		zoom.addEventListener('input', function () { st.z = parseFloat(zoom.value) || 1; draw(); });
+		zoom.addEventListener('input', function () { st.z = parseFloat(zoom.value) || 1; st.keep = 0; draw(); });
 
 		// Povlačenje mišem ili prstom.
 		var drag = null;
 		frame.addEventListener('pointerdown', function (e) {
 			if (!st.ok || e.target.closest('.papu-pick')) { return; }
 			drag = { x: e.clientX, y: e.clientY, cx: st.cx, cy: st.cy };
+			st.keep = 0; // pomaknuta slika se ponovno sprema
 			frame.setPointerCapture(e.pointerId);
 			frame.classList.add('is-drag');
 			e.preventDefault();
@@ -189,7 +195,7 @@
 		frame.addEventListener('wheel', function (e) {
 			if (!st.ok) { return; }
 			e.preventDefault();
-			st.z = Math.min(3, Math.max(1, st.z * (e.deltaY < 0 ? 1.06 : 1 / 1.06)));
+			st.z = Math.min(3, Math.max(1, st.z * (e.deltaY < 0 ? 1.06 : 1 / 1.06))); st.keep = 0;
 			zoom.value = st.z; draw();
 		}, { passive: false });
 	});
@@ -263,8 +269,9 @@
 		});
 		$$('.papu-rich', form).forEach(function (b) { fd.append(b.getAttribute('data-name'), clean(b.innerHTML)); });
 		var keys = Object.keys(slots);
-		Promise.all(keys.map(function (k) { return blob(slots[k]); })).then(function (blobs) {
+		Promise.all(keys.map(function (k) { return slots[k].keep ? null : blob(slots[k]); })).then(function (blobs) {
 			keys.forEach(function (k, i) {
+				if (slots[k].keep) { fd.append('keep_' + k, slots[k].keep); return; } // nepromijenjena slika ostaje
 				fd.append('img_' + k, blobs[i], k + '.jpg');
 				if (slots[k].small) { fd.append('small[]', k); }
 			});
@@ -274,7 +281,7 @@
 			if (res && res.success) {
 				var done = document.createElement('div');
 				done.className = 'papu-done';
-				done.innerHTML = '<i class="fas fa-circle-check" aria-hidden="true"></i><p></p><a href="' + location.pathname + '">Unesi još jedan izlet</a>';
+				done.innerHTML = '<i class="fas fa-circle-check" aria-hidden="true"></i><p></p><a href="' + location.pathname + '">' + (editId.value ? 'Natrag na unos izleta' : 'Unesi još jedan izlet') + '</a>';
 				$('p', done).textContent = res.data.message;
 				form.parentNode.replaceChild(done, form);
 				window.scrollTo({ top: done.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' });
@@ -285,7 +292,54 @@
 		}).catch(function () {
 			showErr('', 'Nije poslano (veza je prekinuta). Pokušaj ponovno – ništa se nije izgubilo.');
 		}).then(function () {
-			if (btn.isConnected) { btn.disabled = false; btn.textContent = 'Pošalji na pregled'; }
+			if (btn.isConnected) { btn.disabled = false; btn.textContent = editId.value ? 'Spremi ispravke' : 'Pošalji na pregled'; }
 		});
 	});
+
+	/* ---------- Tvoji poslani izleti (prema „Tko unosi”) i ispravak ---------- */
+	var sent = document.querySelector('.papu-sent');
+	var editId = form.elements.edit_id;
+	var bar = $('.papu-editbar', form);
+	function showSent(who) {
+		if (!sent) { return; }
+		var n = 0;
+		$$('li', sent).forEach(function (li) { var on = li.getAttribute('data-by') === String(who); li.hidden = !on; n += on ? 1 : 0; });
+		sent.hidden = !who;
+		$('.papu-sent-none', sent).hidden = n > 0;
+	}
+	form.elements.who.addEventListener('change', function () { showSent(this.value); });
+	showSent(form.elements.who.value);
+
+	function setRich(name, html) { var b = $('.papu-rich[data-name="' + name + '"]', form); if (b) { b.innerHTML = html || ''; } }
+	function setChecks(name, vals) { vals = (vals || []).map(String); $$('input[name="' + name + '[]"]', form).forEach(function (c) { c.checked = vals.indexOf(c.value) >= 0; }); }
+
+	if (sent) {
+		sent.addEventListener('click', function (e) {
+			var b = e.target.closest('.papu-edit');
+			if (!b) { return; }
+			b.disabled = true;
+			var fd = new FormData(); fd.append('action', 'pap_unos_get'); fd.append('id', b.getAttribute('data-id'));
+			fetch(cfg.ajax, { method: 'POST', body: fd, credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (res) {
+				b.disabled = false;
+				if (!res || !res.success) { alert((res && res.data && res.data.message) || 'Izlet se ne može otvoriti.'); return; }
+				var d = res.data, f = form.elements;
+				clearErr();
+				editId.value = d.id;
+				f.who.value = d.who; f.title.value = d.title; f.location.value = d.location; f.days.value = d.days;
+				f.start.value = d.start; f.time.value = d.time; f.price.value = d.price; f.seats.value = d.seats; f.rate.value = d.rate; f.note.value = d.note;
+				setRich('content', d.content);
+				Object.keys(d.faq || {}).forEach(function (i) { setRich('faq[' + i + ']', d.faq[i]); });
+				setChecks('inc', d.inc); setChecks('exc', d.exc); setChecks('act', d.act); setChecks('guides', d.guides);
+				Object.keys(slots).forEach(function (k) {
+					var im = (d.imgs || {})[k];
+					if (im) { slots[k].keepSmall = (d.small || []).indexOf(k) >= 0; slots[k].load(im.url, im.id, false); }
+				});
+				$('strong', bar).textContent = d.title;
+				bar.hidden = false;
+				btn.textContent = 'Spremi ispravke';
+				window.scrollTo({ top: form.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
+			}).catch(function () { b.disabled = false; alert('Izlet se ne može otvoriti (veza).'); });
+		});
+	}
+	$('.papu-edit-cancel', form).addEventListener('click', function () { location.href = location.pathname; });
 })();

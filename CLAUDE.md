@@ -97,6 +97,9 @@ Struktura od Igora (redom kako šalje):
    Datumi hrvatski (21.11.2026.), sat 24 h.
    **Poveznice (0.7.1):** telefoni → tel:, „pristupnica…” → stranica pristupnice (Plan_A_Prijave_Text::links; sprema se kod
    unosa kolega, a za sve izlete i pri prikazu opisa i „Važno za izlet”).
+   **Ispravak (0.7.2):** popis „Tvoji poslani izleti” samo za odabranog „Tko unosi”; izlet na čekanju → „Ispravi” (AJAX
+   pap_unos_get) → isti izlet se ažurira (edit_id, keep_<slot> za nepromijenjene slike), mail „Ispravljen izlet…”.
+   Ispravak prepisuje i ono što je Igor u međuvremenu promijenio u adminu dok je izlet na čekanju.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →
