@@ -101,6 +101,8 @@ Struktura od Igora (redom kako šalje):
    Detalje unosa osiguranja Igor dogovara poslije, kad završimo prednji dio.
 5. **Uključeno / nije uključeno i aktivnosti:** sve postojeće stavke s kvačicama i ikonicama, **bez dodavanja novih**
    i bez mijenjanja ikonica (to radi Igor u adminu). Kvačica u jednom stupcu miče istu stavku iz drugog.
+6. **Važno za izlet:** pitanja su **fiksna** (iz predloška, uvijek istim redoslijedom), kolege ih ne mogu mijenjati,
+   premještati ni brisati; svi blokovi otvoreni; ispod svakog pitanja polje samo za zalijepiti (isto kao opis).
 
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
