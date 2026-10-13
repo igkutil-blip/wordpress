@@ -20,13 +20,60 @@ final class Plan_A_Prijave_Seo {
 	public static function init() {
 		// Nakon spremanja svih okvira (Rank Math sprema svoja polja na save_post).
 		add_action( 'wp_after_insert_post', array( __CLASS__, 'fill' ), 20, 2 );
+		// Već upisani izleti: prazna SEO polja se popune čim se izlet otvori (prije okvira Rank Matha).
+		add_action( 'load-post.php', array( __CLASS__, 'on_load' ) );
+		add_action( 'add_meta_boxes_' . Plan_A_Prijave_Tour::CPT, array( __CLASS__, 'box' ) );
+		add_action( 'admin_post_pap_seo_fill', array( __CLASS__, 'force' ) );
+	}
+
+	public static function on_load() {
+		$id   = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$post = $id ? get_post( $id ) : null;
+		if ( $post && current_user_can( 'edit_post', $id ) ) {
+			self::fill( $id, $post );
+		}
+	}
+
+	/** Okvir uz Rank Math (kartica „Ostalo”): što je složeno i gumb da se SEO složi ispočetka. */
+	public static function box() {
+		if ( ! self::active() ) {
+			return;
+		}
+		add_meta_box( 'pap_seo', 'SEO iz podataka izleta', array( __CLASS__, 'box_html' ), Plan_A_Prijave_Tour::CPT, 'normal', 'high' );
+	}
+
+	public static function box_html( $post ) {
+		$new = self::build( (int) $post->ID, $post );
+		$url = wp_nonce_url( admin_url( 'admin-post.php?action=pap_seo_fill&post=' . (int) $post->ID ), 'pap_seo_' . (int) $post->ID );
+		echo '<p>Ključna riječ, SEO naslov i opis za Google slažu se sami iz naziva, datuma, trajanja, cijene i opisa izleta. Prazna polja se popune sama; ono što ste ručno promijenili ostaje.</p>';
+		echo '<table class="widefat striped" style="max-width:900px"><tbody>'
+			. '<tr><th style="width:150px">Ključna riječ</th><td>' . esc_html( $new['rank_math_focus_keyword'] ) . '</td></tr>'
+			. '<tr><th>SEO naslov</th><td>' . esc_html( $new['rank_math_title'] ) . '</td></tr>'
+			. '<tr><th>Opis za Google</th><td>' . esc_html( $new['rank_math_description'] ) . '</td></tr></tbody></table>';
+		echo '<p><a class="button button-primary" href="' . esc_url( $url ) . '" onclick="return confirm(\'SEO polja Rank Matha (ključna riječ, naslov, opis) zamijenit će se ovime. Nespremljene promjene izleta neće se spremiti. Nastaviti?\')">Upiši ovo u SEO (Rank Math)</a> '
+			. '<span class="description">Prepiše i ručno upisano. Nakon toga u Rank Mathu možete i dalje mijenjati.</span></p>';
+		if ( isset( $_GET['pap_seo'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			echo '<p style="color:#1e7d3a;font-weight:600">✓ SEO je upisan.</p>';
+		}
+	}
+
+	/** Gumb „Upiši ovo u SEO”: složi ispočetka i prepiše polja Rank Matha. */
+	public static function force() {
+		$id   = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$post = $id ? get_post( $id ) : null;
+		if ( ! $post || ! current_user_can( 'edit_post', $id ) || ! wp_verify_nonce( (string) ( $_GET['_wpnonce'] ?? '' ), 'pap_seo_' . $id ) ) {
+			wp_die( 'Nije dopušteno.' );
+		}
+		self::fill( $id, $post, true );
+		wp_safe_redirect( add_query_arg( 'pap_seo', 1, get_edit_post_link( $id, 'url' ) ) . '#ostalo' );
+		exit;
 	}
 
 	private static function active(): bool {
 		return defined( 'RANK_MATH_VERSION' ) || class_exists( 'RankMath' );
 	}
 
-	public static function fill( $id, $post ) {
+	public static function fill( $id, $post, bool $force = false ) {
 		if ( ! self::active() || ! $post || Plan_A_Prijave_Tour::CPT !== $post->post_type ) {
 			return;
 		}
@@ -39,7 +86,7 @@ final class Plan_A_Prijave_Seo {
 		$auto = is_array( $auto ) ? $auto : array();
 		foreach ( array( 'rank_math_focus_keyword', 'rank_math_title', 'rank_math_description' ) as $k ) {
 			$cur = (string) get_post_meta( $id, $k, true );
-			if ( '' === $new[ $k ] || ( '' !== $cur && $cur !== ( $auto[ $k ] ?? null ) ) ) {
+			if ( '' === $new[ $k ] || ( ! $force && '' !== $cur && $cur !== ( $auto[ $k ] ?? null ) ) ) {
 				continue; // ručno upisano – ostaje
 			}
 			update_post_meta( $id, $k, $new[ $k ] );
