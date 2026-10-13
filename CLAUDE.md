@@ -115,6 +115,8 @@ Struktura od Igora (redom kako šalje):
    (bilo koji omjer/veličina, s mobitela ili računala) – **sustav sam obreže na 3:2 (sredina) i smanji na 1800×1200 JPG**
    (u pregledniku prije slanja + na poslužitelju), okrene prema EXIF-u; premale (< 1200 px) prihvati, ali napomena Igoru.
    Alt/SEO slika automatski (plan-a-seo). Igor dobiva draft s već pripremljenim slikama.
+   **Okvir 3:2 za svaku sliku:** kolega mišem (ili prstom na mobitelu) **povlači sliku u okviru** i bira koji dio ostaje
+   (+ klizač za povećanje); izrez koji vidi = izrez koji se sprema (rezanje u pregledniku na 1800×1200).
 0. **Na vrhu stranice: „Tko unosi izlet”** – obavezan izbor, **isti popis kao Vodiči** (Krešimir Gracin, Igor Kutil,
    Ivan Videk, Sonja Papeš; novi vodič → sam se doda); ime ide u mail Igoru i u izlet; taj vodič se sam označi u Vodičima.
 
