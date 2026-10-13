@@ -26,6 +26,12 @@ final class Plan_A_Prijave_Seats {
 		add_filter( 'ttbm_total_available_qty', array( __CLASS__, 'full_available' ), 99, 2 );
 		add_filter( 'ttbm_ticket_capacity', array( __CLASS__, 'full_capacity' ), 99, 4 );
 		add_filter( 'woocommerce_add_to_cart_validation', array( __CLASS__, 'full_validate' ), 90, 2 );
+		// Popis izleta (plan-a-izleti): oznaka „Popunjeno” i izlet na kraj popisa.
+		add_filter( 'plan_a_izleti_sold_out', array( __CLASS__, 'full_list' ), 20, 2 );
+	}
+
+	public static function full_list( $sold_out, $id ) {
+		return $sold_out || self::is_full( (int) $id );
 	}
 
 	const FULL = '_pap_full';

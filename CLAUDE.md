@@ -104,6 +104,8 @@ Struktura od Igora (redom kako šalje):
 **0.7.4:** admin ekran izleta prilagođen mobitelu (editor.css @media 782/600, natpisi polja tablica iz zaglavlja – JS labelTables);
 admin Termini: samo početak, kraj = početak + (dani − 1), prijave do početka (i za „više datuma”); popis izleta: gumb
 „Popunjeno” / „Otvori prijave” (meta `_pap_full`; filtri u Plan_A_Prijave_Seats: dostupno 0, kapacitet = prodano, košarica odbija).
+**0.7.5:** Popunjeno i na popisu izleta (filtar `plan_a_izleti_sold_out` → oznaka + na kraj; gumb briše cache popisa i radi wp_update_post),
+na karti „Popunjeno” umjesto „Sold out”; lijeva traka: … Važno za izlet, Vodiči, Galerija, Važno, Zašto s nama, Povezani, Ostalo.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →

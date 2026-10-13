@@ -82,7 +82,7 @@ do_action( 'ttbm_before_ticket_type_area', $tour_id, $tour_date );
 						<?php if ( ! $is_sold_out ) { ?>
 							<?php TTBM_Layout::qty_input( $ticket_name, $available, $ticket_qty_type, $default_qty, $min_qty, $max_qty, $ticket_price_raw, 'ticket_qty[' . $index . ']', $tour_id ); ?>
 						<?php } else { ?>
-							<span class="ttbm_smart_ticket_card__sold_out"><?php esc_html_e( 'Sold out', 'tour-booking-manager' ); ?></span>
+							<span class="ttbm_smart_ticket_card__sold_out pap-popunjeno">Popunjeno</span>
 						<?php } ?>
 					</div>
 				</div>

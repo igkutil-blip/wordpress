@@ -323,6 +323,11 @@ final class Plan_A_Prijave_Admin {
 			delete_post_meta( $id, Plan_A_Prijave_Seats::FULL );
 		}
 		clean_post_cache( $id );
+		// Popis izleta i predmemorija stranice: kao da je izlet spremljen (plan-a-izleti, SpeedyCache, SEO).
+		if ( class_exists( 'Plan_A_Izleti_Data' ) && method_exists( 'Plan_A_Izleti_Data', 'flush_cache' ) ) {
+			Plan_A_Izleti_Data::flush_cache();
+		}
+		wp_update_post( array( 'ID' => $id ) );
 		do_action( 'plan_a_prijave_full_changed', $id, ! empty( $_GET['to'] ) );
 		$back = wp_get_referer() ?: admin_url( 'edit.php?post_type=ttbm_tour' );
 		wp_safe_redirect( add_query_arg( 'pap_done', empty( $_GET['to'] ) ? 'open' : 'full', remove_query_arg( 'pap_done', $back ) ) );
