@@ -149,7 +149,7 @@ final class Plan_A_Clanstvo_Ops {
 		}
 		$paid = array( 'processing', 'completed' );
 		if ( 'completed' === $to ) {
-			self::log( 'uplata', (int) $id, 'Cijelokupni iznos uplaćen: ' . self::describe( $order ) );
+			self::log( 'uplata', (int) $id, 'Cjelokupni iznos uplaćen: ' . self::describe( $order ) );
 		} elseif ( 'processing' === $to && ! in_array( $from, $paid, true ) ) {
 			self::log( 'uplata', (int) $id, ( Plan_A_Clanstvo_Agency::has_rate( $order ) ? 'Prva rata uplaćena: ' : 'Uplaćeno: ' ) . self::describe( $order ) );
 		} elseif ( 'cancelled' === $to ) {

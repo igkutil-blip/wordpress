@@ -277,7 +277,7 @@ final class Plan_A_Clanstvo_Mail {
 		}
 		$code  = Plan_A_Clanstvo_Hub3::for_member( $id, $year );
 		$inner = self::p( 'Pozdrav ' . esc_html( $m['ime'] ) . ',' )
-			. self::p( 'sretna nova ' . (int) $year . '. i hvala što si s nama! Počela je nova godina članstva u udruzi Plan A, pa ti šaljemo podatke za članarinu za <strong>' . (int) $year . '.</strong> Najjednostavnije je skenirati 2D kod.' )
+			. self::p( 'želimo ti sretnu Novu godinu i hvala što si s nama! Počinje članska ' . (int) $year . '. godina u udruzi Plan A, pa ti šaljemo podatke za članarinu za <strong>' . (int) $year . '.</strong> Najjednostavnije je platiti skeniranjem 2D koda.' )
 			. self::p( 'Članarina vrijedi do kraja kalendarske godine.' );
 		$inner = Plan_A_Email::card( '', $inner ) . self::pay_card( $id, $year )
 			. Plan_A_Email::card(

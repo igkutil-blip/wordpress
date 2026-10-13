@@ -391,7 +391,8 @@ final class Plan_A_Clanstvo_Agency {
 		$tour  = self::rate_tour_date( $order );
 		$due   = '' !== $tour ? strtotime( $tour ) - 30 * DAY_IN_SECONDS : 0;
 		$when  = $due ? 'do ' . gmdate( 'j.n.Y.', $due ) : 'što prije';
-		$code  = Plan_A_Clanstvo_Hub3::for_order( $order, $amount );
+		$ag    = Plan_A_Clanstvo_Hub3::agency( $order ); // izlet se plaća agenciji, nikad na račun udruge
+		$code  = $ag ? Plan_A_Clanstvo_Hub3::for_order( $order, $amount ) : null;
 		if ( ! $code ) {
 			// Bez točnog koda kupac dobiva iznos i poziv na broj, bez 2D koda.
 			$code = null;
@@ -437,21 +438,23 @@ final class Plan_A_Clanstvo_Agency {
 			. Plan_A_Email::p( $intro . ' Ostatak uplate je <strong>' . esc_html( $money ) . '</strong>, a treba biti uplaćen <strong>' . esc_html( $when ) . '</strong> (30 dana prije izleta).' )
 		)
 			. Plan_A_Email::card( 'Vaš izlet', Plan_A_Email::rows( $trip ) )
-			. Plan_A_Email::payment( self::with_slip(
-				array(
-					'title'     => 'Uplata druge rate',
-					'code'      => $src,
-					'iznos'     => $amount,
-					'platitelj' => array( trim( $order->get_formatted_billing_full_name() ), $order->get_billing_address_1(), trim( $order->get_billing_postcode() . ' ' . $order->get_billing_city() ) ),
-					'primatelj' => array( Plan_A_Clanstvo_Data::value( 'primatelj' ), Plan_A_Clanstvo_Data::value( 'adresa' ), Plan_A_Clanstvo_Data::value( 'mjesto' ) ),
-					'iban'      => Plan_A_Clanstvo_Data::value( 'iban' ),
-					'model'     => 'HR' . preg_replace( '/\D/', '', (string) Plan_A_Clanstvo_Data::value( 'model' ) ),
-					'poziv'     => (string) $order->get_order_number(),
-					'opis'      => 'Druga rata, narudžba ' . $order->get_order_number(),
-					'rok'       => $due ? gmdate( 'j.n.Y.', $due ) : '',
-				),
-				$code && $code['path'] ? (string) $code['path'] : ''
-			) )
+			. ( $ag
+				? Plan_A_Email::payment( self::with_slip(
+					array(
+						'title'     => 'Uplata druge rate',
+						'code'      => $src,
+						'iznos'     => $amount,
+						'platitelj' => array( trim( $order->get_formatted_billing_full_name() ), $order->get_billing_address_1(), trim( $order->get_billing_postcode() . ' ' . $order->get_billing_city() ) ),
+						'primatelj' => array( $ag['primatelj'], $ag['adresa'], $ag['mjesto'] ),
+						'iban'      => $ag['iban'],
+						'model'     => $ag['model'],
+						'poziv'     => $ag['poziv'],
+						'opis'      => 'Druga rata, narudžba ' . $order->get_order_number(),
+						'rok'       => $due ? gmdate( 'j.n.Y.', $due ) : '',
+					),
+					$code && $code['path'] ? (string) $code['path'] : ''
+				) )
+				: Plan_A_Email::card( 'Uplata druge rate', Plan_A_Email::p( 'Ostatak uplati na isti račun kao prvu ratu (podaci su u mailu „Vaša prijava je zaprimljena”), s brojem narudžbe <strong>' . esc_html( $order->get_order_number() ) . '</strong> u pozivu na broj.' ) ) )
 			. Plan_A_Email::card( '', Plan_A_Email::small( 'Ako si ostatak već uplatio/la, zanemari ovu poruku. Pitanja: info@srd-plan-a.hr ili 095 90 60 556.' ) );
 		$subj   = 'first' === $kind ? 'Uplaćena prva rata – druga rata ' . $when : 'Podsjetnik: druga rata ' . $when;
 		$title  = 'first' === $kind ? 'Uplaćena prva rata' : 'Podsjetnik: druga rata';
