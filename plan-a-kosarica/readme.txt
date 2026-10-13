@@ -1,7 +1,7 @@
 === Plan A košarica ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.6.3
+Stable tag: 1.6.4
 License: GPLv2 or later
 
 Novi izgled košarice, stranice za plaćanje, završne stranice narudžbe i e-mailova kupcu
@@ -118,6 +118,10 @@ Slike u mailovima nikad nisu šire od kartice (i na mobitelu).
 == Pravopis (1.6.3) ==
 
 Naslov maila i stranice nakon uplate: „Cjelokupni iznos je uplaćen, vidimo se na izletu”.
+
+== Bez uplatnice kad je sve plaćeno (1.6.4) ==
+
+Mail „Cjelokupni iznos je uplaćen” nikad nema uplatnicu ni 2D kod.
 
 == Postavke ==
 

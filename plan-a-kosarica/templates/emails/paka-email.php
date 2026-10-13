@@ -40,8 +40,10 @@ $paka_site   = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
 
 // Izlaz dodataka za plaćanje (Hub3, bankovni prijenos) na standardnim kukama e-maila.
 // (U e-mailu vama nisu potrebni.)
-$paka_before = $paka_admin ? '' : Plan_A_Kosarica_Order::capture( 'woocommerce_email_before_order_table', $order, $sent_to_admin, $plain_text, $email );
-$paka_after  = $paka_admin ? '' : Plan_A_Kosarica_Order::capture( 'woocommerce_email_after_order_table', $order, $sent_to_admin, $plain_text, $email );
+// Kad je sve uplaćeno, uplatnica i 2D kod (WSB HUB3) se ne šalju, ni kad je narudžba još „na čekanju”.
+$paka_capture = $paka_paid ? 'capture_without_hub3' : 'capture';
+$paka_before  = $paka_admin ? '' : Plan_A_Kosarica_Order::$paka_capture( 'woocommerce_email_before_order_table', $order, $sent_to_admin, $plain_text, $email );
+$paka_after   = $paka_admin ? '' : Plan_A_Kosarica_Order::$paka_capture( 'woocommerce_email_after_order_table', $order, $sent_to_admin, $plain_text, $email );
 $paka_pay    = $paka_paid || $paka_admin ? '' : trim( $paka_before . $paka_after );
 $paka_extra  = $paka_paid ? trim( $paka_before . $paka_after ) : '';
 
