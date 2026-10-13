@@ -110,12 +110,46 @@
 
 	/* ---------- Okviri za slike (3:2): povlačenje i povećanje ---------- */
 	var slots = {};
-	$$('.papu-img', form).forEach(function (box) {
-		var slot = box.getAttribute('data-slot');
+	var imgsWrap = $('.papu-imgs', form), addBtn = $('.papu-addimg', form), tpl = $('.papu-img-tpl', form);
+	var GAL_MIN = 4, GAL_MAX = 20;
+	// Okviri galerije uvijek se zovu g1…gN redom kako stoje (glavna je „main”).
+	function renumber() {
+		slots = {};
+		var i = 0;
+		$$('.papu-img', imgsWrap).forEach(function (box) {
+			var k = box.getAttribute('data-slot') === 'main' ? 'main' : 'g' + (++i);
+			box.setAttribute('data-slot', k);
+			if (k !== 'main') { $('.papu-img-n', box).textContent = 'Slika ' + i; }
+			slots[k] = box._st;
+		});
+		if (addBtn) { addBtn.parentNode.hidden = i >= GAL_MAX; }
+		return i;
+	}
+	function addSlot() {
+		var box = tpl.content.firstElementChild.cloneNode(true);
+		imgsWrap.appendChild(box);
+		initSlot(box);
+		renumber();
+		return box;
+	}
+	if (addBtn) {
+		addBtn.addEventListener('click', function () { var b = addSlot(); b.scrollIntoView({ behavior: 'smooth', block: 'center' }); $('.papu-file', b).click(); });
+	}
+	imgsWrap.addEventListener('click', function (e) {
+		var del = e.target.closest('.papu-delimg');
+		if (!del) { return; }
+		var box = del.closest('.papu-img');
+		if (box._st && box._st.url && box._st.url.indexOf('blob:') === 0) { URL.revokeObjectURL(box._st.url); }
+		box.remove();
+		renumber();
+	});
+	$$('.papu-img', form).forEach(initSlot);
+	renumber();
+	function initSlot(box) {
 		var frame = $('.papu-frame', box), img = $('img', frame), file = $('.papu-file', box);
 		var zoom = $('.papu-zoom', box), tools = $('.papu-img-tools', box), err = $('.papu-e', box), smallNote = $('.papu-small', box);
 		var st = { ok: false, w: 0, h: 0, z: 1, cx: 0, cy: 0, url: '' };
-		slots[slot] = st;
+		box._st = st;
 
 		function size() { return { w: frame.clientWidth, h: frame.clientHeight }; }
 		function scale() { var f = size(); return Math.max(f.w / st.w, f.h / st.h) * st.z; }
@@ -198,7 +232,7 @@
 			st.z = Math.min(3, Math.max(1, st.z * (e.deltaY < 0 ? 1.06 : 1 / 1.06))); st.keep = 0;
 			zoom.value = st.z; draw();
 		}, { passive: false });
-	});
+	}
 	window.addEventListener('resize', function () { Object.keys(slots).forEach(function (k) { slots[k].draw(); }); });
 
 	function blob(st) {
@@ -249,7 +283,7 @@
 		}
 		if (!$$('input[name="guides[]"]:checked', form).length) { return ['guides', 'Označi barem jednog vodiča.']; }
 		var miss = Object.keys(slots).filter(function (k) { return !slots[k].ok; });
-		if (miss.length) { return ['img_' + miss[0], miss[0] === 'main' ? 'Dodaj glavnu sliku.' : 'Dodaj sve 4 slike za galeriju.']; }
+		if (miss.length) { return ['img_' + miss[0], miss[0] === 'main' ? 'Dodaj glavnu sliku.' : (+miss[0].slice(1) > GAL_MIN ? 'Dodaj sliku ili makni ovaj prazan okvir (×).' : 'Dodaj sve 4 slike za galeriju.')]; }
 		return null;
 	}
 
@@ -268,6 +302,7 @@
 			fd.append(el.name, el.value);
 		});
 		$$('.papu-rich', form).forEach(function (b) { fd.append(b.getAttribute('data-name'), clean(b.innerHTML)); });
+		fd.append('gcount', renumber());
 		var keys = Object.keys(slots);
 		Promise.all(keys.map(function (k) { return slots[k].keep ? null : blob(slots[k]); })).then(function (blobs) {
 			keys.forEach(function (k, i) {
@@ -330,6 +365,8 @@
 				setRich('content', d.content);
 				Object.keys(d.faq || {}).forEach(function (i) { setRich('faq[' + i + ']', d.faq[i]); });
 				setChecks('inc', d.inc); setChecks('exc', d.exc); setChecks('act', d.act); setChecks('guides', d.guides);
+				var need = Object.keys(d.imgs || {}).filter(function (k) { return k !== 'main'; }).length;
+				while (renumber() < need) { addSlot(); }
 				Object.keys(slots).forEach(function (k) {
 					var im = (d.imgs || {})[k];
 					if (im) { slots[k].keepSmall = (d.small || []).indexOf(k) >= 0; slots[k].load(im.url, im.id, false); }

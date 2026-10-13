@@ -22,8 +22,10 @@ final class Plan_A_Prijave_Unos {
 	const INS_LIMIT = 350;
 	const INS_PRICE = '9.95';
 
-	/** Slike: glavna + 4 za galeriju, 3:2. */
+	/** Slike: glavna + najmanje 4 (najviše 20) za galeriju, 3:2. */
 	const IMG_SLOTS = array( 'main', 'g1', 'g2', 'g3', 'g4' );
+	const GAL_MIN   = 4;
+	const GAL_MAX   = 20;
 	const IMG_W     = 1800;
 	const IMG_MIN   = 1200;
 
@@ -597,15 +599,13 @@ final class Plan_A_Prijave_Unos {
 		$h .= '<section class="papu-sec"><h3>Vodiči na izletu</h3>' . self::field( 'guides', 'Tko vodi izlet', '<div class="papu-checks">' . implode( '', array_map( static fn( $g ) => '<label class="papu-chk"><input type="checkbox" name="guides[]" value="' . (int) $g->ID . '"><span>' . esc_html( $g->post_title ) . '</span></label>', $guides ) ) . '</div>' ) . '</section>';
 
 		// Slike.
-		$h .= '<section class="papu-sec"><h3>Slike</h3><p class="papu-hint">Glavna slika i 4 slike za galeriju. Može bilo kakva slika – u okviru je pomakni mišem ili prstom i klizačem povećaj; spremi se točno ono što vidiš u okviru.</p><div class="papu-imgs">';
+		$h .= '<section class="papu-sec"><h3>Slike</h3><p class="papu-hint">Glavna slika i najmanje 4 slike za galeriju (gumbom „Dodaj sliku” možeš dodati još). Može bilo kakva slika – u okviru je pomakni mišem ili prstom i klizačem povećaj; spremi se točno ono što vidiš u okviru.</p><div class="papu-imgs">';
 		foreach ( self::IMG_SLOTS as $i => $slot ) {
-			$label = 'main' === $slot ? 'Glavna slika' : 'Slika ' . $i;
-			$h    .= '<div class="papu-img" data-slot="' . esc_attr( $slot ) . '"><div class="papu-l">' . esc_html( $label ) . '</div>'
-				. '<div class="papu-frame"><img alt="" hidden><button type="button" class="papu-pick"><i class="fas fa-image" aria-hidden="true"></i><span>Odaberi sliku</span></button></div>'
-				. '<div class="papu-img-tools" hidden><input type="range" class="papu-zoom" min="1" max="3" step="0.01" value="1" aria-label="Povećanje"><button type="button" class="papu-change">Zamijeni</button></div>'
-				. '<input type="file" accept="image/*" class="papu-file" hidden><span class="papu-e" role="alert"></span><small class="papu-small" hidden>Slika je mala – na stranici bit će mutnija.</small></div>';
+			$h .= self::slot_html( $slot, 'main' === $slot ? 'Glavna slika' : 'Slika ' . $i, false );
 		}
-		$h .= '</div></section>';
+		$h .= '</div><p class="papu-addimg-wrap"><button type="button" class="papu-addimg"><i class="fas fa-plus" aria-hidden="true"></i> Dodaj sliku</button> <small class="papu-hint">najviše ' . self::GAL_MAX . ' slika u galeriji</small></p>';
+		$h .= '<template class="papu-img-tpl">' . self::slot_html( 'gX', 'Slika', true ) . '</template>';
+		$h .= '</section>';
 
 		// Napomena.
 		$h .= '<section class="papu-sec">' . self::field( 'note', 'Napomena za Igora <span class="papu-opt">opcija</span>', '<textarea name="note" rows="3" maxlength="2000"></textarea>', 'Vidi je samo Igor.' ) . '</section>';
@@ -614,6 +614,24 @@ final class Plan_A_Prijave_Unos {
 		$h .= '<div class="papu-send"><button type="submit">Pošalji na pregled</button><p class="papu-status" role="status"></p></div>';
 		$h .= '</form><form id="papu-logout" method="post" hidden><input type="hidden" name="pap_unos_odjava" value="1"></form></div>';
 		return $h;
+	}
+
+	/** Jedan okvir za sliku (dodatni okviri imaju gumb za brisanje). */
+	private static function slot_html( string $slot, string $label, bool $removable ): string {
+		return '<div class="papu-img" data-slot="' . esc_attr( $slot ) . '"><div class="papu-l"><span class="papu-img-n">' . esc_html( $label ) . '</span>'
+			. ( $removable ? '<button type="button" class="papu-delimg" title="Makni ovu sliku" aria-label="Makni ovu sliku">×</button>' : '' ) . '</div>'
+			. '<div class="papu-frame"><img alt="" hidden><button type="button" class="papu-pick"><i class="fas fa-image" aria-hidden="true"></i><span>Odaberi sliku</span></button></div>'
+			. '<div class="papu-img-tools" hidden><input type="range" class="papu-zoom" min="1" max="3" step="0.01" value="1" aria-label="Povećanje"><button type="button" class="papu-change">Zamijeni</button></div>'
+			. '<input type="file" accept="image/*" class="papu-file" hidden><span class="papu-e" role="alert"></span><small class="papu-small" hidden>Slika je mala – na stranici bit će mutnija.</small></div>';
+	}
+
+	/** Nazivi okvira: glavna + g1…gN. */
+	private static function slots( int $gallery ): array {
+		$out = array( 'main' );
+		for ( $i = 1; $i <= $gallery; $i++ ) {
+			$out[] = 'g' . $i;
+		}
+		return $out;
 	}
 
 	/** Poslani izleti; prikazuju se samo izleti odabranog „Tko unosi”; dok čekaju pregled, mogu se ispraviti. */
@@ -790,6 +808,7 @@ final class Plan_A_Prijave_Unos {
 		$act   = array_values( array_intersect( array_map( 'absint', (array) ( $_POST['act'] ?? array() ) ), wp_list_pluck( self::terms( 'ttbm_tour_activities' ), 'term_id' ) ) );
 		$note  = isset( $_POST['note'] ) ? sanitize_textarea_field( wp_unslash( (string) $_POST['note'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 		$small = array_map( 'sanitize_key', (array) ( $_POST['small'] ?? array() ) );
+		$slots = self::slots( max( self::GAL_MIN, min( self::GAL_MAX, absint( $_POST['gcount'] ?? self::GAL_MIN ) ) ) );
 		// Ispravak izleta koji još čeka pregled.
 		$edit = absint( $_POST['edit_id'] ?? 0 );
 		$prev = array();
@@ -800,7 +819,7 @@ final class Plan_A_Prijave_Unos {
 			$prev = self::images_of( $edit );
 		}
 		$keep = array();
-		foreach ( self::IMG_SLOTS as $slot ) {
+		foreach ( $slots as $slot ) {
 			$has = ! empty( $_FILES[ 'img_' . $slot ]['tmp_name'] );
 			$k   = absint( $_POST[ 'keep_' . $slot ] ?? 0 );
 			if ( ! $has && $edit && $k && in_array( $k, $prev, true ) ) {
@@ -808,7 +827,7 @@ final class Plan_A_Prijave_Unos {
 				continue;
 			}
 			if ( ! $has ) {
-				self::fail( 'main' === $slot ? 'Dodaj glavnu sliku.' : 'Dodaj sve 4 slike za galeriju.', 'img_' . $slot );
+				self::fail( 'main' === $slot ? 'Dodaj glavnu sliku.' : 'Dodaj sliku (ili makni prazan okvir).', 'img_' . $slot );
 			}
 		}
 		// phpcs:enable WordPress.Security.NonceVerification
@@ -837,7 +856,7 @@ final class Plan_A_Prijave_Unos {
 		// Slike (ako ne uspiju: novi izlet se briše, kod ispravka ostaje kakav je bio).
 		$imgs  = array();
 		$added = array();
-		foreach ( self::IMG_SLOTS as $n => $slot ) {
+		foreach ( $slots as $n => $slot ) {
 			if ( isset( $keep[ $slot ] ) ) {
 				$imgs[ $slot ] = $keep[ $slot ];
 				continue;
@@ -862,13 +881,13 @@ final class Plan_A_Prijave_Unos {
 
 		$warn  = self::store( $id, compact( 'loc', 'term', 'days', 'start', 'time', 'end', 'reg', 'price', 'seats', 'rate', 'faq', 'guides', 'inc', 'exc', 'act', 'imgs' ) );
 		$old_u = $edit ? (array) get_post_meta( $id, self::UNOS_META, true ) : array();
-		$small = array_values( array_intersect( $small, self::IMG_SLOTS ) );
+		$small = array_values( array_intersect( $small, $slots ) );
 		foreach ( (array) ( $old_u['small'] ?? array() ) as $s ) {
 			if ( isset( $keep[ $s ] ) && ! in_array( $s, $small, true ) ) {
 				$small[] = $s; // zadržana mala slika ostaje mala
 			}
 		}
-		foreach ( self::IMG_SLOTS as $i => $s ) {
+		foreach ( $slots as $i => $s ) {
 			if ( in_array( $s, $small, true ) ) {
 				$warn[] = ( 'main' === $s ? 'Glavna slika' : 'Slika ' . $i ) . ' je mala (manje od ' . self::IMG_MIN . ' px) – na stranici će biti mutnija.';
 			}
@@ -938,7 +957,7 @@ final class Plan_A_Prijave_Unos {
 		}
 		$imgs = array();
 		$ids  = array_merge( array( (int) get_post_thumbnail_id( $id ) ), array_map( 'intval', (array) $m( 'ttbm_gallery_images' ) ) );
-		foreach ( self::IMG_SLOTS as $n => $slot ) {
+		foreach ( self::slots( max( self::GAL_MIN, count( $ids ) - 1 ) ) as $n => $slot ) {
 			$a = (int) ( $ids[ $n ] ?? 0 );
 			$src = $a ? wp_get_attachment_image_src( $a, 'full' ) : false;
 			if ( $src ) {

@@ -81,3 +81,8 @@
 .papu .papu-edit-cancel,.papu .papu-edit{background:#fff;border:1px solid #cfd8e3;color:var(--n);border-radius:8px;padding:5px 12px;font-size:14px;cursor:pointer;margin:0 0 0 6px;min-height:0;text-transform:none;letter-spacing:0;line-height:1.4}
 .papu .papu-edit{border-color:var(--b);color:var(--b);font-weight:600}
 .papu-sent-none{color:var(--m)}
+.papu-img .papu-l{display:flex;align-items:center;justify-content:space-between}
+.papu .papu-delimg{background:none;border:0;color:var(--r);font-size:22px;line-height:1;cursor:pointer;padding:0 4px;margin:0;min-height:0}
+.papu-addimg-wrap{margin:16px 0 0}
+.papu-addimg-wrap[hidden]{display:none}
+.papu .papu-addimg{background:var(--bs);border:1px dashed var(--b);color:var(--b);border-radius:10px;padding:10px 18px;font-size:15px;font-weight:700;cursor:pointer;margin:0;min-height:0;text-transform:none;letter-spacing:0}
