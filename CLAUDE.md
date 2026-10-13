@@ -83,7 +83,7 @@ Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate�
 Igor ne pamti ništa od ovoga: kad završimo s kopijom, **ja** pripremim sve zipove za živu stranicu i
 napišem redoslijed (što isključiti, što instalirati, što provjeriti). Do tada na živoj ništa ne tražiti.
 
-- **Jednak izgled svih mailova (12.10.2026.)** – zadana grana i `prijave`, isti zipovi: plan-a-kosarica 1.6.3,
+- **Jednak izgled svih mailova (12.10.2026.)** – zadana grana i `prijave`, isti zipovi: plan-a-kosarica 1.6.4,
   plan-a-clanstvo 1.15.4, plan-a-jedrenje 1.9.2, plan-a-newsletter 1.1.1, plan-a-izleti 1.22.1 (zajednička
   datoteka `includes/plan-a-email.php`, klasa `Plan_A_Email`, mora biti ista u svim dodacima). Na kopiji
   primjerci: pomoćnik REST `mail/samples` (grupa all|wc|clanstvo|jedrenje|ostalo, order, rate_order,
