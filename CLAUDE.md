@@ -79,6 +79,13 @@ Dokument s popisom i planom: https://claude.ai/code/artifact/e688755a-5ea4-46bb-
 
 Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate”); druga rata 30 dana prije izleta.
 
+## U PRIPREMI: „Unos izleta” za kolege (13.10.2026.)
+
+Stranica `[plan-a-unos-izleta]` u plan-a-prijave: noindex, izvan sitemapa, bez predmemorije; pristup **jednom zajedničkom
+šifrom** (Igorova odluka, dva kolege); skraćeni obrazac → izlet „Na čekanju” + mail Igoru → Igor pregleda i objavi.
+Igor šalje slike i opise željenog izgleda – **ne kretati u izradu dok ne pošalje strukturu.** Otvoreno: upisuju li kolege
+cijenu, koji izlet je predložak (Važno, uvjeti, agencija, izjava).
+
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
 WooCommerce 11.2.1 (baza 11.2.1), plan-a-kontakt 1.0.0 (Kontakt HTML v3 s `[plan-a-kontakt]`), seo 1.0.0, prijave 0.6.3,
