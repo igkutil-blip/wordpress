@@ -95,7 +95,8 @@ Struktura od Igora (redom kako šalje):
 3. **Termini:** samo **jedan termin od–do** (bez „više datuma”): početak (datum), sat polaska, kraj (prazno = isti dan),
    prijave do (prazno = do početka). Datumi hrvatski (21.11.2026.), sat 24 h.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
-   prodano/dodaj kartu. Dvije rate: još nije odlučeno. **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →
+   prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
+   upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →
    usluga „Osiguranje” 9,95 €** automatski; **> 350 €** iznos računaju kolegice (agencija) → Igoru napomena u mailu, upisuje sam.
    Detalje unosa osiguranja Igor dogovara poslije, kad završimo prednji dio.
 
