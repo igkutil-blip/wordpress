@@ -274,7 +274,9 @@ final class Plan_A_Prijave_Admin {
 					$to   = 'publish' === $st ? 'draft' : 'publish';
 					$link = wp_nonce_url( admin_url( 'admin-post.php?action=pap_status&id=' . $id . '&to=' . $to ), 'pap_status_' . $id );
 					echo '<span class="pap-quick">';
-					echo '<a class="button button-small" href="' . esc_url( $link ) . '">' . ( 'draft' === $to ? 'U skicu' : 'Objavi' ) . '</a>';
+					if ( ! Plan_A_Prijave_Unos::is_template( (int) $id ) ) { // predložak se ne objavljuje
+						echo '<a class="button button-small" href="' . esc_url( $link ) . '">' . ( 'draft' === $to ? 'U skicu' : 'Objavi' ) . '</a>';
+					}
 				}
 				if ( current_user_can( 'delete_post', $id ) ) {
 					echo '<a class="button button-small pap-trash" href="' . esc_url( get_delete_post_link( $id ) ) . '" onclick="return confirm(\'Premjestiti izlet u smeće? Može se vratiti iz Smeća.\')">Smeće</a>';

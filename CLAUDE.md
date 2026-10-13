@@ -79,11 +79,12 @@ Dokument s popisom i planom: https://claude.ai/code/artifact/e688755a-5ea4-46bb-
 
 Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate”); druga rata 30 dana prije izleta.
 
-## U PRIPREMI: „Unos izleta” za kolege (13.10.2026.)
+## „Unos izleta” za kolege – IZRAĐENO u plan-a-prijave 0.7.0 (13.10.2026.)
 
 Stranica `[plan-a-unos-izleta]` u plan-a-prijave: noindex, izvan sitemapa, bez predmemorije; pristup **jednom zajedničkom
 šifrom** (Igorova odluka, dva kolege); skraćeni obrazac → izlet „Na čekanju” + mail Igoru → Igor pregleda i objavi.
-Igor šalje slike i opise željenog izgleda – **ne kretati u izradu dok ne pošalje strukturu.** Kolege upisuju i **cijenu**.
+Klasa `Plan_A_Prijave_Unos`, assets/unos.js|css; postavke Plan A → Unos izleta (kolege) (opcija `pap_unos`: hash, to, pages, template);
+predložak = skica s `_pap_template`; izlet kolege = pending s `_pap_unos` (by, by_name, note, warn). Lokalno sve isprobano. Kolege upisuju i **cijenu**.
 Predložak (Važno, uvjeti, agencija, izjava…) bit će **poseban predložak, nevezan za ijedan izlet** – radimo ga zajedno.
 Struktura od Igora (redom kako šalje):
 1. **Opis:** samo dva polja – naslov izleta i tekst izleta; bez alata za uređivanje, samo zalijepi (copy-paste);
