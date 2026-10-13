@@ -78,7 +78,14 @@ Dokument s popisom i planom: https://claude.ai/code/artifact/e688755a-5ea4-46bb-
 
 Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate”); druga rata 30 dana prije izleta.
 
-## PLAN PRELASKA NA ŽIVU (pripremljeno 13.10.2026., Igor radi noću kad stigne)
+## PRELAZAK NA ŽIVU – NAPRAVLJEN 13.10.2026. (noću, Igor)
+
+Živa sada: clanstvo 1.15.7, kosarica 1.6.5, izleti 1.22.1, jedrenje 1.9.2, plan-a-prijave 0.6.1 (aktivan),
+WpTravelly 2.3.4 isključen (ne brisati – povratak). Stranice izleta služi plan-a-prijave (provjereno). #8989 je dobila
+mail s ostatkom (400 €) 13.10. u 06:22. Zimsko III: 12 mjesta. Doček nakon prelaska pokazivao 0 slobodnih – Igoru
+rečeno da kod „Uplata” upiše 25. Grana za živu stranicu sada ima i plan-a-prijave (razlika prema `prijave` samo pomoćnik).
+
+### Plan prelaska (arhiva)
 
 Stanje žive 13.10.2026. (WC system_status): clanstvo 1.14.5, kosarica 1.5.5, izleti 1.21.1, jedrenje 1.8.2,
 aplikacija 1.4.0, kalkulator 1.0.1, poklon-bon 1.3.0 (isključen), newsletter NIJE instaliran, WpTravelly 2.3.4,
