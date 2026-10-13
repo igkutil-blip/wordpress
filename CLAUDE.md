@@ -80,7 +80,7 @@ Dvije rate: karta čiji naziv sadrži „prve rate” (npr. „Uplata prve rate�
 
 ## PRELAZAK NA ŽIVU – NAPRAVLJEN 13.10.2026. (noću, Igor)
 
-Živa sada: clanstvo 1.15.7, kosarica 1.6.5, izleti 1.22.1, jedrenje 1.9.2, plan-a-prijave 0.6.1 (aktivan),
+Živa sada: clanstvo 1.15.7, kosarica 1.6.5, izleti 1.22.1, jedrenje 1.9.2, plan-a-prijave 0.6.1 (aktivan; 0.6.2 poslan – SEO pri otvaranju izleta + gumb),
 WpTravelly 2.3.4 isključen (ne brisati – povratak). Stranice izleta služi plan-a-prijave (provjereno). #8989 je dobila
 mail s ostatkom (400 €) 13.10. u 06:22. Zimsko III: 12 mjesta. Doček nakon prelaska pokazivao 0 slobodnih – Igoru
 rečeno da kod „Uplata” upiše 25. Grana za živu stranicu sada ima i plan-a-prijave (razlika prema `prijave` samo pomoćnik).

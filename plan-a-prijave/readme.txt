@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.6.1
+Stable tag: 0.6.2
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,9 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.6.2 =
+* SEO (Rank Math) se popuni čim se izlet otvori za uređivanje, ne tek pri spremanju (samo prazna polja). U kartici „Ostalo” okvir „SEO iz podataka izleta” pokazuje složenu ključnu riječ, naslov i opis i ima gumb „Upiši ovo u SEO”, koji prepiše i ranije ručno upisano.
 
 = 0.6.1 =
 * Ikona iznad naslova maila je okrugla slika (u Gmailu na mobitelu se krug više ne razvlači u elipsu), ista u svim mailovima.
