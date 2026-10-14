@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.7.11
+Stable tag: 0.7.12
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,10 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.7.12 =
+* Admin, Važno: blok o granicama prikazuje pitanja po zemljama točno kako će biti na stranici („… (BiH)”, „… (Hrvatska)”), odmah pri promjeni zemlje u Osnovnim podacima (bez spremanja); zemlja bez teksta jasno označena.
+* Razmaci u tekstu ostaju: prazan red = novi odlomak (Važno za izlet, Važno), s razmakom između odlomaka i popisa; poveznice i telefoni i u Važno.
 
 = 0.7.11 =
 * Unos izleta (kolege): u zalijepljenom tekstu poveznice ostaju (web, mail, telefon); adresa napisana kao tekst (www…, https://…) postaje poveznica.

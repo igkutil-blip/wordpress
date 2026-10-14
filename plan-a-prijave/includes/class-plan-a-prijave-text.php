@@ -172,7 +172,11 @@ final class Plan_A_Prijave_Text {
 		}
 		return implode( ',', $sel ) . '{color:#111827!important}'
 			. implode( ',', $size ) . '{font-size:16px!important;line-height:1.65!important}'
-			. implode( ',', $head ) . '{font-size:16px!important;line-height:1.65!important;font-weight:700!important;margin:.6em 0 .3em!important}';
+			. implode( ',', $head ) . '{font-size:16px!important;line-height:1.65!important;font-weight:700!important;margin:.6em 0 .3em!important}'
+			// Razmak između odlomaka i popisa kao u upisanom tekstu (prazan red = novi odlomak).
+			. implode( ',', array_map( static fn( $a ) => '#ttbm_content ' . $a . ' p,#ttbm_content ' . $a . ' ul,#ttbm_content ' . $a . ' ol', $areas ) ) . '{margin:0 0 .9em!important}'
+			. implode( ',', array_map( static fn( $a ) => '#ttbm_content ' . $a . ' li p,#ttbm_content ' . $a . ' li ul,#ttbm_content ' . $a . ' li ol', $areas ) ) . '{margin:0 0 .35em!important}'
+			. implode( ',', array_map( static fn( $a ) => '#ttbm_content ' . $a . ' p:last-child,#ttbm_content ' . $a . ' ul:last-child,#ttbm_content ' . $a . ' ol:last-child', $areas ) ) . '{margin-bottom:0!important}';
 	}
 
 	/** Već upisani izleti: na stranici izleta tekst preuzima font i veličinu stranice. */

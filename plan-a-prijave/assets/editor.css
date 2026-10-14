@@ -189,3 +189,6 @@ body.pap-layout .pap-sec .pap-table th{background:var(--soft)}
 /* Osnovni podaci: natpisi u jednom redu, polja poravnata */
 .pap .pap-opt{font-weight:400;color:var(--muted);font-size:12px}
 .pap #pap-osnovno .pap-grid{align-items:start}
+.pap-block-granice .pap-gq{margin:10px 0}
+.pap-block-granice .pap-gq>b{display:block;margin-bottom:4px}
+.pap-auto-text p{margin:0 0 .8em}
