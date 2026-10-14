@@ -75,27 +75,57 @@ class Plan_A_Prijave_Granice {
 	}
 
 	/** Blokovi Važno na stranici izleta: tekst zemlje u blok o granicama (ili novi blok na kraju). */
-	public static function daywise( $days, $id ) {
-		$text = self::text_for( (int) $id );
-		if ( '' === $text ) {
-			return $days;
-		}
-		$days  = is_array( $days ) ? $days : array();
-		$found = false;
-		foreach ( $days as $k => $d ) {
-			if ( is_array( $d ) && self::is_block( (string) ( $d['ttbm_day_title'] ?? '' ) ) ) {
-				$days[ $k ]['ttbm_day_content'] = $text;
-				$found                          = true;
+	/** Zemlje izleta koje imaju upisan tekst: zemlja => HTML. */
+	public static function parts( int $id ): array {
+		$texts = self::texts();
+		$out   = array();
+		foreach ( self::countries( $id ) as $c ) {
+			$t = (string) ( $texts[ $c ] ?? '' );
+			if ( self::has_text( $t ) ) {
+				$out[ $c ] = $t;
 			}
 		}
-		if ( ! $found ) {
-			$days[] = array(
-				'ttbm_day_title'   => self::TITLE,
+		return $out;
+	}
+
+	/** Odabrane zemlje izleta bez upisanog teksta (upozorenje u adminu). */
+	public static function missing( int $id ): array {
+		return array_values( array_diff( self::countries( $id ), array_keys( self::parts( $id ) ) ) );
+	}
+
+	/**
+	 * Blokovi Važno na stranici izleta: na mjesto bloka o granicama ide po jedan blok za svaku zemlju,
+	 * „Granične, vizne i zdravstvene formalnosti (Hrvatska)”; bez takvog bloka – na kraj.
+	 */
+	public static function daywise( $days, $id ) {
+		$parts = self::parts( (int) $id );
+		if ( ! $parts ) {
+			return $days;
+		}
+		$blocks = array();
+		foreach ( $parts as $c => $t ) {
+			$blocks[] = array(
+				'ttbm_day_title'   => self::TITLE . ' (' . $c . ')',
 				'ttbm_day_time'    => '',
-				'ttbm_day_content' => $text,
+				'ttbm_day_content' => $t,
 			);
 		}
-		return $days;
+		$out  = array();
+		$done = false;
+		foreach ( is_array( $days ) ? $days : array() as $d ) {
+			if ( is_array( $d ) && self::is_block( (string) ( $d['ttbm_day_title'] ?? '' ) ) ) {
+				if ( ! $done ) {
+					array_push( $out, ...$blocks );
+					$done = true;
+				}
+				continue;
+			}
+			$out[] = $d;
+		}
+		if ( ! $done ) {
+			array_push( $out, ...$blocks );
+		}
+		return $out;
 	}
 
 	/** Prvo punjenje: za svaku zemlju tekst iz najnovijeg izleta u njoj. */

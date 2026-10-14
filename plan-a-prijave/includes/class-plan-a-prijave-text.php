@@ -159,9 +159,20 @@ final class Plan_A_Prijave_Text {
 				$sel[] = '#ttbm_content ' . $a . $t;
 			}
 		}
-		$faq = '#ttbm_content .ttbm_faq_section .ttbm_faq_content';
+		// Ista veličina za sav upisani tekst (16 px, prored 1.65) na svim širinama; podebljano/kurziv ostaju, naslovi unutar teksta samo podebljani.
+		$size = array();
+		$head = array();
+		foreach ( $areas as $a ) {
+			foreach ( array( '', ' p', ' li', ' td', ' th', ' div', ' span', ' strong', ' b', ' em', ' a', ' u', ' .day_wise_activity_title', ' .day_wise_activity_desc' ) as $t ) {
+				$size[] = '#ttbm_content ' . $a . $t;
+			}
+			foreach ( array( ' h1', ' h2', ' h3', ' h4', ' h6' ) as $t ) {
+				$head[] = '#ttbm_content ' . $a . $t;
+			}
+		}
 		return implode( ',', $sel ) . '{color:#111827!important}'
-			. $faq . ' p,' . $faq . ' li{font-size:16px!important;line-height:1.7}';
+			. implode( ',', $size ) . '{font-size:16px!important;line-height:1.65!important}'
+			. implode( ',', $head ) . '{font-size:16px!important;line-height:1.65!important;font-weight:700!important;margin:.6em 0 .3em!important}';
 	}
 
 	/** Već upisani izleti: na stranici izleta tekst preuzima font i veličinu stranice. */
