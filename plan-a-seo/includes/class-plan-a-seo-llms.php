@@ -119,6 +119,7 @@ final class Plan_A_Seo_Llms {
 		$sail  = self::page_url( 'jedrenje' );
 		$out[] = '## Ukratko';
 		$out[] = '';
+		$out[] = '- Osnovano: ' . $o['founded'] . '. u Zagrebu (sportsko-rekreacijsko društvo, udruga).';
 		$out[] = '- Vodiči: licencirani planinski vodiči Saveza gorskih vodiča Hrvatske (SGVH) i UIMLA-e – planinski vodič (PV), UIMLA vodič (IML), gorski vodič (GV).';
 		$out[] = '- Za koga: za početnike i iskusne planinare; uz izlete vodimo tečajeve zimskog planinarenja, ferrata i lavinske obuke.';
 		$out[] = '- Gdje: Hrvatska (Velebit, Dinara, Hvar …), Slovenija (Julijske Alpe) i Alpe (Mont Blanc, Monte Rosa).';

@@ -21,6 +21,7 @@ final class Plan_A_Seo_Schema {
 		'street'        => 'Celovečka 60b',
 		'postal'        => '10040',
 		'city'          => 'Zagreb',
+		'founded'       => '2023',
 		'sameAs'        => array(
 			'https://www.facebook.com/PlaninarenjeAvantura',
 			'https://www.instagram.com/planinarenje_avantura',
@@ -54,6 +55,7 @@ final class Plan_A_Seo_Schema {
 				'addressLocality' => $o['city'],
 				'addressCountry'  => 'HR',
 			),
+			'foundingDate'  => $o['founded'],
 			'areaServed'    => 'HR',
 			'sameAs'        => $o['sameAs'],
 		);
