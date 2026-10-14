@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A SEO
  * Description:       Sam popunjava SEO za cijelu stranicu (uz Rank Math): ključna riječ, SEO naslov i opis za Google za stranice, objave i vodiče, alt slika (postojećih i novih), noindex i sitemap bez probnih i pomoćnih stranica, strukturirani podaci (udruga, izleti kao događaji, pitanja i odgovori) i /llms.txt za AI pretraživače. Ručno upisano ne dira.
- * Version:           1.0.2
+ * Version:           1.0.3
  * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_SEO_VERSION', '1.0.2' );
+define( 'PLAN_A_SEO_VERSION', '1.0.3' );
 
 require_once __DIR__ . '/includes/class-plan-a-seo-text.php';
 require_once __DIR__ . '/includes/class-plan-a-seo-meta.php';

@@ -30,6 +30,30 @@ final class Plan_A_Seo_Schema {
 		'description'   => 'Sportsko-rekreacijsko društvo Plan A iz Zagreba organizira planinarske izlete, ferrate, zimske uspone, tečajeve i jedrenje uz licencirane planinske vodiče Saveza gorskih vodiča Hrvatske (SGVH) i UIMLA-e.',
 	);
 
+	/** Vodiči (po adresi vodiča): sažetak sa stranice Vodiči – za llms.txt i opis za Google. */
+	const GUIDES = array(
+		'kresimir-gracin' => 'Gorski vodič (GV), međunarodni planinski vodič UIMLA IML i planinski vodič (PV) pri Savezu gorskih vodiča Hrvatske. Instruktor i mentor u školovanju novih profesionalnih vodiča i dugogodišnji tajnik SGVH. Vodi jednodnevne i višednevne ture različitih kondicijskih i tehničkih težina; licencirani vodič kajak tura (ACA level 2).',
+		'igor-kutil'      => 'Planinski vodič (PV), međunarodni planinski vodič UIMLA IML i turističko-planinski vodič (TPV), profesionalni skiper (C kategorija, Yacht Master Category A). Specijaliziran za ture koje spajaju planinarenje i more, ferrate, sportsko penjanje i jedrenje; privatne ture i programi po mjeri.',
+		'videk-ivan'      => 'Planinski vodič (PV), međunarodni planinski vodič UIMLA IML i turističko-planinski vodič (TPV), s tečajem prve pomoći u divljini (Wilderness First Aid). Trail trkač i penjač, diplomirani povjesničar – na izletima dijeli povijesne zanimljivosti; organizator gradske avanture Cajtnot u Zagrebu. Jednodnevni i višednevni izleti, trail avanture i kratki sportski penjački smjerovi.',
+		'sonja-papes'     => 'Turističko-planinska vodičica (TPV). Vodi s naglaskom na doživljaj puta, miran tempo i povezanost s prirodom; grupne i privatne ture prilagođene različitim razinama kondicije.',
+	);
+
+	/** Kratko za Google (do 158 znakova). */
+	const GUIDES_SHORT = array(
+		'kresimir-gracin' => 'Krešimir Gracin – gorski vodič (GV), UIMLA IML i planinski vodič, instruktor SGVH. Jednodnevne i višednevne ture te kajak ture s udrugom Plan A.',
+		'igor-kutil'      => 'Igor Kutil – planinski vodič (PV, UIMLA IML) i skiper. Ferrate, planinarenje i jedrenje, ture koje spajaju planine i more s udrugom Plan A.',
+		'videk-ivan'      => 'Ivan Videk – planinski vodič (PV, UIMLA IML) i povjesničar. Planinarski izleti, trail avanture i penjanje uz povijesne priče, s udrugom Plan A.',
+		'sonja-papes'     => 'Sonja Papeš – turističko-planinska vodičica (TPV) udruge Plan A. Izleti mirnog tempa s naglaskom na doživljaj puta, grupne i privatne ture.',
+	);
+
+	public static function guide_short( WP_Post $g ): string {
+		return self::GUIDES_SHORT[ $g->post_name ] ?? '';
+	}
+
+	public static function guide_text( WP_Post $g ): string {
+		return self::GUIDES[ $g->post_name ] ?? '';
+	}
+
 	public static function init() {
 		add_filter( 'rank_math/json_ld', array( __CLASS__, 'rank_math' ), 99, 2 );
 		add_action( 'wp_head', array( __CLASS__, 'own' ), 99 );

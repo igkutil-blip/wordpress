@@ -92,6 +92,9 @@ final class Plan_A_Seo_Meta {
 		if ( (int) get_option( 'page_for_posts' ) === (int) $post->ID || 'blog' === $post->post_name ) {
 			return 'Blog udruge Plan A: iskustva s izleta i tura, savjeti za planinarenje, ferrate, zimske uspone i opremu, iz pera licenciranih planinskih vodiča.';
 		}
+		if ( 'ttbm_guide' === $post->post_type && '' !== Plan_A_Seo_Schema::guide_short( $post ) ) {
+			return Plan_A_Seo_Schema::guide_short( $post );
+		}
 		$lead = Plan_A_Seo_Text::lead( $post );
 		$names = array( (string) $post->post_name, trim( (string) get_post_meta( $post->ID, 'custom_permalink', true ), '/' ), sanitize_title( $post->post_title ) );
 		foreach ( self::FALLBACK as $slug => $text ) {
