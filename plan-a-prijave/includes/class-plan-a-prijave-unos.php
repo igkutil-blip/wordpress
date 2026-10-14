@@ -18,9 +18,18 @@ final class Plan_A_Prijave_Unos {
 	const TPL_META  = '_pap_template';
 	const UNOS_META = '_pap_unos';
 
-	/** Osiguranje: do ove cijene aranžmana automatski 9,95 €, iznad računa agencija. */
-	const INS_LIMIT = 350;
+	/** Osiguranje (podaci agencije, 14.10.2026.): do 355 € cijene aranžmana 9,95 €, iznad toga 2,8 % cijene zaokruženo na cijeli euro naviše. */
+	const INS_LIMIT = 355;
 	const INS_PRICE = '9.95';
+	const INS_RATE  = 0.028;
+
+	/** Iznos osiguranja za cijenu aranžmana (po osobi). */
+	public static function insurance( float $price ): string {
+		if ( $price <= self::INS_LIMIT ) {
+			return self::INS_PRICE;
+		}
+		return (string) (int) ceil( round( $price * self::INS_RATE, 4 ) );
+	}
 
 	/** Slike: glavna + najmanje 4 (najviše 20) za galeriju, 3:2. */
 	const IMG_SLOTS = array( 'main', 'g1', 'g2', 'g3', 'g4' );
@@ -379,7 +388,7 @@ final class Plan_A_Prijave_Unos {
 		submit_button( 'Spremi' );
 		echo '</form>';
 
-		echo '<h2>3. Predložak za nove izlete</h2><p>Iz predloška se u svaki novi izlet kolega kopiraju: <strong>Važno</strong> (uvjeti, agencija, izjava), <strong>pitanja „Važno za izlet”</strong> (kolege upisuju odgovore, istim redoslijedom), <strong>Zašto s nama i kontakt</strong>, početne kvačice <strong>uključeno / nije uključeno</strong> i naziv usluge <strong>osiguranja</strong> (iznos se računa: do ' . (int) self::INS_LIMIT . ' € = 9,95 €, iznad toga upisuješ ti). Predložak se nikad ne objavljuje.</p>';
+		echo '<h2>3. Predložak za nove izlete</h2><p>Iz predloška se u svaki novi izlet kolega kopiraju: <strong>Važno</strong> (uvjeti, agencija, izjava), <strong>pitanja „Važno za izlet”</strong> (kolege upisuju odgovore, istim redoslijedom), <strong>Zašto s nama i kontakt</strong>, početne kvačice <strong>uključeno / nije uključeno</strong> i naziv usluge <strong>osiguranja</strong> (iznos se računa sam: do ' . (int) self::INS_LIMIT . ' € = 9,95 €, iznad toga 2,8 % cijene zaokruženo na cijeli euro naviše). Predložak se nikad ne objavljuje.</p>';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="pap_unos_template">';
 		wp_nonce_field( 'pap_unos_template' );
 		echo '<p><button class="button">' . ( $tpl ? 'Otvori predložak' : 'Napravi predložak (iz zadnjeg objavljenog izleta)' ) . '</button></p></form>';
@@ -1103,23 +1112,19 @@ final class Plan_A_Prijave_Unos {
 		}
 		update_post_meta( $id, 'ttbm_ticket_type', $tickets );
 
-		// Osiguranje: do 350 € automatski 9,95 €; iznad toga računa agencija.
+		// Osiguranje: do 355 € 9,95 €, iznad toga 2,8 % cijene zaokruženo naviše (self::insurance).
 		$tpl_s   = Plan_A_Prijave_Tour::rows( $src, 'ttbm_extra_service_data' );
 		$ins     = $tpl_s ? $tpl_s[0] : array( 'service_name' => 'Osiguranje od otkaza', 'extra_service_description' => 'opcionalno' );
 		$service = array();
-		if ( (float) $d['price'] <= self::INS_LIMIT ) {
-			$service[] = array(
-				'service_icon'              => (string) ( $ins['service_icon'] ?? '' ),
-				'service_name'              => (string) ( $ins['service_name'] ?? 'Osiguranje od otkaza' ),
-				'service_price'             => self::INS_PRICE,
-				'service_sale_price'        => '',
-				'service_qty'               => (string) Plan_A_Prijave_Editor::SERVICE_QTY,
-				'service_qty_type'          => (string) ( $ins['service_qty_type'] ?? 'inputbox' ) ?: 'inputbox',
-				'extra_service_description' => (string) ( $ins['extra_service_description'] ?? '' ),
-			);
-		} else {
-			$warn[] = 'Osiguranje nije upisano: cijena je iznad ' . self::INS_LIMIT . ' € – iznos osiguranja izračunaju kolegice, upiši ga u Cijene i usluge.';
-		}
+		$service[] = array(
+			'service_icon'              => (string) ( $ins['service_icon'] ?? '' ),
+			'service_name'              => (string) ( $ins['service_name'] ?? 'Osiguranje od otkaza' ),
+			'service_price'             => self::insurance( (float) $d['price'] ),
+			'service_sale_price'        => '',
+			'service_qty'               => (string) Plan_A_Prijave_Editor::SERVICE_QTY,
+			'service_qty_type'          => (string) ( $ins['service_qty_type'] ?? 'inputbox' ) ?: 'inputbox',
+			'extra_service_description' => (string) ( $ins['extra_service_description'] ?? '' ),
+		);
 		update_post_meta( $id, 'ttbm_extra_service_data', $service );
 
 		// Uključeno / nije uključeno, aktivnosti.
@@ -1174,6 +1179,7 @@ final class Plan_A_Prijave_Unos {
 			array( 'Lokacija', esc_html( implode( ' + ', Plan_A_Prijave_Granice::countries( $id ) ) . ', ' . get_post_meta( $id, 'ttbm_travel_duration', true ) . ' dana' ) ),
 			array( 'Cijena', esc_html( self::hr_money( (string) ( $tk[0]['ticket_type_price'] ?? 0 ) ) . ( isset( $tk[1] ) ? ' (prva rata ' . self::hr_money( (string) $tk[1]['ticket_type_price'] ) . ')' : '' ) ) ),
 			array( 'Mjesta', (int) ( $tk[0]['ticket_type_qty'] ?? 0 ) ),
+			array( 'Osiguranje', esc_html( self::hr_money( self::insurance( (float) ( $tk[0]['ticket_type_price'] ?? 0 ) ) ) ) . ' po osobi (izračunato)' ),
 		);
 		$body = Plan_A_Email::card( '', Plan_A_Email::rows( $rows ) );
 		if ( '' !== $note ) {
