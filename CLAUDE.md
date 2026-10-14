@@ -169,6 +169,12 @@ Na kopiji: probni izlet 9013 ostavljen Popunjeno s jednim probnim upisom (PROBA 
 0. **Na vrhu stranice: „Tko unosi izlet”** – obavezan izbor, **isti popis kao Vodiči** (Krešimir Gracin, Igor Kutil,
    Ivan Videk, Sonja Papeš; novi vodič → sam se doda); ime ide u mail Igoru i u izlet; taj vodič se sam označi u Vodičima.
 
+## STANJE ŽIVE 14.10.2026. (20:45, provjereno)
+
+prijave 0.8.1, clanstvo 1.15.8, jedrenje 1.9.3, seo 1.0.3, kontakt 1.0.0, ostali isti; WpTravelly isključen, ali se sam nadogradio na 2.3.6.
+Na svih 6 izleta: video da, natpisa ispod gumba nema. Kopija tablice na kopiji stranice javlja još skriptu v20 (ag_wait „Nepoznata radnja”) –
+Igor treba Deploy → New version. Skriptu v21 u pravoj tablici iz sesije nije moguće provjeriti (Članstvo → Postavke → „Skripta u tablici”).
+
 ## STANJE ŽIVE 13.10.2026. (navečer, provjereno)
 
 WooCommerce 11.2.1 (baza 11.2.1), plan-a-kontakt 1.0.0 (Kontakt HTML v3 s `[plan-a-kontakt]`), seo 1.0.0, prijave 0.6.3,
