@@ -119,7 +119,9 @@ final class Plan_A_Prijave_Editor {
 			'papEd',
 			array(
 				'ajax'  => admin_url( 'admin-ajax.php' ),
-				'nonce' => wp_create_nonce( 'pap_ajax' ),
+				'nonce'   => wp_create_nonce( 'pap_ajax' ),
+				'granice' => array_map( static fn( $t ) => wp_kses_post( wpautop( (string) $t ) ), Plan_A_Prijave_Granice::texts() ),
+				'gtitle'  => Plan_A_Prijave_Granice::TITLE,
 			)
 		);
 	}
@@ -504,7 +506,14 @@ final class Plan_A_Prijave_Editor {
 		echo '<div class="pap-blocks" data-rows="days">';
 		$uvjeti       = Plan_A_Prijave_Uvjeti::current( $id );
 		$uvjeti_shown = false;
+		$gparts        = (bool) Plan_A_Prijave_Granice::countries( $id ); // blok po zemljama čim izlet ima zemlju
+		$granice_shown = false;
 		foreach ( Plan_A_Prijave_Tour::rows( $id, 'ttbm_daywise_details' ) as $i => $d ) {
+			if ( ! $granice_shown && Plan_A_Prijave_Granice::is_block( (string) ( $d['ttbm_day_title'] ?? '' ) ) ) {
+				echo self::granice_rows( 'd' . $i, $d, $id ); // phpcs:ignore WordPress.Security.EscapeOutput
+				$granice_shown = true;
+				continue;
+			}
 			if ( $uvjeti && Plan_A_Prijave_Uvjeti::is_block( (string) ( $d['ttbm_day_title'] ?? '' ) ) ) {
 				echo self::uvjeti_row( 'd' . $i, $d, $uvjeti ); // phpcs:ignore WordPress.Security.EscapeOutput
 				$uvjeti_shown = true;
@@ -512,14 +521,13 @@ final class Plan_A_Prijave_Editor {
 			}
 			echo self::block_row( 'days', 'd' . $i, (string) ( $d['ttbm_day_title'] ?? '' ), (string) ( $d['ttbm_day_content'] ?? '' ), (string) ( $d['ttbm_day_time'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput
 		}
+		if ( $gparts && ! $granice_shown ) {
+			echo self::granice_rows( 'dg', array( 'ttbm_day_title' => Plan_A_Prijave_Granice::TITLE ), $id ); // phpcs:ignore WordPress.Security.EscapeOutput
+		}
 		if ( $uvjeti && ! $uvjeti_shown ) {
 			echo self::uvjeti_row( 'du', array( 'ttbm_day_title' => Plan_A_Prijave_Uvjeti::TITLE ), $uvjeti ); // phpcs:ignore WordPress.Security.EscapeOutput
 		}
 		echo '</div><p><button type="button" class="button pap-add-block" data-to="days">+ Dodaj blok</button></p>';
-		$gparts = array_keys( Plan_A_Prijave_Granice::parts( $id ) );
-		if ( $gparts ) {
-			echo '<p class="pap-hint">Na stranici izleta umjesto bloka „' . esc_html( Plan_A_Prijave_Granice::TITLE ) . '” idu blokovi iz <a href="#granice">Granične formalnosti</a>: ' . esc_html( implode( ', ', array_map( static fn( $c ) => Plan_A_Prijave_Granice::TITLE . ' (' . $c . ')', $gparts ) ) ) . ' – tekst upisan ovdje se tada ne prikazuje.</p>';
-		}
 		echo self::granice_warn( $id ); // phpcs:ignore WordPress.Security.EscapeOutput
 		echo '</section>';
 
@@ -699,6 +707,33 @@ final class Plan_A_Prijave_Editor {
 			. '<input type="hidden" name="' . esc_attr( $f ) . '[time]" value="' . self::e( $time ) . '">'
 			. '<span class="pap-tools"><button type="button" class="pap-up" title="Gore">↑</button><button type="button" class="pap-down" title="Dolje">↓</button><button type="button" class="pap-del" title="Obriši">×</button></span></div>'
 			. '<textarea class="pap-rich" id="' . esc_attr( 'pap-' . $group . '-' . $k ) . '" name="' . esc_attr( $f ) . '[content]" rows="8">' . esc_textarea( $content ) . '</textarea></div>';
+	}
+
+	/**
+	 * Blokovi graničnih formalnosti u Važno – kako će biti na stranici: po jedan za svaku zemlju izleta.
+	 * Tekst se ne uređuje ovdje (zajednički je, kartica Granične formalnosti); spremaju se samo naslov i položaj.
+	 */
+	private static function granice_rows( string $k, array $d, int $id ): string {
+		$f     = 'pap[days][' . $k . ']';
+		$parts = Plan_A_Prijave_Granice::parts( $id );
+		$h     = '<div class="pap-block pap-block-auto pap-block-granice"><div class="pap-block-head"><b class="pap-country">' . esc_html( Plan_A_Prijave_Granice::TITLE ) . '</b><span class="pap-tag">po zemljama</span>'
+			. '<input type="hidden" name="' . esc_attr( $f ) . '[title]" value="' . self::e( $d['ttbm_day_title'] ?? '' ) . '">'
+			. '<input type="hidden" name="' . esc_attr( $f ) . '[time]" value="' . self::e( $d['ttbm_day_time'] ?? '' ) . '">'
+			. '<input type="hidden" name="' . esc_attr( $f ) . '[content]" value="' . self::e( $d['ttbm_day_content'] ?? '' ) . '">'
+			. '<span class="pap-tools"><button type="button" class="pap-up" title="Gore">↑</button><button type="button" class="pap-down" title="Dolje">↓</button></span></div>';
+		$h .= '<div class="pap-gqs">';
+		foreach ( Plan_A_Prijave_Granice::countries( $id ) as $c ) {
+			$h .= '<div class="pap-gq"><b>' . esc_html( Plan_A_Prijave_Granice::TITLE . ' (' . $c . ')' ) . '</b>'
+				. ( isset( $parts[ $c ] )
+					? '<div class="pap-auto-text">' . wp_kses_post( wpautop( $parts[ $c ] ) ) . '</div>'
+					: '<p class="pap-lock">Nema upisanog teksta za ' . esc_html( $c ) . ' – ovo pitanje se na stranici neće prikazati.</p>' )
+				. '</div>';
+		}
+		$h .= '</div>';
+		if ( ! $parts && '' !== trim( wp_strip_all_tags( (string) ( $d['ttbm_day_content'] ?? '' ) ) ) ) {
+			$h .= '<div class="pap-gold"><p class="pap-hint">Dok nijedna zemlja nema upisan tekst, na stranici ostaje stari tekst izleta:</p><div class="pap-auto-text">' . wp_kses_post( wpautop( (string) $d['ttbm_day_content'] ) ) . '</div></div>';
+		}
+		return $h . '<p class="pap-hint">Ovako će biti na stranici izleta (jedno pitanje za svaku zemlju iz Osnovnih podataka). Tekst se mijenja u <a href="#granice">Granične formalnosti</a> i vrijedi za sve izlete u toj zemlji. Promjena zemlje u Osnovnim podacima odmah se vidi ovdje.</p></div>';
 	}
 
 	/** Upozorenje: odabrana zemlja nema upisan tekst graničnih formalnosti (na stranici se ne prikazuje). */

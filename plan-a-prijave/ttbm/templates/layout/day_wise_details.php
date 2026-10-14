@@ -104,7 +104,7 @@
 			$lis  = $root ? $root->getElementsByTagName( 'li' ) : null;
 
 			if ( ! $lis || ! $lis->length ) {
-				return '<div class="day_wise_details_item_details ttbm_wp_editor day_wise_details_fallback">' . wp_kses_post( $html ) . '</div>';
+				return '<div class="day_wise_details_item_details ttbm_wp_editor day_wise_details_fallback">' . wp_kses_post( Plan_A_Prijave_Text::links( wpautop( $html ) ) ) . '</div>'; // Plan A: odlomci ostaju
 			}
 
 			$output = '<div class="day_wise_details_item_details"><ul class="day_wise_activity_list">';

@@ -417,3 +417,23 @@ jQuery(function ($) {
 	// Prije spremanja: sadržaj iz uređivača u polja.
 	$('#post').on('submit', function () { if (window.tinymce) { tinymce.triggerSave(); } });
 });
+
+/* Granične formalnosti u Važno: odmah po zemljama iz Osnovnih podataka (bez spremanja). */
+jQuery(function ($) {
+	var cfg = window.papEd || {}, box = $('.pap-block-granice');
+	if (!box.length || !cfg.granice) { return; }
+	var esc = function (s) { return $('<div>').text(s).html(); };
+	function rebuild() {
+		var list = [], loc = $('select[name="pap[location]"]').val(), c2 = $('select[name="pap[country2]"]').val();
+		[loc, c2].forEach(function (c) { if (c && c !== '__new__' && list.indexOf(c) < 0) { list.push(c); } });
+		var html = list.map(function (c) {
+			var t = cfg.granice[c];
+			return '<div class="pap-gq"><b>' + esc(cfg.gtitle + ' (' + c + ')') + '</b>' + (t && $('<div>').html(t).text().trim()
+				? '<div class="pap-auto-text">' + t + '</div>'
+				: '<p class="pap-lock">Nema upisanog teksta za ' + esc(c) + ' – ovo pitanje se na stranici neće prikazati.</p>') + '</div>';
+		}).join('');
+		box.find('.pap-gqs').html(html);
+		box.find('.pap-gold').toggle(!list.some(function (c) { return cfg.granice[c]; }));
+	}
+	$(document).on('change', 'select[name="pap[location]"], select[name="pap[country2]"]', rebuild);
+});

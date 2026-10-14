@@ -126,6 +126,9 @@ Na kopiji/živoj nakon zipa očistiti SpeedyCache (inače stara stranica).
 **0.7.11:** obrazac kolega čuva poveznice (JS KEEP A + kses a[href] http/https/mailto/tel, nevaljane → tekst, make_clickable bez nofollow);
 jednokratno (opcija `pap_uvjeti_objavljeni`, Igorova odluka 14.10.) svi tada objavljeni izleti dobili izračunat minimum/rok i zaključani
 (kopija: Doček 25 → 17, Hvar 8 → 5); Osnovni podaci: Lokacija i Druga zemlja u jednoj liniji.
+**0.7.12:** admin Važno: blok o granicama = granice_rows (pitanja po zemljama kao na stranici, samo za čitanje, JS odmah osvježi pri
+promjeni zemlje – papEd.granice); prikaz Važno za izlet i Važno kroz wpautop (+ Text::links) → razmaci/odlomci iz upisa ostaju;
+CSS razmak između odlomaka .9em, unutar stavke popisa .35em. Pravilo za tekstove: jednoobrazno, ali bold, poveznice i razmaci ostaju.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →
