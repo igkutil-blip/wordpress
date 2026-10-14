@@ -86,6 +86,10 @@ final class Plan_A_Seo_Llms {
 
 	/** Vodič: licence iz opisa vodiča (npr. „Planinski vodič – PV, UIMLA vodič – IML”). */
 	private static function guide( WP_Post $g ): string {
+		$bio = Plan_A_Seo_Schema::guide_text( $g );
+		if ( '' !== $bio ) {
+			return 'licencirani vodič udruge Plan A. ' . $bio;
+		}
 		$t = self::line( wp_strip_all_tags( (string) $g->post_content ) );
 		$t = trim( (string) preg_replace( '/\s*Upoznajte vodiča.*$/iu', '', $t ) );
 		return 'licencirani vodič udruge Plan A' . ( '' !== $t ? ' (' . rtrim( Plan_A_Seo_Text::cut( $t, 220 ), '.' ) . ')' : '' ) . '.';
