@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.8.2
+Stable tag: 0.8.3
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,10 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.8.3 =
+* Brzina: prva slika izleta učitava se odmah (preload), slider se pokaže čim stigne prva slika (ne čeka sličice sa strane).
+* Posjetitelji bez administratorske trake ne učitavaju njezine stilove ni dashicons.
 
 = 0.8.2 =
 * Brža stranica izleta na mobitelu: slider pokazuje prvu sliku čim se ona učita (prije je čekao sve slike u punoj veličini), slike u slideru 1195 px (na velikim ekranima 1800 px), ostale se učitaju poslije; sličice i kartice „Odaberi sljedeću avanturu” 768 px umjesto izvornika.
