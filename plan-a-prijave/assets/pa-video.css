@@ -1,0 +1,39 @@
+/* Plan A – video „kako se prijaviti” (poveznica + prozorčić kao WhatsApp). Ista datoteka u plan-a-prijave i plan-a-jedrenje. */
+.pa-vid-link,.pa-vid button{text-transform:none!important;letter-spacing:normal!important;min-height:0!important;box-shadow:none!important;text-shadow:none!important;font-family:inherit}
+.pa-vid-link{display:flex!important;align-items:center;justify-content:center;gap:7px;width:auto!important;max-width:100%;margin:10px auto 2px!important;padding:5px 14px 5px 6px!important;border:1px solid #9be3b5!important;border-radius:999px!important;background:#fff!important;color:#128c7e!important;font-weight:600!important;font-size:13.5px!important;line-height:1.3!important;height:auto!important;cursor:pointer;text-align:center;text-decoration:none;transition:background .15s}
+.pa-vid-link:hover,.pa-vid-link:focus-visible{background:#effcf3!important;color:#075e54!important}
+.pa-vid-link__play{flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#25d366;color:#fff;font-size:9px;padding-left:2px}
+.pa-vid-link small{font-weight:400;color:#5b6b66}
+
+html.pa-vid-lock{overflow:hidden}
+.pa-vid__win:focus{outline:none}
+.pa-vid__x:focus:not(:focus-visible){outline:none!important}
+.pa-vid{position:fixed;inset:0;z-index:100000;display:none}
+.pa-vid.is-open{display:block}
+.pa-vid__bg{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.pa-vid__win{position:absolute;right:20px;bottom:20px;width:380px;max-width:calc(100vw - 24px);max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);display:flex;flex-direction:column;border-radius:14px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.35);background:#efeae2;animation:pa-vid-in .2s ease-out}
+@keyframes pa-vid-in{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.pa-vid__head{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#075e54;color:#fff}
+.pa-vid__ava{flex:none;width:38px;height:38px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;color:#075e54;font-weight:700}
+.pa-vid__ava img{width:100%;height:100%;object-fit:cover}
+.pa-vid__who{flex:1;display:flex;flex-direction:column;line-height:1.2}
+.pa-vid__who b{font-size:16px}
+.pa-vid__who small{font-size:12px;opacity:.85}
+.pa-vid__x{flex:none;width:36px!important;height:36px!important;margin:0!important;padding:0!important;border:0!important;border-radius:50%!important;background:transparent!important;color:#fff!important;display:flex!important;align-items:center;justify-content:center;cursor:pointer}
+.pa-vid__x svg,.pa-vid__x2 svg{pointer-events:none}
+.pa-vid__x2{position:absolute;top:8px;left:8px;width:40px!important;height:40px!important;margin:0!important;padding:0!important;border:0!important;border-radius:50%!important;background:rgba(0,0,0,.6)!important;color:#fff!important;display:flex!important;align-items:center;justify-content:center;cursor:pointer}
+.pa-vid__x:hover,.pa-vid__x:focus-visible{background:rgba(255,255,255,.15)!important}
+.pa-vid__chat{flex:1;overflow:auto;padding:14px 12px;background-color:#efeae2;background-image:radial-gradient(rgba(0,0,0,.035) 1px,transparent 1px);background-size:14px 14px}
+.pa-vid__msg{position:relative;max-width:92%;padding:6px 6px 18px;border-radius:0 10px 10px 10px;background:#fff;box-shadow:0 1px 1px rgba(0,0,0,.12)}
+.pa-vid__msg:before{content:"";position:absolute;left:-8px;top:0;border-top:10px solid #fff;border-left:8px solid transparent}
+.pa-vid__txt{margin:2px 4px 6px;font-size:15px;line-height:1.4;color:#111b21}
+.pa-vid__frame{position:relative;border-radius:8px;overflow:hidden;background:#0b1d33}
+.pa-vid__frame video{display:block;width:100%;max-height:calc(100vh - 210px);max-height:calc(100dvh - 210px);aspect-ratio:9/16;object-fit:contain;background:#0b1d33}
+.pa-vid__sound{position:absolute;top:8px;right:8px;margin:0!important;padding:6px 12px!important;border:0!important;border-radius:999px!important;background:rgba(0,0,0,.6)!important;color:#fff!important;font-size:13px!important;font-weight:600!important;line-height:1.3!important;cursor:pointer}
+.pa-vid__sound[hidden]{display:none!important}
+.pa-vid__time{position:absolute;right:8px;bottom:3px;font-size:11px;color:#667781}
+@media (max-width:600px){
+	.pa-vid__win{left:8px;right:8px;top:8px;bottom:auto;width:auto;max-width:none;max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px)}
+	.pa-vid__msg{max-width:100%}
+	.pa-vid__frame video{max-height:calc(100vh - 190px);max-height:calc(100dvh - 170px)}
+}

@@ -45,6 +45,7 @@ $button_type       = apply_filters( 'ttbm_book_now_button_type', 'button', $tour
 	<button class="ttbm_smart_book_trip_btn ttbm_book_now ttbm-confirm-btn <?php echo esc_attr( $seat_plan ); ?>" type="<?php echo esc_attr( $button_type ); ?>">
 		<?php esc_html_e( 'Book This Trip', 'tour-booking-manager' ); ?>
 	</button>
+	<?php echo class_exists( 'Plan_A_Prijave_Video' ) ? Plan_A_Prijave_Video::button() : ''; // phpcs:ignore WordPress.Security.EscapeOutput -- Plan A: video „kako se prijaviti” ?>
 	<button type="submit" name="add-to-cart" value="<?php echo esc_attr( $ttbm_product_id ); ?>" class="dNone ttbm_add_to_cart ttbm-confirm-btn">
 		<?php esc_html_e( 'Book Now', 'tour-booking-manager' ); ?>
 	</button>
