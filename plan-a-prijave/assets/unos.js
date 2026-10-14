@@ -7,7 +7,7 @@
 	var $ = function (s, el) { return (el || document).querySelector(s); };
 	var $$ = function (s, el) { return Array.prototype.slice.call((el || document).querySelectorAll(s)); };
 
-	/* ---------- Zalijepljeni tekst: samo odlomci, podebljano, kurziv, popisi ---------- */
+	/* ---------- Zalijepljeni tekst: samo odlomci, podebljano, kurziv, popisi, poveznice ---------- */
 	var KEEP = { P: 'p', DIV: 'p', BR: 'br', STRONG: 'strong', B: 'strong', EM: 'em', I: 'em', UL: 'ul', OL: 'ol', LI: 'li', H1: 'h3', H2: 'h3', H3: 'h3', H4: 'h4', H5: 'h4', H6: 'h4' };
 	function clean(html) {
 		var src = document.createElement('div');
@@ -23,6 +23,11 @@
 				if (!t && /font-weight\s*:\s*(bold|[6-9]00)/.test(st)) { t = 'strong'; }
 				if (!t && /font-style\s*:\s*italic/.test(st)) { t = 'em'; }
 				if (t === 'br') { to.appendChild(document.createElement('br')); return; }
+				// Poveznica ostaje (samo web, mail i telefon).
+				if (tag === 'A') {
+					var href = (n.getAttribute('href') || '').trim();
+					if (/^(https?:|mailto:|tel:)/i.test(href)) { var a = document.createElement('a'); a.setAttribute('href', href); walk(n, a); to.appendChild(a); return; }
+				}
 				if (t) { var el = document.createElement(t); walk(n, el); to.appendChild(el); } else { walk(n, to); }
 			});
 		}
@@ -38,7 +43,7 @@
 		});
 		// Bez praznih oznaka i bez <p> u <p>.
 		$$('p p', out).forEach(function (p) { p.outerHTML = p.innerHTML + '<br>'; });
-		$$('strong,em,p,li,h3,h4', out).forEach(function (e) { if (!e.textContent.trim() && !e.querySelector('br')) { e.remove(); } });
+		$$('strong,em,p,li,h3,h4,a', out).forEach(function (e) { if (!e.textContent.trim() && !e.querySelector('br')) { e.remove(); } });
 		return out.innerHTML.trim();
 	}
 	function text2html(t) {

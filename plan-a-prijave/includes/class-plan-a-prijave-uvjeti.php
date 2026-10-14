@@ -6,7 +6,7 @@
  * Rok obavijesti o otkazu prema trajanju (Zakon o pružanju usluga u turizmu):
  * manje od 2 dana → 48 sati, 2–6 dana → 7 dana, više od 6 dana → 20 dana.
  * Dok izlet nije objavljen, tekst se računa iznova; pri prvoj objavi se zaključa (_pap_uvjeti)
- * i više se ne mijenja (ugovor s agencijom). Izleti objavljeni prije ovoga ostaju kakvi jesu.
+ * i više se ne mijenja (ugovor s agencijom). Izleti objavljeni prije 0.7.11 zaključani su jednom pri nadogradnji.
  *
  * @package Plan_A_Prijave
  */
@@ -25,6 +25,26 @@ class Plan_A_Prijave_Uvjeti {
 	public static function init() {
 		add_filter( 'plan_a_prijave_daywise', array( __CLASS__, 'daywise' ), 20, 2 );
 		add_action( 'transition_post_status', array( __CLASS__, 'transition' ), 10, 3 );
+		add_action( 'admin_init', array( __CLASS__, 'lock_published' ) );
+	}
+
+	/** Jednom (Igorova odluka 14.10.2026.): već objavljeni izleti dobivaju izračunate uvjete i zaključaju se. */
+	public static function lock_published() {
+		if ( get_option( 'pap_uvjeti_objavljeni' ) ) {
+			return;
+		}
+		update_option( 'pap_uvjeti_objavljeni', current_time( 'mysql' ), false );
+		$ids = get_posts(
+			array(
+				'post_type'   => 'ttbm_tour',
+				'post_status' => 'publish',
+				'numberposts' => -1,
+				'fields'      => 'ids',
+			)
+		);
+		foreach ( $ids as $id ) {
+			self::lock( (int) $id );
+		}
 	}
 
 	public static function is_block( string $title ): bool {
