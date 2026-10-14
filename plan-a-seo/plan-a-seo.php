@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A SEO
  * Description:       Sam popunjava SEO za cijelu stranicu (uz Rank Math): ključna riječ, SEO naslov i opis za Google za stranice, objave i vodiče, alt slika (postojećih i novih), noindex i sitemap bez probnih i pomoćnih stranica, strukturirani podaci (udruga, izleti kao događaji, pitanja i odgovori) i /llms.txt za AI pretraživače. Ručno upisano ne dira.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_SEO_VERSION', '1.0.0' );
+define( 'PLAN_A_SEO_VERSION', '1.0.1' );
 
 require_once __DIR__ . '/includes/class-plan-a-seo-text.php';
 require_once __DIR__ . '/includes/class-plan-a-seo-meta.php';
@@ -46,6 +46,18 @@ final class Plan_A_Seo {
 		return (string) ( self::opts()[ $k ] ?? '' );
 	}
 
+	/** Nova verzija: osvježi sitemap Rank Matha i llms.txt (novi popis stranica izvan Googlea). */
+	public static function upgraded() {
+		if ( get_option( 'plan_a_seo_ver' ) === PLAN_A_SEO_VERSION ) {
+			return;
+		}
+		update_option( 'plan_a_seo_ver', PLAN_A_SEO_VERSION, false );
+		if ( class_exists( '\\RankMath\\Sitemap\\Cache' ) && method_exists( '\\RankMath\\Sitemap\\Cache', 'invalidate_storage' ) ) {
+			\RankMath\Sitemap\Cache::invalidate_storage();
+		}
+		Plan_A_Seo_Llms::flush();
+	}
+
 	public static function init() {
 		Plan_A_Seo_Meta::init();
 		Plan_A_Seo_Images::init();
@@ -53,6 +65,7 @@ final class Plan_A_Seo {
 		Plan_A_Seo_Schema::init();
 		Plan_A_Seo_Llms::init();
 		Plan_A_Seo_Admin::init();
+		add_action( 'init', array( __CLASS__, 'upgraded' ), 99 );
 	}
 }
 

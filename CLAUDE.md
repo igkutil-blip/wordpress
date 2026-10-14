@@ -181,6 +181,11 @@ duplikata = najstarija stranica). Naslovnica se ne dira. „Vrati sve” vraća 
 /wp-json/plan-a-seo/v1/{stats,preview,images-preview,llms,run,undo}. Na kopiji popunjeno i provjereno 13.10.
 Živa: instalirati plan-a-seo + prijave 0.6.3, Alati → Plan A SEO → 1, 2, 3, SpeedyCache očistiti, u Search Consoleu ponovno sitemap.
 
+**plan-a-seo 1.0.1 (14.10.2026., obje grane):** noindex + izvan sitemapa i llms.txt i za stranicu s `[plan-a-unos-izleta]` i stranice
+s našim kratkim kodom koji više ne postoji (Poklon bon); llms.txt: duplikat opisa → opis iz teksta (description_for), vodiči s licencama
+iz opisa vodiča; uvod (good_lead) preskače redove Vodiči/Važno/Mjesto polaska/telefon/plaćanje i rate; pri novoj verziji briše se
+Rank Math sitemap cache (option `plan_a_seo_ver`). Na živoj opisi Jedrenje/O nama/Ustrojstvo isti → Igor treba pokrenuti Alati → Plan A SEO.
+
 ### Plan prelaska (arhiva)
 
 Stanje žive 13.10.2026. (WC system_status): clanstvo 1.14.5, kosarica 1.5.5, izleti 1.21.1, jedrenje 1.8.2,

@@ -105,10 +105,13 @@ final class Plan_A_Seo_Text {
 		if ( ! preg_match( '/^[\p{Lu}0-9„"]/u', $p ) || ! preg_match( '/[.!?]/u', $p ) || ':' === mb_substr( $p, -1 ) ) {
 			return false;
 		}
-		if ( preg_match( '#https?://|www\.|\d{3}\s?\d{2,3}\s?\d{3}|tel:#iu', $p ) ) {
+		if ( preg_match( '#https?://|www\.|\d{3}\s?\d{2,3}\s?\d{3}|\b0\d{1,2}[\s/-]?\d{2,3}[\s-]?\d{2,3}[\s-]?\d{2,3}\b|tel:#iu', $p ) ) {
 			return false;
 		}
-		return ! preg_match( '/^(cijena|uvjet|termin|polazak|uplata|prijav|napomena|kontakt|oprema|\d+[.)]?\s*$)/iu', $p );
+		if ( preg_match( '/prv[aeu] rat|uplat[aiu]\b|najkasnije do|članarin/iu', $p ) ) {
+			return false; // plaćanje i rate nisu opis izleta
+		}
+		return ! preg_match( '/^(cijena|uvjet|termin|polazak|uplata|prijav|napomena|kontakt|oprema|vodi[čc]|važno|vazno|mjesto|polazi|okuplja|datum|trajanje|vrijeme|težin|minimaln|\d+[.)]?\s*$)/iu', $p );
 	}
 
 	/** Opis do $max znakova od cijelih rečenica (inače skraćena prva). */

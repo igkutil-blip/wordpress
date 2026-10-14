@@ -1,5 +1,5 @@
 === Plan A SEO ===
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 
 Sam popunjava SEO za cijelu stranicu srd-plan-a.hr, uz Rank Math (Rank Math ostaje alat u kojem se sve vidi i mijenja).
@@ -18,6 +18,11 @@ Sam popunjava SEO za cijelu stranicu srd-plan-a.hr, uz Rank Math (Rank Math osta
 Stanje, pregled promjena (bez upisa), gumbi za popunjavanje postojećeg u serijama (stranice/objave/vodiči, izleti, alt slika) i „Vrati sve”. Postavke: završetak naslova i popis stranica s noindexom.
 
 == Promjene ==
+
+= 1.0.1 =
+* Noindex, izvan sitemapa i llms.txt: stranica „Unos izleta” (samo za vodiče) i stranice čiji naš kratki kod više ne postoji (npr. Poklon bon).
+* llms.txt: isti opis na više stranica → svaka dobiva svoj opis iz teksta; opis izleta ne počinje vodičima, telefonom ni cijenom; vodiči s licencama.
+* Opis za Google: uvodni tekst preskače redove s vodičima/telefonom („Vodiči: …”, „Važno: …”).
 
 = 1.0.0 =
 * Prva verzija.

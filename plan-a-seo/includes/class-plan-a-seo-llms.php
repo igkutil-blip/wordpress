@@ -51,13 +51,44 @@ final class Plan_A_Seo_Llms {
 		return trim( (string) preg_replace( '/\s+/u', ' ', Plan_A_Seo_Text::clean( $s ) ) );
 	}
 
+	/** @var array<string,bool> Opisi koji su već upisani (isti opis na dvije stavke = drugoj se složi njezin). */
+	private static $seen = array();
+
+	/**
+	 * Opis stavke: SEO opis iz Rank Matha, osim kad je prazan, predložak, isti kao kod druge stavke ili počinje
+	 * vodičima/telefonom/cijenom – tada opis složen iz teksta stranice (isti kao za Google).
+	 */
 	private static function desc( int $id ): string {
-		$d = (string) get_post_meta( $id, 'rank_math_description', true );
-		if ( '' === trim( $d ) || false !== strpos( $d, '%' ) ) {
-			$p = get_post( $id );
-			$d = $p ? Plan_A_Seo_Text::cut( Plan_A_Seo_Text::lead( $p ), 200 ) : '';
+		static $done = array();
+		if ( isset( $done[ $id ] ) && self::$seen ) {
+			return $done[ $id ]; // isti izlet u više termina – isti opis
 		}
-		return self::line( $d );
+		return $done[ $id ] = self::desc_new( $id );
+	}
+
+	private static function desc_new( int $id ): string {
+		$p = get_post( $id );
+		if ( ! $p ) {
+			return '';
+		}
+		$d    = self::line( (string) get_post_meta( $id, 'rank_math_description', true ) );
+		$norm = Plan_A_Seo_Text::norm( $d );
+		if ( '' === $d || false !== strpos( $d, '%' ) || isset( self::$seen[ $norm ] ) || ! Plan_A_Seo_Text::good_lead( $d, $p->post_title ) ) {
+			$d    = self::line( Plan_A_Seo_Meta::description_for( $p ) );
+			$norm = Plan_A_Seo_Text::norm( $d );
+			if ( isset( self::$seen[ $norm ] ) ) {
+				return '';
+			}
+		}
+		self::$seen[ $norm ] = true;
+		return $d;
+	}
+
+	/** Vodič: licence iz opisa vodiča (npr. „Planinski vodič – PV, UIMLA vodič – IML”). */
+	private static function guide( WP_Post $g ): string {
+		$t = self::line( wp_strip_all_tags( (string) $g->post_content ) );
+		$t = trim( (string) preg_replace( '/\s*Upoznajte vodiča.*$/iu', '', $t ) );
+		return 'licencirani vodič udruge Plan A' . ( '' !== $t ? ' (' . rtrim( Plan_A_Seo_Text::cut( $t, 220 ), '.' ) . ')' : '' ) . '.';
 	}
 
 	private static function money( float $p ): string {
@@ -65,6 +96,7 @@ final class Plan_A_Seo_Llms {
 	}
 
 	public static function build(): string {
+		self::$seen = array();
 		$o   = Plan_A_Seo_Schema::ORG;
 		$out = array();
 		$out[] = '# Plan A – planinarenje i avantura (' . $o['legalName'] . ')';
@@ -127,8 +159,7 @@ final class Plan_A_Seo_Llms {
 			$out[] = '## Vodiči';
 			$out[] = '';
 			foreach ( $guides as $g ) {
-				$d     = self::desc( $g->ID );
-				$out[] = '- [' . self::line( $g->post_title ) . '](' . get_permalink( $g ) . ')' . ( '' !== $d ? ': ' . $d : '' );
+				$out[] = '- [' . self::line( $g->post_title ) . '](' . get_permalink( $g ) . '): ' . self::guide( $g );
 			}
 			$out[] = '';
 		}
