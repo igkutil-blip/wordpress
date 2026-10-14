@@ -1,7 +1,7 @@
 === Plan A jedrenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.9.2
+Stable tag: 1.9.3
 License: GPLv2 or later
 
 Rezervacija tjednog jedrenja za ekipu (subota–subota) u terminu koji kupac bira.
@@ -47,6 +47,9 @@ i na stranici iz predmemorije. Ipak izuzmi:
 Košarica, naplata i "Moj račun" već moraju biti izuzeti zbog WooCommercea.
 
 == Promjene ==
+
+= 1.9.3 =
+* Kalendar i obrazac: „▶ Pogledaj kako rezervirati (1 min)” – kratki video u prozorčiću kao poruka na WhatsAppu.
 
 = 1.9.2 =
 * Uvjeti otkaza bez povrata novca (dogovor 12.10.2026.): „Za otkazanu rezervaciju uplaćeni iznos se ne vraća. Ako je uz rezervaciju uplaćeno osiguranje od otkaza, za povrat novca obrati se osiguranju.” Upisani stari uvjeti s postocima jednom se automatski zamijene (stranica jedrenja i svi mailovi).

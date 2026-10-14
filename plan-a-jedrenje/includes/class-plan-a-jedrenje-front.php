@@ -77,6 +77,15 @@ final class Plan_A_Jedrenje_Front {
 		return '<svg class="pajd-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $paths[ $name ] . '</svg>';
 	}
 
+	/** „Pogledaj kako rezervirati” – video u prozorčiću kao poruka na WhatsAppu (assets/js/pa-video.js). */
+	private static function video_button(): string {
+		$base = PLAN_A_JEDRENJE_URL . 'assets/video/rezervacija-jedrenja';
+		return '<button type="button" class="pa-vid-link" data-pa-video="' . esc_url( $base . '.mp4?v=' . PLAN_A_JEDRENJE_VERSION ) . '" data-pa-poster="' . esc_url( $base . '.jpg' ) . '"'
+			. ' data-pa-avatar="' . esc_url( (string) get_site_icon_url( 96 ) ) . '" data-pa-title="Kako rezervirati jedrenje"'
+			. ' data-pa-text="Pozdrav! 👋 Evo kako u minuti rezerviraš tjedan jedrenja:">'
+			. '<span class="pa-vid-link__play" aria-hidden="true">▶</span><span>Pogledaj kako rezervirati <small>(1 min)</small></span></button>';
+	}
+
 	private static function share_button( string $url ): string {
 		$s    = Plan_A_Jedrenje_Data::get();
 		$text = "Hej, predlažem da idemo zajedno na jedrenje ⛵\n*" . $s['title'] . "*\n🛥️ " . $s['boat'] . ', ' . $s['marina'] . "\nIdeš i ti? Javi pa rezerviramo zajedno 👇";
@@ -136,6 +145,8 @@ final class Plan_A_Jedrenje_Front {
 		}
 		wp_enqueue_style( 'plan-a-jedrenje' );
 		wp_enqueue_script( 'plan-a-jedrenje' );
+		wp_enqueue_style( 'pa-video', PLAN_A_JEDRENJE_URL . 'assets/css/pa-video.css', array(), PLAN_A_JEDRENJE_VERSION );
+		wp_enqueue_script( 'pa-video', PLAN_A_JEDRENJE_URL . 'assets/js/pa-video.js', array(), PLAN_A_JEDRENJE_VERSION, array( 'in_footer' => true ) );
 		if ( wp_script_is( 'plan-a-izleti', 'registered' ) ) {
 			wp_enqueue_style( 'plan-a-izleti' );
 			wp_enqueue_script( 'plan-a-izleti' );
@@ -222,6 +233,7 @@ final class Plan_A_Jedrenje_Front {
 				</div>
 				<noscript><p class="pajd-msg">Za rezervaciju uključi JavaScript ili nam se javi e-mailom.</p></noscript>
 				<p class="pajd-cal__note">Svi tjedni su od subote do subote, cijena je za cijeli brod. Tjedan „Na upitu” još možeš zatražiti.</p>
+				<?php echo self::video_button(); // phpcs:ignore WordPress.Security.EscapeOutput -- escapirano u video_button(). ?>
 			</section>
 
 			<section class="pajd-card pajd-book" data-pajd-book hidden aria-labelledby="pajd-book-title">
@@ -310,6 +322,7 @@ final class Plan_A_Jedrenje_Front {
 
 					<p class="pajd-msg" data-pajd-msg role="alert" hidden></p>
 					<button type="submit" class="pajd-btn pajd-btn--cta" data-pajd-submit>Pošalji zahtjev za rezervaciju</button>
+					<?php echo self::video_button(); // phpcs:ignore WordPress.Security.EscapeOutput -- escapirano u video_button(). ?>
 					<p class="pajd-after">Zahtjev ne obvezuje na plaćanje: najprije provjeravamo je li brod slobodan u charter bazi i javljamo se u roku 48 sati s uplatnicom za akontaciju.</p>
 				</form>
 
