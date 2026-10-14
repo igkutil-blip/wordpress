@@ -18,8 +18,9 @@ final class Plan_A_Prijave_Video {
 		if ( ! is_singular( Plan_A_Prijave_Tour::CPT ) ) {
 			return;
 		}
-		wp_enqueue_style( 'pa-video', PLAN_A_PRIJAVE_URL . 'assets/pa-video.css', array(), PLAN_A_PRIJAVE_VERSION );
-		wp_enqueue_script( 'pa-video', PLAN_A_PRIJAVE_URL . 'assets/pa-video.js', array(), PLAN_A_PRIJAVE_VERSION, true );
+		$v = PLAN_A_PRIJAVE_VERSION . '.' . (int) filemtime( PLAN_A_PRIJAVE_DIR . 'assets/pa-video.js' );
+		wp_enqueue_style( 'pa-video', PLAN_A_PRIJAVE_URL . 'assets/pa-video.css', array(), $v );
+		wp_enqueue_script( 'pa-video', PLAN_A_PRIJAVE_URL . 'assets/pa-video.js', array(), $v, true );
 	}
 
 	/** Poveznica ispod gumba Rezervirajte. */

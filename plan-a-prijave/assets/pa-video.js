@@ -28,14 +28,15 @@
 			box.innerHTML = '<div class="pa-vid__bg" data-close></div>'
 				+ '<div class="pa-vid__win">'
 				+ '<div class="pa-vid__head"><span class="pa-vid__ava"></span><span class="pa-vid__who"><b>Plan A</b><small>na mreži</small></span>'
-				+ '<button type="button" class="pa-vid__x" data-close aria-label="Zatvori">×</button></div>'
+				+ '<button type="button" class="pa-vid__x" data-close aria-label="Zatvori"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button></div>'
 				+ '<div class="pa-vid__chat"><div class="pa-vid__msg"><p class="pa-vid__txt"></p>'
 				+ '<div class="pa-vid__frame"><video playsinline controls preload="metadata"></video>'
-				+ '<button type="button" class="pa-vid__sound">Uključi zvuk</button></div>'
+				+ '<button type="button" class="pa-vid__sound">Uključi zvuk</button>'
+				+ '<button type="button" class="pa-vid__x2" data-close aria-label="Zatvori video"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button></div>'
 				+ '<span class="pa-vid__time"></span></div></div></div>';
 			document.body.appendChild(box);
 			video = box.querySelector('video');
-			box.addEventListener('click', function (e) { if (e.target.hasAttribute('data-close')) { close(); } });
+			box.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) { close(); } });
 			document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { close(); } });
 			var snd = box.querySelector('.pa-vid__sound');
 			snd.addEventListener('click', function () { video.muted = false; video.play(); snd.hidden = true; });

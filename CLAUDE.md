@@ -132,7 +132,7 @@ CSS razmak između odlomaka .9em, unutar stavke popisa .35em. Pravilo za tekstov
 **0.7.13 + plan-a-jedrenje 1.9.3 (14.10., NA KOPIJI, čeka Igorovu potvrdu):** ispod „Rezervirajte” (izlet) i ispod kalendara + gumba
 „Pošalji zahtjev” (jedrenje) poveznica „▶ Pogledaj kako se prijaviti/rezervirati (1 min)” → prozorčić na istoj stranici u WhatsApp stilu
 s videom (assets/pa-video.js|css – iste datoteke u oba dodatka; video 720×1280 MP4 u assets/video/; pokreće se bez zvuka + „Uključi zvuk”;
-zatvara ×/Esc/klik van). Video izleta = „prijava-na-izlet-3” od Igora. Testni Chromium ne pušta H.264 – puštanje provjerava Igor na mobitelu.
+zatvara × u zaglavlju i × na videu, Esc, klik van; na mobitelu prozorčić od vrha (100dvh, × se ne skriva iza adresne trake); CSS/JS verzija = verzija.filemtime). Video izleta = „prijava-na-izlet-3” od Igora. Testni Chromium ne pušta H.264 – puštanje provjerava Igor na mobitelu.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →

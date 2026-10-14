@@ -145,8 +145,9 @@ final class Plan_A_Jedrenje_Front {
 		}
 		wp_enqueue_style( 'plan-a-jedrenje' );
 		wp_enqueue_script( 'plan-a-jedrenje' );
-		wp_enqueue_style( 'pa-video', PLAN_A_JEDRENJE_URL . 'assets/css/pa-video.css', array(), PLAN_A_JEDRENJE_VERSION );
-		wp_enqueue_script( 'pa-video', PLAN_A_JEDRENJE_URL . 'assets/js/pa-video.js', array(), PLAN_A_JEDRENJE_VERSION, array( 'in_footer' => true ) );
+		$pav = PLAN_A_JEDRENJE_VERSION . '.' . (int) filemtime( plugin_dir_path( PLAN_A_JEDRENJE_FILE ) . 'assets/js/pa-video.js' );
+		wp_enqueue_style( 'pa-video', PLAN_A_JEDRENJE_URL . 'assets/css/pa-video.css', array(), $pav );
+		wp_enqueue_script( 'pa-video', PLAN_A_JEDRENJE_URL . 'assets/js/pa-video.js', array(), $pav, array( 'in_footer' => true ) );
 		if ( wp_script_is( 'plan-a-izleti', 'registered' ) ) {
 			wp_enqueue_style( 'plan-a-izleti' );
 			wp_enqueue_script( 'plan-a-izleti' );
