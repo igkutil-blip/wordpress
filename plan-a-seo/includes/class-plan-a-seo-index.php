@@ -57,6 +57,21 @@ final class Plan_A_Seo_Index {
 				$ids[] = $id;
 			}
 		}
+		// Stranica „Unos izleta” (samo za vodiče) i stranice čiji naš kratki kod više ne postoji (npr. obrisan dodatak –
+		// na stranici bi bio samo „[plan-a-poklon-bon]”): ne u Google, sitemap ni llms.txt.
+		global $wpdb;
+		$rows = $wpdb->get_results( "SELECT ID, post_content FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND post_content LIKE '%[plan-a-%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		foreach ( (array) $rows as $r ) {
+			if ( ! preg_match_all( '/\[(plan-a-[a-z0-9-]+)/', (string) $r->post_content, $m ) ) {
+				continue;
+			}
+			foreach ( array_unique( $m[1] ) as $tag ) {
+				if ( 'plan-a-unos-izleta' === $tag || ! shortcode_exists( $tag ) ) {
+					$ids[] = (int) $r->ID;
+					break;
+				}
+			}
+		}
 		return $ids = array_values( array_unique( $ids ) );
 	}
 
