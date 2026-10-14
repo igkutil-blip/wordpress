@@ -54,20 +54,5 @@ if ( $pap_wait ) {
 	<button type="submit" name="add-to-cart" value="<?php echo esc_attr( $ttbm_product_id ); ?>" class="dNone ttbm_add_to_cart ttbm-confirm-btn">
 		<?php esc_html_e( 'Book Now', 'tour-booking-manager' ); ?>
 	</button>
-	<ul class="ttbm_smart_trust_signals">
-		<li class="ttbm_smart_trust_item">
-			<span class="ttbm_smart_trust_icon" aria-hidden="true"><i class="far fa-check-circle"></i></span>
-			<span class="ttbm_smart_trust_text"><?php esc_html_e( 'Instant confirmation', 'tour-booking-manager' ); ?></span>
-		</li>
-		<li class="ttbm_smart_trust_item">
-			<span class="ttbm_smart_trust_icon" aria-hidden="true"><i class="fas fa-lock"></i></span>
-			<span class="ttbm_smart_trust_text"><?php esc_html_e( 'Secure payment', 'tour-booking-manager' ); ?></span>
-		</li>
-		<li class="ttbm_smart_trust_item">
-			<span class="ttbm_smart_trust_icon" aria-hidden="true"><i class="far fa-calendar-times"></i></span>
-			<span class="ttbm_smart_trust_text" title="<?php echo esc_attr( TTBM_Function::cancellation_policy_text() ); ?>">
-				<?php esc_html_e( 'Free cancellation', 'tour-booking-manager' ); ?>
-			</span>
-		</li>
-	</ul>
+	<?php // Plan A: bez natpisa „Licencirano vođenje / Sigurnost je prva / Fleksibilnost prema uvjetima” (Igor, 14.10.2026.). ?>
 </div>
