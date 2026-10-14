@@ -108,6 +108,10 @@ admin Termini: samo početak, kraj = početak + (dani − 1), prijave do početk
 na karti „Popunjeno” umjesto „Sold out”.
 **0.7.6:** lijeva traka: Opis, Osnovni, Termini, Cijene, Važno za izlet, Vodiči, Galerija, Važno, Uključeno i aktivnosti, Zašto s nama,
 Povezani, Ostalo; Osnovni podaci = lokacija + trajanje (dana); max_people = mjesta karata; noćenja off; slobodna mjesta uvijek on.
+**0.7.7:** Granične, vizne i zdravstvene formalnosti – kartica u adminu izleta (ispod Važno): jedan tekst po zemlji, zajednički za sve
+izlete (opcija `pap_granice`, prvo punjenje iz najnovijeg izleta u zemlji; „+ Dodaj zemlju” stvara i lokaciju). Na stranici izleta blok
+čiji naslov sadrži „granič”/„vizn” u Važno dobiva tekst zemlje iz lokacije + druge zemlje (`_pap_country2`, nije obavezna – admin
+Osnovni podaci i obrazac kolega); bez bloka → doda se na kraj; zemlja bez teksta → ostaje tekst izleta (filtar `plan_a_prijave_daywise`).
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →
