@@ -1,0 +1,41 @@
+/* Plan A – lista čekanja za popunjeni izlet (blok umjesto prijave + prozorčić s obrascem). */
+.pap-wait{margin:12px 0 4px;padding:14px 14px 12px;border:1px solid #f1d27a;border-radius:12px;background:#fff8dc;text-align:center}
+.pap-wait__t{margin:0 0 4px!important;font-weight:700;font-size:17px;color:#7a5200}
+.pap-wait__x{margin:0 0 10px!important;font-size:14.5px;line-height:1.45;color:#5b4a1a}
+.pap-wait__n{margin:8px 0 0!important;font-size:13.5px;color:#7a5200}
+.pap-wait__btn,.pap-wl button{text-transform:none!important;letter-spacing:normal!important;box-shadow:none!important;text-shadow:none!important;font-family:inherit;min-height:0!important;height:auto!important}
+.pap-wait__btn{display:block!important;width:100%!important;margin:0!important;padding:12px 16px!important;border:0!important;border-radius:10px!important;background:#e8890c!important;color:#fff!important;font-size:16px!important;font-weight:700!important;line-height:1.3!important;cursor:pointer}
+.pap-wait__btn:hover,.pap-wait__btn:focus-visible{background:#c97405!important}
+
+html.pap-wl-lock{overflow:hidden}
+.pap-wl{position:fixed;inset:0;z-index:100000;display:none}
+.pap-wl.is-open{display:block}
+.pap-wl__bg{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.pap-wl__win{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:440px;max-width:calc(100vw - 20px);max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px);overflow:auto;border-radius:14px;background:#fff;box-shadow:0 18px 50px rgba(0,0,0,.35);padding:18px 18px 16px;color:#1d2a36}
+.pap-wl__win:focus{outline:none}
+.pap-wl__head{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
+.pap-wl__head h3{flex:1;margin:0!important;font-size:19px!important;line-height:1.3!important;color:#12304b!important;text-transform:none!important;letter-spacing:normal!important}
+.pap-wl__tour{margin:0 0 12px!important;font-size:14px;color:#5f6b77}
+.pap-wl__x{flex:none;width:36px!important;height:36px!important;margin:-6px -6px 0 0!important;padding:0!important;border:0!important;border-radius:50%!important;background:transparent!important;color:#12304b!important;display:flex!important;align-items:center;justify-content:center;cursor:pointer}
+.pap-wl__x:hover{background:#eef2f6!important}
+.pap-wl__x svg{pointer-events:none}
+.pap-wl__row{display:flex;gap:10px}
+.pap-wl__row>.pap-wl__f{flex:1;min-width:0}
+.pap-wl__f{margin:0 0 10px}
+.pap-wl__f label{display:block;margin:0 0 3px;font-size:14px;font-weight:600;color:#12304b}
+.pap-wl__f label small{font-weight:400;color:#6b7785}
+.pap-wl__f input[type=text],.pap-wl__f input[type=tel],.pap-wl__f input[type=email],.pap-wl__f select{width:100%!important;max-width:100%;margin:0!important;height:42px!important;padding:6px 10px!important;border:1px solid #c5ced8!important;border-radius:8px!important;font-size:16px!important;box-shadow:none!important;background:#fff!important}
+.pap-wl__f select{-webkit-appearance:menulist!important;appearance:auto!important;background-image:none!important}
+.pap-wl__f.is-bad input,.pap-wl__f.is-bad select{border-color:#c62828!important}
+.pap-wl__err{display:block;min-height:0;font-size:13px;color:#c62828}
+.pap-wl__ok{display:flex!important;gap:8px;align-items:flex-start;font-weight:400!important;font-size:13.5px!important;line-height:1.4;color:#3b4652!important;cursor:pointer}
+.pap-wl__ok input{flex:none;margin:3px 0 0!important;width:18px;height:18px}
+.pap-wl__hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
+.pap-wl__send{display:block!important;width:100%!important;margin:6px 0 0!important;padding:12px 16px!important;border:0!important;border-radius:10px!important;background:#e8890c!important;color:#fff!important;font-size:16px!important;font-weight:700!important;cursor:pointer}
+.pap-wl__send[disabled]{opacity:.65;cursor:wait}
+.pap-wl__msg{margin:10px 0 0!important;font-size:14.5px;color:#c62828}
+.pap-wl__done{padding:8px 2px 4px;font-size:16px;line-height:1.5;color:#1e5b2e}
+.pap-wl__done b{display:block;margin-bottom:6px;font-size:18px;color:#1e7d3a}
+@media (max-width:600px){
+	.pap-wl__win{top:8px;transform:translateX(-50%);max-height:calc(100dvh - 16px)}
+}

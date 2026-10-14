@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 20;
+var SCRIPT_VERSION = 21;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -57,6 +57,8 @@ function doPost(e) {
         out = { ok: true, people: agPeople_(agSheet_(d.ag), String(d.from || '')) };
       } else if (d.action === 'ag_rates') {
         out = { ok: true, n: agRates_(agSheet_(d.ag), d.ids || [], d.rt || []) };
+      } else if (d.action === 'ag_wait') {
+        out = { ok: true, n: agWait_(agSheet_(d.ag), d.items || []) };
       } else if (d.action === 'ag_note') {
         out = { ok: true, n: agNoteOrders_(agSheet_(d.ag), d.items || []) };
       } else if (d.action === 'read') {
@@ -646,6 +648,8 @@ function agIndex_(sh) {
       info[i + 1] = { kind: 'P', pkey: p[1], orig: p.length > 2 ? p.slice(2).join('|') : undefined, o: m ? parseInt(m[1], 10) : 0 };
     } else if (p[0] === 'M') {
       info[i + 1] = { kind: 'M' };
+    } else if (p[0] === 'W' && p.length > 1) {
+      info[i + 1] = { kind: 'W', wkey: p[1] };
     }
   });
   return { last: last, data: data, blocks: blocks, persons: persons, info: info };
@@ -653,7 +657,7 @@ function agIndex_(sh) {
 
 function agIsPerson_(ix, r) {
   var row = ix.data[r - 1] || [], info = ix.info[r] || {};
-  if (info.kind === 'T' || info.kind === 'H') return false;
+  if (info.kind === 'T' || info.kind === 'H' || info.kind === 'W') return false; // W = lista čekanja, nije sudionik
   return info.kind === 'P' || info.kind === 'M' || String(row[1] || '') + String(row[2] || '') !== '';
 }
 
@@ -693,8 +697,8 @@ function agYear_(b) {
   return y > 2000 ? y : new Date().getFullYear();
 }
 
-function agTitleText_(base, n, paid, x) {
-  return base + ' · prijavljeno ' + n + ' · uplaćeno ' + paid + (x ? ' · otkazalo ' + x : '');
+function agTitleText_(base, n, paid, x, w) {
+  return base + ' · prijavljeno ' + n + ' · uplaćeno ' + paid + (x ? ' · otkazalo ' + x : '') + (w ? ' · lista čekanja ' + w : '');
 }
 
 /** Osvježi brojke u naslovu bloka (otkazani se ne broje u prijavljene). */
@@ -707,7 +711,7 @@ function agCount_(sh, ix, b) {
     n++;
     if (row[pc] === true) paid++;
   }
-  var text = agTitleText_(b.base, n, paid, x);
+  var text = agTitleText_(b.base, n, paid, x, agWaitRows_(ix, b).length);
   if (String(ix.data[b.row - 1][0]) !== text) {
     sh.getRange(b.row, 1).setValue(text);
     ix.data[b.row - 1][0] = text;
@@ -831,6 +835,84 @@ function agAdd_(sh, rows) {
   });
   Object.keys(done).forEach(function (k) { var b = agFind_(ix, k); if (b) agCount_(sh, ix, b); });
   if (n) agLinks_(sh);
+  return n;
+}
+
+/* ---------- Lista čekanja (od v21) ---------- */
+
+var AG_WAIT_BG = '#fff4c2';   // svijetlo žuta
+var AG_WAIT_LABEL = 'LISTA ČEKANJA';
+
+/** Redovi liste čekanja u bloku (redom kako su upisani). */
+function agWaitRows_(ix, b) {
+  var next = ix.last + 1, out = [];
+  ix.blocks.forEach(function (o) { if (o.row > b.row && o.row < next) next = o.row; });
+  for (var r = b.row + 1; r < next; r++) {
+    if ((ix.info[r] || {}).kind === 'W') out.push(r);
+  }
+  return out;
+}
+
+function agWaitFind_(ix, wkey) {
+  for (var r = 2; r <= ix.last; r++) {
+    if ((ix.info[r] || {}).kind === 'W' && ix.info[r].wkey === wkey) return r;
+  }
+  return 0;
+}
+
+/** Br. na listi čekanja: Č1, Č2 … */
+function agWaitNumber_(sh, ix, b) {
+  agWaitRows_(ix, b).forEach(function (r, i) {
+    var t = 'Č' + (i + 1);
+    if (String(ix.data[r - 1][0]) !== t) { sh.getRange(r, 1).setValue(t); ix.data[r - 1][0] = t; }
+  });
+}
+
+/**
+ * Lista čekanja sa stranice: items [{tour: {...}, wkey, v: {ime, prezime, mobitel, email, napomena}, del}].
+ * Novi upis ide na dno bloka (ispod sudionika i prijašnjih na listi), postojeći se osvježi, del ga briše.
+ * Redovi liste čekanja ne broje se u prijavljene, popis za vodiča ni sažetak.
+ */
+function agWait_(sh, items) {
+  var ix = agIndex_(sh), n = 0, done = {};
+  items.forEach(function (it) {
+    if (!it || !it.wkey || !it.tour) return;
+    var wkey = String(it.wkey).replace(/\|/g, '_'), r = agWaitFind_(ix, wkey), b;
+    if (it.del) {
+      if (!r) return;
+      b = agBlockOf_(ix, r);
+      sh.deleteRow(r);
+      agRefresh_(sh, ix);
+      if (b) done[b.key] = 1;
+      n++;
+      return;
+    }
+    var v = it.v || {}, put = { ime: v.ime, prezime: v.prezime, mobitel: v.mobitel, email: v.email, prijavio: AG_WAIT_LABEL, napomena: v.napomena };
+    var line = AG_KEYS.map(function (k) {
+      if (k === '') return '';
+      var x = put[k] === undefined || put[k] === null ? '' : String(put[k]);
+      return /^[=+\-@]/.test(x) ? "'" + x : x;
+    });
+    if (!r) {
+      b = agBlock_(sh, ix, it.tour);
+      if (!b) return;
+      var w = agWaitRows_(ix, b), br = agBlockRows_(ix, b);
+      var after = Math.max(br.end, w.length ? w[w.length - 1] : 0);
+      sh.insertRowAfter(after);
+      r = after + 1;
+      sh.getRange(r, 1, 1, AG_HEAD.length).breakApart().clearContent().clearFormat().clearDataValidations();
+      sh.getRange(r, AG_KEY_COL).setValue('W|' + wkey);
+    } else {
+      b = agBlockOf_(ix, r);
+      line[0] = ix.data[r - 1][0];
+    }
+    sh.getRange(r, 1, 1, AG_LAST).setValues([line]).setBackground(AG_WAIT_BG).setFontColor('#5a4a00');
+    sh.getRange(r, agC_('prijavio')).setFontWeight('bold').setFontColor('#9a6b00');
+    agRefresh_(sh, ix);
+    if (b) done[b.key] = 1;
+    n++;
+  });
+  Object.keys(done).forEach(function (k) { var b = agFind_(ix, k); if (b) { agWaitNumber_(sh, ix, b); agCount_(sh, ix, b); } });
   return n;
 }
 
@@ -1301,6 +1383,10 @@ function agArchive_(sh) {
   old.forEach(function (b) {
     var next = ix.last + 1;
     ix.blocks.forEach(function (o) { if (o.row > b.row && o.row < next) next = o.row; });
+    // Lista čekanja ne ide u arhivu (podaci se brišu 30 dana nakon izleta).
+    var w = agWaitRows_(ix, b);
+    w.reverse().forEach(function (r) { sh.deleteRow(r); next--; });
+    if (w.length) sh.getRange(b.row, 1).setValue(String(ix.data[b.row - 1][0]).replace(/ · lista čekanja \d+$/, ''));
     var n = next - b.row;
     if (n < 1) return;
     arh.insertRowsBefore(2, n);
