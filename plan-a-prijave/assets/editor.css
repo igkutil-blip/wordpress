@@ -182,3 +182,7 @@ body.pap-layout .pap-sec .pap-table th{background:var(--soft)}
 .pap-tag{font-size:11px;padding:2px 8px;border-radius:10px;background:#e7f5ea;color:#1e6b34;font-weight:600}
 .pap-tag-empty{background:#f6f0e0;color:#7a5a00}
 .pap-granice .pap-mine{border-left:4px solid #2e9e4f;padding-left:10px}
+/* Automatski blok (minimalni broj sudionika) */
+.pap-block-auto{background:#f6f7f7}
+.pap-block-auto .pap-block-head .pap-country{flex:1;font-size:14px}
+.pap-auto-text{background:#fff;border:1px solid #dcdcde;border-radius:4px;padding:4px 12px;color:#3c434a}

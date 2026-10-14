@@ -112,6 +112,12 @@ Povezani, Ostalo; Osnovni podaci = lokacija + trajanje (dana); max_people = mjes
 izlete (opcija `pap_granice`, prvo punjenje iz najnovijeg izleta u zemlji; „+ Dodaj zemlju” stvara i lokaciju). Na stranici izleta blok
 čiji naslov sadrži „granič”/„vizn” u Važno dobiva tekst zemlje iz lokacije + druge zemlje (`_pap_country2`, nije obavezna – admin
 Osnovni podaci i obrazac kolega); bez bloka → doda se na kraj; zemlja bez teksta → ostaje tekst izleta (filtar `plan_a_prijave_daywise`).
+**0.7.8:** blok „Minimalni broj sudionika i rok obavijesti o otkazu” (naslov sadrži „minimaln”) računa se sam (Plan_A_Prijave_Uvjeti):
+minimum = floor(70 % mjesta karata bez „prve rate”), najmanje 1; rok po trajanju: < 2 dana → 48 sati, 2–6 → 7 dana, > 6 → 20 dana
+(Igor može poslati svoju tablicu ako se razlikuje). U adminu se ne uređuje (samo položaj). Dok nije objavljen – računa se iznova;
+pri prvoj objavi (transition → shutdown) zaključa se u `_pap_uvjeti` + upiše u ttbm_daywise_details i više se ne mijenja (ugovor
+s agencijom; Igor smije mijenjati samo mjesta na karti). Izleti objavljeni prije 0.7.8 bez `_pap_uvjeti` ostaju s ručnim tekstom.
+„Kopiraj izlet” ne kopira `_pap_uvjeti`. Granične formalnosti se NE zaključavaju (Igor: smiju se mijenjati i nakon objave).
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →

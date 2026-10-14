@@ -13,7 +13,7 @@ final class Plan_A_Prijave_Copy {
 	const SKIP = array(
 		'link_wc_product', 'check_if_run_once', 'total_booking', '_edit_lock', '_edit_last', '_wp_old_slug',
 		'ttbm_particular_dates', 'ttbm_travel_start_date', 'ttbm_travel_end_date', 'ttbm_travel_reg_end_date',
-		'ttbm_upcoming_date', 'ttbm_reg_end_date', 'ttbm_month_list',
+		'ttbm_upcoming_date', 'ttbm_reg_end_date', 'ttbm_month_list', '_pap_uvjeti',
 	);
 
 	public static function init() {

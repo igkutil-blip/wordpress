@@ -501,8 +501,18 @@ final class Plan_A_Prijave_Editor {
 		/* Važno */
 		self::section( 'vazno', 'Važno', 'Blokovi na otvaranje (npr. Uvjeti sudjelovanja, organizator putovanja/agencija, Izjava polaznika) – na stranici ispod „Važno za izlet”, svi zatvoreni. Redoslijed mijenjaš strelicama.' );
 		echo '<div class="pap-blocks" data-rows="days">';
+		$uvjeti       = Plan_A_Prijave_Uvjeti::current( $id );
+		$uvjeti_shown = false;
 		foreach ( Plan_A_Prijave_Tour::rows( $id, 'ttbm_daywise_details' ) as $i => $d ) {
+			if ( $uvjeti && Plan_A_Prijave_Uvjeti::is_block( (string) ( $d['ttbm_day_title'] ?? '' ) ) ) {
+				echo self::uvjeti_row( 'd' . $i, $d, $uvjeti ); // phpcs:ignore WordPress.Security.EscapeOutput
+				$uvjeti_shown = true;
+				continue;
+			}
 			echo self::block_row( 'days', 'd' . $i, (string) ( $d['ttbm_day_title'] ?? '' ), (string) ( $d['ttbm_day_content'] ?? '' ), (string) ( $d['ttbm_day_time'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput
+		}
+		if ( $uvjeti && ! $uvjeti_shown ) {
+			echo self::uvjeti_row( 'du', array( 'ttbm_day_title' => Plan_A_Prijave_Uvjeti::TITLE ), $uvjeti ); // phpcs:ignore WordPress.Security.EscapeOutput
 		}
 		echo '</div><p><button type="button" class="button pap-add-block" data-to="days">+ Dodaj blok</button></p>';
 		if ( '' !== Plan_A_Prijave_Granice::text_for( $id ) ) {
@@ -686,6 +696,20 @@ final class Plan_A_Prijave_Editor {
 			. '<input type="hidden" name="' . esc_attr( $f ) . '[time]" value="' . self::e( $time ) . '">'
 			. '<span class="pap-tools"><button type="button" class="pap-up" title="Gore">↑</button><button type="button" class="pap-down" title="Dolje">↓</button><button type="button" class="pap-del" title="Obriši">×</button></span></div>'
 			. '<textarea class="pap-rich" id="' . esc_attr( 'pap-' . $group . '-' . $k ) . '" name="' . esc_attr( $f ) . '[content]" rows="8">' . esc_textarea( $content ) . '</textarea></div>';
+	}
+
+	/** Blok „Minimalni broj sudionika …” – računa se sam, ne uređuje se (spremaju se samo naslov i položaj). */
+	private static function uvjeti_row( string $k, array $d, array $u ): string {
+		$f    = 'pap[days][' . $k . ']';
+		$info = ! empty( $u['time'] )
+			? 'Zaključano pri objavi ' . esc_html( wp_date( 'j. n. Y.', strtotime( (string) $u['time'] ) ) ) . ' (ugovor s agencijom) – ne mijenja se ni kad kasnije promijeniš broj mjesta.'
+			: 'Računa se automatski: <strong>' . (int) $u['seats'] . ' mjesta → minimum ' . (int) $u['min'] . '</strong> (70 %, zaokruženo na niže), trajanje <strong>' . (int) $u['days'] . ' dana → rok ' . esc_html( (string) $u['rok'] ) . '</strong>. Pri prvoj objavi se zaključa i više se ne mijenja.';
+		return '<div class="pap-block pap-block-auto"><div class="pap-block-head"><b class="pap-country">' . esc_html( (string) ( $d['ttbm_day_title'] ?? '' ) ) . '</b><span class="pap-tag">' . ( ! empty( $u['time'] ) ? 'zaključano' : 'automatski' ) . '</span>'
+			. '<input type="hidden" name="' . esc_attr( $f ) . '[title]" value="' . self::e( $d['ttbm_day_title'] ?? '' ) . '">'
+			. '<input type="hidden" name="' . esc_attr( $f ) . '[time]" value="' . self::e( $d['ttbm_day_time'] ?? '' ) . '">'
+			. '<input type="hidden" name="' . esc_attr( $f ) . '[content]" value="' . self::e( $u['html'] ) . '">'
+			. '<span class="pap-tools"><button type="button" class="pap-up" title="Gore">↑</button><button type="button" class="pap-down" title="Dolje">↓</button></span></div>'
+			. '<div class="pap-auto-text">' . wp_kses_post( (string) $u['html'] ) . '</div><p class="pap-hint">' . $info . '</p></div>';
 	}
 
 	/** Predlošci za nove redove (JS zamijeni __K__ jedinstvenim ključem). */

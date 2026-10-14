@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.7.7
+Stable tag: 0.7.8
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,9 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.7.8 =
+* Minimalni broj sudionika i rok obavijesti o otkazu računaju se sami: minimum = 70 % mjesta (zaokruženo na niže), rok prema trajanju (manje od 2 dana → 48 sati, 2–6 dana → 7 dana, više od 6 dana → 20 dana). Blok u Važno se ne uređuje ručno; pri prvoj objavi se zaključa i više se ne mijenja (ugovor s agencijom). Izleti objavljeni prije ovoga ostaju kakvi jesu.
 
 = 0.7.7 =
 * Granične, vizne i zdravstvene formalnosti: nova kartica u uređivanju izleta – jedan tekst po zemlji, zajednički za sve izlete (+ Dodaj zemlju). Na stranici izleta blok „Granične, vizne i zdravstvene formalnosti” u Važno dobiva tekst zemlje iz lokacije (i druge zemlje); zemlja bez teksta ne mijenja ništa. Prvo punjenje iz najnovijeg izleta u svakoj zemlji.
