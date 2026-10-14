@@ -133,6 +133,7 @@ CSS razmak između odlomaka .9em, unutar stavke popisa .35em. Pravilo za tekstov
 „Pošalji zahtjev” (jedrenje) poveznica „▶ Pogledaj kako se prijaviti/rezervirati (1 min)” → prozorčić na istoj stranici u WhatsApp stilu
 s videom (assets/pa-video.js|css – iste datoteke u oba dodatka; video 720×1280 MP4 u assets/video/; pokreće se bez zvuka + „Uključi zvuk”;
 zatvara × u zaglavlju i × na videu, Esc, klik van; na mobitelu prozorčić od vrha (100dvh, × se ne skriva iza adresne trake); CSS/JS verzija = verzija.filemtime). Video izleta = „prijava-na-izlet-3” od Igora. Testni Chromium ne pušta H.264 – puštanje provjerava Igor na mobitelu.
+**0.7.16:** na stranici „Maksimalno osoba” uvijek = zbroj mjesta karata bez „prve rate” (filtar get_post_metadata za ttbm_travel_max_people_allow, samo izvan admina) – Dinara je imala 9 uz 10 mjesta.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide** – računa se samo (0.7.14,

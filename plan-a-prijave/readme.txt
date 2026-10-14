@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.7.15
+Stable tag: 0.7.16
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,9 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.7.16 =
+* Stranica izleta: „Maksimalno osoba” uvijek jednako broju mjesta na kartama (bez karte za prvu ratu) – i kod izleta kojima su mjesta promijenjena, a broj osoba ostao star.
 
 = 0.7.15 =
 * Osiguranje iznad 355 €: 2,8 % cijene zaokruženo naviše na 50 centi (480 € → 13,50 €), ne više na cijeli euro.
