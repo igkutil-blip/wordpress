@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.7.9
+Stable tag: 0.7.10
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,10 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.7.10 =
+* Granične formalnosti: za svaku zemlju poseban blok „Granične, vizne i zdravstvene formalnosti (Zemlja)” u Važno (i kad je samo jedna zemlja). U adminu upozorenje kad odabrana zemlja nema upisan tekst.
+* Stranica izleta: sav upisani tekst (opis, Važno za izlet, Važno, Zašto s nama) iste veličine 16 px i prored na računalu i mobitelu; podebljano i kurziv ostaju.
 
 = 0.7.9 =
 * Lokacija „Italija - Francuska” razdvojena na dvije zemlje (Italija i Francuska): izleti s tom lokacijom dobivaju lokaciju Italija i drugu zemlju Francuska, pa se u Graničnim formalnostima ispisuju obje zemlje.

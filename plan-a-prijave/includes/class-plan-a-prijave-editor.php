@@ -426,6 +426,7 @@ final class Plan_A_Prijave_Editor {
 		echo '</select><small>za izlet kroz dvije zemlje (granične formalnosti za obje)</small></label>';
 		echo '<label>Trajanje (dana)<input type="number" min="1" step="1" name="pap[duration]" value="' . self::e( $m( 'ttbm_travel_duration' ) ) . '"><small>kraj izleta računa se iz broja dana</small></label>';
 		echo '</div>';
+		echo self::granice_warn( $id ); // phpcs:ignore WordPress.Security.EscapeOutput
 		echo '<p class="pap-hint">Broj osoba upisuje se kod karata (Cijene i usluge – mjesta); na stranici se uvijek prikazuju slobodna mjesta (npr. 3/25).</p>';
 		echo '</section>';
 
@@ -515,9 +516,11 @@ final class Plan_A_Prijave_Editor {
 			echo self::uvjeti_row( 'du', array( 'ttbm_day_title' => Plan_A_Prijave_Uvjeti::TITLE ), $uvjeti ); // phpcs:ignore WordPress.Security.EscapeOutput
 		}
 		echo '</div><p><button type="button" class="button pap-add-block" data-to="days">+ Dodaj blok</button></p>';
-		if ( '' !== Plan_A_Prijave_Granice::text_for( $id ) ) {
-			echo '<p class="pap-hint">Blok „' . esc_html( Plan_A_Prijave_Granice::TITLE ) . '” na stranici izleta dobiva tekst iz <a href="#granice">Granične formalnosti</a> (' . esc_html( implode( ', ', Plan_A_Prijave_Granice::countries( $id ) ) ) . ') – tekst upisan ovdje se tada ne prikazuje.</p>';
+		$gparts = array_keys( Plan_A_Prijave_Granice::parts( $id ) );
+		if ( $gparts ) {
+			echo '<p class="pap-hint">Na stranici izleta umjesto bloka „' . esc_html( Plan_A_Prijave_Granice::TITLE ) . '” idu blokovi iz <a href="#granice">Granične formalnosti</a>: ' . esc_html( implode( ', ', array_map( static fn( $c ) => Plan_A_Prijave_Granice::TITLE . ' (' . $c . ')', $gparts ) ) ) . ' – tekst upisan ovdje se tada ne prikazuje.</p>';
 		}
+		echo self::granice_warn( $id ); // phpcs:ignore WordPress.Security.EscapeOutput
 		echo '</section>';
 
 		/* Granične formalnosti (zajedničko za sve izlete) */
@@ -696,6 +699,15 @@ final class Plan_A_Prijave_Editor {
 			. '<input type="hidden" name="' . esc_attr( $f ) . '[time]" value="' . self::e( $time ) . '">'
 			. '<span class="pap-tools"><button type="button" class="pap-up" title="Gore">↑</button><button type="button" class="pap-down" title="Dolje">↓</button><button type="button" class="pap-del" title="Obriši">×</button></span></div>'
 			. '<textarea class="pap-rich" id="' . esc_attr( 'pap-' . $group . '-' . $k ) . '" name="' . esc_attr( $f ) . '[content]" rows="8">' . esc_textarea( $content ) . '</textarea></div>';
+	}
+
+	/** Upozorenje: odabrana zemlja nema upisan tekst graničnih formalnosti (na stranici se ne prikazuje). */
+	private static function granice_warn( int $id ): string {
+		$miss = Plan_A_Prijave_Granice::missing( $id );
+		if ( ! $miss ) {
+			return '';
+		}
+		return '<p class="pap-lock">Nema upisanog teksta graničnih, viznih i zdravstvenih formalnosti: <strong>' . esc_html( implode( ', ', $miss ) ) . '</strong> – na stranici izleta se zato ne prikazuje. Upiši ga u <a href="#granice">Granične formalnosti</a> (vrijedi za sve izlete u toj zemlji).</p>';
 	}
 
 	/** Blok „Minimalni broj sudionika …” – računa se sam, ne uređuje se (spremaju se samo naslov i položaj). */
