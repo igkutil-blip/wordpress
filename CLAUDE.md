@@ -153,6 +153,10 @@ prvi i zadnji slajd bez lazy (zadnji viri lijevo i bio je LCP); posjetiteljima b
 I ODBAČEN (Flatsome tada preuzme i izvornik i manju sliku – 9,8 → 15 MB). Mjerenje žive 14.10. (mob/desk): naslovnica 70/96, izlet 65/83, izleti 77/93,
 jedrenje 79/95, kontakt 89/98; na mobitelu LCP često kolačić-traka Complianz (prikazuje se JS-om) i TTFB 1–2,5 s (hosting/SpeedyCache) – nije naš kod.
 Naslovnica: 3 PNG bannera 2,2–2,8 MB + logotipi 250 KB → Igoru poslani JPG/PNG (naslovnica-slike.zip) za zamjenu u Flatsome banneru (nije kod).
+**plan-a-aplikacija 1.5.0 (14.10., obje grane, isti zip):** postavka `icon_bg` „Podloga ikone i početnog zaslona” (ikone GD + manifest background_color);
+SW: stranice s X-Plan-A-Offline (izleti, izlet) – ako mreža ne odgovori u 2,5 s, spremljena verzija (nova se sprema u pozadini). Novi logo (crni → prozirno,
+`plan-a-logo-prozirno.png` poslan Igoru) na tamnoplavoj #13304a; Igor u Postavke → Plan A aplikacija odabire logo + podlogu. Instalirane aplikacije: Android
+ikonu osvježi sam (do ~dan), iPhone tek nakon ponovne instalacije.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide** – računa se samo (0.7.14,

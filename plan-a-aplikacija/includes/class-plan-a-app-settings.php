@@ -18,7 +18,7 @@ final class Plan_A_App_Settings {
 	}
 
 	public static function settings_changed( $old, $new ) {
-		if ( (int) ( $old['logo_id'] ?? 0 ) !== (int) ( $new['logo_id'] ?? 0 ) || ! Plan_A_App_Icons::get()['icons'] ) {
+		if ( (int) ( $old['logo_id'] ?? 0 ) !== (int) ( $new['logo_id'] ?? 0 ) || (string) ( $old['icon_bg'] ?? '#ffffff' ) !== (string) ( $new['icon_bg'] ?? '#ffffff' ) || ! Plan_A_App_Icons::get()['icons'] ) {
 			Plan_A_App_Icons::regenerate();
 		}
 	}
@@ -28,6 +28,7 @@ final class Plan_A_App_Settings {
 			'enabled'        => 1,
 			'logo_id'        => 0,
 			'theme_color'    => self::default_theme_color(),
+			'icon_bg'        => '#ffffff', // podloga ikone i početnog zaslona (splash)
 			'start_url'      => '/izleti/',
 			'nav_izleti'     => '/izleti/',
 			'nav_plan'       => '/plan-izleta-2026/',
@@ -67,6 +68,7 @@ final class Plan_A_App_Settings {
 			'stats'          => empty( $input['stats'] ) ? 0 : 1,
 			'logo_id'        => absint( $input['logo_id'] ?? 0 ),
 			'theme_color'    => sanitize_hex_color( (string) ( $input['theme_color'] ?? '' ) ) ?: $defaults['theme_color'],
+			'icon_bg'        => sanitize_hex_color( (string) ( $input['icon_bg'] ?? '' ) ) ?: $defaults['icon_bg'],
 		);
 		if ( $clean['logo_id'] && ! wp_attachment_is_image( $clean['logo_id'] ) ) {
 			$clean['logo_id'] = 0;

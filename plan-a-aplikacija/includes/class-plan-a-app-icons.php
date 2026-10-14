@@ -2,7 +2,7 @@
 /**
  * Ikone aplikacije generirane iz odabranog logotipa (GD).
  *
- * Logotip se smješta na kvadratnu bijelu podlogu:
+ * Logotip se smješta na kvadratnu podlogu (boja iz postavki, zadano bijela):
  * - "any" ikone (192, 512) i Apple ikona (180) s malim rubom,
  * - "maskable" ikona (512) s logotipom unutar sigurne zone (Android ju izrezuje u krug ili kapljicu).
  *
@@ -89,7 +89,7 @@ final class Plan_A_App_Icons {
 			return;
 		}
 
-		$hash = substr( md5( $logo_id . '|' . filemtime( $file ) . '|' . PLAN_A_APP_VERSION ), 0, 8 );
+		$hash = substr( md5( $logo_id . '|' . filemtime( $file ) . '|' . PLAN_A_APP_VERSION . '|' . Plan_A_App_Settings::get( 'icon_bg' ) ), 0, 8 );
 		foreach ( self::specs() as $key => $spec ) {
 			list( $name, $ratio ) = $spec;
 			$size = (int) preg_replace( '/\D/', '', $key );
@@ -111,7 +111,11 @@ final class Plan_A_App_Icons {
 	 */
 	private static function render( $src, int $size, float $ratio, string $path ): bool {
 		$canvas = imagecreatetruecolor( $size, $size );
-		imagefill( $canvas, 0, 0, imagecolorallocate( $canvas, 255, 255, 255 ) );
+		$bg = ltrim( (string) ( sanitize_hex_color( (string) Plan_A_App_Settings::get( 'icon_bg' ) ) ?: '#ffffff' ), '#' );
+		if ( 3 === strlen( $bg ) ) {
+			$bg = $bg[0] . $bg[0] . $bg[1] . $bg[1] . $bg[2] . $bg[2];
+		}
+		imagefill( $canvas, 0, 0, imagecolorallocate( $canvas, (int) hexdec( substr( $bg, 0, 2 ) ), (int) hexdec( substr( $bg, 2, 2 ) ), (int) hexdec( substr( $bg, 4, 2 ) ) ) );
 		imagealphablending( $canvas, true );
 
 		$w     = imagesx( $src );
