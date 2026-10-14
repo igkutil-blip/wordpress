@@ -8,7 +8,7 @@
  *   i sve stranice s parametrima u adresi: uvijek mreža, nikad predmemorija,
  * - stranice: mreža; spremaju se samo one koje poslužitelj označi zaglavljem
  *   X-Plan-A-Offline (/izleti/ i stranice izleta, samo za neprijavljene posjetitelje),
- *   a koriste se samo kad nema interneta; inače izvanmrežna stranica,
+ *   a koriste se kad nema interneta ili kad mreža ne odgovori u 2,5 s; inače izvanmrežna stranica,
  * - statične datoteke (CSS, JS, fontovi, slike): predmemorija uz osvježavanje u pozadini.
  */
 'use strict';
@@ -24,6 +24,7 @@ const STATIC_QUERY_KEYS = [ 'ver', 'v', 'version' ];
 const FONT_HOSTS = [ 'fonts.googleapis.com', 'fonts.gstatic.com' ];
 const NETWORK_ONLY_FILES = [ 'admin-ajax.php', 'wp-login.php', 'wp-cron.php', 'xmlrpc.php' ];
 const PING_INTERVAL = 10 * 60 * 1000;
+const PAGE_TIMEOUT = 2500; // ms: sporiji odgovor → spremljena stranica (ako postoji)
 
 let lastPing = 0;
 let destroyed = false; // nakon odluke o uklanjanju ništa se više ne sprema
@@ -164,18 +165,36 @@ self.addEventListener( 'fetch', ( event ) => {
 			return;
 		}
 
-		event.respondWith(
-			fetch( request )
+		// Mreža ima prednost; ako ne odgovori u PAGE_TIMEOUT, a stranica je spremljena (popis izleta, izlet),
+		// odmah se pokaže spremljena – nova se i dalje sprema u pozadini za sljedeći put.
+		const network = fetch( request )
+			.then( ( response ) => {
+				if ( response.ok && response.type === 'basic' && response.headers.get( 'X-Plan-A-Offline' ) === '1' ) {
+					event.waitUntil( put( PAGES_CACHE, request, response.clone(), PAGES_LIMIT ) );
+				}
+				return response;
+			} );
+		event.waitUntil( network.then( () => undefined, () => undefined ) );
+		const cachedPage = () => caches.open( PAGES_CACHE ).then( ( cache ) => cache.match( request ) );
+		event.respondWith( new Promise( ( resolve ) => {
+			let done = false;
+			const finish = ( response ) => {
+				if ( ! done && response ) {
+					done = true;
+					resolve( response );
+				}
+			};
+			const timer = setTimeout( () => cachedPage().then( finish ), PAGE_TIMEOUT );
+			network
 				.then( ( response ) => {
-					if ( response.ok && response.type === 'basic' && response.headers.get( 'X-Plan-A-Offline' ) === '1' ) {
-						event.waitUntil( put( PAGES_CACHE, request, response.clone(), PAGES_LIMIT ) );
-					}
-					return response;
+					clearTimeout( timer );
+					finish( response );
 				} )
-				.catch( () => caches.open( PAGES_CACHE )
-					.then( ( cache ) => cache.match( request ) )
-					.then( ( cached ) => cached || offlineFallback() ) )
-		);
+				.catch( () => {
+					clearTimeout( timer );
+					cachedPage().then( ( cached ) => cached || offlineFallback() ).then( finish );
+				} );
+		} ) );
 		return;
 	}
 

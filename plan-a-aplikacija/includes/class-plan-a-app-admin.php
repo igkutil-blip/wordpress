@@ -128,6 +128,13 @@ final class Plan_A_App_Admin {
 							<p class="description"><?php esc_html_e( 'Boja trake preglednika i aplikacije. Zadano: boja zaglavlja teme Flatsome.', 'plan-a-aplikacija' ); ?></p>
 						</td>
 					</tr>
+					<tr>
+						<th scope="row"><label for="plan-a-icon-bg"><?php esc_html_e( 'Podloga ikone i početnog zaslona', 'plan-a-aplikacija' ); ?></label></th>
+						<td>
+							<input type="text" id="plan-a-icon-bg" class="plan-a-color" name="<?php echo esc_attr( $name ); ?>[icon_bg]" value="<?php echo esc_attr( (string) $s['icon_bg'] ); ?>" data-default-color="#ffffff">
+							<p class="description"><?php esc_html_e( 'Boja iza logotipa na ikoni aplikacije i na zaslonu koji se vidi dok se aplikacija otvara (npr. tamnoplava #13304a za logotip bez pozadine). Nakon spremanja ikone se same izrade iznova.', 'plan-a-aplikacija' ); ?></p>
+						</td>
+					</tr>
 					<?php
 					$fields = array(
 						'start_url'   => __( 'Početna adresa aplikacije', 'plan-a-aplikacija' ),

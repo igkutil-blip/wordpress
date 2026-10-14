@@ -109,7 +109,7 @@ final class Plan_A_App_Endpoints {
 			'display'          => 'standalone',
 			'orientation'      => 'portrait',
 			'theme_color'      => (string) Plan_A_App_Settings::get( 'theme_color' ),
-			'background_color' => '#ffffff',
+			'background_color' => (string) ( Plan_A_App_Settings::get( 'icon_bg' ) ?: '#ffffff' ), // početni zaslon iste boje kao podloga ikone
 			'icons'            => $icons,
 		);
 	}
