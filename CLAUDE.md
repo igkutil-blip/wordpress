@@ -143,6 +143,12 @@ Izleti → Liste čekanja (Javljeno, Obriši). Narudžba s istim mobitelom/e-mai
 Tablica: akcija `ag_wait` (red čekanja `pap_wait_queue`, ponavlja svaki sat), skripta **v21**: redovi ključa `W|w<ID>` ispod sudionika, žuti, Br. Č1, Č2…,
 „LISTA ČEKANJA” u Prijavio/la, napomena datum · osobe · javljeno; ne broje se nigdje, u naslovu „· lista čekanja N”, arhiva ih briše.
 Na kopiji: probni izlet 9013 ostavljen Popunjeno s jednim probnim upisom (PROBA Lista čekanja). Skriptu v21 treba zalijepiti u kopiju i u pravu tablicu članova.
+**0.8.1:** bez natpisa ispod gumba (Licencirano vođenje / Sigurnost je prva / Fleksibilnost). **0.8.2 (14.10., brzina + hrvatski):** slider (TTBM_Custom_Slider)
+slike `large`, `data-pap-big` = pap_hero za ekrane > 1400 px (JS u ttbm_plugin_global.js), slajdovi 2+ `data-pap-lazy` (bez inline pozadine, čeka se samo prva);
+showcase i kartice (grid_list_style) `medium_large`; mage-icon: mali font `mage-icon-pap.woff2` (23 ikone, unicode-range) + puni za ostale; smart.php bez
+`placeholderLoader` (kostura), shimmer keyframes transform; inline skripta nakon </aside> premješta prijavu na mobitelu; Admin::FRONT_HR – prijevodi samo kad
+Loco (.mo na živoj, languages/plugins/tour-booking-manager-hr.mo) nema prijevoda. Kopija Dinara mobitel: ocjena 27–38 → 52–62, težina 6,1 → 3,1 MB, CLS 0,5–0,8 → 0,02–0,19.
+Naslovnica: 3 PNG bannera 2,2–2,8 MB + logotipi 250 KB → Igoru poslani JPG/PNG (naslovnica-slike.zip) za zamjenu u Flatsome banneru (nije kod).
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide** – računa se samo (0.7.14,
