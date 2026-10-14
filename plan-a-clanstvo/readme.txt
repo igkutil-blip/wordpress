@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.15.7
+Stable tag: 1.15.8
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.15.8 =
+* Skripta tablice v21: lista čekanja (plan-a-prijave 0.8.0) – žuti redovi „LISTA ČEKANJA” ispod sudionika izleta (Č1, Č2 …), ne broje se u prijavljene, popis za vodiča ni sažetak; u naslovu bloka „lista čekanja N”; ne idu u arhivu.
 
 = 1.15.7 =
 * Skripta tablice v20: narudžba s više osoba ima svoju boju i na kućicama „Uplaćeno” (prva rata) i „2. rata”, ne samo na broju narudžbe.

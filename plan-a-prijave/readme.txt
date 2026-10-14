@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.7.16
+Stable tag: 0.8.0
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,13 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.8.0 =
+* Lista čekanja: kad je izlet popunjen, umjesto prijave stoji „Prijavi se na listu čekanja” (ime, prezime, mobitel, e-mail nije obavezan, broj osoba 1–4, privola). Osoba dobije svoje mjesto na listi; na stranici piše koliko ih čeka.
+* Mail o novom upisu i mail kad se mjesto oslobodi idu vodičima izleta (adrese iz Članstvo → Postavke → Vodiči).
+* Upis ide u tablicu za agenciju ispod sudionika (žuti redovi „LISTA ČEKANJA”, Č1, Č2 …; treba skripta v21 iz plan-a-clanstvo 1.15.8).
+* Izleti → Liste čekanja: Javljeno, Obriši. Tko se prijavi na izlet, sam nestaje s liste. Podaci se brišu 30 dana nakon izleta.
+* Zaštita od robota kao u kontakt obrascu (skriveno polje, vrijeme, ograničenje po IP-u), isti mobitel ne upisuje se dvaput.
 
 = 0.7.16 =
 * Stranica izleta: „Maksimalno osoba” uvijek jednako broju mjesta na kartama (bez karte za prvu ratu) – i kod izleta kojima su mjesta promijenjena, a broj osoba ostao star.

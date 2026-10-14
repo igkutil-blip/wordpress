@@ -22,6 +22,11 @@ $display           = TTBM_Global_Function::get_post_info( $tour_id, 'ttbma_displ
 $display_front_end = TTBM_Global_Function::get_post_info( $tour_id, 'frontend_display_seat_plan', 'on' );
 $seat_plan         = class_exists( 'TTBMA_Seat_Plan' ) && $display === 'on' && sizeof( $seat_infos ) > 0 && $display_front_end === 'on' ? 'dNone' : '';
 $button_type       = apply_filters( 'ttbm_book_now_button_type', 'button', $tour_id );
+// Plan A: popunjen termin → lista čekanja umjesto prijave.
+$pap_wait = class_exists( 'Plan_A_Prijave_Cekanje' ) && isset( $available_seat ) && (int) $available_seat < 1;
+if ( $pap_wait ) {
+	$seat_plan .= ' dNone';
+}
 ?>
 <div class="ttbm_book_now_area ttbm_smart_book_now_area" title="<?php esc_attr_e( 'Select Date First', 'tour-booking-manager' ); ?>" data-placeholder data-ttbm-require-login="<?php echo $ttbm_require_login ? '1' : '0'; ?>">
 	<div class="ttbm_order_summary ttbm_smart_order_summary" aria-hidden="true">
@@ -45,7 +50,7 @@ $button_type       = apply_filters( 'ttbm_book_now_button_type', 'button', $tour
 	<button class="ttbm_smart_book_trip_btn ttbm_book_now ttbm-confirm-btn <?php echo esc_attr( $seat_plan ); ?>" type="<?php echo esc_attr( $button_type ); ?>">
 		<?php esc_html_e( 'Book This Trip', 'tour-booking-manager' ); ?>
 	</button>
-	<?php echo class_exists( 'Plan_A_Prijave_Video' ) ? Plan_A_Prijave_Video::button() : ''; // phpcs:ignore WordPress.Security.EscapeOutput -- Plan A: video „kako se prijaviti” ?>
+	<?php echo $pap_wait ? Plan_A_Prijave_Cekanje::block( (int) $tour_id, (string) ( $tour_date ?? '' ) ) : ( class_exists( 'Plan_A_Prijave_Video' ) ? Plan_A_Prijave_Video::button() : '' ); // phpcs:ignore WordPress.Security.EscapeOutput -- Plan A: lista čekanja / video „kako se prijaviti” ?>
 	<button type="submit" name="add-to-cart" value="<?php echo esc_attr( $ttbm_product_id ); ?>" class="dNone ttbm_add_to_cart ttbm-confirm-btn">
 		<?php esc_html_e( 'Book Now', 'tour-booking-manager' ); ?>
 	</button>
