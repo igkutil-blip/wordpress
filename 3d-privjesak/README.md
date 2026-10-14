@@ -40,3 +40,5 @@ provjeri otvor, dosjed umetaka i čitanje NFC-a telefonom.
 pip install trimesh shapely manifold3d numpy matplotlib
 python3 privjesak.py
 ```
+
+3D prikaz (`render-privjesak.png`) izrađuje `python3 render.py` iz STL-ova u `stl/`.
