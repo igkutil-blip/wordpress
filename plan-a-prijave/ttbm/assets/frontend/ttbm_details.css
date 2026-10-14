@@ -2419,8 +2419,8 @@ body:has(:is(.ttbm_default_theme, .ttbm_travello_theme)) #ui-datepicker-div.ui-d
 	animation: ttbmShimmerSlide 1.4s ease-in-out infinite;
 }
 @keyframes ttbmShimmerSlide {
-	0%   { left: -100%; }
-	100% { left: 160%; }
+	0% { transform: translateX(0); }
+	100% { transform: translateX(433%); } /* Plan A: transform umjesto left – bez pomicanja stranice (CLS) */
 }
 
 :is(#ttbm_content, .ttbm_reg_shortcode) .ttbm_booking_section { margin-top: 30px; }
@@ -4096,8 +4096,8 @@ body .daterangepicker.ttbm-hotel-daterange select.yearselect {
 }
 
 @keyframes ttbmDetailsShimmer {
-	0% { left: -100%; }
-	100% { left: 160%; }
+	0% { transform: translateX(0); }
+	100% { transform: translateX(433%); } /* Plan A: transform umjesto left – bez pomicanja stranice (CLS) */
 }
 
 .placeholderLoader.ttbm_details_page_loader .placeholder_area > * {

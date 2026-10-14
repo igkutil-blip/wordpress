@@ -12,7 +12,8 @@ $travel_type      = TTBM_Function::get_travel_type( $tour_id );
 $ttbm_auto_date   = in_array( $travel_type, array( 'repeated', 'particular' ), true );
 ?>
 <div class="ttbm_smart_theme">
-	<div class="ttbm_style ttbm_wraper placeholderLoader ttbm_details_page_loader">
+	<?php /* Plan A: bez „kostura” (placeholderLoader) – sadržaj je već u HTML-u i vidi se odmah; slider sam čeka prvu sliku. */ ?>
+	<div class="ttbm_style ttbm_wraper">
 		<div class="ttbm_container">
 			<div class="ttbm_smart_gallery placeholder_area">
 				<?php
@@ -121,6 +122,8 @@ $ttbm_auto_date   = in_array( $travel_type, array( 'repeated', 'particular' ), t
 						<?php do_action( 'ttbm_tour_guide' ); ?>
 						<?php do_action( 'ttbm_dynamic_sidebar', $ttbm_post_id ); ?>
 					</aside>
+					<?php // Plan A: na mobitelu prijavu premjesti odmah (prije prvog prikaza), ne tek kad se učita ttbm_script.js – inače sadržaj skoči. ?>
+					<script>(function(){if(!window.matchMedia||!window.matchMedia('(max-width: 767px)').matches){return;}var s=document.currentScript,t=s&&s.closest('.ttbm_smart_theme');if(!t){return;}var b=t.querySelector('.ttbm-sidebar-booking.ttbm_registration_area'),a=t.querySelector('.ttbm-smart-overview-anchor');if(b&&a&&a.parentNode){a.parentNode.insertBefore(b,a.nextSibling);}})();</script>
 				</div>
 			</div>
 

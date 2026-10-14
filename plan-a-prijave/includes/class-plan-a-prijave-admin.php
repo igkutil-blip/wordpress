@@ -186,7 +186,61 @@ final class Plan_A_Prijave_Admin {
 	/** Na stranici izleta samo obrazac „Pošaljite upit” (ostali tekstovi već su prevedeni). */
 	const FRONT = array( 'Name:', 'Email:', 'Subject:', 'Message:', 'Send Message', 'Website', 'Your Name', 'Your Email', 'Your Message', 'Subject' );
 
+	/**
+	 * Stranica izleta: natpisi koji nisu prevedeni ni u Loco prijevodu (languages/plugins/tour-booking-manager-hr.mo).
+	 * Vrijedi samo kad prijevoda nema – Igorovi prijevodi u Locu imaju prednost.
+	 */
+	const FRONT_HR = array(
+		'Select a date to view tickets and pricing.' => 'Odaberite datum za prikaz cijene i slobodnih mjesta.',
+		'Select Date First'                          => 'Prvo odaberite datum',
+		'Select Date'                                => 'Odaberite datum',
+		'Tour booking'                               => 'Prijava na izlet',
+		'Decrease quantity'                          => 'Smanji broj',
+		'Increase quantity'                          => 'Povećaj broj',
+		'DAY'                                        => 'DAN',
+		'DAYS'                                       => 'DANA',
+		'NIGHT'                                      => 'NOĆ',
+		'NIGHTS'                                     => 'NOĆI',
+		'HOUR'                                       => 'SAT',
+		'HOURS'                                      => 'SATI',
+		'MINUTE'                                     => 'MINUTA',
+		'MINUTES'                                    => 'MINUTA',
+		'Hour '                                      => 'sat',
+		'Hours '                                     => 'sati',
+		'Minute '                                    => 'minuta',
+		'Minutes '                                   => 'minuta',
+		'Night '                                     => 'noć',
+		'Nights '                                    => 'noći',
+		'Arrival Day'                                => 'Dan dolaska',
+		'Final Day'                                  => 'Zadnji dan',
+		'Leisure Day'                                => 'Slobodan dan',
+		'Planned Activities'                         => 'Aktivnosti na izletu',
+		'Load more'                                  => 'Učitaj još',
+		'Show less'                                  => 'Prikaži manje',
+		'Please Select Date'                         => 'Odaberite datum',
+		'Please Select Time'                         => 'Odaberite vrijeme',
+		'Please Select Ticket Type'                  => 'Odaberite broj osoba',
+		'Link copied to clipboard.'                  => 'Poveznica je kopirana.',
+		'Available Today'                            => 'Dostupno danas',
+		'Previous guide'                             => 'Prethodni vodič',
+		'Next guide'                                 => 'Sljedeći vodič',
+		'view more '                                 => 'više ',
+		'Language'                                   => 'Jezik',
+		'Age Limit'                                  => 'Dobna granica',
+		'Quantity'                                   => 'Količina',
+		'Availability'                               => 'Dostupnost',
+		'ticket left'                                => 'mjesto slobodno',
+		'tickets left'                               => 'mjesta slobodno',
+		'%1$d of %2$d sold'                          => '%1$d od %2$d prijavljeno',
+		'Confirm Dates'                              => 'Potvrdi datume',
+		'child'                                      => 'dijete',
+		'Max People'                                 => 'Maksimalno osoba',
+	);
+
 	public static function hr( $translation, $text ) {
+		if ( ( ! is_admin() || wp_doing_ajax() ) && $translation === $text && isset( self::FRONT_HR[ $text ] ) ) {
+			return self::FRONT_HR[ $text ];
+		}
 		if ( ! isset( self::HR[ $text ] ) ) {
 			return $translation;
 		}

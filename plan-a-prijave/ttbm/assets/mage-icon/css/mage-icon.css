@@ -11,12 +11,22 @@
  */
 /* FONT PATH
  * -------------------------- */
+/* Plan A: mali font samo s ikonama koje stranica koristi (6 KB umjesto 450 KB); puni font se učita samo ako zatreba neka druga ikona (unicode-range). */
 @font-face {
   font-family: mageicon;
-  src: url("../fonts/mage-icon.eot?v=1.0.0");
-  src: url("../fonts/mage-icon.woff2?v=1.0.0") format("woff2"), url("../fonts/mage-icon.ttf?v=1.0.0") format("truetype"), url("../fonts/mage-icon.woff?v=1.0.0") format("woff");
+  src: url("../fonts/mage-icon-pap.woff2?v=1.0.0") format("woff2");
   font-weight: normal;
   font-style: normal;
+  font-display: block;
+  unicode-range: U+F016, U+F1B7, U+F1BD, U+F1BF, U+F25A, U+F260, U+F2D7, U+F2E9, U+F32A, U+F353, U+F378, U+F46A, U+F540, U+F58F, U+F61F, U+F637, U+F650, U+F6D1, U+F756, U+F764, U+F7C9, U+F892, U+F8C7;
+}
+@font-face {
+  font-family: mageicon;
+  src: url("../fonts/mage-icon.woff2?v=1.0.0") format("woff2"), url("../fonts/mage-icon.woff?v=1.0.0") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+  unicode-range: U+0-F015, U+F017-F1B6, U+F1B8-F1BC, U+F1BE, U+F1C0-F259, U+F25B-F25F, U+F261-F2D6, U+F2D8-F2E8, U+F2EA-F329, U+F32B-F352, U+F354-F377, U+F379-F469, U+F46B-F53F, U+F541-F58E, U+F590-F61E, U+F620-F636, U+F638-F64F, U+F651-F6D0, U+F6D2-F755, U+F757-F763, U+F765-F7C8, U+F7CA-F891, U+F893-F8C6, U+F8C8-10FFFF;
 }
 .mi {
   display: inline-block;

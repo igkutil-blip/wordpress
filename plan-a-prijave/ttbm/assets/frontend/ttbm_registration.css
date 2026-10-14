@@ -5102,8 +5102,8 @@ div.bg_image_area {
 	animation: ttbmTicketShimmer 1.4s ease-in-out infinite;
 }
 @keyframes ttbmTicketShimmer {
-	0% { left: -100%; }
-	100% { left: 160%; }
+	0% { transform: translateX(0); }
+	100% { transform: translateX(433%); } /* Plan A: transform umjesto left – bez pomicanja stranice (CLS) */
 }
 
 /* Suppress broken per-element grey overlays */
@@ -5126,13 +5126,8 @@ div.bg_image_area {
 }
 
 @keyframes ttbmGridCardShimmer {
-	0% {
-		left: -100%;
-	}
-
-	100% {
-		left: 160%;
-	}
+	0% { transform: translateX(0); }
+	100% { transform: translateX(433%); } /* Plan A: transform umjesto left – bez pomicanja stranice (CLS) */
 }
 
 /* --- Left sidebar (travel-list, ttbm-tour-list, hotel, search) ---------- */

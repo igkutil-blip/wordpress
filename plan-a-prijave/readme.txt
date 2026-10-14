@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.8.1
+Stable tag: 0.8.2
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,12 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.8.2 =
+* Brža stranica izleta na mobitelu: slider pokazuje prvu sliku čim se ona učita (prije je čekao sve slike u punoj veličini), slike u slideru 1195 px (na velikim ekranima 1800 px), ostale se učitaju poslije; sličice i kartice „Odaberi sljedeću avanturu” 768 px umjesto izvornika.
+* Bez sivog „kostura” preko cijele stranice izleta dok se sve ne učita (sadržaj se vidi odmah); animacija kostura više ne pomiče stranicu; na mobitelu se okvir za prijavu premjesti prije prvog prikaza – manje „skakanja” (CLS 0,5–0,8 → ~0,02–0,19).
+* Font s ikonama: mali font (4 KB) s ikonama koje stranica koristi umjesto 450 KB; puni se učita samo ako zatreba druga ikona.
+* Stranica izleta na hrvatskom i gdje Loco prijevod nema natpisa: „Odaberite datum za prikaz cijene i slobodnih mjesta”, trajanje na karticama (2 DANA), oznake za čitače zaslona i poruke (Odaberite datum …). Prijevodi iz Loca imaju prednost.
 
 = 0.8.1 =
 * Stranica izleta: ispod gumba za prijavu (i liste čekanja) više nema natpisa „Licencirano vođenje”, „Sigurnost je prva” i „Fleksibilnost prema uvjetima”.
