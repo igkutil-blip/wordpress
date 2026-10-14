@@ -118,6 +118,7 @@ minimum = floor(70 % mjesta karata bez „prve rate”), najmanje 1; rok po traj
 pri prvoj objavi (transition → shutdown) zaključa se u `_pap_uvjeti` + upiše u ttbm_daywise_details i više se ne mijenja (ugovor
 s agencijom; Igor smije mijenjati samo mjesta na karti). Izleti objavljeni prije 0.7.8 bez `_pap_uvjeti` ostaju s ručnim tekstom.
 „Kopiraj izlet” ne kopira `_pap_uvjeti`. Granične formalnosti se NE zaključavaju (Igor: smiju se mijenjati i nakon objave).
+**0.7.9:** jednokratno (opcija `pap_granice_split`) lokacije „A - B” (Italija - Francuska) razdvojene: izleti → lokacija A + druga zemlja B, tekst ide zemlji A, pojam obrisan.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →

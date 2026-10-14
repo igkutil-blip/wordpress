@@ -20,6 +20,7 @@ class Plan_A_Prijave_Granice {
 	public static function init() {
 		add_filter( 'plan_a_prijave_daywise', array( __CLASS__, 'daywise' ), 10, 2 );
 		add_action( 'admin_init', array( __CLASS__, 'seed' ) );
+		add_action( 'admin_init', array( __CLASS__, 'split' ), 11 );
 	}
 
 	public static function texts(): array {
@@ -127,6 +128,70 @@ class Plan_A_Prijave_Granice {
 			}
 		}
 		add_option( self::OPT, $texts );
+	}
+
+	/**
+	 * Jednom: lokacije s dvije zemlje („Italija - Francuska”) razdvoji na dvije zemlje – izleti dobivaju
+	 * lokaciju prvu zemlju i drugu zemlju, tekst graničnih formalnosti ide prvoj zemlji (ako je prazna).
+	 */
+	public static function split() {
+		if ( (int) get_option( 'pap_granice_split', 0 ) >= 1 ) {
+			return;
+		}
+		$terms = get_terms(
+			array(
+				'taxonomy'   => 'ttbm_tour_location',
+				'hide_empty' => false,
+			)
+		);
+		$texts = self::texts();
+		foreach ( is_wp_error( $terms ) ? array() : $terms as $t ) {
+			if ( ! preg_match( '/^\s*(.+?)\s+[-–—]\s+(.+?)\s*$/u', $t->name, $m ) ) {
+				continue;
+			}
+			$a  = $m[1];
+			$b  = $m[2];
+			$ta = get_term_by( 'name', $a, 'ttbm_tour_location' );
+			if ( ! $ta ) {
+				$r  = wp_insert_term( $a, 'ttbm_tour_location' );
+				$ta = is_wp_error( $r ) ? null : get_term( (int) $r['term_id'], 'ttbm_tour_location' );
+			}
+			if ( ! get_term_by( 'name', $b, 'ttbm_tour_location' ) ) {
+				wp_insert_term( $b, 'ttbm_tour_location' );
+			}
+			if ( ! $ta ) {
+				continue;
+			}
+			$ids = get_posts(
+				array(
+					'post_type'   => 'ttbm_tour',
+					'post_status' => 'any',
+					'numberposts' => -1,
+					'fields'      => 'ids',
+					'meta_key'    => 'ttbm_location_name', // phpcs:ignore WordPress.DB.SlowDBQuery
+					'meta_value'  => $t->name, // phpcs:ignore WordPress.DB.SlowDBQuery
+				)
+			);
+			foreach ( $ids as $id ) {
+				update_post_meta( $id, 'ttbm_location_name', $a );
+				update_post_meta( $id, 'ttbm_country_name', (string) get_term_meta( $ta->term_id, 'ttbm_country_location', true ) );
+				if ( '' === (string) get_post_meta( $id, self::META2, true ) ) {
+					update_post_meta( $id, self::META2, $b );
+				}
+			}
+			foreach ( get_objects_in_term( $t->term_id, 'ttbm_tour_location' ) as $oid ) {
+				wp_add_object_terms( (int) $oid, (int) $ta->term_id, 'ttbm_tour_location' );
+			}
+			if ( isset( $texts[ $t->name ] ) ) {
+				if ( ! self::has_text( (string) ( $texts[ $a ] ?? '' ) ) ) {
+					$texts[ $a ] = $texts[ $t->name ];
+				}
+				unset( $texts[ $t->name ] );
+			}
+			wp_delete_term( $t->term_id, 'ttbm_tour_location' );
+		}
+		update_option( self::OPT, $texts );
+		update_option( 'pap_granice_split', 1 );
 	}
 
 	/** Zemlje za uređivanje: sve lokacije i sve zemlje s tekstom. */
