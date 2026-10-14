@@ -91,6 +91,17 @@ final class Plan_A_Seo_Llms {
 		return 'licencirani vodič udruge Plan A' . ( '' !== $t ? ' (' . rtrim( Plan_A_Seo_Text::cut( $t, 220 ), '.' ) . ')' : '' ) . '.';
 	}
 
+	/** Adresa stranice po slugu ili adresi iz dodatka Custom Permalinks; '' ako je nema. */
+	private static function page_url( string $slug ): string {
+		$p = get_page_by_path( $slug );
+		if ( ! $p ) {
+			global $wpdb;
+			$id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = 'custom_permalink' AND meta_value IN (%s, %s) LIMIT 1", $slug, $slug . '/' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$p  = $id ? get_post( $id ) : null;
+		}
+		return $p && 'publish' === $p->post_status ? (string) get_permalink( $p ) : '';
+	}
+
 	private static function money( float $p ): string {
 		return ( 0.0 === fmod( $p, 1.0 ) ? (string) (int) $p : number_format( $p, 2, ',', '.' ) ) . ' €';
 	}
@@ -102,6 +113,20 @@ final class Plan_A_Seo_Llms {
 		$out[] = '# Plan A – planinarenje i avantura (' . $o['legalName'] . ')';
 		$out[] = '';
 		$out[] = '> ' . $o['description'] . ' Izleti se objavljuju i prijavljuju na ' . home_url( '/' ) . ', a plaćaju uplatom na račun agencije organizatora (Adventure Donkey j.d.o.o.). Na izletima je potrebno članstvo u udruzi (pristupnica i godišnja članarina).';
+		$out[] = '';
+		$join  = self::page_url( 'pristupnica' );
+		$priv  = self::page_url( 'planinarske-i-jedrilicarske-ture-po-vasoj-mjeri' );
+		$sail  = self::page_url( 'jedrenje' );
+		$out[] = '## Ukratko';
+		$out[] = '';
+		$out[] = '- Vodiči: licencirani planinski vodiči Saveza gorskih vodiča Hrvatske (SGVH) i UIMLA-e – planinski vodič (PV), UIMLA vodič (IML), gorski vodič (GV).';
+		$out[] = '- Za koga: za početnike i iskusne planinare; uz izlete vodimo tečajeve zimskog planinarenja, ferrata i lavinske obuke.';
+		$out[] = '- Gdje: Hrvatska (Velebit, Dinara, Hvar …), Slovenija (Julijske Alpe) i Alpe (Mont Blanc, Monte Rosa).';
+		$out[] = '- Kako izgleda izlet: polazak iz Zagreba (najčešće parking Shopping centra Prečko), prijevoz kombijima, male grupe uz vodiča.';
+		$out[] = '- Oprema: opremu za ferrate (kaciga, pojas, set za ferratu, karabineri) članovi mogu besplatno posuditi od udruge.';
+		$out[] = '- Prijava i plaćanje: online na ' . home_url( '/' ) . '; plaćanje uplatom na račun agencije Adventure Donkey j.d.o.o.; uz prijavu se može uzeti osiguranje od otkaza.';
+		$out[] = '- Članstvo: potrebno za sudjelovanje na izletima – pristupnica online' . ( $join ? ' (' . $join . ')' : '' ) . ', godišnja članarina 15 € za kalendarsku godinu; članovi imaju popust na opremu u Iglu sportu.';
+		$out[] = '- Privatne ture i jedrenje: privatne planinarske ture po dogovoru' . ( $priv ? ' (' . $priv . ')' : '' ) . ' i jedrenje Jadranom sa skiperom' . ( $sail ? ' (' . $sail . ')' : '' ) . '.';
 		$out[] = '';
 		$out[] = '- Sjedište: ' . $o['street'] . ', ' . $o['postal'] . ' ' . $o['city'] . ', Hrvatska';
 		$out[] = '- Kontakt: ' . $o['email'] . ', ' . $o['telephone'];

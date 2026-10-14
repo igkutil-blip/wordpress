@@ -22,6 +22,7 @@ Stanje, pregled promjena (bez upisa), gumbi za popunjavanje postojećeg u serija
 = 1.0.1 =
 * Noindex, izvan sitemapa i llms.txt: stranica „Unos izleta” (samo za vodiče) i stranice čiji naš kratki kod više ne postoji (npr. Poklon bon).
 * llms.txt: isti opis na više stranica → svaka dobiva svoj opis iz teksta; opis izleta ne počinje vodičima, telefonom ni cijenom; vodiči s licencama.
+* llms.txt: novi dio „Ukratko” (vodiči SGVH/UIMLA, za koga, gdje, polazak iz Zagreba kombijima, posudba opreme, prijava i plaćanje, osiguranje od otkaza, članstvo 15 €, privatne ture i jedrenje). Opis udruge (i za Google) navodi SGVH i UIMLA.
 * Opis za Google: uvodni tekst preskače redove s vodičima/telefonom („Vodiči: …”, „Važno: …”).
 
 = 1.0.0 =
