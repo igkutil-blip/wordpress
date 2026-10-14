@@ -14,6 +14,24 @@ final class Plan_A_Prijave_Seats {
 
 	private static $pool = array();
 
+	/** Na stranici (ne u adminu) ttbm_travel_max_people_allow = zbroj mjesta karata bez „prve rate”. */
+	public static function max_people( $value, $object_id, $meta_key, $single ) {
+		if ( 'ttbm_travel_max_people_allow' !== $meta_key || is_admin() || Plan_A_Prijave_Tour::CPT !== get_post_type( (int) $object_id ) ) {
+			return $value;
+		}
+		$rows = get_post_meta( (int) $object_id, 'ttbm_ticket_type', true );
+		$n    = 0;
+		foreach ( is_array( $rows ) ? $rows : array() as $t ) {
+			if ( is_array( $t ) && ! self::is_rate( (string) ( $t['ticket_type_name'] ?? '' ) ) ) {
+				$n += max( 0, (int) ( $t['ticket_type_qty'] ?? 0 ) );
+			}
+		}
+		if ( $n < 1 ) {
+			return $value;
+		}
+		return $single ? (string) $n : array( (string) $n );
+	}
+
 	public static function init() {
 		add_filter( 'ttbm_get_total_seat_filter', array( __CLASS__, 'total_seat' ), 20, 2 );
 		add_filter( 'ttbm_get_total_reserve_filter', array( __CLASS__, 'total_reserve' ), 20, 2 );
@@ -22,6 +40,8 @@ final class Plan_A_Prijave_Seats {
 		add_filter( 'ttbm_ticket_availability_info', array( __CLASS__, 'availability_info' ), 20, 2 );
 		add_filter( 'woocommerce_add_to_cart_validation', array( __CLASS__, 'validate' ), 95, 2 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'script' ), 30 );
+		// „Maksimalno osoba” na stranici uvijek = mjesta na kartama (i za izlete spremljene prije 0.7.6).
+		add_filter( 'get_post_metadata', array( __CLASS__, 'max_people' ), 10, 4 );
 		// Gumb „Popunjeno” u popisu izleta: nema slobodnih mjesta, mjesta karata ostaju upisana.
 		add_filter( 'ttbm_total_available_qty', array( __CLASS__, 'full_available' ), 99, 2 );
 		add_filter( 'ttbm_ticket_capacity', array( __CLASS__, 'full_capacity' ), 99, 4 );
