@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.8.0
+Stable tag: 0.8.1
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,9 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.8.1 =
+* Stranica izleta: ispod gumba za prijavu (i liste čekanja) više nema natpisa „Licencirano vođenje”, „Sigurnost je prva” i „Fleksibilnost prema uvjetima”.
 
 = 0.8.0 =
 * Lista čekanja: kad je izlet popunjen, umjesto prijave stoji „Prijavi se na listu čekanja” (ime, prezime, mobitel, e-mail nije obavezan, broj osoba 1–4, privola). Osoba dobije svoje mjesto na listi; na stranici piše koliko ih čeka.
