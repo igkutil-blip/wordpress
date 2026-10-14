@@ -134,6 +134,15 @@ CSS razmak između odlomaka .9em, unutar stavke popisa .35em. Pravilo za tekstov
 s videom (assets/pa-video.js|css – iste datoteke u oba dodatka; video 720×1280 MP4 u assets/video/; pokreće se bez zvuka + „Uključi zvuk”;
 zatvara × u zaglavlju i × na videu, Esc, klik van; na mobitelu prozorčić od vrha (100dvh, × se ne skriva iza adresne trake); CSS/JS verzija = verzija.filemtime). Video izleta = „prijava-na-izlet-3” od Igora. Testni Chromium ne pušta H.264 – puštanje provjerava Igor na mobitelu.
 **0.7.16:** na stranici „Maksimalno osoba” uvijek = zbroj mjesta karata bez „prve rate” (filtar get_post_metadata za ttbm_travel_max_people_allow, samo izvan admina) – Dinara je imala 9 uz 10 mjesta.
+**0.8.0 + plan-a-clanstvo 1.15.8 (14.10., Igor odobrio prijedlog A–G):** LISTA ČEKANJA – popunjen termin (slobodno 0 ili `_pap_full`) → u book_now_smart
+umjesto „Rezervirajte” blok „Izlet je popunjen” + gumb „Prijavi se na listu čekanja” (assets/cekanje.js|css, prozorčić: ime, prezime, mobitel, e-mail nije obavezan,
+broj osoba 1–4, privola; zaštita kao plan-a-kontakt; isti mobitel (zadnjih 8 znamenki) se ne upisuje dvaput). Klasa Plan_A_Prijave_Cekanje, CPT `pap_cekanje`
+(post_parent = izlet, meta `_pap_w`). Mail o novom upisu i „oslobodilo se mjesto” (provjera nakon promjene narudžbe/karata/_pap_full + svaki sat, opcija
+`pap_wait_free`) idu **vodičima izleta** (Igor: ne njemu) – adrese iz Članstvo → Postavke → Vodiči (svaka riječ naziva vodiča), bez adrese → adresa trgovine.
+Izleti → Liste čekanja (Javljeno, Obriši). Narudžba s istim mobitelom/e-mailom miče osobu s liste. Brisanje 30 dana nakon izleta.
+Tablica: akcija `ag_wait` (red čekanja `pap_wait_queue`, ponavlja svaki sat), skripta **v21**: redovi ključa `W|w<ID>` ispod sudionika, žuti, Br. Č1, Č2…,
+„LISTA ČEKANJA” u Prijavio/la, napomena datum · osobe · javljeno; ne broje se nigdje, u naslovu „· lista čekanja N”, arhiva ih briše.
+Na kopiji: probni izlet 9013 ostavljen Popunjeno s jednim probnim upisom (PROBA Lista čekanja). Skriptu v21 treba zalijepiti u kopiju i u pravu tablicu članova.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide** – računa se samo (0.7.14,
