@@ -135,7 +135,7 @@
 								}
 								?>
                                 <div class="sliderItem" data-slide-index="<?php echo esc_html($count); ?>" data-target-popup="superSlider" data-placeholder>
-									<?php self::render_bg_layer($image_url, $width, $height, (string) $big, $count > 1); ?>
+									<?php self::render_bg_layer($image_url, $width, $height, (string) $big, $count > 1 && $count < sizeof($image_ids)); // Plan A: prvi i zadnji (viri lijevo) odmah, ostali poslije ?>
                                 </div>
 								<?php
 								$count++;

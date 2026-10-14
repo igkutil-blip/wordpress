@@ -372,7 +372,8 @@ function ttbm_prepare_super_slider($slider) {
     });
     let urls = [];
     $slider.find('[data-bg-image]').each(function () {
-        if (jQuery(this).attr('data-pap-lazy')) {
+        // Plan A: čeka se samo glavna (prva) slika, ne sličice sa strane ni skočni prozor.
+        if (jQuery(this).attr('data-pap-lazy') || jQuery(this).closest('.sliderShowcase, .sliderPopup, .slideIndicator').length) {
             return;
         }
         let url = ttbm_normalize_bg_url(jQuery(this).attr('data-bg-image') || jQuery(this).data('bg-image'));

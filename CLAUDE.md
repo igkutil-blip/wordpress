@@ -148,6 +148,10 @@ slike `large`, `data-pap-big` = pap_hero za ekrane > 1400 px (JS u ttbm_plugin_g
 showcase i kartice (grid_list_style) `medium_large`; mage-icon: mali font `mage-icon-pap.woff2` (23 ikone, unicode-range) + puni za ostale; smart.php bez
 `placeholderLoader` (kostura), shimmer keyframes transform; inline skripta nakon </aside> premješta prijavu na mobitelu; Admin::FRONT_HR – prijevodi samo kad
 Loco (.mo na živoj, languages/plugins/tour-booking-manager-hr.mo) nema prijevoda. Kopija Dinara mobitel: ocjena 27–38 → 52–62, težina 6,1 → 3,1 MB, CLS 0,5–0,8 → 0,02–0,19.
+**0.8.3 (14.10.):** Plan_A_Prijave_Brzina – preload prve slike izleta (large) u wp_head; slider čeka samo prvu sliku (ne .sliderShowcase/.sliderPopup);
+prvi i zadnji slajd bez lazy (zadnji viri lijevo i bio je LCP); posjetiteljima bez admin trake dequeue admin-bar + dashicons. srcset za Flatsome banner ISPROBAN
+I ODBAČEN (Flatsome tada preuzme i izvornik i manju sliku – 9,8 → 15 MB). Mjerenje žive 14.10. (mob/desk): naslovnica 70/96, izlet 65/83, izleti 77/93,
+jedrenje 79/95, kontakt 89/98; na mobitelu LCP često kolačić-traka Complianz (prikazuje se JS-om) i TTFB 1–2,5 s (hosting/SpeedyCache) – nije naš kod.
 Naslovnica: 3 PNG bannera 2,2–2,8 MB + logotipi 250 KB → Igoru poslani JPG/PNG (naslovnica-slike.zip) za zamjenu u Flatsome banneru (nije kod).
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
