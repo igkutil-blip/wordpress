@@ -26,7 +26,7 @@ final class Plan_A_Seo_Schema {
 			'https://www.instagram.com/planinarenje_avantura',
 			'https://www.linkedin.com/company/105569195/',
 		),
-		'description'   => 'Sportsko-rekreacijsko društvo Plan A iz Zagreba organizira planinarske izlete, ferrate, zimske uspone, tečajeve i jedrenje uz licencirane planinske vodiče.',
+		'description'   => 'Sportsko-rekreacijsko društvo Plan A iz Zagreba organizira planinarske izlete, ferrate, zimske uspone, tečajeve i jedrenje uz licencirane planinske vodiče Saveza gorskih vodiča Hrvatske (SGVH) i UIMLA-e.',
 	);
 
 	public static function init() {

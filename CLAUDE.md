@@ -184,7 +184,7 @@ duplikata = najstarija stranica). Naslovnica se ne dira. „Vrati sve” vraća 
 **plan-a-seo 1.0.1 (14.10.2026., obje grane):** noindex + izvan sitemapa i llms.txt i za stranicu s `[plan-a-unos-izleta]` i stranice
 s našim kratkim kodom koji više ne postoji (Poklon bon); llms.txt: duplikat opisa → opis iz teksta (description_for), vodiči s licencama
 iz opisa vodiča; uvod (good_lead) preskače redove Vodiči/Važno/Mjesto polaska/telefon/plaćanje i rate; pri novoj verziji briše se
-Rank Math sitemap cache (option `plan_a_seo_ver`). Na živoj opisi Jedrenje/O nama/Ustrojstvo isti → Igor treba pokrenuti Alati → Plan A SEO.
+Rank Math sitemap cache (option `plan_a_seo_ver`); llms.txt dio „Ukratko” (Igor potvrdio 14.10.: SGVH/UIMLA, za koga, gdje, Prečko/kombiji, posudba opreme, osiguranje, članarina 15 € + Iglu sport, privatne ture, jedrenje); ORG description sa SGVH i UIMLA-e. Godina osnivanja nepoznata – pitati Igora. Na živoj opisi Jedrenje/O nama/Ustrojstvo isti → Igor treba pokrenuti Alati → Plan A SEO.
 
 ### Plan prelaska (arhiva)
 
