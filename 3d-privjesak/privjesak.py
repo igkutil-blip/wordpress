@@ -41,7 +41,9 @@ LINIJA_SIRINA = 1.2      # bočne ukrasne linije: visina na rubu
 LINIJA_DUBINA = 0.8      # … i dubina u rub
 LINIJA_PREKID = 2.0      # prekid između plave i magenta linije (gore i dolje)
 
-# NFC – OBAVEZNO upisati izmjereni čip (ovo je samo pretpostavka 25 mm)
+# NFC – za probni ispis isključen (puno tijelo, bez pauze). True = šupljina za čip.
+NFC = False
+# OBAVEZNO upisati izmjereni čip (ovo je samo pretpostavka 25 mm)
 NFC_PROMJER = 25.0
 NFC_DEBLJINA = 0.8
 NFC_ZAZOR_PROMJER = 0.4  # šupljina = promjer + 0,4
@@ -285,7 +287,8 @@ def main():
 
     tijelo = tijelo_3d(o)
     tijelo -= ekstrudiraj(rupa, -1, DEBLJINA + 2)
-    tijelo -= ekstrudiraj(nfc_g, nfc_z0, nfc_h)
+    if NFC:
+        tijelo -= ekstrudiraj(nfc_g, nfc_z0, nfc_h)
     for m in (prednje_pl, prednje_mg, straga_pl, straga_mg, bok_pl, bok_mg):
         tijelo -= m
     plavo = prednje_pl + straga_pl + bok_pl
@@ -335,7 +338,8 @@ def main():
     print(f'logo: mjerilo {mjerilo:.2f} → širina {logo_plavo.union(logo_magenta).bounds[2] - logo_plavo.union(logo_magenta).bounds[0]:.1f} mm')
     print(f'poleđina: mjerilo {mj_straga:.2f}')
     print(f'otvor: širina {rupa.bounds[2] - rupa.bounds[0]:.2f} mm, materijal do ruba {o.exterior.distance(rupa):.2f} mm')
-    print(f'NFC šupljina Ø{2 * nfc_r:.1f} × {nfc_h:.1f} mm, z {nfc_z0:.1f}–{nfc_z1:.1f} → PAUZA na {nfc_z1:.1f} mm')
+    if NFC:
+        print(f'NFC šupljina Ø{2 * nfc_r:.1f} × {nfc_h:.1f} mm, z {nfc_z0:.1f}–{nfc_z1:.1f} → PAUZA na {nfc_z1:.1f} mm')
     for ime, t, _ in dijelovi:
         print(f'{ime:14s} {t.volume / 1000:5.2f} cm³  {t.extents.round(2)}')
     pregled(o, rupa, logo_plavo, logo_magenta, znak, natpis, nfc_g, linija_l, linija_d, z_linija, ploce)
@@ -367,7 +371,7 @@ def pregled(o, rupa, lp, lm, znak, natpis, nfc_g, linija_l, linija_d, z_linija, 
         crtaj(ax, f(linija_l), BOJE['svjetloplavo'])
         crtaj(ax, f(linija_d), BOJE['magenta'])
         crtaj(ax, f(o.buffer(-ZAOBLJENJE).exterior.buffer(0.08)), '#555555')
-        if naslov == 'straga':
+        if naslov == 'straga' and NFC:
             c = f(nfc_g)
             ax.add_patch(plt.Circle((c.centroid.x, c.centroid.y), (NFC_PROMJER + NFC_ZAZOR_PROMJER) / 2,
                                     fill=False, ls='--', ec='#9aa', lw=0.8))

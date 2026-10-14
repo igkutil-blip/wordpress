@@ -13,17 +13,16 @@ uređivi „model” je sam program.
   leži potpuno ravno na podlozi (izbočenje bi na podlozi trebalo potpore).
 - Bočne linije 1,2 mm (visina na rubu) × 0,8 mm (dubina): plava lijevo, magenta desno (gledano sprijeda),
   prekid 2 mm gore i dolje.
-- NFC šupljina **Ø 25,4 × 1,0 mm** (čip 25 × 0,8 mm + zazor), 1,2 mm plastike do poleđine (strana očitanja).
-  **Izmjeri svoj čip** i upiši `NFC_PROMJER` / `NFC_DEBLJINA` u program.
+- **Probni ispis je bez NFC-a** (puno tijelo, bez pauze). Za NFC u programu staviti `NFC = True` i upisati
+  izmjereni čip (`NFC_PROMJER`, `NFC_DEBLJINA`) → šupljina Ø čip+0,4 mm, 1,2 mm plastike do poleđine, pauza na vrhu šupljine.
 
 ## Način A – višebojni pisač (AMS, MMU): jedan ispis
 `plan-a-privjesak-visebojni.3mf` – jedan predmet, 3 dijela s bojama (crno, svjetloplavo #00B9E8, magenta #D4145A).
 Isto kao 3 poravnata STL-a u `stl/`. Poleđinom na podlogu, sloj 0,2 mm, bez potpora.
-**Pauza na 2,2 mm** → umetni čip → nastavi.
 
 ## Način B – ispis po bojama, pa sastavljanje (bez AMS-a)
 Mapa `ploce/`:
-1. `ploca-1-crno-tijelo.stl` – tijelo s udubljenjima. Poleđinom na podlogu, **pauza na 2,2 mm** za čip.
+1. `ploca-1-crno-tijelo.stl` – tijelo s udubljenjima. Poleđinom na podlogu, bez potpora.
 2. `ploca-2-svjetloplavo.stl` – svi plavi dijelovi (logo, NFC simbol, bočna traka).
 3. `ploca-3-magenta.stl` – svi magenta dijelovi (logo, slova P L A N A, bočna traka).
 
