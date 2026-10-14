@@ -1,30 +1,40 @@
-# Plan A – NFC privjesak (3D ispis)
+# Plan A – NFC privjesak (3D ispis), verzija 2
 
-Model napravljen prema slici „Plan A – Dodir avanture”. Veličina **43 × 50 × 5,6 mm**
-(jednobojni s izbočenim logom 6,2 mm), zaobljeni rubovi, rupa Ø 5,2 mm za kolutić/uzicu,
-**skriveno udubljenje za NFC naljepnicu Ø 25 mm** (NTAG213/215).
+Izrađen prema paketu za modeliranje (logo `logo/logo-jednostavni.svg`, upute) i slikama iz više pogleda.
+Program: `privjesak.py` (sve mjere na vrhu datoteke). STEP se ne izvozi (program radi mrežom, ne CAD-om);
+uređivi „model” je sam program.
 
-| Datoteka | Za što |
-| --- | --- |
-| `plan-a-privjesak-visebojni.3mf` | višebojni ispis (Bambu AMS, Prusa MMU…) – jedan predmet s 3 dijela i bojama |
-| `stl/…-tijelo-tamnoplavo.stl`, `…-logo-plavo.stl`, `…-logo-rozo.stl` | isti dijelovi kao STL (učitati sva tri zajedno → „jedan predmet s više dijelova”) |
-| `plan-a-privjesak-jednobojni.stl` | pisač s jednom bojom: logo izbočen 0,6 mm, straga utisnuto |
-| `pregled-sprijeda.png`, `pregled-straga.png` | kako izgleda |
-| `privjesak.py` | program koji sve to izrađuje (mjere se mijenjaju na vrhu datoteke) |
+## Mjere
+- Tijelo **38 × 48 × 6 mm**, asimetrični oblutak, ravna lica, rub zaobljen 1,8 mm.
+- Otvor za vezicu: zaobljeni trokut, slobodna širina ~5,6 mm, ≥ 3 mm materijala do ruba, jedna rupa kroz debljinu.
+- Prednji znak iz SVG-a, širok **29,4 mm** (mjerilo 0,98 da ostane ≥ 3 mm do ruba i otvora),
+  umetak 0,8 mm: **0,4 mm u tijelu + 0,4 mm iznad plohe**.
+- Poleđina: svjetloplavi NFC simbol i magenta „PLAN A” – **ravno s plohom** (0,8 mm duboko), da poleđina
+  leži potpuno ravno na podlozi (izbočenje bi na podlozi trebalo potpore).
+- Bočne linije 1,2 mm (visina na rubu) × 0,8 mm (dubina): plava lijevo, magenta desno (gledano sprijeda),
+  prekid 2 mm gore i dolje.
+- NFC šupljina **Ø 25,4 × 1,0 mm** (čip 25 × 0,8 mm + zazor), 1,2 mm plastike do poleđine (strana očitanja).
+  **Izmjeri svoj čip** i upiši `NFC_PROMJER` / `NFC_DEBLJINA` u program.
 
-## Postavke ispisa
-- PLA ili PETG, mlaznica 0,4 mm, **sloj 0,2 mm**, ispuna 20–30 %, 3 obodne linije, bez potpora.
-- Postaviti **stražnjom stranom (NFC znak i natpis) na podlogu** – tako je modelirano (z = 0 je stražnja strana).
-- Boje: tijelo tamnoplava, plava (cyan) – lijevi dio loga, lijeva pruga i NFC znak, roza – desni dio loga, desna pruga i natpis „PLAN A”.
+## Način A – višebojni pisač (AMS, MMU): jedan ispis
+`plan-a-privjesak-visebojni.3mf` – jedan predmet, 3 dijela s bojama (crno, svjetloplavo #00B9E8, magenta #D4145A).
+Isto kao 3 poravnata STL-a u `stl/`. Poleđinom na podlogu, sloj 0,2 mm, bez potpora.
+**Pauza na 2,2 mm** → umetni čip → nastavi.
 
-## NFC naljepnica
-U slicer dodaj **pauzu na visini 2,4 mm** (početak sloja na 2,4 mm). Kad pisač stane, umetni NFC
-naljepnicu/disk Ø 25 mm (debljina do 1 mm) u udubljenje i nastavi ispis – naljepnica ostaje zatvorena unutra.
-Bez pauze se privjesak isprinta normalno, samo bez NFC-a.
+## Način B – ispis po bojama, pa sastavljanje (bez AMS-a)
+Mapa `ploce/`:
+1. `ploca-1-crno-tijelo.stl` – tijelo s udubljenjima. Poleđinom na podlogu, **pauza na 2,2 mm** za čip.
+2. `ploca-2-svjetloplavo.stl` – svi plavi dijelovi (logo, NFC simbol, bočna traka).
+3. `ploca-3-magenta.stl` – svi magenta dijelovi (logo, slova P L A N A, bočna traka).
 
-## Jednobojni pisač
-Ispis `plan-a-privjesak-jednobojni.stl`; za dvobojni izgled dodaj **promjenu filamenta na 5,6 mm**
-(sve iznad je logo i pruge u drugoj boji). Pauza za NFC ista: 2,4 mm.
+Umeci su sa svake strane 0,1 mm manji (`ZAZOR_SASTAVLJANJE`). Zalijepiti kapljicom sekundnog ljepila (pinceta):
+prednji dijelovi strše 0,4 mm, stražnji su ravni s plohom. Bočne trake su ravne trake 1,0 × 0,7 mm koje se
+utisnu u žlijeb uz rub (najzahtjevniji dio – za prvu probu mogu se izostaviti). Kakav je raspored, vidi `pregled-ploce.png`.
+Ploče 2 i 3 ispisuju se brzo (0,8 mm visine); najmanji trokutići imaju stranicu ~2,2 mm.
+
+## Ispis
+PLA ili PETG, mlaznica 0,4 mm, sloj 0,2 mm, 3 obodne linije, ispuna 20–30 %. Prvi primjerak je proba:
+provjeri otvor, dosjed umetaka i čitanje NFC-a telefonom.
 
 ## Ponovna izrada
 ```
