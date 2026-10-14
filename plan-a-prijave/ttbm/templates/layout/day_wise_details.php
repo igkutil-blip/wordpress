@@ -156,7 +156,7 @@
 	}
 
 	$ttbm_post_id    = $ttbm_post_id ?? get_the_id();
-	$daywise         = get_post_meta( $ttbm_post_id, 'ttbm_daywise_details', true );
+	$daywise         = apply_filters( 'plan_a_prijave_daywise', get_post_meta( $ttbm_post_id, 'ttbm_daywise_details', true ), (int) $ttbm_post_id ); // Plan A: granične formalnosti po zemlji
 	$display_daywise = get_post_meta( $ttbm_post_id, 'ttbm_display_schedule', true );
 
 	if ( ! empty( $daywise ) && $display_daywise == 'on' ) {

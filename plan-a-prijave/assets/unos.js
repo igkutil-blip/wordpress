@@ -360,7 +360,7 @@
 				var d = res.data, f = form.elements;
 				clearErr();
 				editId.value = d.id;
-				f.who.value = d.who; f.title.value = d.title; f.location.value = d.location; f.days.value = d.days;
+				f.who.value = d.who; f.title.value = d.title; f.location.value = d.location; f.country2.value = d.country2 || ''; f.days.value = d.days;
 				f.start.value = d.start; f.time.value = d.time; f.price.value = d.price; f.seats.value = d.seats; f.rate.value = d.rate; f.note.value = d.note;
 				setRich('content', d.content);
 				Object.keys(d.faq || {}).forEach(function (i) { setRich('faq[' + i + ']', d.faq[i]); });

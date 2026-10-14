@@ -358,6 +358,7 @@ final class Plan_A_Prijave_Editor {
 		'ukljuceno'  => 'sadrzaj',
 		'aktivnosti' => 'sadrzaj',
 		'vazno'      => 'vazno',
+		'granice'    => 'granice',
 		'faq'        => 'izlet',
 		'zasto'      => 'kontakt',
 		'kontakt'    => 'kontakt',
@@ -376,6 +377,7 @@ final class Plan_A_Prijave_Editor {
 		'vodici'   => array( 'Vodiči', 'dashicons-groups', 'Tko vodi izlet, slike i opisi' ),
 		'galerija' => array( 'Galerija', 'dashicons-format-gallery', 'Slike na vrhu stranice' ),
 		'vazno'    => array( 'Važno', 'dashicons-info-outline', 'Uvjeti, agencija, izjava' ),
+		'granice'  => array( 'Granične formalnosti', 'dashicons-admin-site-alt3', 'Granice, vize, zdravstvo – po zemljama' ),
 		'sadrzaj'  => array( 'Uključeno i aktivnosti', 'dashicons-yes-alt', 'Što je u cijeni, aktivnosti' ),
 		'kontakt'  => array( 'Zašto s nama i kontakt', 'dashicons-email-alt', 'Razlozi, okvir za upit' ),
 		'povezani' => array( 'Povezani izleti', 'dashicons-admin-links', '„Odaberi sljedeću avanturu”' ),
@@ -416,6 +418,12 @@ final class Plan_A_Prijave_Editor {
 		}
 		echo '<option value="__new__">+ Dodaj novu lokaciju…</option></select>'
 			. '<span class="pap-loc-new" hidden><input type="text" class="pap-loc-name" placeholder="npr. Španjolska"><button type="button" class="button pap-loc-add">Dodaj</button></span></label>';
+		$c2 = (string) $m( Plan_A_Prijave_Granice::META2 );
+		echo '<label>Druga zemlja <small>(nije obavezno)</small><select name="pap[country2]"><option value="">— nema —</option>';
+		foreach ( $locs as $l ) {
+			echo '<option value="' . self::e( $l ) . '"' . selected( $c2, $l, false ) . '>' . esc_html( $l ) . '</option>';
+		}
+		echo '</select><small>za izlet kroz dvije zemlje (granične formalnosti za obje)</small></label>';
 		echo '<label>Trajanje (dana)<input type="number" min="1" step="1" name="pap[duration]" value="' . self::e( $m( 'ttbm_travel_duration' ) ) . '"><small>kraj izleta računa se iz broja dana</small></label>';
 		echo '</div>';
 		echo '<p class="pap-hint">Broj osoba upisuje se kod karata (Cijene i usluge – mjesta); na stranici se uvijek prikazuju slobodna mjesta (npr. 3/25).</p>';
@@ -496,7 +504,28 @@ final class Plan_A_Prijave_Editor {
 		foreach ( Plan_A_Prijave_Tour::rows( $id, 'ttbm_daywise_details' ) as $i => $d ) {
 			echo self::block_row( 'days', 'd' . $i, (string) ( $d['ttbm_day_title'] ?? '' ), (string) ( $d['ttbm_day_content'] ?? '' ), (string) ( $d['ttbm_day_time'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput
 		}
-		echo '</div><p><button type="button" class="button pap-add-block" data-to="days">+ Dodaj blok</button></p></section>';
+		echo '</div><p><button type="button" class="button pap-add-block" data-to="days">+ Dodaj blok</button></p>';
+		if ( '' !== Plan_A_Prijave_Granice::text_for( $id ) ) {
+			echo '<p class="pap-hint">Blok „' . esc_html( Plan_A_Prijave_Granice::TITLE ) . '” na stranici izleta dobiva tekst iz <a href="#granice">Granične formalnosti</a> (' . esc_html( implode( ', ', Plan_A_Prijave_Granice::countries( $id ) ) ) . ') – tekst upisan ovdje se tada ne prikazuje.</p>';
+		}
+		echo '</section>';
+
+		/* Granične formalnosti (zajedničko za sve izlete) */
+		self::section( 'granice', Plan_A_Prijave_Granice::TITLE, 'Jedan tekst po zemlji, <strong>zajednički za sve izlete</strong> – ispraviš ga ovdje jednom i vrijedi na svim izletima u toj zemlji. Na stranici izleta tekst ide u blok „' . esc_html( Plan_A_Prijave_Granice::TITLE ) . '” (Važno) prema lokaciji iz Osnovnih podataka i drugoj zemlji, ako je odabrana. Zemlja bez teksta: ostaje tekst upisan u izletu.' );
+		$mine  = Plan_A_Prijave_Granice::countries( $id );
+		$texts = Plan_A_Prijave_Granice::texts();
+		echo '<div class="pap-blocks pap-granice">';
+		$all   = Plan_A_Prijave_Granice::all_countries();
+		$all   = array_values( array_merge( array_intersect( $all, $mine ), array_diff( $all, $mine ) ) ); // zemlje ovog izleta prve
+		foreach ( $all as $i => $c ) {
+			$t = (string) ( $texts[ $c ] ?? '' );
+			$f = 'pap[granice][c' . $i . ']';
+			echo '<div class="pap-block' . ( in_array( $c, $mine, true ) ? ' pap-mine' : '' ) . '"><div class="pap-block-head"><b class="pap-country">' . esc_html( $c ) . '</b>'
+				. ( in_array( $c, $mine, true ) ? '<span class="pap-tag">ovaj izlet</span>' : '' ) . ( '' === trim( wp_strip_all_tags( $t ) ) ? '<span class="pap-tag pap-tag-empty">nije upisano</span>' : '' )
+				. '<input type="hidden" name="' . esc_attr( $f ) . '[name]" value="' . self::e( $c ) . '"><input type="hidden" name="' . esc_attr( $f ) . '[orig]" value="' . esc_attr( Plan_A_Prijave_Granice::fingerprint( $t ) ) . '"></div>'
+				. '<textarea class="pap-rich" id="pap-granice-c' . (int) $i . '" name="' . esc_attr( $f ) . '[content]" rows="6">' . esc_textarea( $t ) . '</textarea></div>'; // phpcs:ignore WordPress.Security.EscapeOutput
+		}
+		echo '</div><div class="pap-blocks" data-rows="gnew"></div><p><button type="button" class="button pap-add-block" data-to="gnew">+ Dodaj zemlju</button></p></section>';
 
 		/* FAQ */
 		self::section( 'faq', 'Važno za izlet', 'Blokovi na otvaranje pod naslovom „Važno za izlet” – na stranici izleta su prvi, iznad bloka „Važno”. Redoslijed mijenjaš strelicama.' );
@@ -665,6 +694,7 @@ final class Plan_A_Prijave_Editor {
 		echo '<script type="text/html" id="tmpl-pap-tpl-ticket">' . self::ticket_row( '__K__', array( 'ticket_type_qty_type' => 'inputbox', 'ticket_type_resv_qty' => 0 ), 0 ) . '</script>'; // phpcs:ignore WordPress.Security.EscapeOutput
 		echo '<script type="text/html" id="tmpl-pap-tpl-service">' . self::service_row( '__K__', array( 'service_qty_type' => 'inputbox' ), 0 ) . '</script>'; // phpcs:ignore WordPress.Security.EscapeOutput
 		echo '<script type="text/html" id="tmpl-pap-tpl-days">' . self::block_row( 'days', '__K__', '', '', '' ) . '</script>'; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo '<script type="text/html" id="tmpl-pap-tpl-gnew"><div class="pap-block"><div class="pap-block-head"><input type="text" name="pap[gnew][__K__][name]" placeholder="Zemlja, npr. Španjolska"><span class="pap-tools"><button type="button" class="pap-del" title="Obriši">×</button></span></div><textarea class="pap-rich" id="pap-gnew-__K__" name="pap[gnew][__K__][content]" rows="6"></textarea></div></script>'; // phpcs:ignore WordPress.Security.EscapeOutput
 		echo '<script type="text/html" id="tmpl-pap-tpl-faq">' . self::block_row( 'faq', '__K__', '', '', '' ) . '</script>'; // phpcs:ignore WordPress.Security.EscapeOutput
 	}
 
@@ -918,6 +948,11 @@ final class Plan_A_Prijave_Editor {
 		update_post_meta( $id, 'mep_event_faq', $faq );
 		update_post_meta( $id, 'ttbm_display_faq', self::on( (bool) $faq ) );
 		update_post_meta( $id, 'ttbm_faq_active', self::on( (bool) $faq ) );
+
+		/* Granične formalnosti (zajednički tekstovi) i druga zemlja */
+		Plan_A_Prijave_Granice::save( (array) ( $p['granice'] ?? array() ), (array) ( $p['gnew'] ?? array() ) );
+		$c2 = sanitize_text_field( (string) ( $p['country2'] ?? '' ) );
+		update_post_meta( $id, Plan_A_Prijave_Granice::META2, $c2 !== $loc ? $c2 : '' );
 
 		/* Zašto s nama */
 		$why = array_values( array_filter( array_map( 'sanitize_text_field', (array) ( $p['why'] ?? array() ) ) ) );

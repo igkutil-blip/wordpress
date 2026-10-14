@@ -550,6 +550,7 @@ final class Plan_A_Prijave_Unos {
 		}
 		$h .= '<section class="papu-sec"><h3>Osnovni podaci</h3><div class="papu-grid">';
 		$h .= self::field( 'location', 'Lokacija', '<select name="location" required>' . $loc . '</select>' );
+		$h .= self::field( 'country2', 'Druga zemlja <small>(nije obavezno)</small>', '<select name="country2">' . str_replace( '– odaberi –', '– nema –', $loc ) . '</select>', 'samo ako izlet ide kroz dvije zemlje' );
 		$h .= self::field( 'days', 'Trajanje (broj dana)', '<input type="number" name="days" min="1" max="60" step="1" inputmode="numeric" required>' );
 		$h .= '</div></section>';
 
@@ -758,6 +759,10 @@ final class Plan_A_Prijave_Unos {
 		if ( ! $term ) {
 			self::fail( 'Odaberi lokaciju.', 'location' );
 		}
+		$country2 = self::txt( 'country2', 100 );
+		if ( '' !== $country2 && ( $country2 === $loc || ! get_term_by( 'name', $country2, 'ttbm_tour_location' ) ) ) {
+			$country2 = '';
+		}
 		$days = absint( $_POST['days'] ?? 0 );
 		if ( $days < 1 || $days > 60 ) {
 			self::fail( 'Upiši trajanje (broj dana).', 'days' );
@@ -879,7 +884,7 @@ final class Plan_A_Prijave_Unos {
 			wp_delete_attachment( (int) $old, true );
 		}
 
-		$warn  = self::store( $id, compact( 'loc', 'term', 'days', 'start', 'time', 'end', 'reg', 'price', 'seats', 'rate', 'faq', 'guides', 'inc', 'exc', 'act', 'imgs' ) );
+		$warn  = self::store( $id, compact( 'loc', 'country2', 'term', 'days', 'start', 'time', 'end', 'reg', 'price', 'seats', 'rate', 'faq', 'guides', 'inc', 'exc', 'act', 'imgs' ) );
 		$old_u = $edit ? (array) get_post_meta( $id, self::UNOS_META, true ) : array();
 		$small = array_values( array_intersect( $small, $slots ) );
 		foreach ( (array) ( $old_u['small'] ?? array() ) as $s ) {
@@ -972,6 +977,7 @@ final class Plan_A_Prijave_Unos {
 				'who'      => (int) ( $u['by'] ?? 0 ),
 				'content'  => (string) get_post_field( 'post_content', $id ),
 				'location' => (string) $m( 'ttbm_location_name' ),
+				'country2' => (string) $m( Plan_A_Prijave_Granice::META2 ),
 				'days'     => (string) $m( 'ttbm_travel_duration' ),
 				'start'    => $start ? gmdate( 'd.m.Y.', strtotime( $start . ' 12:00' ) ) : '',
 				'time'     => (string) $m( 'ttbm_travel_start_time' ),
@@ -1055,6 +1061,7 @@ final class Plan_A_Prijave_Unos {
 
 		// Osnovno.
 		update_post_meta( $id, 'ttbm_location_name', $d['loc'] );
+		update_post_meta( $id, Plan_A_Prijave_Granice::META2, (string) ( $d['country2'] ?? '' ) );
 		update_post_meta( $id, 'ttbm_country_name', (string) get_term_meta( $d['term']->term_id, 'ttbm_country_location', true ) );
 		update_post_meta( $id, 'ttbm_display_location', 'on' );
 		update_post_meta( $id, 'ttbm_travel_duration', (string) $d['days'] );
@@ -1160,7 +1167,7 @@ final class Plan_A_Prijave_Unos {
 			array( 'Izlet', '<strong>' . esc_html( $p->post_title ) . '</strong>' ),
 			array( $edit ? 'Ispravio' : 'Unio', esc_html( $by ) ),
 			array( 'Termin', esc_html( $term ) ),
-			array( 'Lokacija', esc_html( get_post_meta( $id, 'ttbm_location_name', true ) . ', ' . get_post_meta( $id, 'ttbm_travel_duration', true ) . ' dana' ) ),
+			array( 'Lokacija', esc_html( implode( ' + ', Plan_A_Prijave_Granice::countries( $id ) ) . ', ' . get_post_meta( $id, 'ttbm_travel_duration', true ) . ' dana' ) ),
 			array( 'Cijena', esc_html( self::hr_money( (string) ( $tk[0]['ticket_type_price'] ?? 0 ) ) . ( isset( $tk[1] ) ? ' (prva rata ' . self::hr_money( (string) $tk[1]['ticket_type_price'] ) . ')' : '' ) ) ),
 			array( 'Mjesta', (int) ( $tk[0]['ticket_type_qty'] ?? 0 ) ),
 		);
