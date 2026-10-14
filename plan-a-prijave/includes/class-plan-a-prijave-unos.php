@@ -678,9 +678,13 @@ final class Plan_A_Prijave_Unos {
 		$allowed = array(
 			'p' => array(), 'br' => array(), 'strong' => array(), 'b' => array(), 'em' => array(), 'i' => array(),
 			'ul' => array(), 'ol' => array(), 'li' => array(), 'h3' => array(), 'h4' => array(),
+			'a' => array( 'href' => true ),
 		);
 		$html = preg_replace( '#<(script|style)\b[^>]*>.*?</\1>#is', '', $html );
-		$html = wp_kses( (string) $html, $allowed );
+		$html = wp_kses( (string) $html, $allowed, array( 'http', 'https', 'mailto', 'tel' ) );
+		$html = preg_replace( '#<a\b(?![^>]*\bhref="(https?:|mailto:|tel:))[^>]*>(.*?)</a>#is', '$2', (string) $html ); // poveznica bez valjane adrese → samo tekst
+		$html = make_clickable( (string) $html ); // adresa napisana kao tekst (www…, https://…) → poveznica
+		$html = str_replace( ' rel="nofollow"', '', (string) $html );
 		$html = preg_replace( '#<(\w+)>\s*(&nbsp;|\xC2\xA0)?\s*</\1>#u', '', (string) $html ); // prazne oznake
 		$html = Plan_A_Prijave_Text::clean( (string) $html );
 		return trim( Plan_A_Prijave_Text::links( (string) $html ) );

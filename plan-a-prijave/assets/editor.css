@@ -186,3 +186,6 @@ body.pap-layout .pap-sec .pap-table th{background:var(--soft)}
 .pap-block-auto{background:#f6f7f7}
 .pap-block-auto .pap-block-head .pap-country{flex:1;font-size:14px}
 .pap-auto-text{background:#fff;border:1px solid #dcdcde;border-radius:4px;padding:4px 12px;color:#3c434a}
+/* Osnovni podaci: natpisi u jednom redu, polja poravnata */
+.pap .pap-opt{font-weight:400;color:var(--muted);font-size:12px}
+.pap #pap-osnovno .pap-grid{align-items:start}

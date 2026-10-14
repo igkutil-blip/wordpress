@@ -419,7 +419,7 @@ final class Plan_A_Prijave_Editor {
 		echo '<option value="__new__">+ Dodaj novu lokaciju…</option></select>'
 			. '<span class="pap-loc-new" hidden><input type="text" class="pap-loc-name" placeholder="npr. Španjolska"><button type="button" class="button pap-loc-add">Dodaj</button></span></label>';
 		$c2 = (string) $m( Plan_A_Prijave_Granice::META2 );
-		echo '<label>Druga zemlja <small>(nije obavezno)</small><select name="pap[country2]"><option value="">— nema —</option>';
+		echo '<label>Druga zemlja <span class="pap-opt">(nije obavezno)</span><select name="pap[country2]"><option value="">— nema —</option>';
 		foreach ( $locs as $l ) {
 			echo '<option value="' . self::e( $l ) . '"' . selected( $c2, $l, false ) . '>' . esc_html( $l ) . '</option>';
 		}
