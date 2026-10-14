@@ -135,9 +135,9 @@ s videom (assets/pa-video.js|css – iste datoteke u oba dodatka; video 720×128
 zatvara × u zaglavlju i × na videu, Esc, klik van; na mobitelu prozorčić od vrha (100dvh, × se ne skriva iza adresne trake); CSS/JS verzija = verzija.filemtime). Video izleta = „prijava-na-izlet-3” od Igora. Testni Chromium ne pušta H.264 – puštanje provjerava Igor na mobitelu.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
-   upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →
-   usluga „Osiguranje” 9,95 €** automatski; **> 350 €** iznos računaju kolegice (agencija) → Igoru napomena u mailu, upisuje sam.
-   Detalje unosa osiguranja Igor dogovara poslije, kad završimo prednji dio.
+   upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide** – računa se samo (0.7.14,
+   podaci agencije 14.10.2026.): cijena **≤ 355 € → 9,95 €**, **> 355 € → 2,8 % cijene zaokruženo na cijeli euro naviše** (480 → 14 €);
+   iznos u mailu Igoru (Plan_A_Prijave_Unos::insurance).
 5. **Uključeno / nije uključeno i aktivnosti:** sve postojeće stavke s kvačicama i ikonicama, **bez dodavanja novih**
    i bez mijenjanja ikonica (to radi Igor u adminu). Kvačica u jednom stupcu miče istu stavku iz drugog.
 6. **Važno za izlet:** pitanja su **fiksna** (iz predloška, uvijek istim redoslijedom), kolege ih ne mogu mijenjati,
