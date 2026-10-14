@@ -31,7 +31,7 @@
 				+ '<button type="button" class="pa-vid__x" data-close aria-label="Zatvori">×</button></div>'
 				+ '<div class="pa-vid__chat"><div class="pa-vid__msg"><p class="pa-vid__txt"></p>'
 				+ '<div class="pa-vid__frame"><video playsinline controls preload="metadata"></video>'
-				+ '<button type="button" class="pa-vid__sound">🔇 Uključi zvuk</button></div>'
+				+ '<button type="button" class="pa-vid__sound">Uključi zvuk</button></div>'
 				+ '<span class="pa-vid__time"></span></div></div></div>';
 			document.body.appendChild(box);
 			video = box.querySelector('video');
@@ -43,7 +43,7 @@
 		}
 		var ava = btn.getAttribute('data-pa-avatar');
 		box.querySelector('.pa-vid__ava').innerHTML = ava ? '<img src="' + esc(ava) + '" alt="">' : 'A';
-		box.querySelector('.pa-vid__txt').innerHTML = esc(btn.getAttribute('data-pa-text') || 'Pogledaj kako to ide 👇');
+		box.querySelector('.pa-vid__txt').innerHTML = esc(btn.getAttribute('data-pa-text') || 'Pogledaj kako to ide:');
 		box.querySelector('.pa-vid__time').textContent = now() + ' ✓✓';
 		box.setAttribute('aria-label', btn.getAttribute('data-pa-title') || 'Video');
 		var src = btn.getAttribute('data-pa-video');
@@ -57,7 +57,7 @@
 		document.documentElement.classList.add('pa-vid-lock');
 		var p = video.play();
 		if (p && p.catch) { p.catch(function () {}); }
-		box.querySelector('.pa-vid__x').focus();
+		var win = box.querySelector('.pa-vid__win'); win.setAttribute('tabindex', '-1'); win.focus({ preventScroll: true });
 	}
 
 	document.addEventListener('click', function (e) {

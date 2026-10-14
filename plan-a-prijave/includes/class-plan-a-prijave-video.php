@@ -27,7 +27,7 @@ final class Plan_A_Prijave_Video {
 		$base = PLAN_A_PRIJAVE_URL . 'assets/video/prijava-na-izlet';
 		return '<button type="button" class="pa-vid-link" data-pa-video="' . esc_url( $base . '.mp4?v=' . PLAN_A_PRIJAVE_VERSION ) . '" data-pa-poster="' . esc_url( $base . '.jpg' ) . '"'
 			. ' data-pa-avatar="' . esc_url( (string) get_site_icon_url( 96 ) ) . '" data-pa-title="Kako se prijaviti na izlet"'
-			. ' data-pa-text="Pozdrav! 👋 Evo kako se u minuti prijaviš na izlet:">'
+			. ' data-pa-text="Pozdrav! Evo kako se u minuti prijaviš na izlet:">'
 			. '<span class="pa-vid-link__play" aria-hidden="true">▶</span><span>Pogledaj kako se prijaviti <small>(1 min)</small></span></button>';
 	}
 }

@@ -82,7 +82,7 @@ final class Plan_A_Jedrenje_Front {
 		$base = PLAN_A_JEDRENJE_URL . 'assets/video/rezervacija-jedrenja';
 		return '<button type="button" class="pa-vid-link" data-pa-video="' . esc_url( $base . '.mp4?v=' . PLAN_A_JEDRENJE_VERSION ) . '" data-pa-poster="' . esc_url( $base . '.jpg' ) . '"'
 			. ' data-pa-avatar="' . esc_url( (string) get_site_icon_url( 96 ) ) . '" data-pa-title="Kako rezervirati jedrenje"'
-			. ' data-pa-text="Pozdrav! 👋 Evo kako u minuti rezerviraš tjedan jedrenja:">'
+			. ' data-pa-text="Pozdrav! Evo kako u minuti rezerviraš tjedan jedrenja:">'
 			. '<span class="pa-vid-link__play" aria-hidden="true">▶</span><span>Pogledaj kako rezervirati <small>(1 min)</small></span></button>';
 	}
 

@@ -129,6 +129,10 @@ jednokratno (opcija `pap_uvjeti_objavljeni`, Igorova odluka 14.10.) svi tada obj
 **0.7.12:** admin Važno: blok o granicama = granice_rows (pitanja po zemljama kao na stranici, samo za čitanje, JS odmah osvježi pri
 promjeni zemlje – papEd.granice); prikaz Važno za izlet i Važno kroz wpautop (+ Text::links) → razmaci/odlomci iz upisa ostaju;
 CSS razmak između odlomaka .9em, unutar stavke popisa .35em. Pravilo za tekstove: jednoobrazno, ali bold, poveznice i razmaci ostaju.
+**0.7.13 + plan-a-jedrenje 1.9.3 (14.10., NA KOPIJI, čeka Igorovu potvrdu):** ispod „Rezervirajte” (izlet) i ispod kalendara + gumba
+„Pošalji zahtjev” (jedrenje) poveznica „▶ Pogledaj kako se prijaviti/rezervirati (1 min)” → prozorčić na istoj stranici u WhatsApp stilu
+s videom (assets/pa-video.js|css – iste datoteke u oba dodatka; video 720×1280 MP4 u assets/video/; pokreće se bez zvuka + „Uključi zvuk”;
+zatvara ×/Esc/klik van). Video izleta = „prijava-na-izlet-3” od Igora. Testni Chromium ne pušta H.264 – puštanje provjerava Igor na mobitelu.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide**: cijena aranžmana **≤ 350 € →
