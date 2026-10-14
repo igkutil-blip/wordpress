@@ -100,16 +100,20 @@
 					<?php
 				}
 			}
-			private static function render_bg_layer($image_url, $width = 0, $height = 0) {
+			private static function render_bg_layer($image_url, $width = 0, $height = 0, $big = '', $lazy = false) {
 				$image_url = esc_url($image_url);
 				if (!$image_url) {
 					return;
 				}
+				// Plan A: slika veličine „large” (1195 px), na širokim ekranima JS uzme veću (data-pap-big);
+				// slike koje se ne vide odmah (lazy) nemaju inline pozadinu – učitaju se nakon prve.
 				?>
 				<div data-bg-image="<?php echo esc_attr($image_url); ?>"
+					<?php if ($big && $big !== $image_url) { ?>data-pap-big="<?php echo esc_attr($big); ?>"<?php } ?>
 					<?php if ($width) { ?>data-width="<?php echo esc_attr($width); ?>"<?php } ?>
 					<?php if ($height) { ?>data-height="<?php echo esc_attr($height); ?>"<?php } ?>
-					style="background-image:url('<?php echo esc_url($image_url); ?>');background-size:cover;background-position:center;background-repeat:no-repeat;width:100%;height:100%;"></div>
+					<?php if ($lazy) { ?>data-pap-lazy="1"<?php } ?>
+					style="<?php echo $lazy ? '' : "background-image:url('" . esc_url($image_url) . "');"; ?>background-size:cover;background-position:center;background-repeat:no-repeat;width:100%;height:100%;"></div>
 				<?php
 			}
 			public function slider_all_item($image_ids, $popup_slider_icon = '') {
@@ -119,7 +123,8 @@
 						<?php
 							$count = 1;
 							foreach ($image_ids as $id) {
-								$image_url = TTBM_Global_Function::get_image_url('', $id, 'pap_hero'); // Plan A: 1800 px (za starije slike: izvornik)
+								$big       = TTBM_Global_Function::get_image_url('', $id, 'pap_hero'); // Plan A: 1800 px (za starije slike: izvornik)
+								$image_url = TTBM_Global_Function::get_image_url('', $id, 'large') ?: $big; // Plan A: 1195 px za mobitel i obične ekrane
 								$image_url = $image_url ?: TTBM_PLUGIN_URL . '/assets/images/no_image.png';
 								$metadata = wp_get_attachment_metadata($id);
 								$width = 0;
@@ -130,7 +135,7 @@
 								}
 								?>
                                 <div class="sliderItem" data-slide-index="<?php echo esc_html($count); ?>" data-target-popup="superSlider" data-placeholder>
-									<?php self::render_bg_layer($image_url, $width, $height); ?>
+									<?php self::render_bg_layer($image_url, $width, $height, (string) $big, $count > 1); ?>
                                 </div>
 								<?php
 								$count++;
@@ -168,7 +173,7 @@
 			public function slider_showcase_style_1($image_ids) {
 				$count = 1;
 				foreach ($image_ids as $id) {
-					$image_url = TTBM_Global_Function::get_image_url('', $id);
+					$image_url = TTBM_Global_Function::get_image_url('', $id, 'medium_large'); // Plan A: 768 px dovoljno za sličice
 					if ($count < 4) {
 						?>
                         <div class="sliderShowcaseItem" data-slide-target="<?php echo esc_html($count); ?>" data-placeholder>
@@ -194,7 +199,7 @@
 			public function slider_showcase_style_2($image_ids) {
 				$count = 1;
 				foreach ($image_ids as $id) {
-					$image_url = TTBM_Global_Function::get_image_url('', $id);
+					$image_url = TTBM_Global_Function::get_image_url('', $id, 'medium_large'); // Plan A: 768 px dovoljno za sličice
 					if ($count > 1 && $count < 5) {
 						?>
                         <div class="sliderShowcaseItem" data-target-popup="superSlider" data-slide-index="<?php echo esc_html($count); ?>" data-placeholder>

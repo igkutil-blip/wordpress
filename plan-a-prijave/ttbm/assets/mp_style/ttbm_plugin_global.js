@@ -363,8 +363,18 @@ function ttbm_prepare_super_slider($slider) {
     }
     $slider.addClass('ttbm-awaiting-images').removeClass('is-images-ready');
 
+    // Plan A: na širokim ekranima veća slika (data-pap-big); čeka se samo prva slika, ostale se učitaju poslije.
+    let wide = (window.innerWidth || 0) * (window.devicePixelRatio || 1) > 1400;
+    $slider.find('[data-pap-big]').each(function () {
+        if (wide) {
+            jQuery(this).attr('data-bg-image', jQuery(this).attr('data-pap-big'));
+        }
+    });
     let urls = [];
     $slider.find('[data-bg-image]').each(function () {
+        if (jQuery(this).attr('data-pap-lazy')) {
+            return;
+        }
         let url = ttbm_normalize_bg_url(jQuery(this).attr('data-bg-image') || jQuery(this).data('bg-image'));
         if (url && urls.indexOf(url) === -1) {
             urls.push(url);
@@ -567,6 +577,8 @@ function ttbm_resize_bg_image_area(target, bg_url) {
             ttbm_slider_resize(jQuery(this));
         });
         ttbm_prepare_all_super_sliders('body');
+        // Plan A: kostur stranice skida se čim se učita prva slika slidera, ne tek kad se učita sve (window load).
+        ttbm_details_placeholder_remove();
         $(window).on('load', function () {
             load_initial();
             ttbm_details_placeholder_remove();

@@ -145,7 +145,7 @@ final class Plan_A_Prijave_Ttbm {
 		wp_enqueue_style( 'ttbm_hotel_lists', $url . 'frontend/ttbm_hotel_lists.css', array( 'ttbm_registration' ), $v( 'frontend/ttbm_hotel_lists.css' ) );
 		wp_enqueue_style( 'ttbm_details', $url . 'frontend/ttbm_details.css', array( 'ttbm_hotel_lists' ), $v( 'frontend/ttbm_details.css' ) );
 		wp_enqueue_style( 'ttbm_travello_details', $url . 'frontend/ttbm_travello_details.css', array( 'ttbm_registration', 'ttbm_details' ), $v( 'frontend/ttbm_travello_details.css' ) );
-		wp_enqueue_style( 'mage-icons', $url . 'mage-icon/css/mage-icon.css', array(), TTBM_PLUGIN_VERSION );
+		wp_enqueue_style( 'mage-icons', $url . 'mage-icon/css/mage-icon.css', array(), $v( 'mage-icon/css/mage-icon.css' ) );
 		wp_enqueue_script( 'ttbm_registration', $url . 'frontend/ttbm_registration.js', array( 'jquery', 'jquery-ui-autocomplete', 'ttbm_date_range_picker_js' ), $v( 'frontend/ttbm_registration.js' ), true );
 		wp_enqueue_script( 'ttbm_price_calculation', $url . 'frontend/ttbm_price_calculation.js', array( 'jquery' ), $v( 'frontend/ttbm_price_calculation.js' ), true );
 		wp_enqueue_script( 'ttbm_smart_booking', $url . 'frontend/ttbm_smart_booking.js', array( 'jquery', 'ttbm_registration', 'ttbm_price_calculation' ), $v( 'frontend/ttbm_smart_booking.js' ), true );
