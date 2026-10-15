@@ -1,0 +1,74 @@
+{
+ "tijela": {
+  "1_crna_prednja_polovica": {
+   "valjano": true,
+   "broj_tijela": 1,
+   "volumen_mm3": 3604.83,
+   "stl_zatvoren": true,
+   "step_povratni_uvoz": "1 tijelo, valjano=True"
+  },
+  "2_crna_straznja_polovica": {
+   "valjano": true,
+   "broj_tijela": 1,
+   "volumen_mm3": 3766.74,
+   "stl_zatvoren": true,
+   "step_povratni_uvoz": "1 tijelo, valjano=True"
+  },
+  "3_plavi_prednji_umetak": {
+   "valjano": true,
+   "broj_tijela": 1,
+   "volumen_mm3": 1557.2,
+   "stl_zatvoren": true,
+   "step_povratni_uvoz": "1 tijelo, valjano=True"
+  },
+  "4_magenta_prednji_umetak": {
+   "valjano": true,
+   "broj_tijela": 1,
+   "volumen_mm3": 3476.84,
+   "stl_zatvoren": true,
+   "step_povratni_uvoz": "1 tijelo, valjano=True"
+  },
+  "5_plavi_straznji_umetak": {
+   "valjano": true,
+   "broj_tijela": 1,
+   "volumen_mm3": 1640.41,
+   "stl_zatvoren": true,
+   "step_povratni_uvoz": "1 tijelo, valjano=True"
+  },
+  "6_magenta_straznji_umetak": {
+   "valjano": true,
+   "broj_tijela": 1,
+   "volumen_mm3": 3112.03,
+   "stl_zatvoren": true,
+   "step_povratni_uvoz": "1 tijelo, valjano=True"
+  }
+ },
+ "preklapanja_mm3": {
+  "1_crna_prednja_polovica / 2_crna_straznja_polovica": 0.0,
+  "1_crna_prednja_polovica / 3_plavi_prednji_umetak": 0.0,
+  "1_crna_prednja_polovica / 4_magenta_prednji_umetak": 0.0,
+  "1_crna_prednja_polovica / 5_plavi_straznji_umetak": 0.0,
+  "1_crna_prednja_polovica / 6_magenta_straznji_umetak": 0.0,
+  "2_crna_straznja_polovica / 3_plavi_prednji_umetak": 0.0,
+  "2_crna_straznja_polovica / 4_magenta_prednji_umetak": 0.0,
+  "2_crna_straznja_polovica / 5_plavi_straznji_umetak": 0.0,
+  "2_crna_straznja_polovica / 6_magenta_straznji_umetak": 0.0,
+  "3_plavi_prednji_umetak / 4_magenta_prednji_umetak": 0.0,
+  "3_plavi_prednji_umetak / 5_plavi_straznji_umetak": 0.0,
+  "3_plavi_prednji_umetak / 6_magenta_straznji_umetak": 0.0,
+  "4_magenta_prednji_umetak / 5_plavi_straznji_umetak": 0.0,
+  "4_magenta_prednji_umetak / 6_magenta_straznji_umetak": 0.0,
+  "5_plavi_straznji_umetak / 6_magenta_straznji_umetak": 0.0
+ },
+ "vodilice": [
+  [
+   13.0,
+   13.0
+  ],
+  [
+   -11.5,
+   -22.5
+  ]
+ ],
+ "stupici_za_sredista_slova": 3
+}
