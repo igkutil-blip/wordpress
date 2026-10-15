@@ -1,0 +1,134 @@
+{
+  "sirina": 46.0,
+  "visina": 60.0,
+  "debljina": 8.0,
+  "debljina_lica": 1.6,
+  "debljina_ruba": 2.0,
+  "zaobljenje_ruba": 2.5,
+  "skosenje_spoja": 0.3,
+  "izbocenje_ukrasa": 0.4,
+  "zazor_ukras": 0.22,
+  "zazor_ploca": 0.25,
+  "zazor_aksijalno": 0.1,
+  "zazor_vodilica": 0.25,
+  "ploca_blizu": 0.8,
+  "vodilica_promjer": 2.2,
+  "vodilica_dno": 0.8,
+  "vodilica_kraj": 0.95,
+  "najmanje_crnog": 0.6,
+  "otvor_sirina": 5.0,
+  "otvor_zaobljenje": 1.1,
+  "materijal_oko_otvora": 3.0,
+  "sirina_trake": 1.4,
+  "traka_od_ruba": 3.8,
+  "logo_sirina": 27.0,
+  "logo_mjesto": [
+    1.0,
+    -3.5
+  ],
+  "nfc_polumjeri": [
+    [
+      1.2,
+      3.0
+    ],
+    [
+      4.4,
+      6.2
+    ],
+    [
+      7.6,
+      9.4
+    ],
+    [
+      10.8,
+      12.6
+    ]
+  ],
+  "nfc_kut": 48,
+  "nfc_mjesto": [
+    0.5,
+    -1.5
+  ],
+  "natpis_visina": 4.6,
+  "natpis_mjesto": [
+    0.0,
+    -17.5
+  ],
+  "font": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+  "traka_sprijeda_plava": [
+    [
+      -15,
+      24
+    ],
+    [
+      -21,
+      0
+    ],
+    [
+      -8,
+      -26
+    ]
+  ],
+  "traka_sprijeda_magenta": [
+    [
+      2,
+      24
+    ],
+    [
+      15,
+      17
+    ],
+    [
+      20,
+      0
+    ],
+    [
+      12,
+      -26
+    ]
+  ],
+  "traka_straga_plava_gore": [
+    [
+      3,
+      24
+    ],
+    [
+      -10,
+      18
+    ],
+    [
+      -19,
+      2
+    ]
+  ],
+  "traka_straga_plava_dolje": [
+    [
+      -20,
+      -12
+    ],
+    [
+      -16,
+      -22
+    ],
+    [
+      -6,
+      -26
+    ]
+  ],
+  "traka_straga_magenta": [
+    [
+      17,
+      18
+    ],
+    [
+      21,
+      0
+    ],
+    [
+      12,
+      -26
+    ]
+  ],
+  "napomena": "Sve mjere u mm. Koordinate ukrasa: sprijeda gledano sprijeda, straga gledano straga. Zazori su početni (nekalibrirani).",
+  "natpis_razmak": 0.9
+}
