@@ -112,8 +112,12 @@ $ttbm_auto_date   = in_array( $travel_type, array( 'repeated', 'particular' ), t
 						<?php if ( TTBM_Function::show_booking_section( $ttbm_post_id ) ) : ?>
 							<div class="ttbm-sidebar-booking ttbm_registration_area ttbm_smart_inline_booking"<?php echo $ttbm_auto_date ? ' data-ttbm-auto-date="1"' : ''; ?>>
 								<div class="ttbm_smart_booking_card">
+									<?php if ( class_exists( 'Plan_A_Prijave_Najava' ) && Plan_A_Prijave_Najava::is( (int) $tour_id ) ) : // Plan A: najava – predbilježba umjesto prijave ?>
+										<?php echo Plan_A_Prijave_Najava::block( (int) $tour_id ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+									<?php else : ?>
 									<?php do_action( 'ttbm_smart_registration_controls', $ttbm_post_id ); ?>
 									<?php do_action( 'ttbm_smart_registration_panel', $ttbm_post_id ); ?>
+									<?php endif; ?>
 								</div>
 							</div>
 						<?php endif; ?>
