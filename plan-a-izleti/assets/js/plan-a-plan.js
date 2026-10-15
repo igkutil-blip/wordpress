@@ -112,8 +112,8 @@
 	}
 
 	/*
-	 * Dvije kućice s padajućim izbornikom: "Izleti" (svi, prijave otvorene, uskoro,
-	 * jednodnevni, višednevni) i "Termin" (mjesec). Odabiri se kombiniraju.
+	 * Gumbi za odabir: svi, prijave otvorene, uskoro, jednodnevni, višednevni
+	 * (prazni mjeseci se skrivaju).
 	 */
 	function initFilter(root) {
 		var box = root.querySelector('[data-papl-filters]');
@@ -195,7 +195,10 @@
 				o.classList.toggle('is-active', o === opt);
 				o.setAttribute('aria-pressed', o === opt ? 'true' : 'false');
 			});
-			box.querySelector('[data-papl-toggle="' + name + '"] [data-papl-value]').textContent = opt.getAttribute('data-papl-label');
+			var value = box.querySelector('[data-papl-toggle="' + name + '"] [data-papl-value]');
+			if (value) {
+				value.textContent = opt.getAttribute('data-papl-label');
+			}
 			toggle(name, false);
 			apply();
 		});

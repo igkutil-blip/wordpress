@@ -1,20 +1,21 @@
 /*
  * Plan A izleti – plan izleta [plan-a-plan-izleta].
- * Boje kao u košarici, poklon bonu i kalkulatoru. Svi stilovi su pod .papl.
+ * Mirni izgled (1.24.0): retci odvojeni crtom, jedna boja za radnju (narančasta „Prijavi se”),
+ * stanje izleta kao točkica s tekstom, jedna radnja po izletu. Svi stilovi su pod .papl.
  */
 
 .papl {
-	--papl-navy: #12304b;
+	--papl-navy: #13304a;
 	--papl-accent: #1a9ad6;
 	--papl-cta: #e8862a;
 	--papl-cta-dark: #c96a12;
-	--papl-text: #24323f;
-	--papl-muted: #5f6b77;
-	--papl-line: #e3e8ee;
-	--papl-soft: #e8f4fb;
-	--papl-green: #2e7d32;
-	--papl-red: #c0392b;
-	--papl-radius: 14px;
+	--papl-text: #1d2b38;
+	--papl-muted: #6b7785;
+	--papl-line: #e6eaee;
+	--papl-soft: #f5f7f9;
+	--papl-green: #2e8b57;
+	--papl-red: #b54434;
+	--papl-grey: #b6bfc8;
 	box-sizing: border-box;
 	width: 100%;
 	max-width: 900px;
@@ -48,17 +49,24 @@
 	vertical-align: middle;
 }
 
+.papl a:focus-visible,
+.papl button:focus-visible,
+.papl summary:focus-visible {
+	outline: 3px solid var(--papl-accent);
+	outline-offset: 2px;
+}
+
 /* Gumbi */
 .papl .papl-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	gap: 8px;
-	min-height: 44px;
+	min-height: 42px;
 	margin: 0;
-	padding: 10px 18px;
-	border: 2px solid transparent;
-	border-radius: 999px;
+	padding: 9px 18px;
+	border: 1.5px solid transparent;
+	border-radius: 8px;
 	box-shadow: none;
 	font-family: inherit;
 	font-size: 15px;
@@ -95,164 +103,146 @@
 }
 
 .papl .papl-btn--ghost {
-	border-color: #cfd8e3;
+	border-color: var(--papl-line);
 	background: #fff;
 	color: var(--papl-navy);
 }
 
 .papl .papl-btn--ghost:hover,
 .papl .papl-btn--ghost:focus-visible,
-.papl .papl-btn--ghost[aria-expanded="true"] {
-	border-color: var(--papl-accent);
-	background: var(--papl-soft);
+.papl details[open] > .papl-btn--ghost {
+	border-color: var(--papl-navy);
 	color: var(--papl-navy);
 }
 
-.papl a:focus-visible,
-.papl button:focus-visible,
-.papl summary:focus-visible {
-	outline: 3px solid var(--papl-accent);
-	outline-offset: 2px;
-}
-
-/* Vrh: sažetak i kalendar */
-.papl .papl-top {
-	display: flex;
-	flex-wrap: wrap;
+/* Tekstna radnja: „Javi mi”, „Lista čekanja” */
+.papl .papl-link {
+	display: inline-flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 12px 20px;
-	margin: 0 0 16px;
+	gap: 6px;
+	min-height: 42px;
+	margin: 0;
+	padding: 0 2px;
+	border: 0;
+	background: none;
+	box-shadow: none;
+	color: var(--papl-navy);
+	font-family: inherit;
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1.2;
+	text-decoration: underline;
+	text-decoration-color: var(--papl-grey);
+	text-underline-offset: 5px;
+	white-space: nowrap;
+	cursor: pointer;
 }
 
-.papl .papl-summary {
+.papl .papl-link:hover,
+.papl .papl-link[aria-expanded="true"] {
+	color: var(--papl-navy);
+	text-decoration-color: var(--papl-navy);
+}
+
+.papl .papl-link .papl-icon {
+	width: 17px;
+	height: 17px;
+}
+
+/* Sažetak i gumbi za odabir */
+div.papl[data-papl] .papl-summary {
+	margin: 0 0 16px;
 	color: var(--papl-muted);
-	font-size: 17px;
+	font-size: 15px;
 }
 
 .papl .papl-summary strong {
 	color: var(--papl-navy);
 }
 
-.papl .papl-cal {
-	position: relative;
-	margin: 0;
+.papl .papl-filters {
+	margin: 0 0 6px;
 }
 
-.papl .papl-cal > summary {
-	list-style: none;
-}
-
-.papl .papl-cal > summary::-webkit-details-marker {
-	display: none;
-}
-
-.papl .papl-cal[open] > summary .papl-icon:last-child {
-	transform: rotate(180deg);
-}
-
-.papl .papl-cal__menu {
-	position: absolute;
-	top: calc(100% + 8px);
-	right: 0;
-	z-index: 30;
-	display: grid;
-	width: min(320px, calc(100vw - 32px));
-	padding: 8px;
-	border: 1px solid var(--papl-line);
-	border-radius: var(--papl-radius);
-	background: #fff;
-	box-shadow: 0 10px 30px rgba(18, 48, 75, 0.18);
-}
-
-.papl .papl-cal__hint {
-	padding: 8px 10px 10px;
-	color: var(--papl-muted);
-	font-size: 14px;
-}
-
-.papl .papl-cal__menu a {
-	display: block;
-	padding: 12px 10px;
-	border-radius: 10px;
-	color: var(--papl-navy);
-	font-weight: 700;
-	text-decoration: none;
-}
-
-.papl .papl-cal__menu a:hover,
-.papl .papl-cal__menu a:focus-visible {
-	background: var(--papl-soft);
-}
-
-/* Mjeseci */
-.papl .papl-months {
+.papl .papl-chips {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 8px;
-	margin: 0 0 8px;
-	padding: 2px 2px 10px;
-	overflow-x: auto;
-	scrollbar-width: thin;
-	-webkit-overflow-scrolling: touch;
 }
 
-.papl .papl-months a {
-	display: inline-flex;
+.papl button.papl-chip {
+	display: inline-flex !important;
 	flex: none;
 	align-items: center;
-	gap: 8px;
-	min-height: 40px;
-	padding: 8px 14px;
-	border: 1px solid var(--papl-line);
-	border-radius: 999px;
-	background: #fff;
-	color: var(--papl-navy);
-	font-size: 15px;
+	gap: 6px;
+	min-height: 38px;
+	margin: 0 !important;
+	padding: 7px 15px !important;
+	border: 1px solid var(--papl-line) !important;
+	border-radius: 999px !important;
+	background: #fff !important;
+	box-shadow: none !important;
+	color: var(--papl-text) !important;
+	font-size: 15px !important;
+	font-weight: 400 !important;
+	line-height: 1.2 !important;
+	letter-spacing: 0 !important;
+	text-transform: none !important;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.papl button.papl-chip span {
+	color: var(--papl-muted);
 	font-weight: 700;
-	text-decoration: none;
 }
 
-.papl .papl-months a:hover {
-	border-color: var(--papl-accent);
+.papl button.papl-chip:hover {
+	border-color: var(--papl-navy) !important;
 }
 
-.papl .papl-months a span {
-	display: inline-grid;
-	place-items: center;
-	min-width: 22px;
-	height: 22px;
-	padding: 0 6px;
-	border-radius: 999px;
-	background: var(--papl-soft);
-	color: var(--papl-navy);
-	font-size: 13px;
+.papl button.papl-chip.is-active {
+	border-color: var(--papl-navy) !important;
+	background: var(--papl-navy) !important;
+	color: #fff !important;
+}
+
+.papl button.papl-chip.is-active span {
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.papl button.papl-chip.is-disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
 }
 
 /* Mjesec */
 .papl .papl-month {
-	margin: 18px 0 0;
+	margin: 26px 0 0;
 	scroll-margin-top: 100px;
 }
 
 .papl .papl-month__title {
-	margin: 0 0 10px;
-	padding: 0;
+	margin: 0;
+	padding: 0 0 8px;
+	border-bottom: 2px solid var(--papl-navy);
 	color: var(--papl-navy);
-	font-size: 24px;
-	font-weight: 800;
+	font-size: 19px;
+	font-weight: 700;
 	line-height: 1.2;
-	text-transform: none;
-	letter-spacing: 0;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
 }
 
 .papl .papl-month__year {
+	margin-left: 4px;
 	color: var(--papl-muted);
+	font-size: 14px;
 	font-weight: 400;
+	letter-spacing: 0;
 }
 
 .papl .papl-list {
-	display: grid;
-	gap: 10px;
 	margin: 0;
 	padding: 0;
 	list-style: none;
@@ -261,86 +251,124 @@
 /* Redak izleta */
 .papl .papl-row {
 	display: grid;
-	grid-template-columns: 74px minmax(0, 1fr) auto;
-	gap: 6px 16px;
+	grid-template-columns: 76px minmax(0, 1fr) auto;
+	gap: 4px 18px;
 	align-items: center;
 	margin: 0;
-	padding: 14px 16px 14px 14px;
-	border: 1px solid #edf1f5;
-	border-left: 4px solid var(--papl-line);
-	border-radius: var(--papl-radius);
-	background: #fff;
-	box-shadow: 0 2px 10px rgba(18, 48, 75, 0.06);
+	padding: 15px 0;
+	border-bottom: 1px solid var(--papl-line);
 	scroll-margin-top: 100px;
 }
 
-.papl .papl-row.is-open {
-	border-left-color: var(--papl-green);
-}
-
-.papl .papl-row.is-full {
-	border-left-color: var(--papl-red);
-}
-
-.papl .papl-row.is-soon {
-	border-left-color: var(--papl-cta);
-}
-
 .papl .papl-row:target {
-	box-shadow: 0 0 0 3px rgba(26, 154, 214, 0.35);
+	background: #eef6fb;
+}
+
+.papl .papl-row.is-next {
+	margin-top: 8px;
+	padding: 15px 16px 15px 0;
+	border-bottom: 0;
+	border-radius: 12px;
+	background: var(--papl-soft);
 }
 
 .papl .papl-date {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	align-self: stretch;
-	min-height: 70px;
-	padding: 6px 4px;
-	border-radius: 10px;
-	background: var(--papl-soft);
 	color: var(--papl-navy);
 	text-align: center;
-	line-height: 1.1;
-}
-
-.papl .papl-date__wd,
-.papl .papl-date__m {
-	font-size: 12px;
-	font-weight: 700;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-}
-
-.papl .papl-date__wd {
-	color: var(--papl-muted);
+	line-height: 1;
 }
 
 .papl .papl-date__d {
-	margin: 3px 0;
 	font-size: 26px;
-	font-weight: 800;
+	font-weight: 700;
+	white-space: nowrap;
 }
 
 .papl .papl-date__d--multi {
-	font-size: 19px;
+	font-size: 22px;
+}
+
+.papl .papl-date__wd {
+	margin-top: 6px;
+	color: var(--papl-muted);
+	font-size: 12px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	white-space: nowrap;
 }
 
 .papl .papl-main {
 	min-width: 0;
 }
 
+.papl .papl-kicker {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 2px 12px;
+	margin: 0 0 3px;
+}
+
+.papl .papl-next {
+	color: var(--papl-cta-dark);
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.papl .papl-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13.5px;
+	font-weight: 600;
+}
+
+.papl .papl-status::before {
+	content: "";
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: currentColor;
+}
+
+.papl .papl-status--open {
+	color: var(--papl-green);
+}
+
+.papl .papl-status--full {
+	color: var(--papl-red);
+}
+
+.papl .papl-status--soon,
+.papl .papl-status--past {
+	color: var(--papl-muted);
+}
+
+.papl .papl-status--soon::before,
+.papl .papl-status--past::before {
+	background: var(--papl-grey);
+}
+
 .papl .papl-title {
-	margin: 0 0 2px;
+	margin: 0 0 4px;
 	padding: 0;
 	color: var(--papl-navy);
 	font-size: 18px;
-	font-weight: 800;
+	font-weight: 700;
 	line-height: 1.25;
 	text-transform: none;
 	letter-spacing: 0;
 	overflow-wrap: anywhere;
+}
+
+.papl .papl-row.is-soon .papl-title,
+.papl .papl-row.is-past .papl-title {
+	color: #4c5d70;
 }
 
 .papl .papl-title a {
@@ -349,243 +377,71 @@
 }
 
 .papl .papl-title a:hover {
-	color: var(--papl-accent);
 	text-decoration: underline;
+	text-underline-offset: 3px;
 }
 
+/* Raspon datuma čitaju samo čitači zaslona (vidi se u bloku s datumom). */
 .papl .papl-when {
-	color: var(--papl-muted);
-	font-size: 14px;
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
 }
 
 .papl .papl-meta {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 4px 14px;
-	margin-top: 6px;
-	color: var(--papl-text);
-	font-size: 15px;
+	color: var(--papl-muted);
+	font-size: 14.5px;
 }
 
-.papl .papl-meta span {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-}
-
-.papl .papl-meta .papl-icon {
-	width: 16px;
-	height: 16px;
-	color: var(--papl-accent);
+.papl .papl-meta span + span::before {
+	content: "·";
+	margin: 0 8px;
+	color: #c3cad2;
+	font-weight: 400;
 }
 
 .papl .papl-price {
-	font-weight: 700;
+	color: var(--papl-text);
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.papl .paiz-price-unit {
+	color: var(--papl-muted);
+	font-size: 0.9em;
+	font-weight: 400;
 }
 
 .papl .papl-note {
-	margin-top: 6px;
-	color: var(--papl-cta-dark);
+	margin-top: 4px;
+	color: var(--papl-muted);
 	font-size: 14px;
 	font-style: italic;
 }
 
 .papl .papl-side {
 	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 8px;
-}
-
-.papl .papl-badge {
-	display: inline-block;
-	padding: 4px 10px;
-	border-radius: 999px;
-	font-size: 12px;
-	font-weight: 800;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	white-space: nowrap;
-}
-
-.papl .papl-badge--open {
-	background: #e7f4e8;
-	color: var(--papl-green);
-}
-
-.papl .papl-badge--full {
-	background: #fdecea;
-	color: var(--papl-red);
-}
-
-.papl .papl-badge--soon {
-	background: #fdf1e4;
-	color: var(--papl-cta-dark);
-}
-
-.papl .papl-badge--past {
-	background: #eef1f4;
-	color: var(--papl-muted);
-}
-
-.papl .papl-actions {
-	display: flex;
 	align-items: center;
-	gap: 8px;
-}
-
-.papl .papl-addcal {
-	position: relative;
-	flex: none;
-	margin: 0;
-}
-
-.papl .papl-ics {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	height: 44px;
-	padding: 0 14px 0 12px;
-	border: 2px solid #cfd8e3;
-	border-radius: 999px;
-	background: #fff;
-	color: var(--papl-navy);
-	font-size: 14px;
-	font-weight: 700;
-	white-space: nowrap;
-	list-style: none;
-	cursor: pointer;
-}
-
-.papl .papl-ics::-webkit-details-marker {
-	display: none;
-}
-
-.papl .papl-addcal[open] > .papl-ics {
-	border-color: var(--papl-accent);
-	background: var(--papl-soft);
-}
-
-.papl .papl-addcal__menu {
-	top: calc(100% + 8px);
-	right: 0;
-	left: auto;
-	width: min(270px, calc(100vw - 40px));
-}
-
-.papl .papl-ics:hover,
-.papl .papl-ics:focus-visible {
-	border-color: var(--papl-accent);
-	background: var(--papl-soft);
-	color: var(--papl-navy);
-}
-
-/* Iznad naziva: "Sljedeći izlet" i (na mobitelu) oznaka statusa */
-.papl .papl-kicker {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 6px 10px;
-	margin: 0 0 4px;
-}
-
-.papl .papl-kicker .papl-badge {
-	display: none;
-}
-
-.papl .papl-kicker:not(:has(.papl-next)) {
-	display: none;
-}
-
-.papl .papl-next {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	color: var(--papl-cta-dark);
-	font-size: 12px;
-	font-weight: 800;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-}
-
-.papl .papl-next::before {
-	content: "";
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	background: var(--papl-cta);
-	box-shadow: 0 0 0 4px rgba(232, 134, 42, 0.2);
-}
-
-.papl .papl-row.is-next {
-	box-shadow: 0 0 0 2px rgba(232, 134, 42, 0.45), 0 6px 18px rgba(18, 48, 75, 0.1);
-}
-
-/* Brzi odabir */
-.papl .papl-filter {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-	margin: 0 0 12px;
-}
-
-.papl button.papl-chip {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	min-height: 40px;
-	margin: 0 !important;
-	padding: 8px 14px !important;
-	border: 1px solid var(--papl-line) !important;
-	border-radius: 999px !important;
-	background: #fff !important;
-	box-shadow: none !important;
-	color: var(--papl-navy) !important;
-	font-size: 15px !important;
-	font-weight: 700 !important;
-	line-height: 1.2 !important;
-	letter-spacing: 0 !important;
-	text-transform: none !important;
-	cursor: pointer;
-}
-
-.papl button.papl-chip span {
-	display: inline-grid;
-	place-items: center;
-	min-width: 22px;
-	height: 22px;
-	padding: 0 6px;
-	border-radius: 999px;
-	background: var(--papl-soft);
-	font-size: 13px;
-}
-
-.papl button.papl-chip[aria-pressed="true"] {
-	border-color: var(--papl-navy) !important;
-	background: var(--papl-navy) !important;
-	color: #fff !important;
-}
-
-.papl button.papl-chip[aria-pressed="true"] span {
-	background: rgba(255, 255, 255, 0.2);
+	justify-content: flex-end;
 }
 
 .papl .papl-empty {
 	margin: 18px 0 0;
 	padding: 16px;
-	border-radius: var(--papl-radius);
-	background: #fff;
 	color: var(--papl-muted);
 	text-align: center;
 }
 
-/* Obrazac "Javi mi" */
+/* Obrazac „Javi mi” */
 .papl .papl-notify {
-	grid-column: 1 / -1;
-	margin: 6px 0 0;
+	grid-column: 2 / -1;
+	margin: 8px 0 2px;
 	padding: 14px;
-	border-radius: 12px;
-	background: #fdf6ee;
+	border-radius: 10px;
+	background: var(--papl-soft);
 }
 
 .papl .papl-notify__trap {
@@ -601,7 +457,7 @@
 	margin: 0 0 8px;
 	color: var(--papl-navy);
 	font-size: 15px;
-	font-weight: 700;
+	font-weight: 600;
 	line-height: 1.35;
 }
 
@@ -615,11 +471,11 @@
 	display: block;
 	width: 100%;
 	height: auto;
-	min-height: 46px;
+	min-height: 42px;
 	margin: 0;
-	padding: 10px 14px;
+	padding: 9px 12px;
 	border: 1px solid #cfd8e3;
-	border-radius: 999px;
+	border-radius: 8px;
 	background: #fff;
 	box-shadow: none;
 	color: var(--papl-text);
@@ -628,8 +484,8 @@
 }
 
 .papl .papl-notify input[type="email"]:focus {
-	border-color: var(--papl-accent);
-	outline: 3px solid rgba(26, 154, 214, 0.2);
+	border-color: var(--papl-navy);
+	outline: 3px solid rgba(19, 48, 74, 0.15);
 	outline-offset: 0;
 	box-shadow: none;
 }
@@ -637,7 +493,7 @@
 .papl .papl-notify__msg {
 	margin-top: 8px;
 	font-size: 15px;
-	font-weight: 700;
+	font-weight: 600;
 }
 
 .papl .papl-notify__msg:empty {
@@ -668,10 +524,8 @@
 
 /* Održani izleti */
 .papl .papl-past {
-	margin: 28px 0 0;
-	border: 1px solid var(--papl-line);
-	border-radius: var(--papl-radius);
-	background: #f8fafb;
+	margin: 30px 0 0;
+	border-top: 1px solid var(--papl-line);
 }
 
 .papl .papl-past > summary {
@@ -680,9 +534,9 @@
 	justify-content: space-between;
 	gap: 10px;
 	min-height: 52px;
-	padding: 12px 16px;
+	padding: 12px 0;
 	color: var(--papl-navy);
-	font-weight: 800;
+	font-weight: 700;
 	list-style: none;
 	cursor: pointer;
 }
@@ -695,20 +549,9 @@
 	transform: rotate(180deg);
 }
 
-.papl .papl-list--past {
-	padding: 0 12px 12px;
-	gap: 6px;
-}
-
 .papl .papl-list--past .papl-row {
-	grid-template-columns: 64px minmax(0, 1fr) auto;
-	padding: 10px 12px;
-	box-shadow: none;
-	opacity: 0.85;
-}
-
-.papl .papl-list--past .papl-date {
-	min-height: 56px;
+	padding: 10px 0;
+	opacity: 0.8;
 }
 
 .papl .papl-list--past .papl-date__d {
@@ -716,16 +559,71 @@
 }
 
 .papl .papl-list--past .papl-date__d--multi {
-	font-size: 15px;
+	font-size: 17px;
 }
 
 .papl .papl-list--past .papl-title {
 	font-size: 16px;
 }
 
+/* Dno: svi izleti i cijeli plan u kalendaru */
 .papl .papl-more {
-	margin: 28px 0 0;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 12px;
+	margin: 30px 0 0;
 	text-align: center;
+}
+
+.papl .papl-cal {
+	position: relative;
+	margin: 0;
+}
+
+.papl .papl-cal > summary {
+	list-style: none;
+}
+
+.papl .papl-cal > summary::-webkit-details-marker {
+	display: none;
+}
+
+.papl .papl-cal__menu {
+	position: absolute;
+	top: calc(100% + 8px);
+	left: 50%;
+	z-index: 30;
+	display: grid;
+	width: min(320px, calc(100vw - 32px));
+	padding: 8px;
+	border: 1px solid var(--papl-line);
+	border-radius: 12px;
+	background: #fff;
+	box-shadow: 0 10px 30px rgba(19, 48, 74, 0.16);
+	text-align: left;
+	transform: translateX(-50%);
+}
+
+.papl .papl-cal__hint {
+	padding: 8px 10px 10px;
+	color: var(--papl-muted);
+	font-size: 14px;
+}
+
+.papl .papl-cal__menu a {
+	display: block;
+	padding: 12px 10px;
+	border-radius: 8px;
+	color: var(--papl-navy);
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.papl .papl-cal__menu a:hover,
+.papl .papl-cal__menu a:focus-visible {
+	background: var(--papl-soft);
 }
 
 .papl .papl-admin {
@@ -735,111 +633,20 @@
 	text-align: center;
 }
 
-/* Uski prostor (mobitel): oznaka i gumbi ispod naziva */
-@container papl (max-width: 599px) {
-	.papl .papl-row {
-		grid-template-columns: 64px minmax(0, 1fr);
-		align-items: start;
-		padding: 12px;
-	}
-
-	.papl .papl-date {
-		min-height: 64px;
-	}
-
-	.papl .papl-date__d {
-		font-size: 22px;
-	}
-
-	.papl .papl-date__d--multi {
-		font-size: 16px;
-	}
-
-	.papl .papl-side {
-		grid-column: 1 / -1;
-		flex-direction: row;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
-	}
-
-	.papl .papl-filter {
-		flex-wrap: nowrap;
-		margin-right: -4px;
-		padding: 2px 4px 8px 2px;
-		overflow-x: auto;
-		scrollbar-width: thin;
-		-webkit-overflow-scrolling: touch;
-	}
-
-	.papl button.papl-chip {
-		flex: none;
-	}
-
-	/* Na mobitelu je oznaka iznad naziva, a ispod su samo gumbi. */
-	.papl .papl-side > .papl-badge {
-		display: none;
-	}
-
-	.papl .papl-kicker,
-	.papl .papl-kicker:not(:has(.papl-next)) {
-		display: flex;
-	}
-
-	.papl .papl-kicker .papl-badge {
-		display: inline-block;
-		padding: 3px 8px;
-		font-size: 11px;
-	}
-
-	.papl .papl-list--past .papl-side > .papl-badge {
-		display: inline-block;
-	}
-
-	.papl .papl-actions {
-		flex: 1 1 100%;
-	}
-
-	.papl .papl-actions .papl-btn {
-		min-height: 44px;
-		padding-top: 8px;
-		padding-bottom: 8px;
-	}
-
-	.papl .papl-actions .papl-btn {
-		flex: 1 1 auto;
-		white-space: normal;
-	}
-
-	.papl .papl-list--past .papl-row {
-		grid-template-columns: 56px minmax(0, 1fr);
-	}
-
-	.papl .papl-list--past .papl-side {
-		grid-column: 2;
-		justify-content: flex-start;
-	}
-
-	.papl .papl-title {
-		font-size: 17px;
-	}
-
-	.papl .papl-cal__menu {
-		right: auto;
-		left: 0;
-	}
-
-	.papl .papl-notify__row {
-		grid-template-columns: minmax(0, 1fr);
-	}
-
-	.papl .papl-top .papl-cal,
-	.papl .papl-top .papl-cal > summary {
-		width: 100%;
-	}
+/* Tema (Flatsome i druge) stilizira sve <button>: zadrži izgled plana. */
+.papl button.papl-link {
+	margin: 0 !important;
+	padding: 0 2px !important;
+	border: 0 !important;
+	background: none !important;
+	box-shadow: none !important;
+	color: var(--papl-navy) !important;
+	font-size: 15px !important;
+	font-weight: 700 !important;
+	letter-spacing: 0 !important;
+	text-transform: none !important;
 }
 
-/* Tema (Flatsome i druge) stilizira sve <button>: zadrži izgled gumba plana. */
 .papl button.papl-btn {
 	margin: 0 !important;
 	text-transform: none !important;
@@ -847,21 +654,9 @@
 	box-shadow: none !important;
 }
 
-.papl button.papl-btn--ghost {
-	border: 2px solid #cfd8e3 !important;
-	background: #fff !important;
-	color: var(--papl-navy) !important;
-}
-
-.papl button.papl-btn--ghost:hover,
-.papl button.papl-btn--ghost:focus-visible,
-.papl button.papl-btn--ghost[aria-expanded="true"] {
-	border-color: var(--papl-accent) !important;
-	background: var(--papl-soft) !important;
-}
-
 .papl button.papl-btn--cta {
-	border: 2px solid transparent !important;
+	border: 1.5px solid transparent !important;
+	border-radius: 8px !important;
 	background: var(--papl-cta) !important;
 	color: #fff !important;
 }
@@ -876,12 +671,105 @@
 	cursor: wait;
 }
 
+/* Mobitel: datum, naziv i radnja u jednom retku; gumbi za odabir se pomiču vodoravno. */
+@container papl (max-width: 599px) {
+	.papl .papl-chips {
+		flex-wrap: nowrap;
+		margin-right: -16px;
+		padding: 2px 16px 6px 0;
+		overflow-x: auto;
+		scrollbar-width: none;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.papl .papl-chips::-webkit-scrollbar {
+		display: none;
+	}
+
+	.papl button.papl-chip {
+		min-height: 36px;
+		padding: 6px 13px !important;
+		font-size: 14px !important;
+	}
+
+	.papl .papl-month {
+		margin-top: 20px;
+	}
+
+	.papl .papl-row {
+		grid-template-columns: 50px minmax(0, 1fr) auto;
+		gap: 2px 10px;
+		padding: 13px 0;
+	}
+
+	.papl .papl-row.is-next {
+		padding: 13px 10px 13px 0;
+	}
+
+	.papl .papl-date__d {
+		font-size: 20px;
+	}
+
+	.papl .papl-date__d--multi {
+		font-size: 16px;
+	}
+
+	.papl .papl-date__wd {
+		margin-top: 5px;
+		font-size: 10.5px;
+		letter-spacing: 0.04em;
+	}
+
+	.papl .papl-title {
+		font-size: 16px;
+	}
+
+	.papl .papl-meta {
+		font-size: 13.5px;
+	}
+
+	.papl .papl-meta span + span::before {
+		margin: 0 5px;
+	}
+
+	.papl .papl-status {
+		font-size: 12.5px;
+	}
+
+	.papl .papl-btn--cta {
+		min-height: 38px;
+		padding: 8px 12px;
+		font-size: 14px;
+	}
+
+	.papl .papl-link,
+	.papl button.papl-link {
+		font-size: 14px !important;
+	}
+
+	.papl .papl-notify {
+		grid-column: 1 / -1;
+	}
+
+	.papl .papl-notify__row {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.papl .papl-more > *,
+	.papl .papl-more .papl-cal > summary {
+		width: 100%;
+	}
+}
+
 /*
  * Inačica sa slikama izleta (slike="yes"): slika lijevo, oznaka datuma preko slike.
  */
 .papl.papl--images .papl-row {
-	grid-template-columns: 200px minmax(0, 1fr) auto;
-	padding: 12px 16px 12px 12px;
+	grid-template-columns: 180px minmax(0, 1fr) auto;
+}
+
+.papl.papl--images .papl-row.is-next {
+	padding-left: 12px;
 }
 
 .papl .papl-media {
@@ -889,11 +777,10 @@
 	display: block;
 	align-self: center;
 	width: 100%;
-	height: auto;
 	overflow: hidden;
-	aspect-ratio: 5 / 3;
-	border-radius: 10px;
-	background: linear-gradient(150deg, #12304b 0%, #1a9ad6 100%);
+	aspect-ratio: 3 / 2;
+	border-radius: 8px;
+	background: linear-gradient(150deg, #13304a 0%, #1a9ad6 100%);
 }
 
 .papl .papl-media img {
@@ -905,11 +792,6 @@
 	max-width: none;
 	margin: 0;
 	object-fit: cover;
-	transition: transform 0.3s;
-}
-
-.papl a.papl-media:hover img {
-	transform: scale(1.04);
 }
 
 .papl .papl-media__empty {
@@ -926,53 +808,38 @@
 
 .papl .papl-media .papl-date {
 	position: absolute;
-	top: 8px;
-	left: 8px;
-	min-width: 56px;
-	min-height: 0;
-	padding: 5px 8px 6px;
-	border-radius: 9px;
+	top: 6px;
+	left: 6px;
+	padding: 5px 8px;
+	border-radius: 6px;
 	background: rgba(255, 255, 255, 0.95);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
 .papl .papl-media .papl-date__d {
-	font-size: 22px;
+	font-size: 18px;
 }
 
 .papl .papl-media .papl-date__d--multi {
-	font-size: 17px;
+	font-size: 15px;
+}
+
+.papl .papl-media .papl-date__wd {
+	margin-top: 3px;
+	font-size: 10px;
 }
 
 .papl.papl--images .papl-list--past .papl-row {
-	grid-template-columns: 120px minmax(0, 1fr) auto;
-}
-
-.papl .papl-list--past .papl-media {
-	aspect-ratio: 3 / 2;
-}
-
-.papl .papl-list--past .papl-media .papl-date {
-	top: 6px;
-	left: 6px;
-	min-width: 0;
-	padding: 3px 6px;
-}
-
-.papl .papl-list--past .papl-media .papl-date__wd,
-.papl .papl-list--past .papl-media .papl-date__m {
-	display: none;
-}
-
-.papl .papl-list--past .papl-media .papl-date__d {
-	margin: 0;
-	font-size: 14px;
+	grid-template-columns: 110px minmax(0, 1fr) auto;
 }
 
 @container papl (max-width: 599px) {
 	.papl.papl--images .papl-row {
-		grid-template-columns: 116px minmax(0, 1fr);
-		padding: 10px;
+		grid-template-columns: 96px minmax(0, 1fr);
+	}
+
+	.papl.papl--images .papl-side {
+		grid-column: 2;
+		justify-content: flex-start;
 	}
 
 	.papl .papl-media {
@@ -980,27 +847,8 @@
 		aspect-ratio: 1 / 1;
 	}
 
-	.papl .papl-media .papl-date {
-		top: 6px;
-		left: 6px;
-		min-width: 48px;
-		padding: 4px 6px 5px;
-	}
-
-	.papl .papl-media .papl-date__d {
-		font-size: 19px;
-	}
-
-	.papl .papl-media .papl-date__d--multi {
-		font-size: 15px;
-	}
-
 	.papl.papl--images .papl-list--past .papl-row {
-		grid-template-columns: 84px minmax(0, 1fr);
-	}
-
-	.papl .papl-list--past .papl-media {
-		aspect-ratio: 4 / 3;
+		grid-template-columns: 72px minmax(0, 1fr);
 	}
 }
 
@@ -1026,267 +874,4 @@ div.papl[data-papl] form,
 div.papl[data-papl] section,
 div.papl[data-papl] div {
 	font-family: inherit !important;
-}
-
-/* Izbornik "U kalendar" otvara se prema lijevo, da ne izađe s desnog ruba zaslona. */
-.papl .papl-addcal > .papl-addcal__menu,
-.papl-wrap .papl .papl-addcal > .papl-addcal__menu {
-	right: 0 !important;
-	left: auto !important;
-}
-
-/*
- * Sažetak i dvije kućice s padajućim izbornikom (kao na stranici Izleti).
- */
-div.papl[data-papl] .papl-summary {
-	margin: 0 0 12px;
-	color: var(--papl-muted);
-	font-size: 15px;
-}
-
-.papl .papl-filters {
-	position: relative;
-	z-index: 20;
-	margin: 0 0 8px;
-}
-
-.papl .papl-selects {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 12px;
-}
-
-.papl .papl-filters--single .papl-selects {
-	grid-template-columns: minmax(0, 1fr);
-}
-
-.papl button.papl-select {
-	display: flex !important;
-	align-items: center;
-	gap: 10px;
-	width: 100%;
-	min-height: 64px;
-	margin: 0 !important;
-	padding: 10px 14px !important;
-	border: 2px solid transparent !important;
-	border-radius: 14px !important;
-	background: var(--papl-soft) !important;
-	box-shadow: none !important;
-	color: var(--papl-navy) !important;
-	font-size: 16px !important;
-	line-height: 1.2 !important;
-	letter-spacing: normal !important;
-	text-align: left;
-	text-transform: none !important;
-	cursor: pointer;
-	transition: border-color 0.2s;
-}
-
-.papl button.papl-select--month {
-	background: #fdf1e4 !important;
-	color: var(--papl-cta-dark) !important;
-}
-
-.papl button.papl-select:hover,
-.papl button.papl-select.is-open {
-	border-color: currentColor !important;
-}
-
-.papl .papl-select__icon,
-.papl .papl-select__arrow {
-	display: flex;
-	flex: 0 0 auto;
-}
-
-.papl .papl-select__icon .papl-icon {
-	width: 22px;
-	height: 22px;
-}
-
-.papl .papl-select__arrow {
-	margin-left: auto;
-	transition: transform 0.2s;
-}
-
-.papl .papl-select.is-open .papl-select__arrow {
-	transform: rotate(180deg);
-}
-
-.papl .papl-select__text {
-	display: flex;
-	flex-direction: column;
-	gap: 3px;
-	min-width: 0;
-}
-
-.papl .papl-select__label {
-	font-size: 11px;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	opacity: 0.85;
-}
-
-.papl .papl-select__value {
-	overflow: hidden;
-	font-size: 16px;
-	font-weight: 800;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.papl .papl-panel {
-	position: absolute;
-	top: calc(100% + 8px);
-	right: 0;
-	left: 0;
-	padding: 16px;
-	border: 1px solid var(--papl-line);
-	border-radius: 14px;
-	background: #fff;
-	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
-}
-
-.papl .papl-panel__title {
-	margin: 0 0 12px;
-	color: var(--papl-text);
-	font-size: 15px;
-	font-weight: 700;
-}
-
-.papl .papl-panel__options {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 8px;
-}
-
-.papl button.papl-option {
-	display: flex !important;
-	align-items: center;
-	justify-content: center;
-	gap: 8px;
-	min-height: 46px;
-	margin: 0 !important;
-	padding: 8px 10px !important;
-	border: 1px solid var(--papl-accent) !important;
-	border-radius: 10px !important;
-	background: #fff !important;
-	box-shadow: none !important;
-	color: var(--papl-navy) !important;
-	font-size: 15px !important;
-	font-weight: 700 !important;
-	line-height: 1.2 !important;
-	letter-spacing: normal !important;
-	text-align: center;
-	text-transform: none !important;
-	cursor: pointer;
-}
-
-.papl button.papl-option span {
-	display: inline-grid;
-	place-items: center;
-	min-width: 22px;
-	height: 22px;
-	padding: 0 6px;
-	border-radius: 999px;
-	background: var(--papl-soft);
-	font-size: 12px;
-}
-
-.papl .papl-panel--month button.papl-option {
-	border-color: var(--papl-cta) !important;
-	color: var(--papl-cta-dark) !important;
-}
-
-.papl .papl-panel--month button.papl-option span {
-	background: #fdf1e4;
-}
-
-.papl button.papl-option:hover {
-	background: var(--papl-soft) !important;
-}
-
-.papl .papl-panel--month button.papl-option:hover {
-	background: #fdf1e4 !important;
-}
-
-.papl button.papl-option.is-active,
-.papl button.papl-option.is-active:hover {
-	border-color: var(--papl-navy) !important;
-	background: var(--papl-navy) !important;
-	color: #fff !important;
-}
-
-.papl .papl-panel--month button.papl-option.is-active,
-.papl .papl-panel--month button.papl-option.is-active:hover {
-	border-color: var(--papl-cta-dark) !important;
-	background: var(--papl-cta-dark) !important;
-}
-
-.papl button.papl-option.is-active span {
-	background: rgba(255, 255, 255, 0.22);
-}
-
-.papl button.papl-option.is-disabled {
-	border-color: #ddd !important;
-	background: #f6f6f6 !important;
-	color: #aaa !important;
-	cursor: not-allowed;
-}
-
-/* Dno: svi izleti i cijeli plan u kalendaru */
-.papl .papl-more {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: flex-start;
-	justify-content: center;
-	gap: 12px;
-	margin: 28px 0 0;
-	text-align: center;
-}
-
-.papl .papl-more .papl-cal__menu {
-	right: auto;
-	left: 50%;
-	transform: translateX(-50%);
-	text-align: left;
-}
-
-@container papl (max-width: 599px) {
-	.papl .papl-selects {
-		gap: 8px;
-	}
-
-	.papl button.papl-select {
-		gap: 8px;
-		min-height: 58px;
-		padding: 8px 10px !important;
-	}
-
-	.papl .papl-select__value {
-		font-size: 14px;
-	}
-
-	.papl .papl-select__label {
-		font-size: 10px;
-	}
-
-	.papl .papl-panel {
-		padding: 14px 12px;
-	}
-
-	.papl .papl-panel__options {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-
-	.papl .papl-more > *,
-	.papl .papl-more .papl-cal > summary {
-		width: 100%;
-	}
-}
-
-.papl .paiz-price-unit {
-	color: #5f6b77;
-	font-size: 0.85em;
-	font-weight: 400;
 }
