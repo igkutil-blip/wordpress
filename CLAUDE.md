@@ -157,14 +157,6 @@ Naslovnica: 3 PNG bannera 2,2–2,8 MB + logotipi 250 KB → Igoru poslani JPG/P
 SW: stranice s X-Plan-A-Offline (izleti, izlet) – ako mreža ne odgovori u 2,5 s, spremljena verzija (nova se sprema u pozadini). Novi logo (crni → prozirno,
 `plan-a-logo-prozirno.png` poslan Igoru) na tamnoplavoj #13304a; Igor u Postavke → Plan A aplikacija odabire logo + podlogu. Instalirane aplikacije: Android
 ikonu osvježi sam (do ~dan), iPhone tek nakon ponovne instalacije.
-**0.9.0 + plan-a-izleti 1.23.0 (15.10., Igor: slika Dolomiti, na Planu oznaka „Predbilježba”, na popisu izleta objava, mail vodičima):** NAJAVE –
-Plan_A_Prijave_Najava: za svaki redak Plana izleta (paiz_plan, tour=0, budući) sam objavi ttbm_tour s `_pap_najava` = ID retka (naslov/termin/vodiči/napomena
-iz plana, slika `/wp-content/uploads/2026/01/dolomiti-izlet-plan-a-3.jpeg`, smart.php, bez karata, noindex + rank_math_robots); smart.php umjesto prijave
-Najava::block (cekanje.js data-pap-mode="najava": e-mail obavezan, akcija pap_najava); CPT `pap_predbiljezba` (meta `_pap_p`); mail vodičima iz plana
-(`_pap_najava_guides` → Plan_A_Clanstvo_Ops::guide_mails). Usklađivanje `pap_najava_sync` (svaki sat + 30 s nakon spremanja plana/izleta): redak povezan s
-pravim izletom → mail predbilježenima „Objavljen je izlet…” + brisanje najave + 301 (opcija `pap_najava_redirects` slug → izlet); istekao/obrisan → brisanje
-bez slanja. plan-a-izleti: filtar `plan_a_izleti_plan_tours` (najave se ne računaju kao objavljene – ni Plan ni tablica agencije), `plan_a_izleti_plan_najava_url`
-(oznaka „Predbilježba” + gumb „Predbilježi se” umjesto „Javi mi”). Admin: Izleti → Predbilježbe. Kopija: 5 najava (Črni kal, Gorski kotar, Mosor, Vis, Krk) + probna predbilježba na Mosoru.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide** – računa se samo (0.7.14,

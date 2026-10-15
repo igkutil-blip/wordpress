@@ -109,7 +109,7 @@ final class Plan_A_Izleti_Plan_View {
 		if ( ! $img ) {
 			$img = '<span class="papl-media__empty" aria-hidden="true"><svg viewBox="0 0 120 60" width="120" height="60" fill="none"><path d="M0 60 30 22l14 16 22-30 54 52z" fill="rgba(255,255,255,.18)"/><path d="M0 60l40-26 18 12 26-20 36 34z" fill="rgba(255,255,255,.28)"/></svg></span>';
 		}
-		$url  = $row['tour'] ? Plan_A_Izleti_Data::tour_url( $row['tour'] ) : ( $row['entry'] ? (string) apply_filters( 'plan_a_izleti_plan_najava_url', '', $row ) : '' );
+		$url  = $row['tour'] ? Plan_A_Izleti_Data::tour_url( $row['tour'] ) : '';
 		$open = $url ? '<a class="papl-media" href="' . esc_url( $url ) . '" tabindex="-1" aria-hidden="true">' : '<div class="papl-media">';
 		return $open . $img . self::date_block( $row ) . ( $url ? '</a>' : '</div>' );
 	}
@@ -150,23 +150,12 @@ final class Plan_A_Izleti_Plan_View {
 
 	private static function row_html( array $row, string $status, string $today, bool $images = false, bool $next = false ): string {
 		$url    = $row['tour'] ? Plan_A_Izleti_Data::tour_url( $row['tour'] ) : '';
-		/**
-		 * Stranica predbilježbe za izlet iz plana koji još nije objavljen (plan-a-prijave „Najava”).
-		 * Ako postoji: oznaka „Predbilježba” i poveznica umjesto „Javi mi kad bude objavljen”.
-		 *
-		 * @param string $najava Adresa ili prazno.
-		 * @param array  $row    Redak plana.
-		 */
-		$najava = ( 'soon' === $status && $row['entry'] ) ? (string) apply_filters( 'plan_a_izleti_plan_najava_url', '', $row ) : '';
-		if ( $najava ) {
-			$url = $najava;
-		}
 		$range  = self::date_range( $row['from'], $row['to'] );
 		$title  = esc_html( $row['title'] );
 		$labels = array(
 			'open' => 'Prijave otvorene',
 			'full' => 'Popunjeno',
-			'soon' => $najava ? 'Predbilježba' : 'Uskoro',
+			'soon' => 'Uskoro',
 			'past' => 'Održano',
 		);
 
@@ -213,8 +202,6 @@ final class Plan_A_Izleti_Plan_View {
 				$html .= '<a class="papl-btn papl-btn--cta" href="' . esc_url( $url ) . '">Prijavi se' . self::icon( 'arrow' ) . '</a>';
 			} elseif ( 'full' === $status ) {
 				$html .= '<a class="papl-btn papl-btn--ghost" href="' . esc_url( $url ) . '">Pogledaj izlet</a>';
-			} elseif ( $najava ) {
-				$html .= '<a class="papl-btn papl-btn--ghost" href="' . esc_url( $najava ) . '">' . self::icon( 'bell' ) . 'Predbilježi se</a>';
 			} elseif ( $row['entry'] ) {
 				$form_id = 'papl-n-' . $row['entry'];
 				$html   .= '<button type="button" class="papl-btn papl-btn--ghost" data-papl-notify aria-expanded="false" aria-controls="' . esc_attr( $form_id ) . '">' . self::icon( 'bell' ) . 'Javi mi kad bude objavljen</button>';
@@ -230,7 +217,7 @@ final class Plan_A_Izleti_Plan_View {
 		}
 		$html .= '</div>';
 
-		if ( 'soon' === $status && $row['entry'] && ! $najava ) {
+		if ( 'soon' === $status && $row['entry'] ) {
 			$form_id = 'papl-n-' . $row['entry'];
 			$privacy = get_privacy_policy_url();
 			$html   .= '<form class="papl-notify" id="' . esc_attr( $form_id ) . '" data-papl-form hidden novalidate>'
