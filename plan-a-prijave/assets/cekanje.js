@@ -4,12 +4,7 @@
 	if (window.papWaitInit) { return; }
 	window.papWaitInit = true;
 
-	var box = null, form = null, last = null, opened = 0, mode = 'wait';
-	// Tekstovi: lista čekanja (popunjen izlet) i predbilježba (najava neobjavljenog izleta, e-mail obavezan).
-	var T = {
-		wait: { title: 'Lista čekanja', email: 'E-mail <small>(nije obavezno)</small>', ok: 'Slažem se da Plan A moje podatke koristi samo za javljanje o slobodnom mjestu na ovom izletu. Podaci se brišu 30 dana nakon izleta.', send: 'Upiši me na listu čekanja', done: 'Upisan/a si na listu čekanja ✓', count: 'Na listi čekanja', action: 'pap_wait' },
-		najava: { title: 'Predbilježba', email: 'E-mail <small>(na njega ti javljamo kad izlet bude objavljen)</small>', ok: 'Slažem se da Plan A moje podatke koristi samo za obavijest o objavi ovog izleta. Podaci se brišu nakon obavijesti ili ako izlet ne bude objavljen.', send: 'Predbilježi me', done: 'Predbilježen/a si ✓', count: 'Predbilježeno', action: 'pap_najava' }
-	};
+	var box = null, form = null, last = null, opened = 0;
 	var X = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>';
 
 	function esc(s) { return String(s || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -79,7 +74,6 @@
 		if (v('pw_ime').length < 2) { return error('Upiši ime.', 'ime'); }
 		if (v('pw_prezime').length < 2) { return error('Upiši prezime.', 'prezime'); }
 		if (v('pw_mobitel').replace(/\D/g, '').length < 8) { return error('Upiši broj mobitela (npr. 091 234 5678).', 'mobitel'); }
-		if (mode === 'najava' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('pw_email'))) { return error('Upiši e-mail – na njega ti javljamo kad izlet bude objavljen.', 'email'); }
 		if (!form.elements.pw_ok.checked) { return error('Označi privolu za podatke.', 'ok'); }
 		btn.disabled = true;
 		btn.textContent = 'Šaljem…';
@@ -93,12 +87,12 @@
 						var done = document.createElement('div');
 						done.className = 'pap-wl__done';
 						done.setAttribute('role', 'status');
-						done.innerHTML = '<b>' + esc(T[mode].done) + '</b>' + esc(d.message);
+						done.innerHTML = '<b>Upisan/a si na listu čekanja ✓</b>' + esc(d.message);
 						form.parentNode.replaceChild(done, form);
 						if (last && d.n) {
 							var n = last.parentNode.querySelector('.pap-wait__n');
 							if (!n) { n = document.createElement('p'); n.className = 'pap-wait__n'; last.parentNode.appendChild(n); }
-							n.innerHTML = esc(T[mode].count) + ': <b>' + parseInt(d.n, 10) + '</b>';
+							n.innerHTML = 'Na listi čekanja: <b>' + parseInt(d.n, 10) + '</b>';
 						}
 						return;
 					}
@@ -106,7 +100,7 @@
 					if (d.reload) { setTimeout(function () { location.reload(); }, 2500); }
 				})
 				.catch(function () { error('Upis nije poslan (nema veze). Pokušaj ponovno.', ''); })
-				.finally(function () { btn.disabled = false; btn.textContent = T[mode].send; });
+				.finally(function () { btn.disabled = false; btn.textContent = 'Upiši me na listu čekanja'; });
 		}, Math.max(0, 3200 - (Date.now() - opened)));
 	}
 
@@ -118,20 +112,11 @@
 			build();
 		}
 		opened = Date.now();
-		mode = btn.getAttribute('data-pap-mode') === 'najava' ? 'najava' : 'wait';
-		var t = T[mode];
-		box.setAttribute('aria-label', t.title);
-		box.querySelector('.pap-wl__head h3').textContent = t.title;
-		box.querySelector('label[for="pw-email"]').innerHTML = t.email;
-		box.querySelector('.pap-wl__ok span').textContent = t.ok;
-		box.querySelector('.pap-wl__send').textContent = t.send;
-		form.elements.action.value = t.action;
-		form.elements.pw_email.required = mode === 'najava';
 		form.setAttribute('action', btn.getAttribute('data-url'));
 		form.elements.pw_tour.value = btn.getAttribute('data-pap-wait');
 		form.elements.pw_date.value = btn.getAttribute('data-date');
-		var tt = btn.getAttribute('data-title') || '', d = btn.getAttribute('data-date') || '', m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
-		box.querySelector('.pap-wl__tour').textContent = tt + (m ? ' · ' + parseInt(m[3], 10) + '.' + parseInt(m[2], 10) + '.' + m[1] + '.' : '');
+		var t = btn.getAttribute('data-title') || '', d = btn.getAttribute('data-date') || '', m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
+		box.querySelector('.pap-wl__tour').textContent = t + (m ? ' · ' + parseInt(m[3], 10) + '.' + parseInt(m[2], 10) + '.' + m[1] + '.' : '');
 		clear();
 		box.classList.add('is-open');
 		document.documentElement.classList.add('pap-wl-lock');

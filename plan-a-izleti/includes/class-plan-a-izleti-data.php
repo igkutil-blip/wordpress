@@ -304,13 +304,7 @@ final class Plan_A_Izleti_Data {
 				);
 			}
 		}
-		/**
-		 * Izleti za plan izleta (i tablicu agencije). Npr. plan-a-prijave miče automatske stranice
-		 * najava, da se najava ne poveže sama sa sobom kao „objavljeni” izlet.
-		 *
-		 * @param array<int, array{dates: string[], sold_out: bool}> $out
-		 */
-		return (array) apply_filters( 'plan_a_izleti_plan_tours', $out );
+		return $out;
 	}
 
 	/**
