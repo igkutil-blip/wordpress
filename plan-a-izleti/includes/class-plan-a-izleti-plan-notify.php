@@ -5,7 +5,9 @@
  * - adresa se sprema uz najavu (meta _paiz_subs), najviše 1000 po izletu,
  * - čim se izlet poveže s objavljenim izletom u WpTravellyju, svakome se pošalje jedan e-mail,
  *   a adrese se odmah brišu; prođe li datum izleta bez objave, adrese se brišu bez slanja,
- * - zaštita: provjera adrese, skriveno polje protiv botova, najviše 6 prijava u 10 minuta po IP adresi.
+ * - zaštita: provjera adrese, skriveno polje protiv botova, najviše 6 prijava u 10 minuta po IP adresi,
+ * - vodiči izleta (Članstvo → Postavke → Vodiči) dobiju mail sa svim predbilježbama čim se netko upiše;
+ *   jednom nakon 1.23.0 svi vodiči dobiju mail s trenutnim predbilježbama.
  *
  * @package Plan_A_Izleti
  */
@@ -18,6 +20,7 @@ final class Plan_A_Izleti_Plan_Notify {
 	const EVENT = 'paiz_plan_notify';
 	const DAILY = 'paiz_plan_notify_daily';
 	const MAX   = 1000;
+	const FIRST = 'paiz_plan_guides_first';
 
 	public static function init() {
 		add_action( 'wp_ajax_paiz_plan_notify', array( __CLASS__, 'subscribe' ) );
@@ -25,6 +28,8 @@ final class Plan_A_Izleti_Plan_Notify {
 		add_action( self::EVENT, array( __CLASS__, 'send_due' ) );
 		add_action( self::DAILY, array( __CLASS__, 'send_due' ) );
 		add_action( 'init', array( __CLASS__, 'schedule_daily' ) );
+		add_action( 'init', array( __CLASS__, 'schedule_first' ), 30 );
+		add_action( self::FIRST, array( __CLASS__, 'mail_guides_all' ) );
 		add_action( 'save_post_' . Plan_A_Izleti_Data::post_type(), array( __CLASS__, 'soon' ) );
 		add_action( 'save_post_' . Plan_A_Izleti_Plan::POST_TYPE, array( __CLASS__, 'soon' ), 20 );
 		add_filter( 'wp_privacy_personal_data_erasers', array( __CLASS__, 'register_eraser' ) );
@@ -45,9 +50,18 @@ final class Plan_A_Izleti_Plan_Notify {
 		}
 	}
 
+	/** Jednom (nova verzija): vodičima svih najava s predbilježbama pošalji trenutni popis. */
+	public static function schedule_first() {
+		if ( get_option( self::FIRST ) || ! add_option( self::FIRST, time(), '', false ) ) {
+			return;
+		}
+		wp_schedule_single_event( time() + MINUTE_IN_SECONDS, self::FIRST );
+	}
+
 	public static function unschedule() {
 		wp_clear_scheduled_hook( self::EVENT );
 		wp_clear_scheduled_hook( self::DAILY );
+		wp_clear_scheduled_hook( self::FIRST );
 	}
 
 	private static function subs( int $entry_id ): array {
@@ -135,6 +149,7 @@ final class Plan_A_Izleti_Plan_Notify {
 			}
 			$subs[ $lower ] = time();
 			update_post_meta( $entry, self::META, $subs );
+			self::mail_guides( $entry, $row, $lower );
 		}
 		self::reply( true, 'Hvala! Poslat ćemo ti jedan e-mail čim izlet bude objavljen.' );
 	}
@@ -219,6 +234,90 @@ final class Plan_A_Izleti_Plan_Notify {
 		$fname   = str_replace( array( '"', "\r", "\n" ), '', trim( wp_strip_all_tags( (string) get_option( 'woocommerce_email_from_name', '' ) ) ) ?: 'Plan A' );
 
 		return (bool) wp_mail( $email, $subject, $body, array( 'Content-Type: text/html; charset=UTF-8', 'From: "' . $fname . '" <' . $from . '>' ) );
+	}
+
+	/** E-mailovi vodiča najave (tekst „Igor + Krešo”, adrese iz Članstvo → Postavke → Vodiči); bez njih adresa trgovine. */
+	public static function guide_mails( string $guides ): array {
+		$to = '' !== trim( $guides ) && class_exists( 'Plan_A_Clanstvo_Ops' ) && method_exists( 'Plan_A_Clanstvo_Ops', 'guide_mails' ) ? Plan_A_Clanstvo_Ops::guide_mails( $guides ) : array();
+		if ( ! $to ) {
+			$to = array( sanitize_email( (string) get_option( 'woocommerce_email_from_address', '' ) ) ?: (string) get_option( 'admin_email' ) );
+		}
+		return array_values( array_filter( $to, 'is_email' ) );
+	}
+
+	/** Mail vodičima: svi predbilježeni za izlet (novi, ako ga ima, podebljan). */
+	public static function guide_mail( int $entry, array $row, string $new = '' ): array {
+		$subs = self::subs( $entry );
+		asort( $subs );
+		$date  = Plan_A_Izleti_Plan_View::date_range( $row['from'], $row['to'] );
+		$label = wp_specialchars_decode( (string) $row['title'], ENT_QUOTES ) . ' (' . $date . ')';
+		$link  = 'color:' . Plan_A_Email::color( 'accent' ) . ';';
+		$rows  = array();
+		$i     = 0;
+		foreach ( $subs as $email => $time ) {
+			++$i;
+			$a      = '<a href="mailto:' . esc_attr( $email ) . '" style="' . $link . '">' . esc_html( $email ) . '</a>';
+			$rows[] = array( $i . '.', $email === $new ? '<b>' . $a . '</b> (novi)' : $a, $time ? esc_html( wp_date( 'j.n.Y. H:i', (int) $time ) ) : '' );
+		}
+		$n     = count( $subs );
+		$intro = $new
+			? 'Za ovaj izlet iz plana upisala se nova osoba („Javi mi kad bude objavljen”). Ispod su svi koji čekaju obavijest, da ih imaš na jednom mjestu.'
+			: 'Šaljemo ti popis svih koji su za ovaj izlet iz plana kliknuli „Javi mi kad bude objavljen”. Od sada ćeš dobiti mail sa cijelim popisom svaki put kad se netko novi upiše.';
+		return array(
+			'subject' => ( $new ? 'Nova predbilježba: ' : 'Predbilježbe: ' ) . $label . ' – ' . self::waiting_text( $n ),
+			'html'    => Plan_A_Email::render(
+				array(
+					'title'    => $new ? 'Nova predbilježba za izlet' : 'Predbilježbe za izlet',
+					'icon'     => 'list',
+					'label'    => 'Plan A · plan izleta',
+					'subtitle' => '<strong>' . esc_html( wp_specialchars_decode( (string) $row['title'], ENT_QUOTES ) ) . '</strong> · ' . esc_html( $date ) . ( $row['guides'] ? ' · Vodiči: ' . esc_html( $row['guides'] ) : '' ),
+				),
+				Plan_A_Email::card( '', Plan_A_Email::p( $intro ) )
+				. Plan_A_Email::card( 'Svi koji čekaju obavijest (' . $n . ')', Plan_A_Email::table( array( 'Br.', 'E-mail', 'Upisan/a' ), $rows ) )
+				. Plan_A_Email::small( 'Kad objaviš izlet (isti datum početka i sličan naziv), svima na popisu automatski ide jedan e-mail i popis se briše. Popis je i u adminu: Plan izleta → Svi izleti u planu → ovaj izlet.' )
+			),
+		);
+	}
+
+	private static function mail_guides( int $entry, array $row, string $new = '' ): int {
+		if ( ! self::subs( $entry ) ) {
+			return 0;
+		}
+		$m    = self::guide_mail( $entry, $row, $new );
+		$from = sanitize_email( (string) get_option( 'woocommerce_email_from_address', '' ) ) ?: sanitize_email( (string) get_option( 'admin_email' ) );
+		$name = str_replace( array( '"', "\r", "\n" ), '', trim( wp_strip_all_tags( (string) get_option( 'woocommerce_email_from_name', '' ) ) ) ?: 'Plan A' );
+		$h    = array( 'Content-Type: text/html; charset=UTF-8', 'From: "' . $name . '" <' . $from . '>' );
+		if ( $new && is_email( $new ) ) {
+			$h[] = 'Reply-To: ' . $new;
+		}
+		$sent = 0;
+		foreach ( self::guide_mails( (string) $row['guides'] ) as $to ) {
+			$sent += wp_mail( $to, $m['subject'], $m['html'], $h ) ? 1 : 0;
+		}
+		return $sent;
+	}
+
+	/** Jednokratno: trenutni popis predbilježbi svim vodičima (samo za izlete koji još nisu objavljeni). */
+	public static function mail_guides_all(): int {
+		$ids = get_posts(
+			array(
+				'post_type'      => Plan_A_Izleti_Plan::POST_TYPE,
+				'post_status'    => 'publish',
+				'posts_per_page' => 200,
+				'fields'         => 'ids',
+				'meta_key'       => self::META, // phpcs:ignore WordPress.DB.SlowDBQuery
+				'no_found_rows'  => true,
+			)
+		);
+		Plan_A_Izleti_Plan::flush();
+		$sent = 0;
+		foreach ( $ids as $id ) {
+			$row = Plan_A_Izleti_Plan::row_by_entry( (int) $id );
+			if ( $row && 'soon' === Plan_A_Izleti_Plan::status( $row ) ) {
+				$sent += self::mail_guides( (int) $id, $row );
+			}
+		}
+		return $sent;
 	}
 
 	public static function register_eraser( $erasers ) {
