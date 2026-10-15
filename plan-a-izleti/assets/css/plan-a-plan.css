@@ -1,7 +1,7 @@
 /*
  * Plan A izleti – plan izleta [plan-a-plan-izleta].
  * Mirni izgled (1.24.0): retci odvojeni crtom, jedna boja za radnju (narančasta „Prijavi se”),
- * stanje izleta kao točkica s tekstom, jedna radnja po izletu. Svi stilovi su pod .papl.
+ * stanje izleta kao točkica s tekstom, jedna radnja po izletu; vrh: dvije kućice s padajućim izbornikom (Izleti, Termin). Svi stilovi su pod .papl.
  */
 
 .papl {
@@ -161,58 +161,192 @@ div.papl[data-papl] .papl-summary {
 }
 
 .papl .papl-filters {
-	margin: 0 0 6px;
+	position: relative;
+	z-index: 20;
+	margin: 0 0 8px;
 }
 
-.papl .papl-chips {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
+.papl .papl-selects {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12px;
 }
 
-.papl button.papl-chip {
-	display: inline-flex !important;
-	flex: none;
+.papl .papl-filters--single .papl-selects {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.papl button.papl-select {
+	display: flex !important;
 	align-items: center;
-	gap: 6px;
-	min-height: 38px;
+	gap: 10px;
+	width: 100%;
+	min-height: 64px;
 	margin: 0 !important;
-	padding: 7px 15px !important;
-	border: 1px solid var(--papl-line) !important;
-	border-radius: 999px !important;
-	background: #fff !important;
+	padding: 10px 14px !important;
+	border: 2px solid transparent !important;
+	border-radius: 14px !important;
+	background: #e8f4fb !important;
 	box-shadow: none !important;
-	color: var(--papl-text) !important;
-	font-size: 15px !important;
-	font-weight: 400 !important;
+	color: var(--papl-navy) !important;
+	font-size: 16px !important;
 	line-height: 1.2 !important;
-	letter-spacing: 0 !important;
+	letter-spacing: normal !important;
+	text-align: left;
 	text-transform: none !important;
-	white-space: nowrap;
 	cursor: pointer;
+	transition: border-color 0.2s;
 }
 
-.papl button.papl-chip span {
-	color: var(--papl-muted);
+.papl button.papl-select--month {
+	background: #fdf1e4 !important;
+	color: var(--papl-cta-dark) !important;
+}
+
+.papl button.papl-select:hover,
+.papl button.papl-select.is-open {
+	border-color: currentColor !important;
+}
+
+.papl .papl-select__icon,
+.papl .papl-select__arrow {
+	display: flex;
+	flex: 0 0 auto;
+}
+
+.papl .papl-select__icon .papl-icon {
+	width: 22px;
+	height: 22px;
+}
+
+.papl .papl-select__arrow {
+	margin-left: auto;
+	transition: transform 0.2s;
+}
+
+.papl .papl-select.is-open .papl-select__arrow {
+	transform: rotate(180deg);
+}
+
+.papl .papl-select__text {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	min-width: 0;
+}
+
+.papl .papl-select__label {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	opacity: 0.85;
+}
+
+.papl .papl-select__value {
+	overflow: hidden;
+	font-size: 16px;
+	font-weight: 800;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.papl .papl-panel {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	left: 0;
+	padding: 16px;
+	border: 1px solid var(--papl-line);
+	border-radius: 14px;
+	background: #fff;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+}
+
+.papl .papl-panel__title {
+	margin: 0 0 12px;
+	color: var(--papl-text);
+	font-size: 15px;
 	font-weight: 700;
 }
 
-.papl button.papl-chip:hover {
-	border-color: var(--papl-navy) !important;
+.papl .papl-panel__options {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 8px;
 }
 
-.papl button.papl-chip.is-active {
+.papl button.papl-option {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 46px;
+	margin: 0 !important;
+	padding: 8px 10px !important;
+	border: 1px solid var(--papl-accent) !important;
+	border-radius: 10px !important;
+	background: #fff !important;
+	box-shadow: none !important;
+	color: var(--papl-navy) !important;
+	font-size: 15px !important;
+	font-weight: 700 !important;
+	line-height: 1.2 !important;
+	letter-spacing: normal !important;
+	text-align: center;
+	text-transform: none !important;
+	cursor: pointer;
+}
+
+.papl button.papl-option span {
+	display: inline-grid;
+	place-items: center;
+	min-width: 22px;
+	height: 22px;
+	padding: 0 6px;
+	border-radius: 999px;
+	background: #e8f4fb;
+	font-size: 12px;
+}
+
+.papl .papl-panel--month button.papl-option {
+	border-color: var(--papl-cta) !important;
+	color: var(--papl-cta-dark) !important;
+}
+
+.papl .papl-panel--month button.papl-option span {
+	background: #fdf1e4;
+}
+
+.papl button.papl-option:hover {
+	background: #e8f4fb !important;
+}
+
+.papl .papl-panel--month button.papl-option:hover {
+	background: #fdf1e4 !important;
+}
+
+.papl button.papl-option.is-active,
+.papl button.papl-option.is-active:hover {
 	border-color: var(--papl-navy) !important;
 	background: var(--papl-navy) !important;
 	color: #fff !important;
 }
 
-.papl button.papl-chip.is-active span {
-	color: rgba(255, 255, 255, 0.7);
+.papl .papl-panel--month button.papl-option.is-active,
+.papl .papl-panel--month button.papl-option.is-active:hover {
+	border-color: var(--papl-cta-dark) !important;
+	background: var(--papl-cta-dark) !important;
 }
 
-.papl button.papl-chip.is-disabled {
-	opacity: 0.45;
+.papl button.papl-option.is-active span {
+	background: rgba(255, 255, 255, 0.22);
+}
+
+.papl button.papl-option.is-disabled {
+	border-color: #ddd !important;
+	background: #f6f6f6 !important;
+	color: #aaa !important;
 	cursor: not-allowed;
 }
 
@@ -671,27 +805,8 @@ div.papl[data-papl] .papl-summary {
 	cursor: wait;
 }
 
-/* Mobitel: datum, naziv i radnja u jednom retku; gumbi za odabir se pomiču vodoravno. */
+/* Mobitel: datum, naziv i radnja u jednom retku; kućice za odabir jedna do druge. */
 @container papl (max-width: 599px) {
-	.papl .papl-chips {
-		flex-wrap: nowrap;
-		margin-right: -16px;
-		padding: 2px 16px 6px 0;
-		overflow-x: auto;
-		scrollbar-width: none;
-		-webkit-overflow-scrolling: touch;
-	}
-
-	.papl .papl-chips::-webkit-scrollbar {
-		display: none;
-	}
-
-	.papl button.papl-chip {
-		min-height: 36px;
-		padding: 6px 13px !important;
-		font-size: 14px !important;
-	}
-
 	.papl .papl-month {
 		margin-top: 20px;
 	}
@@ -759,6 +874,35 @@ div.papl[data-papl] .papl-summary {
 	.papl .papl-more .papl-cal > summary {
 		width: 100%;
 	}
+}
+
+@container papl (max-width: 599px) {
+	.papl .papl-selects {
+		gap: 8px;
+	}
+
+	.papl button.papl-select {
+		gap: 8px;
+		min-height: 58px;
+		padding: 8px 10px !important;
+	}
+
+	.papl .papl-select__value {
+		font-size: 14px;
+	}
+
+	.papl .papl-select__label {
+		font-size: 10px;
+	}
+
+	.papl .papl-panel {
+		padding: 14px 12px;
+	}
+
+	.papl .papl-panel__options {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
 }
 
 /*

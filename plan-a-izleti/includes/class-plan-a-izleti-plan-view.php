@@ -260,7 +260,7 @@ final class Plan_A_Izleti_Plan_View {
 			</p>
 
 			<?php
-			// Gumbi za odabir (svi, prijave otvorene, uskoro, jednodnevni, višednevni); mjeseci su naslovi.
+			// Dvije kućice s padajućim izbornikom (kao na stranici Izleti): vrsta i termin.
 			$counts = array( 'open' => 0, 'full' => 0, 'soon' => 0, 'one' => 0, 'multi' => 0 );
 			foreach ( $upcoming as $items ) {
 				foreach ( $items as $item ) {
@@ -276,14 +276,43 @@ final class Plan_A_Izleti_Plan_View {
 					$kinds[ $key ] = array( $label, $counts[ $key ] );
 				}
 			}
+			$months = array( 'all' => array( 'Svi mjeseci', $total ) );
+			foreach ( $upcoming as $ym => $items ) {
+				list( $y, $m ) = array_map( 'intval', explode( '-', $ym ) );
+				$months[ $ym ] = array( self::MONTHS[ $m ] . ( (string) $y !== substr( $today, 0, 4 ) ? ' ' . $y . '.' : '' ), count( $items ) );
+			}
+			$groups = array();
+			if ( count( $kinds ) > 1 ) {
+				$groups['kind'] = array( 'Izleti', 'Što želiš vidjeti?', 'mountain', $kinds );
+			}
+			if ( count( $months ) > 2 ) {
+				$groups['month'] = array( 'Termin', 'Koji mjesec?', 'calendar', $months );
+			}
 			?>
-			<?php if ( count( $kinds ) > 1 && $total > 3 ) : ?>
-				<div class="papl-filters" data-papl-filters>
-					<div class="papl-chips" data-papl-panel="kind" role="group" aria-label="Prikaži izlete">
-						<?php foreach ( $kinds as $value => $opt ) : ?>
-							<button type="button" class="papl-chip<?php echo 'all' === $value ? ' is-active' : ''; ?>" data-papl-opt="<?php echo esc_attr( $value ); ?>" data-papl-label="<?php echo esc_attr( $opt[0] ); ?>" aria-pressed="<?php echo 'all' === $value ? 'true' : 'false'; ?>"><?php echo esc_html( 'all' === $value ? 'Svi' : $opt[0] ); ?> <span data-papl-n><?php echo (int) $opt[1]; ?></span></button>
+			<?php if ( $groups && $total > 3 ) : ?>
+				<div class="papl-filters<?php echo 1 === count( $groups ) ? ' papl-filters--single' : ''; ?>" data-papl-filters>
+					<div class="papl-selects">
+						<?php foreach ( $groups as $name => $g ) : ?>
+							<button type="button" class="papl-select papl-select--<?php echo esc_attr( $name ); ?>" data-papl-toggle="<?php echo esc_attr( $name ); ?>" aria-expanded="false" aria-controls="papl-panel-<?php echo esc_attr( $name ); ?>">
+								<span class="papl-select__icon"><?php echo self::icon( $g[2] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+								<span class="papl-select__text">
+									<span class="papl-select__label"><?php echo esc_html( $g[0] ); ?></span>
+									<span class="papl-select__value" data-papl-value><?php echo esc_html( $g[3]['all'][0] ); ?></span>
+								</span>
+								<span class="papl-select__arrow"><?php echo self::icon( 'chevron' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+							</button>
 						<?php endforeach; ?>
 					</div>
+					<?php foreach ( $groups as $name => $g ) : ?>
+						<div class="papl-panel papl-panel--<?php echo esc_attr( $name ); ?>" id="papl-panel-<?php echo esc_attr( $name ); ?>" data-papl-panel="<?php echo esc_attr( $name ); ?>" role="group" aria-label="<?php echo esc_attr( $g[1] ); ?>" hidden>
+							<p class="papl-panel__title"><?php echo esc_html( $g[1] ); ?></p>
+							<div class="papl-panel__options">
+								<?php foreach ( $g[3] as $value => $opt ) : ?>
+									<button type="button" class="papl-option<?php echo 'all' === $value ? ' is-active' : ''; ?>" data-papl-opt="<?php echo esc_attr( $value ); ?>" data-papl-label="<?php echo esc_attr( $opt[0] ); ?>" aria-pressed="<?php echo 'all' === $value ? 'true' : 'false'; ?>"><?php echo esc_html( $opt[0] ); ?> <span data-papl-n><?php echo (int) $opt[1]; ?></span></button>
+								<?php endforeach; ?>
+							</div>
+						</div>
+					<?php endforeach; ?>
 				</div>
 			<?php endif; ?>
 
