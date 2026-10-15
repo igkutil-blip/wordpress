@@ -1,0 +1,29 @@
+{
+ "dijelovi": {
+  "crno": {
+   "volumen_mm3": 10868.4,
+   "trokuta": 88350,
+   "zatvoren": true
+  },
+  "svjetloplavo": {
+   "volumen_mm3": 204.2,
+   "trokuta": 13614,
+   "zatvoren": true
+  },
+  "magenta": {
+   "volumen_mm3": 259.4,
+   "trokuta": 18020,
+   "zatvoren": true
+  }
+ },
+ "mjere_mm": [
+  42.91,
+  44.7,
+  9.0
+ ],
+ "preklapanje_mm3": 0.0,
+ "materijal_oko_otvora_mm": 4.23,
+ "otvor_sirina_mm": 4.51,
+ "logo_sirina_mm": 24.0,
+ "debljina_usice_mm": 6.36
+}
