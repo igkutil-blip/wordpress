@@ -55,6 +55,11 @@ final class Plan_A_Izleti_Plan_Notify {
 		return is_array( $subs ) ? $subs : array();
 	}
 
+	/** Adrese koje čekaju obavijest: e-mail => vrijeme upisa (samo za prikaz u adminu). */
+	public static function emails( int $entry_id ): array {
+		return self::subs( $entry_id );
+	}
+
 	public static function count( int $entry_id ): int {
 		return count( self::subs( $entry_id ) );
 	}
