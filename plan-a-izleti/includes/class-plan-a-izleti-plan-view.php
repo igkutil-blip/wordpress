@@ -72,18 +72,19 @@ final class Plan_A_Izleti_Plan_View {
 	}
 
 	/**
-	 * Blok s datumom: dan u tjednu, dan(i) i mjesec.
+	 * Blok s datumom: dan(i) velikim brojem, ispod dan u tjednu (ili mjeseci, ako se izlet proteže kroz više mjeseci).
 	 */
 	private static function date_block( array $row ): string {
 		list( , $m1, $d1 ) = self::parts( $row['from'] );
 		list( , $m2, $d2 ) = self::parts( $row['to'] );
 		$multi = $row['to'] !== $row['from'];
-		$wd    = self::weekday( $row['from'] ) . ( $multi ? '–' . self::weekday( $row['to'] ) : '' );
 		$day   = $d1 . ( $multi ? '–' . $d2 : '' );
-		$month = self::MONTHS_SHORT[ $m1 ] . ( $m1 !== $m2 ? '–' . self::MONTHS_SHORT[ $m2 ] : '' );
-		return '<div class="papl-date" aria-hidden="true"><span class="papl-date__wd">' . esc_html( $wd ) . '</span>'
+		$sub   = $m1 !== $m2
+			? self::MONTHS_SHORT[ $m1 ] . '–' . self::MONTHS_SHORT[ $m2 ]
+			: self::weekday( $row['from'] ) . ( $multi ? '–' . self::weekday( $row['to'] ) : '' );
+		return '<div class="papl-date" aria-hidden="true">'
 			. '<span class="papl-date__d' . ( $multi ? ' papl-date__d--multi' : '' ) . '">' . esc_html( $day ) . '</span>'
-			. '<span class="papl-date__m">' . esc_html( $month ) . '</span></div>';
+			. '<span class="papl-date__wd">' . esc_html( $sub ) . '</span></div>';
 	}
 
 	/**
@@ -127,27 +128,6 @@ final class Plan_A_Izleti_Plan_View {
 		return '<svg class="papl-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $paths[ $name ] . '</svg>';
 	}
 
-	/**
-	 * Poveznica za dodavanje jednog izleta u Google kalendar (cjelodnevni događaj).
-	 */
-	private static function google_event_url( array $row, string $url ): string {
-		$details = array();
-		if ( $row['guides'] ) {
-			$details[] = 'Vodiči: ' . $row['guides'];
-		}
-		$details[] = $url ? 'Više i prijava: ' . $url : 'Izlet još nije objavljen: ' . home_url( '/' );
-		return add_query_arg(
-			array(
-				'action'  => 'TEMPLATE',
-				'text'    => rawurlencode( $row['title'] ),
-				'dates'   => str_replace( '-', '', $row['from'] ) . '/' . gmdate( 'Ymd', strtotime( $row['to'] . ' +1 day' ) ),
-				'details' => rawurlencode( implode( "\n", $details ) ),
-				'ctz'     => 'Europe/Zagreb',
-			),
-			'https://calendar.google.com/calendar/render'
-		);
-	}
-
 	private static function row_html( array $row, string $status, string $today, bool $images = false, bool $next = false ): string {
 		$url    = $row['tour'] ? Plan_A_Izleti_Data::tour_url( $row['tour'] ) : '';
 		$range  = self::date_range( $row['from'], $row['to'] );
@@ -159,16 +139,16 @@ final class Plan_A_Izleti_Plan_View {
 			'past' => 'Održano',
 		);
 
-		$meta = array();
-		if ( $row['guides'] ) {
-			$meta[] = '<span>' . self::icon( 'user' ) . 'Vodiči: ' . esc_html( $row['guides'] ) . '</span>';
-		}
+		$meta     = array();
 		$duration = $row['tour'] ? Plan_A_Izleti_Shortcode::get_duration( $row['tour'] ) : '';
 		if ( ! $duration && self::days( $row ) > 1 ) {
 			$duration = self::days( $row ) . ' dana';
 		}
 		if ( $duration && 'past' !== $status ) {
 			$meta[] = '<span>' . esc_html( $duration ) . '</span>';
+		}
+		if ( $row['guides'] ) {
+			$meta[] = '<span>' . ( preg_match( '/[+,&\/]|\si\s/u', $row['guides'] ) ? 'Vodiči: ' : 'Vodič: ' ) . esc_html( $row['guides'] ) . '</span>';
 		}
 		if ( $row['tour'] && 'open' === $status ) {
 			$price = Plan_A_Izleti_Shortcode::get_price_html( $row['tour'], Plan_A_Izleti_Data::source_id( $row['tour'] ) );
@@ -177,13 +157,11 @@ final class Plan_A_Izleti_Plan_View {
 			}
 		}
 
-		$badge = '<span class="papl-badge papl-badge--' . esc_attr( $status ) . '">' . esc_html( $labels[ $status ] ) . '</span>';
 		$html  = '<li class="papl-row is-' . esc_attr( $status ) . ( $next ? ' is-next' : '' ) . '" id="izlet-' . esc_attr( $row['key'] ) . '" data-status="' . esc_attr( $status ) . '" data-days="' . ( self::days( $row ) > 1 ? 'multi' : 'one' ) . '">';
 		$html .= $images ? self::media( $row ) : self::date_block( $row );
 		$html .= '<div class="papl-main">';
-		if ( $next || 'past' !== $status ) {
-			$html .= '<p class="papl-kicker">' . ( $next ? '<span class="papl-next">Sljedeći izlet</span>' : '' ) . ( 'past' !== $status ? $badge : '' ) . '</p>';
-		}
+		$html .= '<p class="papl-kicker">' . ( $next ? '<span class="papl-next">Sljedeći izlet</span>' : '' )
+			. '<span class="papl-status papl-status--' . esc_attr( $status ) . '">' . esc_html( $labels[ $status ] ) . '</span></p>';
 		$html .= '<h4 class="papl-title">' . ( $url ? '<a href="' . esc_url( $url ) . '">' . $title . '</a>' : $title ) . '</h4>';
 		$html .= '<p class="papl-when">' . esc_html( $range ) . '</p>';
 		if ( $meta ) {
@@ -194,26 +172,14 @@ final class Plan_A_Izleti_Plan_View {
 		}
 		$html .= '</div>';
 
+		// Jedna radnja po izletu.
 		$html .= '<div class="papl-side">';
-		$html .= $badge;
-		if ( 'past' !== $status ) {
-			$html .= '<div class="papl-actions">';
-			if ( 'open' === $status ) {
-				$html .= '<a class="papl-btn papl-btn--cta" href="' . esc_url( $url ) . '">Prijavi se' . self::icon( 'arrow' ) . '</a>';
-			} elseif ( 'full' === $status ) {
-				$html .= '<a class="papl-btn papl-btn--ghost" href="' . esc_url( $url ) . '">Pogledaj izlet</a>';
-			} elseif ( $row['entry'] ) {
-				$form_id = 'papl-n-' . $row['entry'];
-				$html   .= '<button type="button" class="papl-btn papl-btn--ghost" data-papl-notify aria-expanded="false" aria-controls="' . esc_attr( $form_id ) . '">' . self::icon( 'bell' ) . 'Javi mi kad bude objavljen</button>';
-			}
-			$html .= Plan_A_Izleti_Plan::long_row( $row ) ? '' : '<details class="papl-addcal">'
-				. '<summary class="papl-ics" title="Dodaj u svoj kalendar" aria-label="' . esc_attr( 'Dodaj u svoj kalendar: ' . $row['title'] ) . '">' . self::icon( 'add' ) . '<span class="papl-ics__text">U kalendar</span></summary>'
-				. '<div class="papl-cal__menu papl-addcal__menu">'
-				. '<p class="papl-cal__hint">Dodaj ovaj izlet u svoj kalendar:</p>'
-				. '<a href="' . esc_url( self::google_event_url( $row, $url ) ) . '" target="_blank" rel="noopener">Google kalendar (Android)</a>'
-				. '<a href="' . esc_url( Plan_A_Izleti_Plan_Ics::url( $row['key'] ) ) . '">iPhone, Mac ili Outlook</a>'
-				. '</div></details>';
-			$html .= '</div>';
+		if ( 'open' === $status ) {
+			$html .= '<a class="papl-btn papl-btn--cta" href="' . esc_url( $url ) . '" aria-label="' . esc_attr( 'Prijavi se: ' . $row['title'] ) . '">Prijavi se</a>';
+		} elseif ( 'full' === $status && $url ) {
+			$html .= '<a class="papl-link" href="' . esc_url( $url ) . '">' . ( class_exists( 'Plan_A_Prijave_Cekanje' ) ? 'Lista čekanja' : 'Pogledaj izlet' ) . self::icon( 'arrow' ) . '</a>';
+		} elseif ( 'soon' === $status && $row['entry'] ) {
+			$html .= '<button type="button" class="papl-link" data-papl-notify aria-expanded="false" aria-controls="' . esc_attr( 'papl-n-' . $row['entry'] ) . '" aria-label="' . esc_attr( 'Javi mi kad bude objavljen: ' . $row['title'] ) . '">' . self::icon( 'bell' ) . 'Javi mi</button>';
 		}
 		$html .= '</div>';
 
@@ -294,7 +260,7 @@ final class Plan_A_Izleti_Plan_View {
 			</p>
 
 			<?php
-			// Dvije kućice s padajućim izbornikom (kao na stranici Izleti): vrsta i termin.
+			// Gumbi za odabir (svi, prijave otvorene, uskoro, jednodnevni, višednevni); mjeseci su naslovi.
 			$counts = array( 'open' => 0, 'full' => 0, 'soon' => 0, 'one' => 0, 'multi' => 0 );
 			foreach ( $upcoming as $items ) {
 				foreach ( $items as $item ) {
@@ -310,43 +276,14 @@ final class Plan_A_Izleti_Plan_View {
 					$kinds[ $key ] = array( $label, $counts[ $key ] );
 				}
 			}
-			$months = array( 'all' => array( 'Svi mjeseci', $total ) );
-			foreach ( $upcoming as $ym => $items ) {
-				list( $y, $m ) = array_map( 'intval', explode( '-', $ym ) );
-				$months[ $ym ] = array( self::MONTHS[ $m ] . ( (string) $y !== substr( $today, 0, 4 ) ? ' ' . $y . '.' : '' ), count( $items ) );
-			}
-			$groups = array();
-			if ( count( $kinds ) > 1 ) {
-				$groups['kind'] = array( 'Izleti', 'Što želiš vidjeti?', 'mountain', $kinds );
-			}
-			if ( count( $months ) > 2 ) {
-				$groups['month'] = array( 'Termin', 'Koji mjesec?', 'calendar', $months );
-			}
 			?>
-			<?php if ( $groups && $total > 3 ) : ?>
-				<div class="papl-filters<?php echo 1 === count( $groups ) ? ' papl-filters--single' : ''; ?>" data-papl-filters>
-					<div class="papl-selects">
-						<?php foreach ( $groups as $name => $g ) : ?>
-							<button type="button" class="papl-select papl-select--<?php echo esc_attr( $name ); ?>" data-papl-toggle="<?php echo esc_attr( $name ); ?>" aria-expanded="false" aria-controls="papl-panel-<?php echo esc_attr( $name ); ?>">
-								<span class="papl-select__icon"><?php echo self::icon( $g[2] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
-								<span class="papl-select__text">
-									<span class="papl-select__label"><?php echo esc_html( $g[0] ); ?></span>
-									<span class="papl-select__value" data-papl-value><?php echo esc_html( $g[3]['all'][0] ); ?></span>
-								</span>
-								<span class="papl-select__arrow"><?php echo self::icon( 'chevron' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
-							</button>
+			<?php if ( count( $kinds ) > 1 && $total > 3 ) : ?>
+				<div class="papl-filters" data-papl-filters>
+					<div class="papl-chips" data-papl-panel="kind" role="group" aria-label="Prikaži izlete">
+						<?php foreach ( $kinds as $value => $opt ) : ?>
+							<button type="button" class="papl-chip<?php echo 'all' === $value ? ' is-active' : ''; ?>" data-papl-opt="<?php echo esc_attr( $value ); ?>" data-papl-label="<?php echo esc_attr( $opt[0] ); ?>" aria-pressed="<?php echo 'all' === $value ? 'true' : 'false'; ?>"><?php echo esc_html( 'all' === $value ? 'Svi' : $opt[0] ); ?> <span data-papl-n><?php echo (int) $opt[1]; ?></span></button>
 						<?php endforeach; ?>
 					</div>
-					<?php foreach ( $groups as $name => $g ) : ?>
-						<div class="papl-panel papl-panel--<?php echo esc_attr( $name ); ?>" id="papl-panel-<?php echo esc_attr( $name ); ?>" data-papl-panel="<?php echo esc_attr( $name ); ?>" role="group" aria-label="<?php echo esc_attr( $g[1] ); ?>" hidden>
-							<p class="papl-panel__title"><?php echo esc_html( $g[1] ); ?></p>
-							<div class="papl-panel__options">
-								<?php foreach ( $g[3] as $value => $opt ) : ?>
-									<button type="button" class="papl-option<?php echo 'all' === $value ? ' is-active' : ''; ?>" data-papl-opt="<?php echo esc_attr( $value ); ?>" data-papl-label="<?php echo esc_attr( $opt[0] ); ?>" aria-pressed="<?php echo 'all' === $value ? 'true' : 'false'; ?>"><?php echo esc_html( $opt[0] ); ?> <span data-papl-n><?php echo (int) $opt[1]; ?></span></button>
-								<?php endforeach; ?>
-							</div>
-						</div>
-					<?php endforeach; ?>
 				</div>
 			<?php endif; ?>
 
@@ -383,10 +320,10 @@ final class Plan_A_Izleti_Plan_View {
 
 			<div class="papl-more">
 				<?php if ( '' !== trim( (string) $atts['izleti_url'] ) ) : ?>
-					<a class="papl-btn papl-btn--primary" href="<?php echo esc_url( home_url( wp_parse_url( $atts['izleti_url'], PHP_URL_PATH ) ?: '/izleti/' ) ); ?>">Svi izleti s opisima i prijavama<?php echo self::icon( 'arrow' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
+					<a class="papl-btn papl-btn--primary" href="<?php echo esc_url( home_url( wp_parse_url( $atts['izleti_url'], PHP_URL_PATH ) ?: '/izleti/' ) ); ?>">Svi izleti s opisima</a>
 				<?php endif; ?>
 				<details class="papl-cal">
-					<summary class="papl-btn papl-btn--ghost"><?php echo self::icon( 'calendar' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>Cijeli plan u mom kalendaru<?php echo self::icon( 'chevron' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></summary>
+					<summary class="papl-btn papl-btn--ghost"><?php echo self::icon( 'calendar' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>Cijeli plan u kalendaru</summary>
 					<div class="papl-cal__menu">
 						<p class="papl-cal__hint">Svi izleti iz plana stižu u tvoj kalendar, a novi se dodaju sami.</p>
 						<a href="<?php echo esc_url( Plan_A_Izleti_Plan_Ics::google_url() ); ?>" target="_blank" rel="noopener">Google kalendar (Android)</a>
