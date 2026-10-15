@@ -486,6 +486,16 @@ final class Plan_A_Izleti_Plan {
 						<br><strong><?php echo esc_html( Plan_A_Izleti_Plan_Notify::waiting_text( $subs ) ); ?></strong> e-mail kad izlet bude objavljen (šalje se sam).
 					<?php endif; ?>
 				</p>
+				<?php if ( $subs ) : ?>
+					<?php $emails = Plan_A_Izleti_Plan_Notify::emails( (int) $post->ID ); ?>
+					<p><strong>Tko čeka obavijest:</strong></p>
+					<ol style="margin:0 0 10px 20px">
+						<?php foreach ( $emails as $email => $time ) : ?>
+							<li><a href="mailto:<?php echo esc_attr( $email ); ?>"><?php echo esc_html( $email ); ?></a><?php echo $time ? ' <span style="color:#646970">– ' . esc_html( wp_date( 'j.n.Y. H:i', (int) $time ) ) . '</span>' : ''; ?></li>
+						<?php endforeach; ?>
+					</ol>
+					<p><a class="button" href="mailto:?bcc=<?php echo esc_attr( implode( ',', array_keys( $emails ) ) ); ?>">Napiši mail svima (skrivena kopija)</a></p>
+				<?php endif; ?>
 			<?php endif; ?>
 		</div>
 		<?php
