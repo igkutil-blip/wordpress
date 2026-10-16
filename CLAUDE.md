@@ -183,6 +183,14 @@ ikonu osvježi sam (do ~dan), iPhone tek nakon ponovne instalacije.
 0. **Na vrhu stranice: „Tko unosi izlet”** – obavezan izbor, **isti popis kao Vodiči** (Krešimir Gracin, Igor Kutil,
    Ivan Videk, Sonja Papeš; novi vodič → sam se doda); ime ide u mail Igoru i u izlet; taj vodič se sam označi u Vodičima.
 
+## NA ČEKANJU (Igor 16.10.2026.): izvještaji vodičima iz tablice, ne s weba
+
+Igor: prvi izvještaj vodiču za Dinaru nije bio točan – agencija je u tablici dodala ljude i mijenjala podatke, a izvještaj je
+računan s weba. Točna je samo tablica. Već iz tablice (ag_list/ag_summary): „Popis za sutra” i brojke u dnevnom pregledu.
+S weba: slobodna mjesta (Ops::free_seats, Cekanje::available → „Oslobodilo se mjesto”, Popunjeno/skoro pun), lista čekanja.
+Prijedlog: slobodno = mjesta karata (bez „prve rate”) − osobe u bloku tablice (bez Otkazao); web samo kad tablica ne odgovori.
+Prije rada pitati Igora za naslov maila koji je bio netočan. Sesija do Googlea ne može – sve ide preko skripte u tablici.
+
 ## STANJE ŽIVE 14.10.2026. (20:45, provjereno)
 
 prijave 0.8.1, clanstvo 1.15.8, jedrenje 1.9.3, seo 1.0.3, kontakt 1.0.0, ostali isti; WpTravelly isključen, ali se sam nadogradio na 2.3.6.
