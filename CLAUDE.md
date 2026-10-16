@@ -183,13 +183,13 @@ ikonu osvježi sam (do ~dan), iPhone tek nakon ponovne instalacije.
 0. **Na vrhu stranice: „Tko unosi izlet”** – obavezan izbor, **isti popis kao Vodiči** (Krešimir Gracin, Igor Kutil,
    Ivan Videk, Sonja Papeš; novi vodič → sam se doda); ime ide u mail Igoru i u izlet; taj vodič se sam označi u Vodičima.
 
-## NA ČEKANJU (Igor 16.10.2026.): izvještaji vodičima iz tablice, ne s weba
+## NA ČEKANJU (Igor 16.10.2026.): „Popis za sutra” – Super Ferrata Dinara 17.10.
 
-Igor: prvi izvještaj vodiču za Dinaru nije bio točan – agencija je u tablici dodala ljude i mijenjala podatke, a izvještaj je
-računan s weba. Točna je samo tablica. Već iz tablice (ag_list/ag_summary): „Popis za sutra” i brojke u dnevnom pregledu.
-S weba: slobodna mjesta (Ops::free_seats, Cekanje::available → „Oslobodilo se mjesto”, Popunjeno/skoro pun), lista čekanja.
-Prijedlog: slobodno = mjesta karata (bez „prve rate”) − osobe u bloku tablice (bez Otkazao); web samo kad tablica ne odgovori.
-Prije rada pitati Igora za naslov maila koji je bio netočan. Sesija do Googlea ne može – sve ide preko skripte u tablici.
+Igor misli da popis vodiču nije točan (agencija dodavala ljude/mijenjala u tablici). ISPRAVAK moje prve procjene: „Popis za sutra”
+SE VEĆ SASTAVLJA IZ TABLICE (ag_list, stanje u trenutku slanja – 16.10. 08:29), uključuje ručno dodane redove u bloku izleta.
+Moguće razlike: izmjene u tablici nakon 08:29; osobe upisane izvan bloka (ispod naslova drugog izleta / drugi list); „Vodiči: –” jer
+izlet nije u Planu izleta → popis ide samo Igoru (admin), ne vodiču. S weba su samo slobodna mjesta (Ops::free_seats, Cekanje) i lista čekanja.
+Čeka se Igor: što točno ne odgovara (tko fali / koji podatak). Ideje: ponovno slanje popisa na zahtjev (gumb), vodiči iz izleta kad nema u planu.
 
 ## STANJE ŽIVE 14.10.2026. (20:45, provjereno)
 
