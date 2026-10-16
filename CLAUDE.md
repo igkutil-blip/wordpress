@@ -191,6 +191,11 @@ Moguće razlike: izmjene u tablici nakon 08:29; osobe upisane izvan bloka (ispod
 izlet nije u Planu izleta → popis ide samo Igoru (admin), ne vodiču. S weba su samo slobodna mjesta (Ops::free_seats, Cekanje) i lista čekanja.
 Čeka se Igor: što točno ne odgovara (tko fali / koji podatak). Ideje: ponovno slanje popisa na zahtjev (gumb), vodiči iz izleta kad nema u planu.
 
+## NA ČEKANJU (Igor 16.10.2026.): osiguranje – vratiti izračun
+
+Osiguranje (Plan_A_Prijave_Unos::insurance): cijena **do 355 € → 9,95 €**, **iznad 355 € → 2,8 % cijene** – bez zaokruživanja
+naviše na 50 centi iz 0.7.15 (sada: 480 € → 13,50 €; po novom 13,44 €). Ako nije jasno kako zaokružiti (na cent), pitati Igora.
+
 ## STANJE ŽIVE 14.10.2026. (20:45, provjereno)
 
 prijave 0.8.1, clanstvo 1.15.8, jedrenje 1.9.3, seo 1.0.3, kontakt 1.0.0, ostali isti; WpTravelly isključen, ali se sam nadogradio na 2.3.6.
