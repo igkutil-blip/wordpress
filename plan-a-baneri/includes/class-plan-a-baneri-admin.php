@@ -40,13 +40,13 @@ final class Plan_A_Baneri_Admin {
 		$in  = wp_unslash( $_POST );
 		$out = array();
 		foreach ( $d as $k => $v ) {
-			if ( is_int( $v ) && in_array( $k, array( 'next_on', 'promo_on', 'tinder_on', 'cards_on', 'slider_on', 's2_on', 's3_on' ), true ) ) {
+			if ( is_int( $v ) && in_array( $k, array( 'next_on', 'promo_on', 'tinder_on', 'cards_on', 'slider_on', 's2_on', 's3_on', 'links_on' ), true ) ) {
 				$out[ $k ] = empty( $in[ $k ] ) ? 0 : 1;
 			} elseif ( is_int( $v ) ) {
 				$out[ $k ] = absint( $in[ $k ] ?? $v );
 			} elseif ( in_array( $k, array( 'title', 'trust', 's2_title', 's3_title' ), true ) ) {
 				$out[ $k ] = sanitize_textarea_field( (string) ( $in[ $k ] ?? '' ) );
-			} elseif ( in_array( $k, array( 'btn1_url', 'btn2_url', 'promo_url', 'image_url', 's2_btn2_url' ), true ) ) {
+			} elseif ( in_array( $k, array( 'btn1_url', 'btn2_url', 'promo_url', 'image_url', 's2_btn2_url', 'link1_url', 'link2_url' ), true ) ) {
 				$url       = trim( (string) ( $in[ $k ] ?? '' ) );
 				$out[ $k ] = 0 === strpos( $url, '/' ) ? '/' . ltrim( sanitize_text_field( $url ), '/' ) : esc_url_raw( $url );
 			} else {
@@ -153,6 +153,16 @@ final class Plan_A_Baneri_Admin {
 					$check( 'slider_on', 'Slider', 'Vrh se izmjenjuje: 1. izleti (gore), 2. jedrenje, 3. kviz „Koji izlet?”. Trake i kartice izleta ispod su uvijek iste.' );
 					$text( 'interval', 'Trajanje slajda (sekunde)', 'Zadano 8. Zaustavi se kad je miš iznad ili kad netko koristi kalkulator ili kviz.', 'small-text', 'number' );
 					$text( 's1_tab', 'Naziv 1. slajda (tableta)', '', 'regular-text' );
+					?>
+				</table>
+				<h3>Mali gumbi desno (svi slajdovi)</h3>
+				<table class="form-table" role="presentation">
+					<?php
+					$check( 'links_on', 'Prikaži', 'Dva mala gumba desno iznad traka, isti na svim slajdovima (umjesto gumba u zaglavlju teme koji su prelazili preko kartice)' );
+					$text( 'link1', 'Prvi gumb (plavi)' );
+					$text( 'link1_url', 'Poveznica prvog gumba' );
+					$text( 'link2', 'Drugi gumb (zeleni, WhatsApp)' );
+					$text( 'link2_url', 'Poveznica WhatsApp grupe', 'Prazno = zajednička grupa iz Izleti → Tinder izleti → Postavke.' );
 					?>
 				</table>
 				<h3>Slajd 2 – Jedrenje</h3>

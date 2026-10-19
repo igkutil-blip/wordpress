@@ -132,7 +132,14 @@
 .pab-slide{grid-area:1/1;display:flex;opacity:0;visibility:hidden;transition:opacity .6s ease,visibility 0s linear .6s}
 .pab-slide.is-on{opacity:1;visibility:visible;transition:opacity .6s ease .15s,visibility 0s}
 .pab-slide>.pab-hero__in{flex:1}
-.pab-tabs{position:relative;z-index:2;display:flex;gap:8px;max-width:1440px;width:100%;margin:0 auto;padding:0 56px 14px}
+.pab-bar2{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;max-width:1440px;width:100%;margin:0 auto;padding:0 56px 14px}
+.pab-tabs{display:flex;gap:8px}
+.pab-links{display:flex;gap:10px;margin-left:auto}
+.pab-link{display:inline-flex;align-items:center;gap:7px;border-radius:99px;padding:9px 16px;font-weight:700;font-size:13px;line-height:1.2;color:#fff;box-shadow:0 6px 16px rgba(0,0,0,.2);transition:transform .15s}
+.pab-link:hover{color:#fff;transform:translateY(-2px)}
+.pab-link svg{flex:none}
+.pab-link--plan{background:var(--pab-sky)}
+.pab-link--wa{background:#25a244}
 .pab-tab{position:relative;overflow:hidden;min-height:0;margin:0;border:0;border-radius:99px;padding:8px 16px;background:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#fff;font:inherit;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:none;cursor:pointer;line-height:1.2}
 .pab-tab.is-on{background:rgba(255,255,255,.92);color:var(--pab-navy)}
 .pab-tab i{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--pab-orange)}
@@ -176,10 +183,13 @@
 .pab-res em{font-style:normal;color:#d9480f;font-weight:700}
 .pab-quiz__again{min-height:0;margin:12px 0 0;padding:4px 0;border:0;background:none;color:var(--pab-blue);font:inherit;font-weight:700;font-size:14px;text-transform:none;letter-spacing:0;cursor:pointer}
 
-@media (max-width:1100px){.pab-tabs{padding-left:32px;padding-right:32px}}
+@media (max-width:1100px){.pab-bar2{padding-left:32px;padding-right:32px}}
 @media (max-width:849px){
 	.pab-w{justify-self:stretch;max-width:none;padding:18px}
-	.pab-tabs{padding:0 16px 12px;justify-content:center}
+	.pab-bar2{padding:0 16px 12px;justify-content:center}
+	.pab-tabs{justify-content:center;width:100%}
+	.pab-links{margin:0 auto;justify-content:center}
+	.pab-link{padding:8px 13px;font-size:12px}
 	/* Mobitel: slajdovi različite visine – prikazuje se samo odabrani (bez praznine). */
 	.pab-slide:not(.is-on){display:none}
 	.pab-slide{transition:none}

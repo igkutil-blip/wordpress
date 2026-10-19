@@ -66,6 +66,11 @@ final class Plan_A_Baneri {
 			's3_title'   => "Ne znaš koji izlet\nodabrati?",
 			's3_sub'     => 'Odgovori na tri pitanja i pokazat ćemo ti izlete koji ti odgovaraju – s pravim datumima i slobodnim mjestima.',
 			's3_btn'     => 'Svi izleti',
+			'links_on'   => 1,
+			'link1'      => 'Plan izleta 2026.',
+			'link1_url'  => '/plan-izleta-2026/',
+			'link2'      => 'WhatsApp grupa',
+			'link2_url'  => '',
 			'cards_on'   => 1,
 			'cards_title' => 'Sljedeći izleti',
 			'cards_sub'  => 'Ovaj i sljedeći mjesec u planinama',
@@ -315,6 +320,14 @@ final class Plan_A_Baneri {
 		}
 		$fee = method_exists( 'Plan_A_Clanstvo_Data', 'fee_amount' ) ? Plan_A_Clanstvo_Data::fee_amount() : (float) ( Plan_A_Clanstvo_Data::get()['iznos'] ?? 0 );
 		return $fee > 0 ? number_format( $fee, abs( $fee - round( $fee ) ) < 0.005 ? 0 : 2, ',', '.' ) . ' €' : '';
+	}
+
+	/** WhatsApp grupa: upisana poveznica, inače zajednička grupa iz Plan A Tinder postavki. */
+	public static function wa_url( string $url ): string {
+		if ( '' !== trim( $url ) ) {
+			return $url;
+		}
+		return class_exists( 'Plan_A_Tinder' ) ? Plan_A_Tinder::wa_url() : '';
 	}
 
 	/** Stranica pristupnice (Plan A članstvo). */

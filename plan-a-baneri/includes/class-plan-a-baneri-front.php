@@ -177,6 +177,10 @@ final class Plan_A_Baneri_Front {
 			$h .= '<div class="pab-slide' . ( $i ? '' : ' is-on' ) . '"' . ( $many ? ' role="group" aria-roledescription="slide" aria-label="' . esc_attr( ( $i + 1 ) . ' / ' . count( $slides ) . ': ' . $sl['tab'] ) . '"' : '' ) . ( $i ? ' aria-hidden="true" inert' : '' ) . '>' . $sl['inner'] . '</div>';
 		}
 		$h .= '</div>';
+		$links = self::links( $s );
+		if ( $many || '' !== $links ) {
+			$h .= '<div class="pab-bar2">';
+		}
 		if ( $many ) {
 			$h .= '<div class="pab-tabs" role="tablist">';
 			foreach ( $slides as $i => $sl ) {
@@ -184,12 +188,31 @@ final class Plan_A_Baneri_Front {
 			}
 			$h .= '</div>';
 		}
+		if ( $many || '' !== $links ) {
+			$h .= $links . '</div>';
+		}
 		$h .= self::ribbons( $s, $tours );
 		$h .= '</section>';
 		if ( ! empty( $s['cards_on'] ) ) {
 			$h .= self::cards( $s, $tours, $soon );
 		}
 		return $h . '</div>';
+	}
+
+	/** Mali gumbi desno (umjesto gumba u zaglavlju teme): Plan izleta, WhatsApp grupa – isti na svim slajdovima. */
+	private static function links( array $s ): string {
+		if ( empty( $s['links_on'] ) ) {
+			return '';
+		}
+		$h  = '';
+		$wa = Plan_A_Baneri::wa_url( (string) $s['link2_url'] );
+		if ( '' !== $s['link1'] && '' !== $s['link1_url'] ) {
+			$h .= '<a class="pab-link pab-link--plan" href="' . esc_url( self::url( (string) $s['link1_url'] ) ) . '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>' . esc_html( (string) $s['link1'] ) . '</a>';
+		}
+		if ( '' !== $s['link2'] && '' !== $wa ) {
+			$h .= '<a class="pab-link pab-link--wa" href="' . esc_url( $wa ) . '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.2-.2-.5-.3z"/></svg>' . esc_html( (string) $s['link2'] ) . '</a>';
+		}
+		return '' !== $h ? '<div class="pab-links">' . $h . '</div>' : '';
 	}
 
 	private static function image_of( int $id ): array {
