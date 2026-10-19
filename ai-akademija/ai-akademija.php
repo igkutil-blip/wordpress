@@ -2,7 +2,7 @@
 /**
  * Plugin Name: AI Akademija
  * Description: Stranice AI Akademije kao kratki kodovi (naslovnica, programi, tečaj, mentori, za tvrtke, o nama, kontakt, cijene, pitanja, uvjeti, podnožje), font, boje i gumbi koji se preljevaju iz boje u boju.
- * Version: 0.3.0
+ * Version: 0.4.0
  * Author: AI Akademija
  * Text Domain: ai-akademija
  * Requires at least: 6.0
@@ -11,13 +11,15 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'AKA_VERSION', '0.3.0' );
+define( 'AKA_VERSION', '0.4.0' );
 define( 'AKA_FILE', __FILE__ );
 define( 'AKA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AKA_URL', plugin_dir_url( __FILE__ ) );
 
 require_once AKA_DIR . 'includes/podaci.php';
 require_once AKA_DIR . 'includes/ui.php';
+require_once AKA_DIR . 'includes/linkovi.php';
+require_once AKA_DIR . 'includes/admin.php';
 
 final class AI_Akademija {
 
@@ -48,6 +50,10 @@ final class AI_Akademija {
 		}
 		add_action( 'admin_post_nopriv_aka_kontakt', array( __CLASS__, 'posalji' ) );
 		add_action( 'admin_post_aka_kontakt', array( __CLASS__, 'posalji' ) );
+		AKA_Linkovi::init();
+		if ( is_admin() ) {
+			AKA_Admin::init();
+		}
 	}
 
 	private static function ver( $file ) {
@@ -109,9 +115,27 @@ final class AI_Akademija {
 	public static function obrazac( $o ) {
 		$o      = wp_parse_args( $o, array( 'predmet' => '', 'tvrtka' => false ) );
 		$status = isset( $_GET['aka'] ) ? sanitize_key( $_GET['aka'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-		$tecaj  = isset( $_GET['tecaj'] ) ? AKA_Podaci::tecaj( sanitize_title( wp_unslash( $_GET['tecaj'] ) ) ) : null; // phpcs:ignore
-		$poruka = $tecaj ? 'Zanima me tečaj „' . $tecaj['naslov'] . '”.' : '';
-		$predmet = $o['predmet'] ? $o['predmet'] : ( $tecaj ? 'Upis: ' . $tecaj['naslov'] : '' );
+		// phpcs:disable WordPress.Security.NonceVerification
+		$tecaj = isset( $_GET['tecaj'] ) ? AKA_Podaci::tecaj( sanitize_title( wp_unslash( $_GET['tecaj'] ) ) ) : null;
+		$paket = isset( $_GET['paket'] ) ? sanitize_title( wp_unslash( $_GET['paket'] ) ) : '';
+		$tema  = isset( $_GET['predmet'] ) ? sanitize_key( $_GET['predmet'] ) : '';
+		// phpcs:enable
+		$poruka  = '';
+		$predmet = $o['predmet'];
+		if ( $tecaj ) {
+			$poruka  = 'Zanima me tečaj „' . $tecaj['naslov'] . '”.';
+			$predmet = $predmet ? $predmet : 'Upis: ' . $tecaj['naslov'];
+		} elseif ( $paket ) {
+			foreach ( AKA_Podaci::paketi() as $pk ) {
+				if ( sanitize_title( $pk['naziv'] ) === $paket ) {
+					$poruka  = 'Zanima me paket „' . $pk['naziv'] . '” (' . $pk['cijena'] . ' ' . $pk['nap'] . ').';
+					$predmet = $predmet ? $predmet : 'Paket: ' . $pk['naziv'];
+				}
+			}
+		} elseif ( 'mentor' === $tema ) {
+			$poruka  = 'Želio/željela bih predavati u AI Akademiji. Moje iskustvo: ';
+			$predmet = $predmet ? $predmet : 'Prijava za mentora';
+		}
 		ob_start();
 		?>
 		<form class="aka-form" id="aka-obrazac" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">

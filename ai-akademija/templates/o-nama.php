@@ -30,7 +30,7 @@
   <section class="aka-sec">
     <div class="aka-wrap">
       <div class="aka-head"><div><p class="aka-kicker">Tim</p><h2>Upoznaj <span class="aka-grad-text">mentore.</span></h2></div><?php echo AKA_UI::gumb( 'Svi mentori', '/mentori/', 'ghost' ); // phpcs:ignore ?></div>
-      <div class="aka-grid aka-g4"><?php foreach ( AKA_Podaci::mentori() as $m ) { echo AKA_UI::kartica_mentora( $m ); } // phpcs:ignore ?></div>
+      <?php echo AKA_UI::mentori(); // phpcs:ignore ?>
     </div>
   </section>
   <?php echo AKA_UI::cta(); // phpcs:ignore ?>

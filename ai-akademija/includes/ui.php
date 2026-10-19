@@ -6,11 +6,12 @@ defined( 'ABSPATH' ) || exit;
 
 final class AKA_UI {
 
+	/** „/programi/”, „/kontakt/?tecaj=x” … → prava adresa stranice (traži se po kratkom kodu). */
 	public static function url( $path ) {
-		if ( '' === $path || '#' === $path[0] || preg_match( '#^https?://#', $path ) ) {
+		if ( '' === $path || '#' === $path[0] || preg_match( '#^(https?:|mailto:|tel:)#', $path ) ) {
 			return $path;
 		}
-		return home_url( '/' . ltrim( $path, '/' ) );
+		return AKA_Linkovi::iz_putanje( $path );
 	}
 
 	/** Naslov s istaknutim (prelijevajućim) dijelom: „Tekst [[istaknuto]]”. */
@@ -44,7 +45,7 @@ final class AKA_UI {
 		$meta = self::meta_tecaja( $c );
 		ob_start();
 		?>
-		<a class="aka-course" href="<?php echo esc_url( self::url( '/programi/' . $c['slug'] . '/' ) ); ?>" data-razina="<?php echo esc_attr( sanitize_title( $c['razina'] ) ); ?>">
+		<a class="aka-course" href="<?php echo esc_url( AKA_Linkovi::tecaj( $c['slug'] ) ); ?>" data-razina="<?php echo esc_attr( sanitize_title( $c['razina'] ) ); ?>">
 			<div class="aka-thumb aka-t<?php echo (int) $c['thumb']; ?>"><?php echo AKA_Podaci::ikona( $c['ikona'] ); // phpcs:ignore ?></div>
 			<div class="aka-course-body">
 				<span class="aka-level<?php echo $c['level'] > 1 ? ' aka-l' . (int) $c['level'] : ''; ?>"><?php echo esc_html( $c['razina'] ); ?></span>
@@ -69,21 +70,47 @@ final class AKA_UI {
 		return mb_strtoupper( mb_substr( $out, 0, 2 ) );
 	}
 
-	public static function kartica_mentora( $m ) {
+	/**
+	 * Kartica mentora. $slug → sidro (#slug) na stranici Mentori; $puno → popis tečajeva mentora;
+	 * $link → cijela kartica vodi na mentora na stranici Mentori.
+	 */
+	public static function kartica_mentora( $m, $slug = '', $puno = false, $link = false ) {
+		$tag  = $link && $slug ? 'a' : 'div';
+		$attr = $link && $slug ? ' href="' . esc_url( AKA_Linkovi::stranica( 'mentori' ) . '#' . $slug ) . '"' : '';
+		$attr .= $puno && $slug ? ' id="' . esc_attr( $slug ) . '"' : '';
 		ob_start();
 		?>
-		<div class="aka-mentor">
+		<<?php echo $tag; // phpcs:ignore ?> class="aka-mentor<?php echo $link ? ' is-link' : ''; ?>"<?php echo $attr; // phpcs:ignore ?>>
 			<span class="aka-avatar aka-av<?php echo (int) $m['grad']; ?>"><?php echo esc_html( self::inicijali( $m['ime'] ) ); ?></span>
 			<h3><?php echo esc_html( $m['ime'] ); ?></h3>
 			<span class="aka-role"><?php echo esc_html( $m['uloga'] ); ?></span>
 			<p><?php echo esc_html( $m['opis'] ); ?></p>
-		</div>
+			<?php
+			if ( $puno && $slug ) :
+				$tecajevi = wp_list_filter( AKA_Podaci::tecajevi(), array( 'mentor' => $slug ) );
+				if ( $tecajevi ) :
+					?>
+				<div class="aka-mtecaj"><small>Tečajevi</small><?php foreach ( $tecajevi as $ts => $t ) : ?><a href="<?php echo esc_url( AKA_Linkovi::tecaj( $ts ) ); ?>"><?php echo esc_html( $t['naslov'] ); ?> →</a><?php endforeach; ?></div>
+					<?php
+				endif;
+			endif;
+			?>
+		</<?php echo $tag; // phpcs:ignore ?>>
 		<?php
 		return ob_get_clean();
 	}
 
+	/** Mreža mentora. */
+	public static function mentori( $puno = false ) {
+		$out = '';
+		foreach ( AKA_Podaci::mentori() as $slug => $m ) {
+			$out .= self::kartica_mentora( $m, $slug, $puno, ! $puno );
+		}
+		return '<div class="aka-grid aka-g4">' . $out . '</div>';
+	}
+
 	/** Pitanja kao <details> – rade bez JavaScripta. */
-	public static function pitanja( $lista, $naslov = 'Česta [[pitanja]]' ) {
+	public static function pitanja( $lista, $naslov = 'Česta [[pitanja]]', $vise = true ) {
 		ob_start();
 		?>
 		<section class="aka-sec aka-faq">
@@ -95,6 +122,9 @@ final class AKA_UI {
 						<details<?php echo 0 === $i ? ' open' : ''; ?>><summary><?php echo esc_html( $p[0] ); ?></summary><p><?php echo esc_html( $p[1] ); ?></p></details>
 					<?php endforeach; ?>
 				</div>
+				<?php if ( $vise && count( $lista ) < count( AKA_Podaci::pitanja() ) ) : ?>
+					<p class="aka-c aka-more"><?php echo self::gumb( 'Sva pitanja', '/cesta-pitanja/', 'ghost' ); // phpcs:ignore ?></p>
+				<?php endif; ?>
 			</div>
 		</section>
 		<?php

@@ -135,8 +135,8 @@ final class AKA_Podaci {
 	public static function paketi() {
 		return array(
 			array( 'naziv' => 'Pojedinačni tečaj', 'cijena' => 'od 89 €', 'nap' => 'jednokratno', 'istaknut' => false, 'stavke' => array( 'Jedan tečaj po izboru', 'Pristup lekcijama 12 mjeseci', 'Vježbe i materijali', 'Certifikat' ), 'gumb' => 'Odaberi tečaj', 'url' => '/programi/' ),
-			array( 'naziv' => 'Sve uključeno', 'cijena' => '19 €', 'nap' => 'mjesečno', 'istaknut' => true, 'stavke' => array( 'Svi tečajevi', 'Novi tečajevi čim izađu', 'Mjesečna radionica uživo', 'Zajednica polaznika', 'Certifikati' ), 'gumb' => 'Započni učenje', 'url' => '/kontakt/' ),
-			array( 'naziv' => 'Za tvrtke', 'cijena' => 'po dogovoru', 'nap' => 'od 5 polaznika', 'istaknut' => false, 'stavke' => array( 'Program prilagođen timu', 'Radionice uživo ili online', 'Praćenje napretka', 'Račun na tvrtku' ), 'gumb' => 'Zatraži ponudu', 'url' => '/za-tvrtke/' ),
+			array( 'naziv' => 'Sve uključeno', 'cijena' => '19 €', 'nap' => 'mjesečno', 'istaknut' => true, 'stavke' => array( 'Svi tečajevi', 'Novi tečajevi čim izađu', 'Mjesečna radionica uživo', 'Zajednica polaznika', 'Certifikati' ), 'gumb' => 'Započni učenje', 'url' => '/kontakt/?paket=sve-ukljuceno' ),
+			array( 'naziv' => 'Za tvrtke', 'cijena' => 'po dogovoru', 'nap' => 'od 5 polaznika', 'istaknut' => false, 'stavke' => array( 'Program prilagođen timu', 'Radionice uživo ili online', 'Praćenje napretka', 'Račun na tvrtku' ), 'gumb' => 'Zatraži ponudu', 'url' => '/za-tvrtke/#upit' ),
 		);
 	}
 

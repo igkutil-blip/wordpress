@@ -31,6 +31,10 @@ boje u boju** (animacija `aka-flow`) – Igorov zahtjev. Klase s prefiksom `aka-
   `includes/podaci.php` (AKA_Podaci) – IZMIŠLJENI (mentori Ana Horvat… su izmišljene osobe, cijene, kontakt, OIB 000…) –
   zamijeniti stvarnima. Tečaj: podstranica /programi/<slug>/ prepoznaje se po adresi. Obrazac: admin-post `aka_kontakt`,
   mail na admin_email. Uvjeti korištenja: lorem ipsum (pravi tekst – pravnik). Privatnost: WordPressova stranica privatnosti.
+- **0.4.0:** poveznice se NE pišu kao adrese nego preko `AKA_Linkovi` (stranica se traži po kratkom kodu, cache
+  `aka_linkovi`, briše se pri spremanju stranice); u predlošcima `AKA_UI::url('/programi/')` i dalje radi (prevodi se).
+  Postavke → AI Akademija: stanje stranica, „Napravi stranice koje nedostaju”, „Postavi glavni izbornik” (primary + primary_mobile).
+  Do aiakademija.hr se iz sesije ne može (proxy odbija) – stanje stranica Igor vidi u adminu.
 - Brojke 12.000+ polaznika i 4.9/5 su iz dizajna – zamijeniti stvarnima prije objave. Fotografija u heroju: čeka Igorovu sliku.
 
 ## Način rada

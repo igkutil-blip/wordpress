@@ -36,9 +36,15 @@ $m = isset( $mentori[ $c['mentor'] ] ) ? $mentori[ $c['mentor'] ] : null;
         </div>
       </div>
       <aside>
-        <?php if ( $m ) : ?><p class="aka-kicker">Tvoj mentor</p><?php echo AKA_UI::kartica_mentora( $m ); // phpcs:ignore ?><?php endif; ?>
+        <?php if ( $m ) : ?><p class="aka-kicker">Tvoj mentor</p><?php echo AKA_UI::kartica_mentora( $m, $c['mentor'], false, true ); // phpcs:ignore ?><?php endif; ?>
         <div class="aka-box"><h3>Za koga je tečaj?</h3><p>Lorem ipsum dolor sit amet – za sve koji žele brzo i praktično naučiti koristiti AI, bez tehničkog predznanja.</p></div>
       </aside>
+    </div>
+  </section>
+  <section class="aka-sec aka-soft">
+    <div class="aka-wrap">
+      <div class="aka-head"><div><p class="aka-kicker">Nastavi učiti</p><h2>Ostali <span class="aka-grad-text">tečajevi</span></h2></div><?php echo AKA_UI::gumb( 'Svi programi', '/programi/', 'ghost' ); // phpcs:ignore ?></div>
+      <div class="aka-grid aka-g3 aka-courses"><?php foreach ( array_slice( array_diff( array_keys( AKA_Podaci::tecajevi() ), array( $c['slug'] ) ), 0, 3 ) as $os ) { echo AKA_UI::kartica_tecaja( AKA_Podaci::tecaj( $os ) ); } // phpcs:ignore ?></div>
     </div>
   </section>
   <?php echo AKA_UI::pitanja( array_slice( AKA_Podaci::pitanja(), 0, 4 ) ); // phpcs:ignore ?>

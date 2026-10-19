@@ -43,6 +43,10 @@ između oznaka i u CSS – naslovnica se raspala (0.1.0 na aiakademija.hr, 19.10
 
 ## Verzije
 
+- **0.4.0 (19.10.2026.)** – poveznice po kratkom kodu (AKA_Linkovi), Postavke → AI Akademija (stanje stranica, izrada
+  stranica koje nedostaju, glavni izbornik), mentori ↔ tečajevi, ostali tečajevi, kontakt s predmetom iz poveznice.
+  Provjereno lokalno: svih 28 poveznica 200 i sva sidra postoje, i kad stranica ima drugu adresu (mentori → nasi-mentori).
+
 - **0.3.0 (19.10.2026.)** – struktura cijele stranice: Programi, Tečaj, Mentori, Za tvrtke, O nama, Kontakt, Cijene,
   Česta pitanja, Uvjeti, Podnožje + dodatni dijelovi naslovnice. Podaci izmišljeni (lorem ipsum). Kontakt obrazac:
   mail administratoru, Reply-To pošiljatelj, zaštita (skriveno polje, 3 s, nonce). Provjereno lokalno (sve stranice

@@ -1,5 +1,5 @@
 === AI Akademija ===
-Stable tag: 0.3.0
+Stable tag: 0.4.0
 Requires at least: 6.0
 Requires PHP: 7.4
 
@@ -24,6 +24,13 @@ Uvjeti korištenja   [ai-akademija-uvjeti]             (/uvjeti-koristenja/)
 Podnožje            [ai-akademija-podnozje]           (Flatsome → Footer → blok)
 
 == Changelog ==
+= 0.4.0 =
+* Poveznice same pronalaze stranicu po kratkom kodu (adresa i naslov mogu biti bilo kakvi); osvježe se pri spremanju stranice.
+* Tečaj bez svoje stranice vodi na Kontakt s upisanim tečajem; Blog i Pravila privatnosti prikazuju se samo kad postoje.
+* Postavke → AI Akademija: popis stranica (postoji / nedostaje), „Napravi stranice koje nedostaju”, „Postavi glavni izbornik”.
+* Mentori: kartice vode na mentora na stranici Mentori, tamo popis njegovih tečajeva s poveznicama; tečaj → mentor.
+* Tečaj: „Ostali tečajevi”; pitanja: „Sva pitanja”; podnožje: Programi, Kontakt.
+* Kontakt: ?paket=…, ?predmet=mentor i ?tecaj=… sami popune predmet i poruku.
 = 0.3.0 =
 * Nove stranice: Programi (s filtrom razine), Tečaj (5 tečajeva), Mentori, Za tvrtke (s obrascem za ponudu), O nama, Kontakt (obrazac šalje mail na adresu administratora), Cijene, Česta pitanja, Uvjeti korištenja, Podnožje.
 * Naslovnica dobila: Kako funkcionira, Zašto AI Akademija, Mentori, Cijene, Česta pitanja, poziv na akciju.

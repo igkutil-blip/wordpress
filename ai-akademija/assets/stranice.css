@@ -163,3 +163,14 @@
 }
 .aka-acc summary:has(small)::after{margin-left:16px}
 .aka-amount{flex-wrap:wrap}.aka-amount b{white-space:nowrap;font-size:clamp(30px,3vw,38px)}
+/* 0.4.0: poveznice */
+a.aka-mentor{display:block;color:var(--aka-ink)!important;transition:transform .25s,box-shadow .25s}
+a.aka-mentor:hover{transform:translateY(-4px);box-shadow:0 22px 40px -22px rgba(31,40,110,.4)}
+.aka-mentor[id]{scroll-margin-top:120px}
+.aka-mentor:target{border-color:var(--aka-violet);box-shadow:0 0 0 4px rgba(123,47,255,.12)}
+.aka-mtecaj{display:grid;gap:6px;margin-top:16px;padding-top:14px;border-top:1px solid var(--aka-line)}
+.aka-mtecaj small{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aka-muted)}
+.aka-mtecaj a{font-size:15px;font-weight:700;color:var(--aka-blue)!important}
+.aka .aka-more{margin-top:24px}
+.aka-footer h4 a.aka-fh{display:inline;color:#fff!important;font-size:15px;margin:0}
+#upit,#programi,#aka-obrazac{scroll-margin-top:110px}

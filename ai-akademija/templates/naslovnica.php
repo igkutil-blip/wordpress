@@ -76,7 +76,7 @@ defined( 'ABSPATH' ) || exit;
     <div class="aka-wrap">
       <div class="aka-head"><div><p class="aka-kicker">Mentori</p><h2>Uči od ljudi koji AI <span class="aka-grad-text">koriste svaki dan.</span></h2></div>
         <?php echo AKA_UI::gumb( 'Svi mentori', '/mentori/', 'ghost' ); // phpcs:ignore ?></div>
-      <div class="aka-grid aka-g4"><?php foreach ( AKA_Podaci::mentori() as $m ) { echo AKA_UI::kartica_mentora( $m ); } // phpcs:ignore ?></div>
+      <?php echo AKA_UI::mentori(); // phpcs:ignore ?>
     </div>
   </section>
   <?php include AKA_DIR . 'templates/dio-cijene.php'; ?>
