@@ -210,3 +210,55 @@
 	.pab-calc__big b{font-size:32px}
 }
 @media (prefers-reduced-motion:reduce){.pab-bg,.pab-slide{transition:none}.pab-tab.is-run i{transition:none;width:0}.pab-tab:before,.pab-tabs.is-hello .pab-tab{animation:none!important}}
+
+/* ---- 1.1.5: mobitel kompaktnije (računalo isto) ---- */
+@media (max-width:849px){
+	.pab-hero__in{gap:16px;padding-bottom:12px}
+	.pab-kick{font-size:12px;padding:6px 11px}
+	.pab .pab-title{font-size:31px;line-height:1.08;margin:10px 0 8px}
+	.pab-sub{font-size:15px;line-height:1.4;margin-bottom:14px}
+	.pab-ctas{flex-wrap:nowrap;gap:8px}
+	.pab-ctas .pab-btn{flex:1 1 0;width:auto;min-width:0;padding:13px 8px;font-size:12px;letter-spacing:.03em;gap:6px;white-space:nowrap}
+	.pab-trust{font-size:12px;gap:4px 12px;margin-top:12px}
+	.pab-next__media{height:118px}
+	.pab-next__tag{font-size:10px;padding:5px 9px;left:10px;top:10px}
+	.pab-next__nav{right:10px;top:10px}
+	.pab-next__nav button{width:30px;height:30px;font-size:17px}
+	.pab-next__b{padding:12px 14px 10px}
+	.pab-next h3{font-size:18px}
+	.pab-next__meta{font-size:13px}
+	.pab-cd{gap:6px;margin:10px 0}
+	.pab-cd div{border-radius:10px;padding:6px 0 5px}
+	.pab-cd b{font-size:20px}
+	.pab-cd small{font-size:9px}
+	.pab-seats{font-size:13px;margin-bottom:5px}
+	.pab-bar{height:6px;margin-bottom:10px}
+	.pab-price b{font-size:18px}
+	.pab-next__f .pab-btn--s{padding:10px 16px;font-size:12px}
+	.pab-dots{padding-bottom:10px}
+	.pab-w{padding:14px}
+	.pab-w__h{font-size:16px;margin-bottom:8px}
+	.pab-calc{padding:10px 12px;gap:12px}
+	.pab-calc__big b{font-size:28px}
+	.pab-opt{padding:10px 13px;font-size:15px}
+	.pab-bar2{gap:8px;padding-bottom:10px}
+	.pab-tab{padding:6px 11px;font-size:12px;gap:5px}
+	.pab-tab svg{width:14px;height:14px}
+	.pab-links{gap:8px}
+	.pab-link{padding:6px 11px;font-size:11px;gap:5px;box-shadow:none}
+	.pab-link svg{width:13px;height:13px}
+	.pab-ribs{gap:8px;padding-bottom:16px}
+	.pab-rib{padding:9px 10px;gap:10px;border-radius:14px}
+	.pab-rib__ic{width:34px;height:34px;border-radius:10px}
+	.pab-rib__ic svg{width:18px;height:18px}
+	.pab-rib strong{font-size:14px;line-height:1.2}
+	.pab-rib small{font-size:11px;margin-top:1px}
+	.pab-rib__go{padding:7px 10px;font-size:10px}
+	.pab-mf{margin-top:3px}
+	.pab-mf>span{font-size:12px;padding:2px 6px}
+}
+@media (max-width:380px){
+	.pab .pab-title{font-size:27px}
+	.pab-ctas .pab-btn{font-size:11px;padding:12px 6px}
+	.pab-cd b{font-size:18px}
+}
