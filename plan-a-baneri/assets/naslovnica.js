@@ -99,8 +99,16 @@
 		var seen = true; // vrti se samo dok je vrh stranice vidljiv (na mobitelu se tada ne pomiče ono što se čita ispod)
 		hero.style.setProperty('--pab-int', ms / 1000 + 's');
 		function loadBgs() {
-			bgs.forEach(function (b) {
-				if (b.dataset.src) { if (b.dataset.srcset) b.srcset = b.dataset.srcset; b.src = b.dataset.src; delete b.dataset.src; }
+			bgs.forEach(function (b, k) {
+				if (!b.dataset.pabSrc) return;
+				var img = document.createElement('img');
+				img.className = b.className + ' no-lazy skip-lazy';
+				img.alt = b.dataset.pabAlt || '';
+				img.decoding = 'async';
+				if (b.dataset.pabSrcset) { img.srcset = b.dataset.pabSrcset; img.sizes = '100vw'; }
+				img.src = b.dataset.pabSrc;
+				b.parentNode.replaceChild(img, b);
+				bgs[k] = img;
 			});
 		}
 		if (document.readyState === 'complete') setTimeout(loadBgs, 300); else window.addEventListener('load', function () { setTimeout(loadBgs, 300); });
