@@ -12,6 +12,10 @@ Mapa je **WordPress dodatak** `ai-akademija` (zip `ai-akademija.zip` u korijenu 
 | `templates/naslovnica.php` | HTML naslovnice |
 | `assets/naslovnica.css`, `naslovnica.js` | izgled naslovnice, strelice tečajeva |
 | `assets/ai-akademija.css` | cijela stranica: font, boje, gumbi koji se preljevaju, zaglavlje |
+| `includes/podaci.php` | **svi podaci** (tečajevi, mentori, cijene, kontakt, pitanja) – trenutno izmišljeni |
+| `includes/ui.php` | zajednički dijelovi (zaglavlje stranice, kartice, pitanja, poziv na akciju) |
+| `templates/*.php` | stranice (popis kratkih kodova u `readme.txt`) |
+| `assets/stranice.css` | izgled podstranica, obrasca i podnožja |
 | `assets/slike/` | znak (prozirno), logo s natpisom, ikona stranice |
 
 **Zašto kratki kod, a ne HTML blok:** WordPress (`wpautop`) u HTML bloku/sadržaju stranice ubacuje `<p>` i `<br>`
@@ -38,6 +42,11 @@ između oznaka i u CSS – naslovnica se raspala (0.1.0 na aiakademija.hr, 19.10
 5. Postavke → Čitanje → statična naslovnica. Nakon svake nove verzije očistiti predmemoriju (ako je ima).
 
 ## Verzije
+
+- **0.3.0 (19.10.2026.)** – struktura cijele stranice: Programi, Tečaj, Mentori, Za tvrtke, O nama, Kontakt, Cijene,
+  Česta pitanja, Uvjeti, Podnožje + dodatni dijelovi naslovnice. Podaci izmišljeni (lorem ipsum). Kontakt obrazac:
+  mail administratoru, Reply-To pošiljatelj, zaštita (skriveno polje, 3 s, nonce). Provjereno lokalno (sve stranice
+  200, bez PHP/JS grešaka, bez vodoravnog pomicanja na 1440 i 390 px, obrazac šalje mail, bot ne).
 
 - **0.2.0 (19.10.2026.)** – dodatak s kratkim kodom (HTML blok se raspadao zbog wpautop); CSS i font iz dodatka;
   laptop: brojke 2 × 2, tečajevi po dva u redu do 1200 px. Provjereno na lokalnom WordPressu (sadržaj bez ijednog

@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
         <h1>Praktična AI znanja za <span class="aka-grad-text">stvarne rezultate.</span></h1>
         <p class="aka-lead">Online tečajevi za početnike i profesionalce — nauči koristiti AI alate u poslu i svakodnevnom životu uz praktične primjere, jasne lekcije i podršku mentora.</p>
         <div class="aka-actions">
-          <a class="aka-btn aka-btn-grad" href="/programi/">Započni učenje
+          <a class="aka-btn aka-btn-grad" href="<?php echo esc_url( AKA_UI::url( '/programi/' ) ); ?>">Započni učenje
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
           <a class="aka-btn aka-btn-ghost" href="#programi"><span class="aka-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>Pogledaj programe</a>
         </div>
@@ -66,52 +66,20 @@ defined( 'ABSPATH' ) || exit;
       </div>
 
       <div class="aka-track">
-        <a class="aka-course" href="/programi/uvod-u-ai/">
-          <div class="aka-thumb aka-t1"><svg viewBox="0 0 48 48"><rect x="10" y="14" width="28" height="22" rx="8"/><circle cx="19" cy="25" r="2.5"/><circle cx="29" cy="25" r="2.5"/><path d="M24 14V8M21 6h6M6 22v6M42 22v6"/></svg></div>
-          <div class="aka-course-body">
-            <span class="aka-level">Početnik</span>
-            <h3>Uvod u AI</h3>
-            <p>Razumij osnove umjetne inteligencije i nauči kako je koristiti na jednostavan i praktičan način.</p>
-            <div class="aka-meta"><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>12 sati</span><span><svg viewBox="0 0 24 24"><path d="M5 20v-6M12 20V9M19 20V4"/></svg>8 lekcija</span><span><svg viewBox="0 0 24 24"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/></svg>Certifikat</span></div>
-          </div>
-        </a>
-        <a class="aka-course" href="/programi/prompt-engineering/">
-          <div class="aka-thumb aka-t2"><svg viewBox="0 0 48 48"><rect x="8" y="10" width="26" height="30" rx="4"/><path d="M14 18h14M14 24h14M14 30h8"/><path d="M38 6l1.6 4.4L44 12l-4.4 1.6L38 18l-1.6-4.4L32 12l4.4-1.6z"/></svg></div>
-          <div class="aka-course-body">
-            <span class="aka-level aka-l2">Početnik</span>
-            <h3>Prompt Engineering</h3>
-            <p>Nauči pisati bolje upite i postići vrhunske rezultate s AI alatima poput ChatGPT-a.</p>
-            <div class="aka-meta"><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>10 sati</span><span><svg viewBox="0 0 24 24"><path d="M5 20v-6M12 20V9M19 20V4"/></svg>8 lekcija</span><span><svg viewBox="0 0 24 24"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/></svg>Certifikat</span></div>
-          </div>
-        </a>
-        <a class="aka-course" href="/programi/ai-za-posao/">
-          <div class="aka-thumb aka-t3"><svg viewBox="0 0 48 48"><rect x="8" y="10" width="32" height="22" rx="3"/><path d="M4 38h40M15 26v-4M21 26v-8M27 26v-6M33 26v-10"/></svg></div>
-          <div class="aka-course-body">
-            <span class="aka-level aka-l3">Početnik</span>
-            <h3>AI za posao</h3>
-            <p>Otkrij kako koristiti AI alate za veću produktivnost i bolje rezultate u svakodnevnom poslu.</p>
-            <div class="aka-meta"><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>12 sati</span><span><svg viewBox="0 0 24 24"><path d="M5 20v-6M12 20V9M19 20V4"/></svg>8 lekcija</span><span><svg viewBox="0 0 24 24"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/></svg>Certifikat</span></div>
-          </div>
-        </a>
-        <a class="aka-course" href="/programi/ai-za-kreativce/">
-          <div class="aka-thumb aka-t4"><svg viewBox="0 0 48 48"><rect x="6" y="10" width="36" height="28" rx="4"/><circle cx="17" cy="20" r="3.5"/><path d="M6 32l10-9 8 7 6-5 12 10"/></svg></div>
-          <div class="aka-course-body">
-            <span class="aka-level aka-l4">Srednja razina</span>
-            <h3>AI za kreativce</h3>
-            <p>Izradi slike, video i tekstove uz pomoć AI alata – od ideje do gotovog sadržaja.</p>
-            <div class="aka-meta"><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>14 sati</span><span><svg viewBox="0 0 24 24"><path d="M5 20v-6M12 20V9M19 20V4"/></svg>10 lekcija</span><span><svg viewBox="0 0 24 24"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/></svg>Certifikat</span></div>
-          </div>
-        </a>
-        <a class="aka-course" href="/programi/automatizacija/">
-          <div class="aka-thumb aka-t5"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="6"/><path d="M24 6v6M24 36v6M6 24h6M36 24h6M11.3 11.3l4.2 4.2M32.5 32.5l4.2 4.2M11.3 36.7l4.2-4.2M32.5 15.5l4.2-4.2"/></svg></div>
-          <div class="aka-course-body">
-            <span class="aka-level aka-l2">Srednja razina</span>
-            <h3>Automatizacija s AI-jem</h3>
-            <p>Poveži alate i prepusti ponavljajuće zadatke AI asistentima – bez programiranja.</p>
-            <div class="aka-meta"><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>12 sati</span><span><svg viewBox="0 0 24 24"><path d="M5 20v-6M12 20V9M19 20V4"/></svg>9 lekcija</span><span><svg viewBox="0 0 24 24"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/></svg>Certifikat</span></div>
-          </div>
-        </a>
+        <?php foreach ( array_keys( AKA_Podaci::tecajevi() ) as $slug ) { echo AKA_UI::kartica_tecaja( AKA_Podaci::tecaj( $slug ) ); } // phpcs:ignore ?>
       </div>
     </div>
   </section>
+  <?php include AKA_DIR . 'templates/dio-koraci.php'; ?>
+  <?php include AKA_DIR . 'templates/dio-zasto.php'; ?>
+  <section class="aka-sec">
+    <div class="aka-wrap">
+      <div class="aka-head"><div><p class="aka-kicker">Mentori</p><h2>Uči od ljudi koji AI <span class="aka-grad-text">koriste svaki dan.</span></h2></div>
+        <?php echo AKA_UI::gumb( 'Svi mentori', '/mentori/', 'ghost' ); // phpcs:ignore ?></div>
+      <div class="aka-grid aka-g4"><?php foreach ( AKA_Podaci::mentori() as $m ) { echo AKA_UI::kartica_mentora( $m ); } // phpcs:ignore ?></div>
+    </div>
+  </section>
+  <?php include AKA_DIR . 'templates/dio-cijene.php'; ?>
+  <?php echo AKA_UI::pitanja( array_slice( AKA_Podaci::pitanja(), 0, 4 ) ); // phpcs:ignore ?>
+  <?php echo AKA_UI::cta(); // phpcs:ignore ?>
 </div>

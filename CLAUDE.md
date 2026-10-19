@@ -26,6 +26,11 @@ boje u boju** (animacija `aka-flow`) – Igorov zahtjev. Klase s prefiksom `aka-
   (foto="…" po želji), globalni CSS + font iz dodatka. HTML blok se na aiakademija.hr raspao – wpautop ubacuje <p>/<br>
   (i u <style>). **Pravilo: veći HTML za ovu stranicu uvijek kao kratki kod iz dodatka, ne zalijepljen u HTML blok.**
   Lokalni test: WordPress s GitHuba + SQLite u privremenoj mapi.
+- **0.3.0 (19.10.2026.):** struktura cijele stranice – kratki kodovi `ai-akademija-{naslovnica,programi,tecaj,mentori,tvrtke,
+  o-nama,kontakt,cijene,pitanja,uvjeti,podnozje}` (popis i adrese u `ai-akademija/readme.txt`). Svi podaci u
+  `includes/podaci.php` (AKA_Podaci) – IZMIŠLJENI (mentori Ana Horvat… su izmišljene osobe, cijene, kontakt, OIB 000…) –
+  zamijeniti stvarnima. Tečaj: podstranica /programi/<slug>/ prepoznaje se po adresi. Obrazac: admin-post `aka_kontakt`,
+  mail na admin_email. Uvjeti korištenja: lorem ipsum (pravi tekst – pravnik). Privatnost: WordPressova stranica privatnosti.
 - Brojke 12.000+ polaznika i 4.9/5 su iz dizajna – zamijeniti stvarnima prije objave. Fotografija u heroju: čeka Igorovu sliku.
 
 ## Način rada

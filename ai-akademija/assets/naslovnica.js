@@ -12,3 +12,14 @@
     });
   });
 })();
+(function(){
+  document.querySelectorAll('.aka-filter').forEach(function(f){
+    var grid=f.parentNode.querySelector('.aka-courses');if(!grid)return;
+    f.addEventListener('click',function(e){
+      var b=e.target.closest('button');if(!b)return;
+      f.querySelectorAll('button').forEach(function(x){x.classList.toggle('is-on',x===b);});
+      var r=b.getAttribute('data-aka-filter');
+      grid.querySelectorAll('.aka-course').forEach(function(c){c.hidden=!!r&&c.getAttribute('data-razina')!==r;});
+    });
+  });
+})();
