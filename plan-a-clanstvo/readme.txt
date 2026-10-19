@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.15.8
+Stable tag: 1.15.9
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,11 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.15.9 =
+* Tablica za agenciju: kad se objavljenom izletu promijeni datum, prazni blok starog datuma sam se obriše (skripta v22, radnja ag_drop; blok u kojem je netko upisan ostaje). Prije su ostajali blokovi za svaki datum (Tinder i planinarenje 3 puta).
+* Stavka izleta bez termina (narudžba od 0 € s isteklim kodom obrasca, #9115) više ne ide u tablicu – prije je nastajao blok bez datuma.
+* Skripta v22: u tablicu članova (i tablicu za agenciju) zalijepiti novu skriptu i objaviti kao New version.
 
 = 1.15.8 =
 * Skripta tablice v21: lista čekanja (plan-a-prijave 0.8.0) – žuti redovi „LISTA ČEKANJA” ispod sudionika izleta (Č1, Č2 …), ne broje se u prijavljene, popis za vodiča ni sažetak; u naslovu bloka „lista čekanja N”; ne idu u arhivu.

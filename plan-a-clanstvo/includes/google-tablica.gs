@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 21;
+var SCRIPT_VERSION = 22;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -57,6 +57,8 @@ function doPost(e) {
         out = { ok: true, people: agPeople_(agSheet_(d.ag), String(d.from || '')) };
       } else if (d.action === 'ag_rates') {
         out = { ok: true, n: agRates_(agSheet_(d.ag), d.ids || [], d.rt || []) };
+      } else if (d.action === 'ag_drop') {
+        out = { ok: true, dropped: agDrop_(agSheet_(d.ag), d.keys || []) };
       } else if (d.action === 'ag_wait') {
         out = { ok: true, n: agWait_(agSheet_(d.ag), d.items || []) };
       } else if (d.action === 'ag_note') {
@@ -747,6 +749,32 @@ function agFind_(ix, key) {
   var b = null;
   ix.blocks.forEach(function (o) { if (!b && o.key === key) b = o; });
   return b;
+}
+
+/**
+ * (v22) Obriši prazne blokove izleta po ključu (npr. stari datum nakon promjene datuma izleta).
+ * Blok s ijednom osobom ili listom čekanja ostaje. Vraća ključeve obrisanih (i nepostojećih) blokova.
+ */
+function agDrop_(sh, keys) {
+  var ix = agIndex_(sh), out = [], del = [];
+  keys.forEach(function (k) {
+    k = String(k || '');
+    if (!k) return;
+    var b = agFind_(ix, k);
+    if (!b) { out.push(k); return; }
+    if (agBlockRows_(ix, b).n > 0 || agWaitRows_(ix, b).length) return;
+    var next = ix.last + 1;
+    ix.blocks.forEach(function (o) { if (o.row > b.row && o.row < next) next = o.row; });
+    del.push({ row: b.row, n: next - b.row, key: k });
+  });
+  del.sort(function (a, b) { return b.row - a.row; }); // odozdo
+  del.forEach(function (x) {
+    if (x.n < 1) return;
+    if (sh.getMaxRows() - x.n < 2) sh.insertRowsAfter(sh.getMaxRows(), 1);
+    sh.deleteRows(x.row, x.n);
+    out.push(x.key);
+  });
+  return out;
 }
 
 /** Nađe blok izleta ili ga napravi na vrhu. t: {key, date, title, base, year} */

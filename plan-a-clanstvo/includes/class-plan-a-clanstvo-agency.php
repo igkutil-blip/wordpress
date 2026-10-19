@@ -140,10 +140,38 @@ final class Plan_A_Clanstvo_Agency {
 		}
 	}
 
+	/**
+	 * Već poslani blokovi budućih termina kojih više nema (promijenjen datum, izlet skriven): skripta (v22, ag_drop)
+	 * obriše one u kojima nema nikoga; blok s osobama ostaje agenciji. Starija skripta samo ne zna radnju – ništa se ne briše.
+	 */
+	private static function drop_old( array &$sent, array $upcoming ) {
+		$today = current_time( 'Y-m-d' );
+		$now   = array_flip( wp_list_pluck( $upcoming, 'key' ) );
+		$gone  = array();
+		foreach ( array_keys( $sent ) as $key ) {
+			$date = substr( (string) $key, 0, 10 );
+			if ( ! isset( $now[ $key ] ) && preg_match( '/^\d{4}-\d{2}-\d{2}_\d+$/', (string) $key ) && $date >= $today ) {
+				$gone[] = (string) $key;
+			}
+		}
+		if ( ! $gone ) {
+			return;
+		}
+		$res = self::post( array( 'action' => 'ag_drop', 'keys' => $gone ) );
+		if ( ! empty( $res['ok'] ) && is_array( $res['dropped'] ?? null ) ) {
+			foreach ( $res['dropped'] as $key ) {
+				unset( $sent[ (string) $key ] );
+			}
+			update_option( self::TOURS, $sent, false );
+		}
+	}
+
 	/** Pošalji blokove za izlete koji ih još nemaju. */
 	public static function send_tours(): array {
 		$sent  = (array) get_option( self::TOURS, array() );
-		$tours = array_values( array_filter( self::upcoming(), static fn( $t ) => empty( $sent[ $t['key'] ] ) ) );
+		$all   = self::upcoming();
+		self::drop_old( $sent, $all );
+		$tours = array_values( array_filter( $all, static fn( $t ) => empty( $sent[ $t['key'] ] ) ) );
 		if ( ! $tours ) {
 			return array( 'ok' => true, 'n' => 0 );
 		}
@@ -553,6 +581,10 @@ final class Plan_A_Clanstvo_Agency {
 				continue;
 			}
 			$tour_id = (int) $item->get_meta( '_ttbm_id' );
+			// Stavka izleta bez termina (narudžba od 0 € iz stranice s isteklim kodom, #9115) ne ide u tablicu – inače nastane blok bez datuma.
+			if ( ! strtotime( (string) $item->get_meta( '_ttbm_date' ) ) ) {
+				continue;
+			}
 			$tour    = self::tour( $tour_id, (string) $item->get_meta( '_ttbm_date' ), (string) $item->get_meta( '_ttbm_end_date' ) );
 			if ( self::is_sailing( $tour_id, $tour['title'] ) ) {
 				continue;
