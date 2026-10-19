@@ -2,8 +2,8 @@
 /**
  * Postavke i brojanje prijavljenih (muški/ženski, raspon godina) za odabrane izlete.
  *
- * Izlet dobiva značajke kvačicom u okviru „Tinder – Tko dolazi” na ekranu izleta (meta _pat_on, vlastita WhatsApp
- * grupa _pat_wa). Popis izleta iz 1.0.0 (opcija tours) prenosi se jednom u te kvačice.
+ * Izlet dobiva značajke kvačicom u okviru „Tinder – Tko dolazi” na ekranu izleta (meta _pat_on). WhatsApp grupa je jedna,
+ * zajednička grupa Plan A za sve izlete (postavke; kad se napuni, upiše se poveznica nove grupe). Popis izleta iz 1.0.0 (opcija tours) prenosi se jednom u te kvačice.
  *
  * Podaci o osobi spremaju se uz stavku narudžbe (meta _pat_osobe: [['spol' => 'm'|'z', 'god' => 1990], …]),
  * istim redom kao popis sudionika košarice (_pac_osobe). Osoba se ne broji ako je narudžba otkazana,
@@ -89,10 +89,9 @@ final class Plan_A_Tinder {
 		return preg_match( '#^https://(chat\.whatsapp\.com|wa\.me)/#i', $url ) ? (string) strtok( $url, '?' ) : '';
 	}
 
-	/** WhatsApp grupa izleta (iz okvira na ekranu izleta), inače zadana iz postavki. */
+	/** Zajednička WhatsApp grupa Plan A (postavke) – ista za sve uključene izlete. */
 	public static function wa_url( int $tour = 0 ): string {
-		$own = $tour ? self::clean_wa( (string) get_post_meta( $tour, '_pat_wa', true ) ) : '';
-		return '' !== $own ? $own : self::clean_wa( (string) self::settings()['wa'] );
+		return self::clean_wa( (string) self::settings()['wa'] );
 	}
 
 	/** Redni brojevi osoba stavke koje administrator ne broji. */
