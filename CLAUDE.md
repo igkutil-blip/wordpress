@@ -187,6 +187,8 @@ ikonu osvježi sam (do ~dan), iPhone tek nakon ponovne instalacije.
 SEO (Seo::fill force – i preko ručno upisanog), osiguranje (usluga s „osiguranj” = Unos::insurance(cijena „Uplata”)), kategorija trajanja (ttbm_tour_org,
 ostali pojmovi ostaju) – klasa Plan_A_Prijave_Skica; predložak (_pap_template) se ne dira. Nakon objave ništa samo (SEO: ručno ostaje, usporedba tolerantnija – Seo::same).
 Na kopiji provjereno s pravim Rank Mathom (probna skica 9076, obrisana).
+**0.8.5:** osiguranje iznad 355 € točno 2,8 % na cent. **0.8.6 + plan-a-tinder 1.2.1 (19.10.):** osiguranje se računa pri SVAKOM spremanju izleta (i objavljenog),
+jednom (opcija `pap_ins_028` = {time, changed: {id: stari iznos}}) usklađeni svi postojeći izleti; postojeće narudžbe se ne mijenjaju. Tinder gumb: „WhatsApp grupa Plana A”.
 
 ## plan-a-tinder 1.0.0 (19.10.2026., obje grane, isti zip) – „Tinder i planinarenje – vikend u Ramića dvorima” (14.–15.12.2026.)
 
