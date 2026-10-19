@@ -220,6 +220,7 @@ Izbornik Izleti → Tinder izleti.
 **1.3.0 (19.10.):** POTICAJ po izletu (kartica izleta u Izleti → Tinder izleti, meta `_pat_seed` = on, m, m_min, m_max, z, z_min, z_max): dodani ♂/♀ s rasponom godina pribrajaju se pravim prijavama samo na stranici (Plan_A_Tinder::shown); upisani raspon se prikazuje uvijek (prag `min` samo za prave); poticaj nikad ne pokaže „popunjeno” dok ima pravih slobodnih mjesta (ukupno se ograniči na mjesta − 1). Ne rezervira mjesta, nije u narudžbama ni tablici. Kvačica isključuje, brojke ostaju.
 **1.4.0 (19.10.):** poticaj umanjuje i PRIKAZ slobodnih mjesta (hero `.ttbm_available_seat` – assets/tinder.js, MutationObserver jer TTBM JS osvježava broj; kartica „slobodno još” = TTBM get_total_available − poticaj), najmanje 1 dok ima stvarnih. Skriveni #ttbm_total_available, max količine i košarica ostaju stvarni – prijaviti se mogu svi stvarno slobodni (Igor: marketinški trik, ne smije blokirati prijave).
 **1.4.1 (19.10.):** kartica 403 → ~195 px (Igor: na računalu se gumb Rezervirajte vidio tek na kraju stranice – desni stupac `.ttbm_content__right` je sticky, booking kartica 820 px > ekran laptopa); napomena o privatnosti sada samo `title` kartice.
+**1.5.0 (19.10.):** košarica samo spol; godina = Plan_A_Tinder::birth_year(_pac_osobe[i]) – datum iz pristupnice u košarici ili zapis člana po e-mailu (kupac: billing e-mail); u people() i za stare narudžbe bez `god`.
 
 ## plan-a-baneri 1.0.0 (19.10.2026., obje grane, isti zip) – vrh naslovnice umjesto slidera
 

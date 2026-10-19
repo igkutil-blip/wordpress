@@ -103,6 +103,27 @@ final class Plan_A_Tinder {
 		return is_array( $x ) ? array_values( array_map( 'intval', $x ) ) : array();
 	}
 
+	/**
+	 * Godina rođenja osobe iz pristupnice: datum upisan u košarici (novi član) ili zapis člana u Plan A članstvu (po e-mailu).
+	 * 0 = nepoznato.
+	 */
+	public static function birth_year( array $p, string $fallback_email = '' ): int {
+		$date = (string) ( $p['datum'] ?? '' );
+		if ( class_exists( 'Plan_A_Clanstvo_Data' ) ) {
+			$date = Plan_A_Clanstvo_Data::parse_date( $date );
+			if ( '' === $date ) {
+				$email = strtolower( trim( (string) ( $p['email'] ?? '' ) ) ) ?: strtolower( trim( $fallback_email ) );
+				$id    = is_email( $email ) ? Plan_A_Clanstvo_Data::find( 'email', $email ) : 0;
+				$m     = $id ? Plan_A_Clanstvo_Data::get_member( $id ) : null;
+				$date  = $m ? Plan_A_Clanstvo_Data::parse_date( (string) ( $m['datum'] ?? '' ) ) : '';
+			}
+		} elseif ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
+			$date = '';
+		}
+		$year = $date ? (int) substr( $date, 0, 4 ) : 0;
+		return $year >= 1920 && $year <= (int) current_time( 'Y' ) ? $year : 0;
+	}
+
 	/** Godina izleta iz datuma termina u stavci (za računanje dobi). */
 	private static function tour_year( $item ): int {
 		$ts = strtotime( (string) $item->get_meta( '_ttbm_date' ) );
@@ -141,7 +162,7 @@ final class Plan_A_Tinder {
 				for ( $i = 0; $i < $count; $i++ ) {
 					$o    = (array) ( $ours[ $i ] ?? array() );
 					$n    = (array) ( $names[ $i ] ?? array() );
-					$god  = (int) ( $o['god'] ?? 0 );
+					$god  = (int) ( $o['god'] ?? 0 ) ?: self::birth_year( $n, 0 === $i ? $order->get_billing_email() : '' );
 					$name = trim( (string) ( $n['ime'] ?? '' ) . ' ' . (string) ( $n['prezime'] ?? '' ) );
 					if ( '' === $name && 0 === $i ) {
 						$name = trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );

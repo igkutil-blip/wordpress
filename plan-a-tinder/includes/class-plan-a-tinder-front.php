@@ -160,7 +160,7 @@ final class Plan_A_Tinder_Front {
 		$posted = self::posted();
 		echo '<div class="pat-checkout">';
 		echo '<h3>' . esc_html__( 'Za brojač „Tko dolazi”', 'plan-a-tinder' ) . '</h3>';
-		echo '<p class="pat-muted">' . esc_html__( 'Na stranici izleta prikazujemo samo koliko je prijavljenih muškaraca i žena i raspon godina, bez imena. Za svaku osobu odaberi spol i upiši godinu rođenja.', 'plan-a-tinder' ) . '</p>';
+		echo '<p class="pat-muted">' . esc_html__( 'Na stranici izleta prikazujemo samo koliko je prijavljenih muškaraca i žena i raspon godina, bez imena. Za svaku osobu odaberi spol (godinu rođenja uzimamo iz pristupnice člana).', 'plan-a-tinder' ) . '</p>';
 		foreach ( $items as $key => $it ) {
 			if ( count( $items ) > 1 ) {
 				echo '<h4 class="pat-checkout__tour">' . esc_html( $it['name'] ) . '</h4>';
@@ -176,7 +176,6 @@ final class Plan_A_Tinder_Front {
 					echo '<label><input type="radio" name="' . esc_attr( $name . '[spol]' ) . '" value="' . esc_attr( $val ) . '"' . checked( $v['spol'], $val, false ) . ' required> ' . esc_html( $label ) . '</label>';
 				}
 				echo '</span>';
-				echo '<label class="pat-year">' . esc_html__( 'Godina rođenja', 'plan-a-tinder' ) . ' <input type="text" name="' . esc_attr( $name . '[god]' ) . '" value="' . esc_attr( $v['god'] ? (string) $v['god'] : '' ) . '" inputmode="numeric" maxlength="4" pattern="(19|20)[0-9]{2}" placeholder="npr. 1988" required></label>';
 				echo '</fieldset>';
 			}
 		}
@@ -186,16 +185,12 @@ final class Plan_A_Tinder_Front {
 	public static function validate( $data, $errors ) {
 		$items  = self::cart_items();
 		$posted = self::posted();
-		$now    = (int) current_time( 'Y' );
 		foreach ( $items as $key => $it ) {
 			for ( $i = 0; $i < $it['people']; $i++ ) {
 				$v   = $posted[ $key ][ $i ] ?? array( 'spol' => '', 'god' => 0 );
 				$who = sprintf( '%d. osoba: ', $it['from'] + $i );
 				if ( '' === $v['spol'] ) {
 					$errors->add( 'pat', $who . __( 'odaberi spol (za brojač na stranici izleta).', 'plan-a-tinder' ) );
-				}
-				if ( $v['god'] < 1920 || $v['god'] > $now - 10 ) {
-					$errors->add( 'pat', $who . __( 'upiši godinu rođenja, npr. 1988.', 'plan-a-tinder' ) );
 				}
 			}
 		}
@@ -207,9 +202,12 @@ final class Plan_A_Tinder_Front {
 			return;
 		}
 		$posted = self::posted();
+		$names  = (array) $item->get_meta( '_pac_osobe' ); // Plan A članstvo upisuje osobe ranije (prioritet 10)
 		$list   = array();
 		for ( $i = 0; $i < $items[ $cart_key ]['people']; $i++ ) {
-			$list[] = $posted[ $cart_key ][ $i ] ?? array( 'spol' => '', 'god' => 0 );
+			$v        = $posted[ $cart_key ][ $i ] ?? array( 'spol' => '', 'god' => 0 );
+			$v['god'] = Plan_A_Tinder::birth_year( (array) ( $names[ $i ] ?? array() ) );
+			$list[]   = $v;
 		}
 		$item->add_meta_data( '_pat_osobe', $list, true );
 	}
