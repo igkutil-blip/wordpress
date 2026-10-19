@@ -46,6 +46,26 @@ final class Plan_A_Baneri {
 			'promo_icon' => '',
 			'tinder_on'  => 1,
 			'tinder_btn' => 'Prijavi se',
+			'slider_on'  => 1,
+			'interval'   => 8,
+			's1_tab'     => 'Izleti',
+			's2_on'      => 1,
+			's2_tab'     => 'Jedrenje',
+			's2_image'   => 0,
+			's2_kicker'  => 'Jedrenje {godina} · prijave otvorene',
+			's2_title'   => "Tjedan na moru,\nekipa po tvom izboru.",
+			's2_sub'     => 'Brod sa skiperom, planinarenje po otocima – vi birate tjedan i ekipu.',
+			's2_btn1'    => 'Odaberi tjedan',
+			's2_btn2'    => 'Pitaj nas',
+			's2_btn2_url' => '/kontakt/',
+			's2_weeks'   => 3,
+			's3_on'      => 1,
+			's3_tab'     => 'Koji izlet?',
+			's3_image'   => 0,
+			's3_kicker'  => 'Kviz · 3 klika',
+			's3_title'   => "Ne znaš koji izlet\nodabrati?",
+			's3_sub'     => 'Odgovori na tri pitanja i pokazat ćemo ti izlete koji ti odgovaraju – s pravim datumima i slobodnim mjestima.',
+			's3_btn'     => 'Svi izleti',
 			'cards_on'   => 1,
 			'cards_title' => 'Sljedeći izleti',
 			'cards_sub'  => 'Ovaj i sljedeći mjesec u planinama',
@@ -109,6 +129,8 @@ final class Plan_A_Baneri {
 				'seats'    => $seats['total'],
 				'sold_out' => ! empty( $t['sold_out'] ) || ( null !== $seats['free'] && $seats['free'] < 1 ),
 				'tinder'   => self::tinder( $src ),
+				'ndays'    => self::ndays( $src ),
+				'tags'     => self::tags( $id, $src ),
 			);
 		}
 		usort(
@@ -165,6 +187,40 @@ final class Plan_A_Baneri {
 		return $total;
 	}
 
+	/** Trajanje u danima (za kviz): broj dana izleta, 1 ako je u satima. */
+	private static function ndays( int $id ): int {
+		$type = get_post_meta( $id, 'ttbm_travel_duration_type', true ) ?: 'day';
+		return 'day' === $type ? max( 1, (int) get_post_meta( $id, 'ttbm_travel_duration', true ) ) : 1;
+	}
+
+	/**
+	 * Vrsta izleta za kviz iz naziva, kategorija i aktivnosti: ferrata, zima (snijeg, lavinski, dereze), more (otoci,
+	 * jedrenje), planina (sve ostalo i sve što nije more).
+	 */
+	private static function tags( int $id, int $src ): array {
+		$text = get_the_title( $id );
+		foreach ( array( 'ttbm_tour_cat', 'ttbm_tour_org', 'ttbm_tour_activities', 'ttbm_tour_tag' ) as $tax ) {
+			if ( taxonomy_exists( $tax ) ) {
+				$names = wp_get_post_terms( $src, $tax, array( 'fields' => 'names' ) );
+				$text .= ' ' . ( is_array( $names ) ? implode( ' ', $names ) : '' );
+			}
+		}
+		$tags = array();
+		if ( preg_match( '/ferat|ferrat|klin|penj/iu', $text ) ) {
+			$tags[] = 'ferrata';
+		}
+		if ( preg_match( '/zim|snijeg|snjež|lavin|krplj|dereze|skitur/iu', $text ) ) {
+			$tags[] = 'zima';
+		}
+		if ( preg_match( '/jedren|otok|hvar|brač|vis\b|mljet|korčul|kornat|more|sunce/iu', $text ) ) {
+			$tags[] = 'more';
+		}
+		if ( ! preg_match( '/jedren/iu', $text ) ) {
+			$tags[] = 'planina';
+		}
+		return $tags;
+	}
+
 	/** Brojač Tinder izleta (♂/♀ kao na stranici izleta, s poticajem). */
 	private static function tinder( int $id ): ?array {
 		if ( ! class_exists( 'Plan_A_Tinder' ) || ! Plan_A_Tinder::is_tour( $id ) ) {
@@ -203,6 +259,53 @@ final class Plan_A_Baneri {
 	private static function end_date( int $id, string $date ): string {
 		$days = 'day' === ( get_post_meta( $id, 'ttbm_travel_duration_type', true ) ?: 'day' ) ? (int) get_post_meta( $id, 'ttbm_travel_duration', true ) : 1;
 		return $days > 1 ? gmdate( 'Y-m-d', strtotime( $date . ' +' . ( $days - 1 ) . ' days' ) ) : $date;
+	}
+
+	/**
+	 * Jedrenje (Plan A jedrenje): sljedeći tjedni koji se još mogu rezervirati, cijena broda, broj osoba, stranica.
+	 */
+	public static function sailing( int $count ): ?array {
+		if ( ! class_exists( 'Plan_A_Jedrenje_Data' ) || ! class_exists( 'Plan_A_Jedrenje_Booking' ) ) {
+			return null;
+		}
+		try {
+			$weeks = array_slice( Plan_A_Jedrenje_Data::public_weeks(), 0, max( 3, $count ) );
+		} catch ( \Throwable $e ) {
+			return null;
+		}
+		$open = array_filter( $weeks, static fn( $w ) => 'booked' !== $w['state'] );
+		if ( ! $open ) {
+			return null;
+		}
+		$image = 0;
+		if ( class_exists( 'Plan_A_Jedrenje_Slider' ) && method_exists( 'Plan_A_Jedrenje_Slider', 'block_images' ) ) {
+			$ids   = Plan_A_Jedrenje_Slider::block_images();
+			$image = (int) ( $ids[0] ?? 0 );
+		}
+		return array(
+			'weeks' => array_map(
+				static function ( $w ) {
+					return array(
+						'start' => $w['start'],
+						'label' => self::day_month( $w['start'] ) . '–' . self::day_month( $w['end'] ),
+						'price' => (float) $w['price'],
+						'state' => $w['state'],
+					);
+				},
+				$weeks
+			),
+			'min'   => Plan_A_Jedrenje_Data::min_persons(),
+			'max'   => Plan_A_Jedrenje_Data::max_persons(),
+			'boat'  => (string) Plan_A_Jedrenje_Data::value( 'boat' ),
+			'url'   => Plan_A_Jedrenje_Booking::page_url(),
+			'year'  => (int) substr( (string) reset( $open )['start'], 0, 4 ),
+			'image' => $image,
+		);
+	}
+
+	private static function day_month( string $ymd ): string {
+		$ts = strtotime( $ymd );
+		return gmdate( 'j', $ts ) . '.' . gmdate( 'n', $ts ) . '.';
 	}
 
 	/** Iznos članarine za tekuću godinu (Plan A članstvo), npr. „5 €”. */

@@ -1,7 +1,7 @@
 === Plan A jedrenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.9.3
+Stable tag: 1.9.4
 License: GPLv2 or later
 
 Rezervacija tjednog jedrenja za ekipu (subota–subota) u terminu koji kupac bira.
@@ -47,6 +47,9 @@ i na stranici iz predmemorije. Ipak izuzmi:
 Košarica, naplata i "Moj račun" već moraju biti izuzeti zbog WooCommercea.
 
 == Promjene ==
+
+= 1.9.4 =
+* Poveznica ?tjedan=GGGG-MM-DD (i ?osoba=N) odmah označi tjedan i broj osoba u kalendaru – za slajd jedrenja na naslovnici (Plan A baneri).
 
 = 1.9.3 =
 * Kalendar i obrazac: „▶ Pogledaj kako rezervirati (1 min)” – kratki video u prozorčiću kao poruka na WhatsAppu.

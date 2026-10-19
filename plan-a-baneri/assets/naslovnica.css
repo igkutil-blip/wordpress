@@ -123,3 +123,67 @@
 	.pab-cards{grid-auto-columns:78%;gap:14px;padding:4px 16px 18px;margin:-4px 0 0;scroll-padding:0 16px}
 }
 @media (prefers-reduced-motion:reduce){.pab-btn,.pab-rib,.pab-card{transition:none}}
+
+/* ---- Slider (1.1.0): slike se pretapaju, sadržaj slajdova u istoj ćeliji (visina = najviši slajd) ---- */
+.pab-bgs{position:absolute;inset:0}
+.pab-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;max-width:none;opacity:0;transition:opacity .9s ease;display:block}
+.pab-bg.is-on{opacity:1}
+.pab-slides{position:relative;z-index:2;flex:1;display:grid}
+.pab-slide{grid-area:1/1;display:flex;opacity:0;visibility:hidden;transition:opacity .6s ease,visibility 0s linear .6s}
+.pab-slide.is-on{opacity:1;visibility:visible;transition:opacity .6s ease .15s,visibility 0s}
+.pab-slide>.pab-hero__in{flex:1}
+.pab-tabs{position:relative;z-index:2;display:flex;gap:8px;max-width:1440px;width:100%;margin:0 auto;padding:0 56px 14px}
+.pab-tab{position:relative;overflow:hidden;min-height:0;margin:0;border:0;border-radius:99px;padding:8px 16px;background:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#fff;font:inherit;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:none;cursor:pointer;line-height:1.2}
+.pab-tab.is-on{background:rgba(255,255,255,.92);color:var(--pab-navy)}
+.pab-tab i{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--pab-orange)}
+.pab-tab.is-run i{width:100%;transition:width linear var(--pab-int,8s)}
+.pab-tab span{position:relative}
+
+/* Kartice slajdova 2 i 3 (ista bijela kartica kao „Sljedeći polazak”) */
+.pab-w{position:relative;background:#fff;border-radius:22px;box-shadow:0 24px 60px rgba(0,0,0,.35);max-width:420px;justify-self:end;width:100%;padding:22px 22px 20px}
+.pab-w__h{margin:0 0 12px;font-size:18px;font-weight:700;color:var(--pab-navy);line-height:1.25}
+.pab-w__h--s{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--pab-muted);margin:18px 0 10px}
+.pab-calc{display:flex;align-items:center;gap:16px;background:#f1f6fb;border-radius:16px;padding:14px 16px}
+.pab-calc__big b{display:block;white-space:nowrap;font-size:38px;line-height:1;color:var(--pab-navy);font-variant-numeric:tabular-nums}
+.pab-calc__big small{font-size:12px;color:var(--pab-muted);text-transform:uppercase;letter-spacing:.08em}
+.pab-calc__side{font-size:13px;color:var(--pab-muted);line-height:1.45;border-left:1px solid #d7e3ee;padding-left:14px}
+.pab-calc__side b{color:var(--pab-navy)}
+.pab-range{display:block;margin:14px 0 0}
+.pab-range span{display:flex;justify-content:space-between;font-size:14px;color:var(--pab-muted)}
+.pab-range span b{color:var(--pab-navy);font-size:16px}
+.pab .pab-range input{width:100%;margin:8px 0 0;padding:0;height:28px;border:0;box-shadow:none;background:transparent;accent-color:var(--pab-orange);cursor:pointer}
+.pab-weeks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pab-wk{min-height:0;margin:0;border:1.5px solid #cfe7d6;background:#f3fbf5;border-radius:12px;padding:8px 6px;font:inherit;text-transform:none;letter-spacing:0;cursor:pointer;text-align:center;line-height:1.2;color:var(--pab-ink)}
+.pab-wk b{display:block;font-size:14px;color:var(--pab-navy)}
+.pab-wk small{font-size:11px;color:#2f8a4a}
+.pab-wk--request{border-color:#f6d7b8;background:#fff7ee}.pab-wk--request small{color:#c25e10}
+.pab-wk--booked{border-color:#e3e8ee;background:#f4f6f8;cursor:not-allowed;opacity:.7}.pab-wk--booked b{text-decoration:line-through}.pab-wk--booked small{color:var(--pab-muted)}
+.pab-wk.is-sel{border-color:var(--pab-orange);box-shadow:0 0 0 2px rgba(245,130,42,.25)}
+.pab-w__go{width:100%;margin-top:16px}
+
+.pab-quiz__steps{display:flex;gap:6px;margin-bottom:14px}
+.pab-quiz__steps i{flex:1;height:4px;border-radius:4px;background:#e2eaf2}
+.pab-quiz__steps i.is-on{background:var(--pab-orange)}
+.pab-opts{display:grid;gap:8px}
+.pab-opt{min-height:0;margin:0;text-align:left;border:1.5px solid #dbe5ee;background:#fff;border-radius:14px;padding:13px 16px;font:inherit;font-size:16px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--pab-navy);cursor:pointer;transition:border-color .15s,background .15s;line-height:1.2}
+.pab-opt:hover,.pab-opt:focus-visible{border-color:var(--pab-orange);background:#fff7ee}
+.pab-quiz__list{display:grid;gap:10px}
+.pab-res{display:flex;gap:12px;align-items:center;border-radius:14px;background:#f1f6fb;padding:8px;color:var(--pab-ink)}
+.pab-res:hover{color:var(--pab-ink);background:#e8f1f9}
+.pab-res img{flex:none;width:84px;height:64px;object-fit:cover;border-radius:10px}
+.pab-res b{display:block;font-size:15px;color:var(--pab-navy);line-height:1.25}
+.pab-res small{display:block;font-size:13px;color:var(--pab-muted);margin-top:3px}
+.pab-res em{font-style:normal;color:#d9480f;font-weight:700}
+.pab-quiz__again{min-height:0;margin:12px 0 0;padding:4px 0;border:0;background:none;color:var(--pab-blue);font:inherit;font-weight:700;font-size:14px;text-transform:none;letter-spacing:0;cursor:pointer}
+
+@media (max-width:1100px){.pab-tabs{padding-left:32px;padding-right:32px}}
+@media (max-width:849px){
+	.pab-w{justify-self:stretch;max-width:none;padding:18px}
+	.pab-tabs{padding:0 16px 12px;justify-content:center}
+	/* Mobitel: slajdovi različite visine – prikazuje se samo odabrani (bez praznine), mijenja se tabletom ili prstom. */
+	.pab-slide:not(.is-on){display:none}
+	.pab-slide{transition:none}
+	.pab-tab{padding:7px 12px;font-size:12px}
+	.pab-calc__big b{font-size:32px}
+}
+@media (prefers-reduced-motion:reduce){.pab-bg,.pab-slide{transition:none}.pab-tab.is-run i{transition:none;width:0}}

@@ -287,6 +287,15 @@
 
 		buildMonths();
 		render();
+		// Poveznica s naslovnice: ?tjedan=2027-05-15&osoba=6 odmah označi tjedan i broj osoba.
+		var pre = (window.location.search.match(/[?&]tjedan=(\d{4}-\d{2}-\d{2})/) || [])[1];
+		var preN = (window.location.search.match(/[?&]osoba=(\d{1,2})/) || [])[1];
+		if (preN && persons.querySelector('option[value="' + preN + '"]')) {
+			persons.value = preN;
+		}
+		if (pre) {
+			select(pre);
+		}
 		refresh();
 	}
 

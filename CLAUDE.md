@@ -229,6 +229,11 @@ particular, slobodna mjesta – Tinder s poticajem umanjeno); traka akcije (čla
 promo_until 2026-12-31); traka Tinder (najbliži izlet s _pat_on, ♂/♀ Plan_A_Tinder::shown); kartice izleta (60 dana, min 4, max 8; oznake Još N mjesta ≤5,
 Popunjeno · lista čekanja, ♂/♀). Podaci iz Plan_A_Izleti_Data/Shortcode, transient `pab_tours` 5 min. JS: odbrojavanje, skrivanje isteklog (predmemorija).
 Full-bleed: width 100vw + margin calc(50% - 50vw). Ikone SVG (WP emoji → slike s s.w.org). Na kopiji stranica 9077 /proba-naslovnice/ (za pregled).
+**1.1.0 + plan-a-jedrenje 1.9.4 (19.10., Igor odobrio prijedlog):** SLIDER – slajd 1 izleti (nepromijenjen), slajd 2 jedrenje (kalkulator: klizač min–max osoba,
+cijena broda odabranog tjedna / n; slobodni tjedni iz Plan_A_Jedrenje_Data::public_weeks, zadano 3; „Pošalji zahtjev” → stranica jedrenja ?tjedan=&osoba= – jedrenje.js
+1.9.4 sam označi tjedan i osobe; slika = s2_image ili Jedrenje_Slider::block_images()[0]), slajd 3 kviz (dani 1/2–3/4+, vrsta planina/ferrata/zima/more iz naziva+pojmova,
+mjesec; popuštanje uvjeta → „Najbliže tvom izboru”). Pozadine se pretapaju, slike 2/3 tek nakon load; tablete s crtom; 8 s; staje na hover i rad u kartici; na mobitelu
+samo odabrani slajd (display none) i BEZ automatske vrtnje (visina). Trake i kartice zajedničke. Kartice: popunjeni na kraj (Igor).
 
 ## NA ČEKANJU (Igor 16.10.2026.): „Popis za sutra” – Super Ferrata Dinara 17.10.
 

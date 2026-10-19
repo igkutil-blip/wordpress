@@ -84,8 +84,143 @@
 		});
 	}
 
+	function money(v) {
+		return Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' €';
+	}
+
+	/* Slider: slajd se mijenja svakih N s, staje kad je miš iznad ili kad netko koristi karticu (kalkulator, kviz). */
+	function initSlider(hero) {
+		var slides = [].slice.call(hero.querySelectorAll('.pab-slide'));
+		var bgs = [].slice.call(hero.querySelectorAll('.pab-bg'));
+		var tabs = [].slice.call(hero.querySelectorAll('.pab-tab'));
+		if (slides.length < 2) return;
+		var ms = (+hero.dataset.interval || 8) * 1000, cur = 0, timer = null, hover = false, stopped = false;
+		// Sam se vrti samo na širem ekranu: na mobitelu bi promjena visine slajda pomicala stranicu ispod.
+		var still = window.matchMedia && (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !window.matchMedia('(min-width: 850px)').matches);
+		hero.style.setProperty('--pab-int', ms / 1000 + 's');
+		function loadBgs() {
+			bgs.forEach(function (b) {
+				if (b.dataset.src) { if (b.dataset.srcset) b.srcset = b.dataset.srcset; b.src = b.dataset.src; delete b.dataset.src; }
+			});
+		}
+		if (document.readyState === 'complete') setTimeout(loadBgs, 300); else window.addEventListener('load', function () { setTimeout(loadBgs, 300); });
+		function run() {
+			clearTimeout(timer);
+			tabs.forEach(function (t) { t.classList.remove('is-run'); });
+			if (stopped || hover || still) return;
+			var t = tabs[cur];
+			if (t) { void t.offsetWidth; t.classList.add('is-run'); }
+			timer = setTimeout(function () { go(cur + 1); }, ms);
+		}
+		function go(i) {
+			loadBgs();
+			cur = (i + slides.length) % slides.length;
+			slides.forEach(function (s, k) {
+				var on = k === cur;
+				s.classList.toggle('is-on', on);
+				if (on) { s.removeAttribute('aria-hidden'); s.removeAttribute('inert'); } else { s.setAttribute('aria-hidden', 'true'); s.setAttribute('inert', ''); }
+			});
+			bgs.forEach(function (b, k) { b.classList.toggle('is-on', k === cur); });
+			tabs.forEach(function (t, k) { t.classList.toggle('is-on', k === cur); t.setAttribute('aria-selected', k === cur ? 'true' : 'false'); });
+			run();
+		}
+		tabs.forEach(function (t, k) { t.addEventListener('click', function () { go(k); }); });
+		hero.addEventListener('mouseenter', function () { hover = true; run(); });
+		hero.addEventListener('mouseleave', function () { hover = false; run(); });
+		// Rad u kartici (klizač, kviz, odabir tjedna, prelistavanje polazaka) zaustavi vrtnju.
+		hero.addEventListener('pointerdown', function (e) { if (e.target.closest('.pab-w,.pab-next')) { stopped = true; run(); } });
+		hero.addEventListener('focusin', function (e) { if (e.target.closest('.pab-w')) { stopped = true; run(); } });
+		var x0 = null, y0 = null;
+		hero.querySelector('.pab-slides').addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+		hero.querySelector('.pab-slides').addEventListener('touchend', function (e) {
+			if (x0 === null) return;
+			var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+			if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && !e.target.closest('.pab-w,.pab-next,input')) { stopped = true; go(cur + (dx < 0 ? 1 : -1)); }
+		});
+		document.addEventListener('visibilitychange', function () { if (document.hidden) clearTimeout(timer); else run(); });
+		run();
+	}
+
+	/* Jedrenje: klizač broja osoba → cijena po osobi, odabir tjedna → cijena broda i poveznica na zahtjev. */
+	function initSail(box) {
+		var range = box.querySelector('input[type=range]'), sel = box.querySelector('.pab-wk.is-sel'), go = box.querySelector('[data-go]');
+		function upd() {
+			var n = +range.value, price = sel ? +sel.dataset.price : 0;
+			box.querySelector('[data-n]').textContent = n;
+			box.querySelector('[data-pp]').textContent = money(price / n);
+			box.querySelector('[data-boat-price]').textContent = money(price);
+			if (sel && go) go.href = box.dataset.url + (box.dataset.url.indexOf('?') < 0 ? '?' : '&') + 'tjedan=' + sel.dataset.start + '&osoba=' + n;
+		}
+		range.addEventListener('input', upd);
+		box.querySelectorAll('.pab-wk:not([disabled])').forEach(function (b) {
+			b.addEventListener('click', function () {
+				if (sel) sel.classList.remove('is-sel');
+				sel = b; b.classList.add('is-sel'); upd();
+			});
+		});
+		upd();
+	}
+
+	/* Kviz: 3 pitanja → 1–2 izleta iz stvarnog popisa (ako ništa ne odgovara, najbliži po popuštanju uvjeta). */
+	function initQuiz(box) {
+		var tours = [];
+		try { tours = JSON.parse(box.dataset.tours || '[]'); } catch (e) { return; }
+		tours = tours.filter(function (t) { return !t.s || t.s > now(); });
+		var qs = [].slice.call(box.querySelectorAll('.pab-quiz__q')), steps = [].slice.call(box.querySelectorAll('.pab-quiz__steps i'));
+		var res = box.querySelector('.pab-quiz__res'), list = box.querySelector('.pab-quiz__list'), ans = [];
+		function month(off) {
+			var p = box.dataset.month.split('-'), y = +p[0], m = +p[1] + off;
+			if (m > 12) { m -= 12; y++; }
+			return y + '-' + (m < 10 ? '0' : '') + m;
+		}
+		function fits(t, a, use) {
+			if (use[0]) { var d = +a[0]; if (d === 1 ? t.n !== 1 : d === 2 ? (t.n < 2 || t.n > 3) : t.n < 4) return false; }
+			if (use[1] && t.g.indexOf(a[1]) < 0) return false;
+			if (use[2] && a[2] !== '*' && t.d.slice(0, 7) !== month(+a[2])) return false;
+			return true;
+		}
+		function card(t) {
+			var a = document.createElement('a');
+			a.className = 'pab-res'; a.href = t.u;
+			var info = t.dl + (t.p ? ' · od ' + t.p : '') + (t.x ? ' · <em>popunjeno – lista čekanja</em>' : t.f > 0 && t.f <= 5 ? ' · <em>još ' + t.f + ' ' + plural(t.f, ['mjesto', 'mjesta', 'mjesta']) + '</em>' : '');
+			a.innerHTML = (t.i ? '<img src="' + t.i + '" alt="" loading="lazy">' : '') + '<span><b></b><small>' + info + '</small></span>';
+			a.querySelector('b').textContent = t.t;
+			return a;
+		}
+		function show(k) {
+			qs.forEach(function (q, i) { q.hidden = i !== k; });
+			steps.forEach(function (s, i) { s.classList.toggle('is-on', i <= k); });
+			res.hidden = k < qs.length;
+		}
+		function result() {
+			var tries = [[1, 1, 1], [1, 1, 0], [0, 1, 1], [0, 1, 0], [1, 0, 0], [0, 0, 0]], hit = [], exact = true;
+			for (var i = 0; i < tries.length && !hit.length; i++) {
+				hit = tours.filter(function (t) { return fits(t, ans, tries[i]); });
+				exact = i === 0;
+			}
+			hit.sort(function (a, b) { return a.x - b.x || a.s - b.s; });
+			list.textContent = '';
+			hit.slice(0, 2).forEach(function (t) { list.appendChild(card(t)); });
+			box.querySelector('[data-res-h]').textContent = exact ? 'Ovo je za tebe:' : 'Najbliže tvom izboru:';
+			show(qs.length);
+		}
+		box.addEventListener('click', function (e) {
+			var o = e.target.closest('.pab-opt');
+			if (o) {
+				var k = +o.closest('.pab-quiz__q').dataset.q;
+				ans[k] = o.dataset.v;
+				if (k + 1 < qs.length) show(k + 1); else result();
+				return;
+			}
+			if (e.target.closest('.pab-quiz__again')) { ans = []; show(0); }
+		});
+	}
+
 	function init() {
 		document.querySelectorAll('.pab').forEach(function (root) {
+			root.querySelectorAll('[data-pab-slider]').forEach(initSlider);
+			root.querySelectorAll('[data-pab-sail]').forEach(initSail);
+			root.querySelectorAll('[data-pab-quiz]').forEach(initQuiz);
 			root.querySelectorAll('[data-pab-next]').forEach(initNext);
 			initRibs(root);
 			initStrip(root);

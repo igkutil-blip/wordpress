@@ -1,7 +1,7 @@
 === Plan A baneri – vrh naslovnice ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 
 Vrh naslovnice umjesto slidera: kratki kod [plan-a-naslovnica].
@@ -23,6 +23,12 @@ pa je točno i kad je stranica iz predmemorije (SpeedyCache). Slobodna mjesta os
 Postavke → Plan A naslovnica: slika, tekstovi, gumbi i poveznice, uključivanje svakog dijela, tekst i rok trake akcije, razdoblje i broj kartica, razmak od vrha (prozirno zaglavlje teme).
 
 == Promjene ==
+
+= 1.1.0 =
+* Slider: vrh se izmjenjuje (zadano 8 s, pretapanje): 1. izleti (kao do sada), 2. jedrenje – kalkulator „Koliko je po osobi?” (klizač broja osoba, cijena broda odabranog tjedna) i slobodni tjedni iz Plan A jedrenja; „Pošalji zahtjev” otvara stranicu jedrenja s odabranim tjednom i brojem osoba (plan-a-jedrenje 1.9.4), 3. kviz „Koji izlet je za tebe?” (3 pitanja → 1–2 prava izleta).
+* Tablete za odabir slajda s crtom koja se puni; staje kad je miš iznad ili kad netko koristi karticu; na mobitelu povlačenje prstom. Slike 2. i 3. slajda učitavaju se tek nakon stranice.
+* Trake (članarina, Tinder) i kartice izleta ispod ostaju iste na svim slajdovima.
+* Kartice izleta: popunjeni izleti na kraj trake.
 
 = 1.0.0 =
 * Prva verzija (19.10.2026.).
