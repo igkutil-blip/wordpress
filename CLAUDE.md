@@ -242,6 +242,7 @@ vrh vidljiv (IntersectionObserver 35 %); kratki kod se prikazuje samo jednom (na
 **1.1.4 (19.10.):** na živoj (Flatsome „lazy load” uključen, na kopiji nije) slike 2./3. slajda bile prazne – Flatsome prepiše `<img data-src>` u prazni SVG → sada `<span class="pab-bg" data-pab-src/srcset>`, JS nakon load napravi `<img class="no-lazy skip-lazy">`.
 **1.1.5 (19.10.):** mobitel kompaktnije (Igor): naslov 31 px, gumbi jedan pored drugog, manja kartica polaska/odbrojavanje, tablete, gumbi, trake; računalo isto. Vodiči HTML (5 vodiča + Ivor Joksović 099 478 80 76) i „Zašto s Planom A?” (5 licenciranih) poslani kao datoteke (nisu u gitu).
 **1.1.6 (19.10.):** mobitel: kvačice u jednom redu (nowrap 11 px), tablete se JS-om premještaju u `.pab-hero__text` aktivnog slajda (ispod kvačica, iznad kartice); računalo u `.pab-bar2`.
+**1.1.7 (19.10.):** mobitel: tablete centrirane, bez podnaslova, manji razmaci – dno bijele kartice ~610 px od vrha slidera (Igor: kartica vidljiva bez listanja; ekran ~700 px).
 
 ## NA ČEKANJU (Igor 16.10.2026.): „Popis za sutra” – Super Ferrata Dinara 17.10.
 

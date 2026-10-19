@@ -271,3 +271,48 @@
 	.pab-bar2:not(:has(.pab-tabs)) {padding-top:2px}
 }
 @media (max-width:370px){.pab-trust{font-size:10px;gap:4px}}
+
+/* ---- 1.1.7: mobitel – tablete na sredini, bijela kartica cijela na prvom ekranu ---- */
+@media (max-width:849px){
+	.pab-hero__in{gap:12px;padding-bottom:10px}
+	.pab-kick{font-size:11px;padding:5px 10px}
+	.pab .pab-title{font-size:27px;line-height:1.06;margin:8px 0 6px}
+	.pab-sub{display:none}
+	.pab-ctas .pab-btn{padding:11px 8px;font-size:12px}
+	.pab-trust{margin-top:8px}
+	.pab-hero__text .pab-tabs{justify-content:center;margin-top:12px}
+	/* Sljedeći polazak */
+	.pab-next__media{height:92px}
+	.pab-next__b{padding:10px 14px 8px}
+	.pab-next h3{font-size:17px;line-height:1.2}
+	.pab-next__meta{font-size:12px}
+	.pab-cd{margin:8px 0}
+	.pab-cd div{padding:5px 0 4px}
+	.pab-cd b{font-size:18px}
+	.pab-seats{font-size:12px;margin-bottom:4px}
+	.pab-bar{margin-bottom:8px}
+	.pab-price b{font-size:17px}
+	.pab-next__f .pab-btn--s{padding:9px 14px}
+	.pab-dots{padding-bottom:8px}
+	/* Jedrenje */
+	.pab-w{padding:12px 14px}
+	.pab-w__h{font-size:15px;margin-bottom:6px}
+	.pab-w__h--s{font-size:11px;margin:10px 0 6px}
+	.pab-calc{padding:8px 12px}
+	.pab-calc__big b{font-size:24px}
+	.pab-calc__big small{font-size:10px}
+	.pab-calc__side{font-size:12px;line-height:1.35}
+	.pab-range{margin-top:8px}
+	.pab-range span{font-size:13px}
+	.pab .pab-range input{height:22px;margin-top:4px}
+	.pab-weeks{gap:6px}
+	.pab-wk{padding:6px 4px}
+	.pab-wk b{font-size:12px}
+	.pab-wk small{font-size:10px}
+	.pab-w__go{margin-top:10px;padding:11px 14px}
+	/* Kviz */
+	.pab-quiz__steps{margin-bottom:10px}
+	.pab-opts{gap:6px}
+	.pab-opt{padding:9px 12px;font-size:14px}
+	.pab-res img{width:64px;height:48px}
+}

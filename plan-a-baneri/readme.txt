@@ -1,7 +1,7 @@
 === Plan A baneri – vrh naslovnice ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.1.6
+Stable tag: 1.1.7
 License: GPLv2 or later
 
 Vrh naslovnice umjesto slidera: kratki kod [plan-a-naslovnica].
@@ -23,6 +23,9 @@ pa je točno i kad je stranica iz predmemorije (SpeedyCache). Slobodna mjesta os
 Postavke → Plan A naslovnica: slika, tekstovi, gumbi i poveznice, uključivanje svakog dijela, tekst i rok trake akcije, razdoblje i broj kartica, razmak od vrha (prozirno zaglavlje teme).
 
 == Promjene ==
+
+= 1.1.7 =
+* Mobitel: tablete slajdova na sredini; bez podnaslova i s manjim razmacima, tako da je bijela kartica (Sljedeći polazak, jedrenje, kviz) cijela vidljiva na prvom ekranu.
 
 = 1.1.6 =
 * Mobitel: kvačice (Licencirani vodiči · Male grupe · Polazak iz Zagreba) u jednom redu; tablete Izleti · Jedrenje · Koji izlet? ispod teksta slajda (iznad kartice), na računalu i dalje u redu iznad traka.
