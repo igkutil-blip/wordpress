@@ -27,3 +27,49 @@ h1,h2,h3,h4,h5,h6{color:var(--aka-ink)}
 .header-main .nav>li>a:hover,.header-main .nav>li.active>a{color:var(--aka-blue)}
 
 @media (prefers-reduced-motion:reduce){.button,.aka-grad-text{animation:none!important}}
+
+/* ===== 0.5.0: Flatsome mobilni izbornik (off-canvas) u stilu stranice ===== */
+.mfp-bg.off-canvas,.mfp-bg.main-menu-overlay{background:#0B1033!important;opacity:.55!important}
+.off-canvas:not(.off-canvas-center) .mfp-content,.off-canvas .mfp-content{background:#fff!important;box-shadow:24px 0 60px -20px rgba(11,16,51,.45)}
+.off-canvas-left .mfp-content{border-radius:0 24px 24px 0;overflow:hidden}
+.off-canvas-right .mfp-content{border-radius:24px 0 0 24px;overflow:hidden}
+.mobile-sidebar,.mobile-sidebar .sidebar-menu{background:#fff!important;font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif}
+/* logo na vrhu izbornika */
+.mobile-sidebar .sidebar-menu::before{content:"";display:block;height:44px;margin:22px 22px 6px;
+  background:url(slike/ai-akademija-logo.png) left center/contain no-repeat}
+.mobile-sidebar .sidebar-menu{padding-top:0!important}
+/* tražilica */
+.mobile-sidebar .searchform-wrapper,.mobile-sidebar .header-search-form{padding:0 4px}
+.mobile-sidebar .searchform .flex-row{background:#F6F8FF;border:1.5px solid #E6E9F5;border-radius:14px;overflow:hidden}
+.mobile-sidebar .searchform input.search-field{background:transparent!important;border:0!important;box-shadow:none!important;height:48px;
+  padding:0 16px;font-size:16px;color:#0B1033}
+.mobile-sidebar .searchform .button.icon,.mobile-sidebar .ux-search-submit{margin:4px!important;border-radius:11px!important;min-height:40px;width:44px;
+  background:linear-gradient(100deg,#1F5BFF 0%,#7B2FFF 35%,#E21EFF 60%,#00D2FF 85%,#1F5BFF 100%)!important;background-size:300% 100%!important;
+  animation:aka-flow 6s ease-in-out infinite alternate;border:0!important;box-shadow:none!important}
+/* stavke */
+.nav-sidebar.nav-vertical>li{border:0!important;margin:0 14px}
+.nav-sidebar.nav-vertical>li+li{border-top:1px solid #EEF0F7!important}
+.nav-sidebar.nav-vertical>li>a,.nav-sidebar.nav-vertical>li>a.nav-top-link{color:#0B1033!important;font-size:17px!important;font-weight:600!important;
+  text-transform:none!important;letter-spacing:0!important;padding:16px 8px!important;border-radius:12px}
+.nav-sidebar.nav-vertical>li>a:hover,.nav-sidebar.nav-vertical>li.active>a,.nav-sidebar.nav-vertical>li.current-menu-item>a,
+.nav-sidebar.nav-vertical>li.current-menu-ancestor>a{color:#1F5BFF!important}
+.nav-sidebar.nav-vertical>li.current-menu-item>a{background:#EEF1FF}
+.nav-sidebar.nav-vertical>li.current-menu-item+li{border-top-color:transparent!important}
+/* podizbornik (tečajevi pod Programi) */
+.nav-sidebar .sub-menu,.nav-sidebar .children{background:#F6F8FF;border-radius:14px;margin:0 0 12px!important;padding:6px 0!important}
+.nav-sidebar .sub-menu li a,.nav-sidebar .children li a{color:#4A5272!important;font-size:15.5px!important;font-weight:500!important;text-transform:none!important;
+  letter-spacing:0!important;padding:10px 16px!important}
+.nav-sidebar .sub-menu li.current-menu-item>a{color:#7B2FFF!important;font-weight:700!important}
+.nav-sidebar .toggle{color:#1F5BFF!important;opacity:1!important}
+/* newsletter, ikone mreža, razdjelnik */
+.nav-sidebar li.header-newsletter-item>a,.nav-sidebar li.header-newsletter-item a{color:#4A5272!important;font-size:15px!important;text-transform:none!important;letter-spacing:0!important}
+.nav-sidebar .header-divider{display:none!important}
+.nav-sidebar .social-icons a{color:#7B2FFF!important;border-color:#E6E9F5!important}
+/* gumb (Flatsome: Mobile Menu → Button) */
+.nav-sidebar li.html .button,.nav-sidebar .header-button .button{display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;
+  width:100%;min-height:52px;margin:14px 0!important;padding:0 20px!important;font-size:16px!important;text-transform:none!important}
+.nav-sidebar li.html{padding:0!important;border-top:0!important}
+/* zatvaranje × */
+.off-canvas .mfp-close{color:#fff!important;opacity:1!important;font-size:34px}
+/* ikona hamburgera u zaglavlju */
+.header-main .nav-icon a,.header-main .nav-icon .icon-menu{color:#0B1033!important}

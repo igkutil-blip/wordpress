@@ -1,5 +1,5 @@
 === AI Akademija ===
-Stable tag: 0.4.0
+Stable tag: 0.5.0
 Requires at least: 6.0
 Requires PHP: 7.4
 
@@ -24,6 +24,9 @@ Uvjeti korištenja   [ai-akademija-uvjeti]             (/uvjeti-koristenja/)
 Podnožje            [ai-akademija-podnozje]           (Flatsome → Footer → blok)
 
 == Changelog ==
+= 0.5.0 =
+* Flatsome mobilni izbornik u stilu stranice: logo na vrhu, font, tamnoplava podloga iza, zaobljena bijela ploča, tražilica s gumbom u prijelazu boja, tečajevi pod Programi u svijetlom okviru, bez velikih slova, gumb „Prijava” preko cijele širine, razdjelnik skriven.
+* Tražilica na hrvatskom („Traži tečaj…”) kad tema piše „Search…”.
 = 0.4.0 =
 * Poveznice same pronalaze stranicu po kratkom kodu (adresa i naslov mogu biti bilo kakvi); osvježe se pri spremanju stranice.
 * Tečaj bez svoje stranice vodi na Kontakt s upisanim tečajem; Blog i Pravila privatnosti prikazuju se samo kad postoje.

@@ -35,6 +35,8 @@ boje u boju** (animacija `aka-flow`) – Igorov zahtjev. Klase s prefiksom `aka-
   `aka_linkovi`, briše se pri spremanju stranice); u predlošcima `AKA_UI::url('/programi/')` i dalje radi (prevodi se).
   Postavke → AI Akademija: stanje stranica, „Napravi stranice koje nedostaju”, „Postavi glavni izbornik” (primary + primary_mobile).
   Do aiakademija.hr se iz sesije ne može (proxy odbija) – stanje stranica Igor vidi u adminu.
+- **0.5.0:** mobilni izbornik Flatsomea stiliziran u `assets/ai-akademija.css` (logo kroz ::before, tražilica, podizbornik,
+  gumb). Elemente izbornika (tražilica, newsletter, razdjelnik, gumb) Igor bira u Prilagodi → Zaglavlje → Mobile Menu.
 - Brojke 12.000+ polaznika i 4.9/5 su iz dizajna – zamijeniti stvarnima prije objave. Fotografija u heroju: čeka Igorovu sliku.
 
 ## Način rada

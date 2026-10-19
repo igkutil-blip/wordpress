@@ -2,7 +2,7 @@
 /**
  * Plugin Name: AI Akademija
  * Description: Stranice AI Akademije kao kratki kodovi (naslovnica, programi, tečaj, mentori, za tvrtke, o nama, kontakt, cijene, pitanja, uvjeti, podnožje), font, boje i gumbi koji se preljevaju iz boje u boju.
- * Version: 0.4.0
+ * Version: 0.5.0
  * Author: AI Akademija
  * Text Domain: ai-akademija
  * Requires at least: 6.0
@@ -11,7 +11,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'AKA_VERSION', '0.4.0' );
+define( 'AKA_VERSION', '0.5.0' );
 define( 'AKA_FILE', __FILE__ );
 define( 'AKA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AKA_URL', plugin_dir_url( __FILE__ ) );
@@ -51,6 +51,7 @@ final class AI_Akademija {
 		add_action( 'admin_post_nopriv_aka_kontakt', array( __CLASS__, 'posalji' ) );
 		add_action( 'admin_post_aka_kontakt', array( __CLASS__, 'posalji' ) );
 		AKA_Linkovi::init();
+		add_action( 'wp_footer', array( __CLASS__, 'hr_trazilica' ), 99 );
 		if ( is_admin() ) {
 			AKA_Admin::init();
 		}
@@ -109,6 +110,11 @@ final class AI_Akademija {
 		include AKA_DIR . 'templates/' . $tpl . '.php';
 		// jedan redak: i kad bi netko (tema, dodatak) ponovno pustio wpautop, nema gdje ubaciti <p>/<br>
 		return preg_replace( '/>\s+</', '><', preg_replace( '/\s*\n\s*/', ' ', trim( ob_get_clean() ) ) );
+	}
+
+	/** Tražilica teme na hrvatskom (Flatsome bez prijevoda piše „Search…”). */
+	public static function hr_trazilica() {
+		echo "<script>document.querySelectorAll('input.search-field').forEach(function(i){if(/^search/i.test(i.placeholder))i.placeholder='Traži tečaj…';});</script>\n";
 	}
 
 	/** Obrazac za kontakt / upit tvrtke. */
