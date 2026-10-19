@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.8.5
+Stable tag: 0.8.6
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,9 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.8.6 =
+* Osiguranje od otkaza po novom pravilu (do 355 € 9,95 €, iznad 2,8 %) primjenjuje se na sve izlete: jednom se usklade svi postojeći izleti (i objavljeni), a zatim pri svakom spremanju izleta prema cijeni karte „Uplata”. Postojeće narudžbe se ne mijenjaju.
 
 = 0.8.5 =
 * Osiguranje od otkaza: do 355 € 9,95 €, iznad toga točno 2,8 % cijene (na cent), bez zaokruživanja naviše na 50 centi (npr. 480 € → 13,44 €, 400 € → 11,20 €). Vrijedi za unos kolega i za osvježavanje neobjavljenog izleta pri spremanju; objavljeni izleti ostaju kakvi jesu.

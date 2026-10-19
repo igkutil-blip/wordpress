@@ -1,7 +1,7 @@
 === Plan A Tinder i planinarenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 
 Dodatak za izlete koje označiš (npr. Tinder i planinarenje, Tinder i jedrenje). Ostali izleti ostaju isti.
@@ -12,7 +12,7 @@ Uključuje se na ekranu izleta: okvir desno „Tinder – Tko dolazi” → „U
 
 * Stranica izleta: na vrhu kućice za prijavu (iznad „Prijavite se” i „Rezervirajte”) kartica „Tko dolazi” –
   broj prijavljenih muškaraca i žena, raspon godina u zagradi, traka popunjenosti (X od Y mjesta, slobodno još Z)
-  i zeleni gumb „Pridruži se WhatsApp grupi Plan A”. Imena i ostali podaci se ne prikazuju.
+  i zeleni gumb „WhatsApp grupa Plana A”. Imena i ostali podaci se ne prikazuju.
 * Raspon godina prikazuje se tek kad je u skupini barem 3 osobe (postavka) – s jednom osobom raspon bi otkrio njezine godine.
 * Košarica (blagajna): za svaku osobu u prijavi obavezno spol (Muško / Žensko) i godina rođenja.
   Redoslijed je isti kao „Ostali sudionici” (1. osoba = kupac).
@@ -35,12 +35,15 @@ Brojke na stranici spremaju se do promjene neke narudžbe (najviše 6 sati). Opc
 
 == Promjene ==
 
+= 1.2.1 =
+* Na gumbu (stranica izleta i „Hvala”) piše samo „WhatsApp grupa Plana A”.
+
 = 1.2.0 =
 * Izleti → Tinder izleti: izleti se uključuju i kvačicama u Postavkama (isto kao kvačica na ekranu izleta); na vrhu popis „Uključeni izleti” s brojkama i poveznicama.
 * „Naslov kartice” preimenovan u „Naslov iznad brojača” s objašnjenjem (isti na svim izletima, npr. Tko dolazi).
 
 = 1.1.1 =
-* WhatsApp grupa je jedna, zajednička grupa Plan A za sve izlete (postavke) – polje za grupu kod izleta maknuto, tekst „Pridruži se WhatsApp grupi Plan A”.
+* WhatsApp grupa je jedna, zajednička grupa Plan A za sve izlete (postavke) – polje za grupu kod izleta maknuto, tekst „WhatsApp grupa Plana A”.
 
 = 1.1.0 =
 * Izlet se uključuje kvačicom na ekranu izleta (okvir „Tinder – Tko dolazi”), svaki izlet ima svoju WhatsApp grupu – isti dodatak za Tinder i planinarenje, Tinder i jedrenje i druge.

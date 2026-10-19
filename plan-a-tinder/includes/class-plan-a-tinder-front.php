@@ -82,7 +82,7 @@ final class Plan_A_Tinder_Front {
 			echo '<div class="pat-bar" aria-hidden="true"><i class="pat-bar__m" style="width:' . esc_attr( (string) round( 100 * $m / $base, 1 ) ) . '%"></i><i class="pat-bar__z" style="width:' . esc_attr( (string) round( 100 * $z / $base, 1 ) ) . '%"></i></div>';
 			echo '<p class="pat-free"><span>' . esc_html( min( $all, $seats ) . ' od ' . $seats . ' mjesta' ) . '</span><span>' . ( $free ? 'slobodno još <b>' . (int) $free . '</b>' : '<b>popunjeno</b>' ) . '</span></p>';
 		}
-		echo self::wa_button( 'Pridruži se WhatsApp grupi Plan A', $tour ); // phpcs:ignore WordPress.Security.EscapeOutput
+		echo self::wa_button( 'WhatsApp grupa Plana A', $tour ); // phpcs:ignore WordPress.Security.EscapeOutput
 		echo '<p class="pat-note">' . esc_html__( 'Prikazujemo samo broj prijavljenih i raspon godina, bez imena i ostalih podataka. Brojke se mijenjaju same sa svakom prijavom.', 'plan-a-tinder' ) . '</p>';
 		echo '</div>';
 	}
@@ -211,7 +211,7 @@ final class Plan_A_Tinder_Front {
 		foreach ( $order->get_items() as $item ) {
 			$tour = $item instanceof WC_Order_Item_Product ? (int) $item->get_meta( '_ttbm_id' ) : 0;
 			if ( Plan_A_Tinder::is_tour( $tour ) && '' !== Plan_A_Tinder::wa_url( $tour ) ) {
-				echo '<div class="pat-thanks"><p><strong>' . esc_html__( 'Pridruži se WhatsApp grupi Plan A', 'plan-a-tinder' ) . '</strong><br>' . esc_html__( 'U grupi objavljujemo izlete i druženja i dogovaramo sve prije polaska.', 'plan-a-tinder' ) . '</p>' . self::wa_button( 'Otvori WhatsApp grupu', $tour ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput
+				echo '<div class="pat-thanks"><p><strong>' . esc_html__( 'Pridruži se WhatsApp grupi Plan A', 'plan-a-tinder' ) . '</strong><br>' . esc_html__( 'U grupi objavljujemo izlete i druženja i dogovaramo sve prije polaska.', 'plan-a-tinder' ) . '</p>' . self::wa_button( 'WhatsApp grupa Plana A', $tour ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput
 				return;
 			}
 		}
