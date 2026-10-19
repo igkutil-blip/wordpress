@@ -69,6 +69,19 @@ final class Plan_A_Tinder_Admin {
 			wp_die( 'Nemaš ovlasti.' );
 		}
 		check_admin_referer( 'pat_save' );
+		// Kvačice izleta: svaki prikazani izlet dobiva ili gubi „uključeno” (isto kao kvačica na ekranu izleta).
+		$on = array_map( 'absint', (array) ( $_POST['tours'] ?? array() ) );
+		foreach ( array_map( 'absint', explode( ',', (string) wp_unslash( $_POST['shown'] ?? '' ) ) ) as $tour ) {
+			if ( ! $tour || self::cpt() !== get_post_type( $tour ) ) {
+				continue;
+			}
+			if ( in_array( $tour, $on, true ) ) {
+				update_post_meta( $tour, '_pat_on', '1' );
+			} else {
+				delete_post_meta( $tour, '_pat_on' );
+			}
+			delete_transient( 'pat_stats_' . $tour );
+		}
 		update_option(
 			Plan_A_Tinder::OPT,
 			array(
@@ -106,16 +119,38 @@ final class Plan_A_Tinder_Admin {
 	public static function page() {
 		$s     = Plan_A_Tinder::settings();
 		$tours = Plan_A_Tinder::tours();
+		$all   = get_posts(
+			array(
+				'post_type'      => self::cpt(),
+				'post_status'    => array( 'publish', 'draft', 'pending', 'future', 'private' ),
+				'posts_per_page' => 200,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+			)
+		);
+		$labels = array( 'publish' => 'objavljen', 'draft' => 'skica', 'pending' => 'na čekanju', 'future' => 'zakazan', 'private' => 'privatan' );
 		?>
 		<div class="wrap">
 			<h1>Tinder izleti</h1>
 			<?php if ( isset( $_GET['saved'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 				<div class="notice notice-success is-dismissible"><p>Spremljeno.</p></div>
 			<?php endif; ?>
-			<p>Značajke (brojač „Tko dolazi” iznad rezervacije, spol i godina rođenja u košarici, WhatsApp grupa, popis prijavljenih) dobiva svaki izlet kojem na ekranu izleta, u okviru desno <strong>„Tinder – Tko dolazi”</strong>, označiš „Uključi za ovaj izlet” – npr. Tinder i planinarenje, Tinder i jedrenje. WhatsApp gumb vodi u zajedničku grupu Plan A, istu za sve izlete (poveznica je u postavkama ispod). Prijava i dalje ide u tablicu za agenciju kao za sve izlete.</p>
-			<?php if ( ! $tours ) : ?>
-				<div class="notice notice-info inline"><p>Još nijedan izlet nije uključen.</p></div>
-			<?php endif; ?>
+			<p>Značajke (brojač „Tko dolazi” iznad rezervacije, spol i godina rođenja u košarici, WhatsApp grupa, popis prijavljenih) dobiva svaki izlet koji uključiš kvačicom u Postavkama ispod (ili na ekranu izleta, u okviru desno <strong>„Tinder – Tko dolazi”</strong>) – npr. Tinder i planinarenje, Tinder i jedrenje. WhatsApp gumb vodi u zajedničku grupu Plan A, istu za sve izlete (poveznica je u postavkama ispod). Prijava i dalje ide u tablicu za agenciju kao za sve izlete.</p>
+			<div class="card" style="max-width:none">
+				<h2 style="margin-top:0">Uključeni izleti (<?php echo count( $tours ); ?>)</h2>
+				<?php if ( ! $tours ) : ?>
+					<p>Još nijedan izlet nije uključen – označi ga kvačicom u Postavkama ispod i klikni Spremi.</p>
+				<?php else : ?>
+					<ul style="margin:0;list-style:disc;padding-left:20px">
+						<?php foreach ( $tours as $tour ) : ?>
+							<?php $st = Plan_A_Tinder::stats( $tour ); ?>
+							<li style="margin:4px 0"><a href="#pat-<?php echo (int) $tour; ?>"><strong><?php echo esc_html( get_the_title( $tour ) ); ?></strong></a>
+								<span style="color:#646970">– <?php echo esc_html( $labels[ get_post_status( $tour ) ] ?? (string) get_post_status( $tour ) ); ?> · ♂ <?php echo (int) $st['m']['n']; ?> · ♀ <?php echo (int) $st['z']['n']; ?> · ukupno <?php echo (int) $st['total']; ?></span>
+								· <a href="<?php echo esc_url( get_edit_post_link( $tour ) ?: '' ); ?>">uredi izlet</a></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+			</div>
 
 			<?php foreach ( $tours as $tour ) : ?>
 				<?php self::tour_table( $tour ); ?>
@@ -126,15 +161,28 @@ final class Plan_A_Tinder_Admin {
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="pat_save">
 					<?php wp_nonce_field( 'pat_save' ); ?>
+					<input type="hidden" name="shown" value="<?php echo esc_attr( implode( ',', wp_list_pluck( $all, 'ID' ) ) ); ?>">
 					<table class="form-table" role="presentation">
+						<tr>
+							<th scope="row">Izleti</th>
+							<td>
+								<div style="max-height:280px;overflow:auto;border:1px solid #dcdcde;background:#fff;padding:8px 12px;max-width:680px">
+									<?php foreach ( $all as $t ) : ?>
+										<label style="display:block;margin:4px 0"><input type="checkbox" name="tours[]" value="<?php echo (int) $t->ID; ?>" <?php checked( Plan_A_Tinder::is_tour( (int) $t->ID ) ); ?>> <?php echo esc_html( get_the_title( $t ) ?: '(bez naslova)' ); ?> <span style="color:#646970">– <?php echo esc_html( $labels[ $t->post_status ] ?? $t->post_status ); ?></span></label>
+									<?php endforeach; ?>
+								</div>
+								<p class="description">Označeni izleti dobivaju brojač, polja u košarici i WhatsApp gumb. Izlet može biti i neobjavljen (skica).</p>
+							</td>
+						</tr>
 						<tr>
 							<th scope="row"><label for="pat-wa">WhatsApp grupa Plan A</label></th>
 							<td><input type="url" id="pat-wa" name="wa" class="regular-text" value="<?php echo esc_attr( $s['wa'] ); ?>" placeholder="https://chat.whatsapp.com/…">
 								<p class="description">Zajednička grupa za sve uključene izlete (iz WhatsAppa: Info o grupi → Poveznica za poziv). Kad se grupa napuni, ovdje upiši poveznicu nove grupe – mijenja se odmah na svim izletima. Gumb je na stranici izleta i na stranici „Hvala” nakon prijave. Prazno = bez gumba.</p></td>
 						</tr>
 						<tr>
-							<th scope="row"><label for="pat-title">Naslov kartice</label></th>
-							<td><input type="text" id="pat-title" name="title" class="regular-text" value="<?php echo esc_attr( $s['title'] ); ?>"></td>
+							<th scope="row"><label for="pat-title">Naslov iznad brojača</label></th>
+							<td><input type="text" id="pat-title" name="title" class="regular-text" value="<?php echo esc_attr( $s['title'] ); ?>" placeholder="Tko dolazi">
+								<p class="description">Mali naslov iznad brojača muškaraca i žena, isti na svim izletima (zadano „Tko dolazi”). Nije naziv izleta.</p></td>
 						</tr>
 						<tr>
 							<th scope="row"><label for="pat-min">Raspon godina od</label></th>
@@ -169,8 +217,6 @@ final class Plan_A_Tinder_Admin {
 				<strong>Broji se: <?php echo (int) $st['total']; ?></strong><?php echo $seats ? ' od ' . (int) $seats . ' mjesta' : ''; ?> ·
 				♂ <?php echo (int) $st['m']['n']; ?> muškaraca<?php echo esc_html( $range( $st['m'] ) ); ?> ·
 				♀ <?php echo (int) $st['z']['n']; ?> žena<?php echo esc_html( $range( $st['z'] ) ); ?>
-				<?php $wa = Plan_A_Tinder::wa_url( $tour ); ?>
-				<br><span style="color:#646970">WhatsApp: <?php echo '' !== $wa ? esc_html( $wa ) : 'nema'; ?></span>
 				<span style="color:#646970">(ovdje uvijek s rasponom; na stranici raspon tek od <?php echo (int) Plan_A_Tinder::settings()['min']; ?> osobe)</span>
 			</p>
 			<?php if ( ! $people ) : ?>

@@ -1,7 +1,7 @@
 === Plan A Tinder i planinarenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 License: GPLv2 or later
 
 Dodatak za izlete koje označiš (npr. Tinder i planinarenje, Tinder i jedrenje). Ostali izleti ostaju isti.
@@ -26,7 +26,7 @@ Uključuje se na ekranu izleta: okvir desno „Tinder – Tko dolazi” → „U
 
 * Na ekranu izleta (okvir „Tinder – Tko dolazi”): uključi za ovaj izlet (može biti i neobjavljen – skica).
 * Izleti → Tinder izleti: popis prijavljenih za svaki uključeni izlet, WhatsApp grupa Plan A (jedna za sve izlete; kad se napuni, upiše se poveznica nove grupe; dodaci iza „?” se brišu),
-* Naslov kartice (zadano „Tko dolazi”) i od koliko osoba se prikazuje raspon godina (zadano 3).
+* Naslov iznad brojača (zadano „Tko dolazi”) i od koliko osoba se prikazuje raspon godina (zadano 3).
 
 == Podaci ==
 
@@ -34,6 +34,10 @@ Uz izlet: _pat_on (uključeno). Uz stavku narudžbe: _pat_osobe (spol, godina ro
 Brojke na stranici spremaju se do promjene neke narudžbe (najviše 6 sati). Opcija: plan_a_tinder.
 
 == Promjene ==
+
+= 1.2.0 =
+* Izleti → Tinder izleti: izleti se uključuju i kvačicama u Postavkama (isto kao kvačica na ekranu izleta); na vrhu popis „Uključeni izleti” s brojkama i poveznicama.
+* „Naslov kartice” preimenovan u „Naslov iznad brojača” s objašnjenjem (isti na svim izletima, npr. Tko dolazi).
 
 = 1.1.1 =
 * WhatsApp grupa je jedna, zajednička grupa Plan A za sve izlete (postavke) – polje za grupu kod izleta maknuto, tekst „Pridruži se WhatsApp grupi Plan A”.
