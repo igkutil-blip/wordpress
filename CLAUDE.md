@@ -195,6 +195,7 @@ Na kopiji instaliran bez odabranog izleta (opciju ne može postaviti pomoćnik).
 **1.1.0 (19.10.):** izlet se uključuje kvačicom na ekranu izleta (okvir „Tinder – Tko dolazi”, meta `_pat_on`, vlastita WhatsApp grupa `_pat_wa`,
 inače zadana iz postavki) – isti dodatak za Tinder i planinarenje, Tinder i jedrenje (kao običan izlet) itd. Opcija `tours` iz 1.0.0 jednom prenesena u meta.
 Izbornik Izleti → Tinder izleti.
+**1.1.1:** WhatsApp grupa je JEDNA zajednička grupa Plan A za sve izlete (Igor: „Izleti Plan A 2”, kad se napuni mijenja se samo poveznica u postavkama) – polje grupe kod izleta maknuto, tekst „Pridruži se WhatsApp grupi Plan A”.
 
 ## NA ČEKANJU (Igor 16.10.2026.): „Popis za sutra” – Super Ferrata Dinara 17.10.
 

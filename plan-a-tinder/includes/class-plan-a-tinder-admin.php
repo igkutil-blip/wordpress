@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin: okvir „Tinder – Tko dolazi” na ekranu izleta (kvačica + WhatsApp grupa izleta) i
+ * Admin: okvir „Tinder – Tko dolazi” na ekranu izleta (kvačica) i
  * Izleti → Tinder izleti – popis prijavljenih po izletu i zajedničke postavke.
  *
  * @package Plan_A_Tinder
@@ -30,9 +30,7 @@ final class Plan_A_Tinder_Admin {
 		$on = (bool) get_post_meta( $post->ID, '_pat_on', true );
 		echo '<p><label><input type="checkbox" name="pat_on" value="1"' . checked( $on, true, false ) . '> <strong>Uključi za ovaj izlet</strong></label></p>';
 		echo '<p class="description" style="margin-top:0">Brojač muškaraca i žena s rasponom godina iznad rezervacije, spol i godina rođenja u košarici, popis prijavljenih (Izleti → Tinder izleti).</p>';
-		echo '<p><label for="pat-wa-box"><strong>WhatsApp grupa izleta</strong></label><br><input type="url" id="pat-wa-box" name="pat_wa" value="' . esc_attr( (string) get_post_meta( $post->ID, '_pat_wa', true ) ) . '" placeholder="https://chat.whatsapp.com/…" style="width:100%"></p>';
-		$def = Plan_A_Tinder::clean_wa( (string) Plan_A_Tinder::settings()['wa'] );
-		echo '<p class="description" style="margin-top:0">' . ( '' !== $def ? 'Prazno = zadana grupa iz postavki.' : 'Prazno = bez WhatsApp gumba.' ) . '</p>';
+		echo '<p class="description" style="margin-top:0">WhatsApp gumb vodi u zajedničku grupu Plan A (Izleti → Tinder izleti → Postavke).</p>';
 		if ( $on ) {
 			$st = Plan_A_Tinder::stats( (int) $post->ID );
 			echo '<p style="margin-bottom:0">Sada: <strong>♂ ' . (int) $st['m']['n'] . ' · ♀ ' . (int) $st['z']['n'] . '</strong> (ukupno ' . (int) $st['total'] . ') – <a href="' . esc_url( self::url() . '#pat-' . (int) $post->ID ) . '">popis</a></p>';
@@ -50,12 +48,6 @@ final class Plan_A_Tinder_Admin {
 			update_post_meta( $post_id, '_pat_on', '1' );
 		} else {
 			delete_post_meta( $post_id, '_pat_on' );
-		}
-		$wa = Plan_A_Tinder::clean_wa( esc_url_raw( (string) wp_unslash( $_POST['pat_wa'] ?? '' ) ) );
-		if ( '' !== $wa ) {
-			update_post_meta( $post_id, '_pat_wa', $wa );
-		} else {
-			delete_post_meta( $post_id, '_pat_wa' );
 		}
 		delete_transient( 'pat_stats_' . (int) $post_id );
 	}
@@ -120,7 +112,7 @@ final class Plan_A_Tinder_Admin {
 			<?php if ( isset( $_GET['saved'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 				<div class="notice notice-success is-dismissible"><p>Spremljeno.</p></div>
 			<?php endif; ?>
-			<p>Značajke (brojač „Tko dolazi” iznad rezervacije, spol i godina rođenja u košarici, WhatsApp grupa, popis prijavljenih) dobiva svaki izlet kojem na ekranu izleta, u okviru desno <strong>„Tinder – Tko dolazi”</strong>, označiš „Uključi za ovaj izlet” – npr. Tinder i planinarenje, Tinder i jedrenje. Tamo upisuješ i WhatsApp grupu tog izleta. Prijava i dalje ide u tablicu za agenciju kao za sve izlete.</p>
+			<p>Značajke (brojač „Tko dolazi” iznad rezervacije, spol i godina rođenja u košarici, WhatsApp grupa, popis prijavljenih) dobiva svaki izlet kojem na ekranu izleta, u okviru desno <strong>„Tinder – Tko dolazi”</strong>, označiš „Uključi za ovaj izlet” – npr. Tinder i planinarenje, Tinder i jedrenje. WhatsApp gumb vodi u zajedničku grupu Plan A, istu za sve izlete (poveznica je u postavkama ispod). Prijava i dalje ide u tablicu za agenciju kao za sve izlete.</p>
 			<?php if ( ! $tours ) : ?>
 				<div class="notice notice-info inline"><p>Još nijedan izlet nije uključen.</p></div>
 			<?php endif; ?>
@@ -136,9 +128,9 @@ final class Plan_A_Tinder_Admin {
 					<?php wp_nonce_field( 'pat_save' ); ?>
 					<table class="form-table" role="presentation">
 						<tr>
-							<th scope="row"><label for="pat-wa">Zadana WhatsApp grupa</label></th>
+							<th scope="row"><label for="pat-wa">WhatsApp grupa Plan A</label></th>
 							<td><input type="url" id="pat-wa" name="wa" class="regular-text" value="<?php echo esc_attr( $s['wa'] ); ?>" placeholder="https://chat.whatsapp.com/…">
-								<p class="description">Za izlete koji u svom okviru nemaju upisanu grupu (iz WhatsAppa: Info o grupi → Poveznica za poziv). Gumb je na stranici izleta i na stranici „Hvala” nakon prijave.</p></td>
+								<p class="description">Zajednička grupa za sve uključene izlete (iz WhatsAppa: Info o grupi → Poveznica za poziv). Kad se grupa napuni, ovdje upiši poveznicu nove grupe – mijenja se odmah na svim izletima. Gumb je na stranici izleta i na stranici „Hvala” nakon prijave. Prazno = bez gumba.</p></td>
 						</tr>
 						<tr>
 							<th scope="row"><label for="pat-title">Naslov kartice</label></th>
