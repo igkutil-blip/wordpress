@@ -1,7 +1,7 @@
 === Plan A Tinder i planinarenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 1.3.0
 License: GPLv2 or later
 
 Dodatak za izlete koje označiš (npr. Tinder i planinarenje, Tinder i jedrenje). Ostali izleti ostaju isti.
@@ -34,6 +34,9 @@ Uz izlet: _pat_on (uključeno). Uz stavku narudžbe: _pat_osobe (spol, godina ro
 Brojke na stranici spremaju se do promjene neke narudžbe (najviše 6 sati). Opcija: plan_a_tinder.
 
 == Promjene ==
+
+= 1.3.0 =
+* Poticaj po izletu (Izleti → Tinder izleti, kartica izleta): dodani muškarci i žene s rasponom godina pribrajaju se pravim prijavama na brojaču stranice izleta; kvačicom se uključuje/isključuje. Ne rezervira mjesta.
 
 = 1.2.1 =
 * Na gumbu (stranica izleta i „Hvala”) piše samo „WhatsApp grupa Plana A”.

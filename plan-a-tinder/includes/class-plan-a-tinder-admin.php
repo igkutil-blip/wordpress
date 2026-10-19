@@ -16,6 +16,7 @@ final class Plan_A_Tinder_Admin {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ), 30 );
 		add_action( 'admin_post_pat_save', array( __CLASS__, 'save' ) );
 		add_action( 'admin_post_pat_skip', array( __CLASS__, 'skip' ) );
+		add_action( 'admin_post_pat_seed', array( __CLASS__, 'save_seed' ) );
 		add_action( 'add_meta_boxes_' . self::cpt(), array( __CLASS__, 'box' ), 110 );
 		add_action( 'save_post_' . self::cpt(), array( __CLASS__, 'save_box' ), 20 );
 	}
@@ -34,6 +35,10 @@ final class Plan_A_Tinder_Admin {
 		if ( $on ) {
 			$st = Plan_A_Tinder::stats( (int) $post->ID );
 			echo '<p style="margin-bottom:0">Sada: <strong>♂ ' . (int) $st['m']['n'] . ' · ♀ ' . (int) $st['z']['n'] . '</strong> (ukupno ' . (int) $st['total'] . ') – <a href="' . esc_url( self::url() . '#pat-' . (int) $post->ID ) . '">popis</a></p>';
+			if ( Plan_A_Tinder::seed_active( (int) $post->ID ) ) {
+				$seed = Plan_A_Tinder::seed( (int) $post->ID );
+				echo '<p style="margin:4px 0 0;color:#b26200">Poticaj uključen: +' . (int) $seed['m'] . ' ♂ · +' . (int) $seed['z'] . ' ♀ – <a href="' . esc_url( self::url() . '#pat-seed-' . (int) $post->ID ) . '">promijeni</a></p>';
+			}
 		}
 	}
 
@@ -96,6 +101,22 @@ final class Plan_A_Tinder_Admin {
 		exit;
 	}
 
+	/** Poticaj za jedan izlet (dodani muškarci i žene s rasponom godina, uključeno/isključeno). */
+	public static function save_seed() {
+		$tour = absint( $_POST['tour'] ?? 0 );
+		if ( ! $tour || ! current_user_can( 'edit_post', $tour ) ) {
+			wp_die( 'Nemaš ovlasti.' );
+		}
+		check_admin_referer( 'pat_seed_' . $tour );
+		$seed = array( 'on' => empty( $_POST['seed_on'] ) ? 0 : 1 );
+		foreach ( array( 'm', 'z', 'm_min', 'm_max', 'z_min', 'z_max' ) as $k ) {
+			$seed[ $k ] = max( 0, min( 99, absint( $_POST[ 'seed_' . $k ] ?? 0 ) ) );
+		}
+		update_post_meta( $tour, '_pat_seed', $seed );
+		wp_safe_redirect( self::url( array( 'saved' => 1 ) ) . '#pat-seed-' . $tour );
+		exit;
+	}
+
 	/** „Ne broji” / „Broji” za jednu osobu (npr. otkazala, a narudžba ostaje). */
 	public static function skip() {
 		if ( ! current_user_can( 'edit_shop_orders' ) && ! current_user_can( 'manage_woocommerce' ) ) {
@@ -146,6 +167,10 @@ final class Plan_A_Tinder_Admin {
 							<?php $st = Plan_A_Tinder::stats( $tour ); ?>
 							<li style="margin:4px 0"><a href="#pat-<?php echo (int) $tour; ?>"><strong><?php echo esc_html( get_the_title( $tour ) ); ?></strong></a>
 								<span style="color:#646970">– <?php echo esc_html( $labels[ get_post_status( $tour ) ] ?? (string) get_post_status( $tour ) ); ?> · ♂ <?php echo (int) $st['m']['n']; ?> · ♀ <?php echo (int) $st['z']['n']; ?> · ukupno <?php echo (int) $st['total']; ?></span>
+								<?php if ( Plan_A_Tinder::seed_active( $tour ) ) : ?>
+									<?php $sh = Plan_A_Tinder::shown( $tour ); ?>
+									<span style="color:#b26200">· s poticajem na stranici: ♂ <?php echo (int) $sh['m']['n']; ?> · ♀ <?php echo (int) $sh['z']['n']; ?></span>
+								<?php endif; ?>
 								· <a href="<?php echo esc_url( get_edit_post_link( $tour ) ?: '' ); ?>">uredi izlet</a></li>
 						<?php endforeach; ?>
 					</ul>
@@ -197,6 +222,35 @@ final class Plan_A_Tinder_Admin {
 		<?php
 	}
 
+	/** Obrazac „Poticaj” u kartici izleta. */
+	private static function seed_form( int $tour ) {
+		$seed  = Plan_A_Tinder::seed( $tour );
+		$shown = Plan_A_Tinder::shown( $tour );
+		$num   = static function ( string $k, int $v, int $max, string $ph = '' ) {
+			return '<input type="number" name="seed_' . esc_attr( $k ) . '" min="0" max="' . (int) $max . '" value="' . ( $v ? (int) $v : '' ) . '" placeholder="' . esc_attr( $ph ) . '" style="width:64px">';
+		};
+		?>
+		<form id="pat-seed-<?php echo (int) $tour; ?>" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="background:#fff8e5;border:1px solid #f0c36d;padding:10px 14px;margin:0 0 14px;max-width:760px">
+			<input type="hidden" name="action" value="pat_seed">
+			<input type="hidden" name="tour" value="<?php echo (int) $tour; ?>">
+			<?php wp_nonce_field( 'pat_seed_' . $tour ); ?>
+			<p style="margin:0 0 8px"><label><input type="checkbox" name="seed_on" value="1" <?php checked( $seed['on'] ); ?>> <strong>Poticaj – dodaj na brojač na stranici izleta</strong></label></p>
+			<p style="margin:0 0 6px">♂ muškaraca: <?php echo $num( 'm', $seed['m'], 99, '0' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+				&nbsp; godine od <?php echo $num( 'm_min', $seed['m_min'], 99 ); // phpcs:ignore WordPress.Security.EscapeOutput ?> do <?php echo $num( 'm_max', $seed['m_max'], 99 ); // phpcs:ignore WordPress.Security.EscapeOutput ?></p>
+			<p style="margin:0 0 6px">♀ žena: <?php echo $num( 'z', $seed['z'], 99, '0' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+				&nbsp; godine od <?php echo $num( 'z_min', $seed['z_min'], 99 ); // phpcs:ignore WordPress.Security.EscapeOutput ?> do <?php echo $num( 'z_max', $seed['z_max'], 99 ); // phpcs:ignore WordPress.Security.EscapeOutput ?></p>
+			<p class="description" style="margin:0 0 8px">Pribraja se pravim prijavama samo na stranici izleta (brojač, raspon godina, traka i „slobodno još”). Ne rezervira mjesta, ne ulazi u narudžbe ni u tablicu za agenciju. Kad prijave krenu, makni kvačicu i spremi – brojke ostaju upisane za ponovno uključivanje.</p>
+			<p style="margin:0"><button type="submit" class="button">Spremi poticaj</button>
+				<?php if ( Plan_A_Tinder::seed_active( $tour ) ) : ?>
+					<span style="margin-left:8px;color:#b26200">Na stranici sada: <strong>♂ <?php echo (int) $shown['m']['n']; ?> · ♀ <?php echo (int) $shown['z']['n']; ?></strong> (ukupno <?php echo (int) $shown['total']; ?>)</span>
+				<?php else : ?>
+					<span style="margin-left:8px;color:#646970">Isključeno – na stranici su samo prave prijave.</span>
+				<?php endif; ?>
+			</p>
+		</form>
+		<?php
+	}
+
 	private static function tour_table( int $tour ) {
 		if ( ! get_post( $tour ) ) {
 			return;
@@ -219,6 +273,7 @@ final class Plan_A_Tinder_Admin {
 				♀ <?php echo (int) $st['z']['n']; ?> žena<?php echo esc_html( $range( $st['z'] ) ); ?>
 				<span style="color:#646970">(ovdje uvijek s rasponom; na stranici raspon tek od <?php echo (int) Plan_A_Tinder::settings()['min']; ?> osobe)</span>
 			</p>
+			<?php self::seed_form( $tour ); ?>
 			<?php if ( ! $people ) : ?>
 				<p>Još nema prijava.</p>
 			<?php else : ?>

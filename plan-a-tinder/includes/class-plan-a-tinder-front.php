@@ -60,11 +60,14 @@ final class Plan_A_Tinder_Front {
 			return;
 		}
 		$s     = Plan_A_Tinder::settings();
-		$st    = Plan_A_Tinder::stats( $tour );
+		$st    = Plan_A_Tinder::shown( $tour );
 		$seats = Plan_A_Tinder::seats( $tour );
 		$m     = (int) $st['m']['n'];
 		$z     = (int) $st['z']['n'];
 		$all   = (int) $st['total'];
+		if ( $seats && $all >= $seats && $seats > (int) $st['real'] ) {
+			$all = $seats - 1; // poticaj ne smije prikazati „popunjeno” dok ima pravih slobodnih mjesta
+		}
 		$base  = max( $seats, $all, 1 );
 		echo '<div class="pat-card" aria-label="' . esc_attr( $s['title'] ) . '">';
 		echo '<p class="pat-card__h">' . esc_html( $s['title'] ) . '</p>';
