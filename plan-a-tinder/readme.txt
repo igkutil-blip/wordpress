@@ -1,10 +1,12 @@
 === Plan A Tinder i planinarenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 
-Dodatak samo za odabrane izlete (npr. „Tinder i planinarenje – vikend u Ramića dvorima”). Ostali izleti ostaju isti.
+Dodatak za izlete koje označiš (npr. Tinder i planinarenje, Tinder i jedrenje). Ostali izleti ostaju isti.
+
+Uključuje se na ekranu izleta: okvir desno „Tinder – Tko dolazi” → „Uključi za ovaj izlet” + WhatsApp grupa izleta.
 
 == Što radi ==
 
@@ -15,23 +17,28 @@ Dodatak samo za odabrane izlete (npr. „Tinder i planinarenje – vikend u Rami
 * Košarica (blagajna): za svaku osobu u prijavi obavezno spol (Muško / Žensko) i godina rođenja.
   Redoslijed je isti kao „Ostali sudionici” (1. osoba = kupac).
 * Stranica „Hvala” nakon prijave: gumb za WhatsApp grupu izleta.
-* Admin: Izleti → Tinder i planinarenje – postavke i popis prijavljenih (ime, spol, godina, dob, mobitel, e-mail,
+* Admin: Izleti → Tinder izleti – popis prijavljenih (ime, spol, godina, dob, mobitel, e-mail,
   narudžba i stanje, vrijeme prijave). Osoba se ne broji ako je narudžba otkazana/vraćena/neuspjela; „isključi”
   za pojedinu osobu kad otkaže, a narudžba ostaje.
 * Prijava i dalje ide u tablicu za agenciju kao za sve izlete (dodatak tu ništa ne mijenja).
 
-== Postavke (Izleti → Tinder i planinarenje) ==
+== Postavke ==
 
-* Izleti: kvačica uz izlet (može biti i neobjavljen – skica).
-* WhatsApp grupa: poveznica za poziv (https://chat.whatsapp.com/…); dodaci iza „?” se brišu.
+* Na ekranu izleta (okvir „Tinder – Tko dolazi”): uključi za ovaj izlet (može biti i neobjavljen – skica) i WhatsApp grupa izleta
+  (poveznica za poziv https://chat.whatsapp.com/…; dodaci iza „?” se brišu).
+* Izleti → Tinder izleti: popis prijavljenih za svaki uključeni izlet, zadana WhatsApp grupa (za izlete bez svoje),
 * Naslov kartice (zadano „Tko dolazi”) i od koliko osoba se prikazuje raspon godina (zadano 3).
 
 == Podaci ==
 
-Uz stavku narudžbe: _pat_osobe (spol, godina rođenja po osobi), _pat_x (osobe koje se ne broje).
+Uz izlet: _pat_on (uključeno), _pat_wa (WhatsApp grupa). Uz stavku narudžbe: _pat_osobe (spol, godina rođenja po osobi), _pat_x (osobe koje se ne broje).
 Brojke na stranici spremaju se do promjene neke narudžbe (najviše 6 sati). Opcija: plan_a_tinder.
 
 == Promjene ==
+
+= 1.1.0 =
+* Izlet se uključuje kvačicom na ekranu izleta (okvir „Tinder – Tko dolazi”), svaki izlet ima svoju WhatsApp grupu – isti dodatak za Tinder i planinarenje, Tinder i jedrenje i druge.
+* Izleti odabrani u 1.0.0 automatski ostaju uključeni. Izbornik: Izleti → Tinder izleti.
 
 = 1.0.0 =
 * Prva verzija.

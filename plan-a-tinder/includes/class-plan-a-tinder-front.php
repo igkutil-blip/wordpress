@@ -1,7 +1,7 @@
 <?php
 /**
  * Stranica izleta (kartica „Tko dolazi” i WhatsApp grupa), košarica (spol i godina rođenja za svaku osobu)
- * i stranica „Hvala” (WhatsApp grupa). Radi samo za odabrane izlete.
+ * i stranica „Hvala” (WhatsApp grupa). Radi samo za izlete s kvačicom u okviru „Tinder – Tko dolazi”.
  *
  * @package Plan_A_Tinder
  */
@@ -26,8 +26,8 @@ final class Plan_A_Tinder_Front {
 		}
 	}
 
-	private static function wa_button( string $text ): string {
-		$url = Plan_A_Tinder::wa_url();
+	private static function wa_button( string $text, int $tour ): string {
+		$url = Plan_A_Tinder::wa_url( $tour );
 		if ( '' === $url ) {
 			return '';
 		}
@@ -82,7 +82,7 @@ final class Plan_A_Tinder_Front {
 			echo '<div class="pat-bar" aria-hidden="true"><i class="pat-bar__m" style="width:' . esc_attr( (string) round( 100 * $m / $base, 1 ) ) . '%"></i><i class="pat-bar__z" style="width:' . esc_attr( (string) round( 100 * $z / $base, 1 ) ) . '%"></i></div>';
 			echo '<p class="pat-free"><span>' . esc_html( min( $all, $seats ) . ' od ' . $seats . ' mjesta' ) . '</span><span>' . ( $free ? 'slobodno još <b>' . (int) $free . '</b>' : '<b>popunjeno</b>' ) . '</span></p>';
 		}
-		echo self::wa_button( 'Pridruži se WhatsApp grupi izleta' ); // phpcs:ignore WordPress.Security.EscapeOutput
+		echo self::wa_button( 'Pridruži se WhatsApp grupi izleta', $tour ); // phpcs:ignore WordPress.Security.EscapeOutput
 		echo '<p class="pat-note">' . esc_html__( 'Prikazujemo samo broj prijavljenih i raspon godina, bez imena i ostalih podataka. Brojke se mijenjaju same sa svakom prijavom.', 'plan-a-tinder' ) . '</p>';
 		echo '</div>';
 	}
@@ -205,12 +205,13 @@ final class Plan_A_Tinder_Front {
 	/** Stranica „Hvala”: gumb za WhatsApp grupu izleta. */
 	public static function thankyou( $order_id ) {
 		$order = wc_get_order( $order_id );
-		if ( ! $order || '' === Plan_A_Tinder::wa_url() ) {
+		if ( ! $order ) {
 			return;
 		}
 		foreach ( $order->get_items() as $item ) {
-			if ( $item instanceof WC_Order_Item_Product && Plan_A_Tinder::is_tour( (int) $item->get_meta( '_ttbm_id' ) ) ) {
-				echo '<div class="pat-thanks"><p><strong>' . esc_html__( 'Pridruži se WhatsApp grupi izleta', 'plan-a-tinder' ) . '</strong><br>' . esc_html__( 'U grupi dogovaramo prijevoz, opremu i sve ostalo prije polaska.', 'plan-a-tinder' ) . '</p>' . self::wa_button( 'Otvori WhatsApp grupu' ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput
+			$tour = $item instanceof WC_Order_Item_Product ? (int) $item->get_meta( '_ttbm_id' ) : 0;
+			if ( Plan_A_Tinder::is_tour( $tour ) && '' !== Plan_A_Tinder::wa_url( $tour ) ) {
+				echo '<div class="pat-thanks"><p><strong>' . esc_html__( 'Pridruži se WhatsApp grupi izleta', 'plan-a-tinder' ) . '</strong><br>' . esc_html__( 'U grupi dogovaramo prijevoz, opremu i sve ostalo prije polaska.', 'plan-a-tinder' ) . '</p>' . self::wa_button( 'Otvori WhatsApp grupu', $tour ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput
 				return;
 			}
 		}

@@ -2,6 +2,9 @@
 /**
  * Postavke i brojanje prijavljenih (muški/ženski, raspon godina) za odabrane izlete.
  *
+ * Izlet dobiva značajke kvačicom u okviru „Tinder – Tko dolazi” na ekranu izleta (meta _pat_on, vlastita WhatsApp
+ * grupa _pat_wa). Popis izleta iz 1.0.0 (opcija tours) prenosi se jednom u te kvačice.
+ *
  * Podaci o osobi spremaju se uz stavku narudžbe (meta _pat_osobe: [['spol' => 'm'|'z', 'god' => 1990], …]),
  * istim redom kao popis sudionika košarice (_pac_osobe). Osoba se ne broji ako je narudžba otkazana,
  * vraćena ili neuspjela, ili ako ju je administrator u popisu označio „Ne broji” (meta _pat_x).
@@ -17,6 +20,7 @@ final class Plan_A_Tinder {
 	const STATUSES = array( 'on-hold', 'processing', 'completed', 'pending' );
 
 	public static function init() {
+		add_action( 'admin_init', array( __CLASS__, 'migrate' ) );
 		foreach ( array( 'woocommerce_order_status_changed', 'woocommerce_checkout_order_processed', 'woocommerce_delete_order', 'woocommerce_trash_order', 'woocommerce_update_order' ) as $hook ) {
 			add_action( $hook, array( __CLASS__, 'flush' ) );
 		}
@@ -27,7 +31,6 @@ final class Plan_A_Tinder {
 		return wp_parse_args(
 			is_array( $s ) ? $s : array(),
 			array(
-				'tours' => array(),
 				'wa'    => '',
 				'min'   => 3,
 				'title' => 'Tko dolazi',
@@ -35,24 +38,61 @@ final class Plan_A_Tinder {
 		);
 	}
 
-	/** Je li izlet jedan od odabranih. */
+	/** Je li izlet označen (kvačica na ekranu izleta). */
 	public static function is_tour( int $tour ): bool {
-		return $tour > 0 && in_array( $tour, array_map( 'intval', (array) self::settings()['tours'] ), true );
+		return $tour > 0 && (bool) get_post_meta( $tour, '_pat_on', true );
+	}
+
+	/** Svi označeni izleti (najnoviji prvi). */
+	public static function tours(): array {
+		return array_map(
+			'intval',
+			get_posts(
+				array(
+					'post_type'      => 'any',
+					'post_status'    => array( 'publish', 'draft', 'pending', 'future', 'private' ),
+					'posts_per_page' => 100,
+					'fields'         => 'ids',
+					'meta_key'       => '_pat_on', // phpcs:ignore WordPress.DB.SlowDBQuery
+					'meta_value'     => '1', // phpcs:ignore WordPress.DB.SlowDBQuery
+					'orderby'        => 'date',
+					'order'          => 'DESC',
+				)
+			)
+		);
+	}
+
+	/** Jednom: izleti odabrani u 1.0.0 (opcija tours) dobivaju kvačicu na ekranu izleta. */
+	public static function migrate() {
+		$s = get_option( self::OPT, array() );
+		if ( ! is_array( $s ) || empty( $s['tours'] ) ) {
+			return;
+		}
+		foreach ( array_map( 'intval', (array) $s['tours'] ) as $tour ) {
+			if ( $tour && get_post( $tour ) ) {
+				update_post_meta( $tour, '_pat_on', '1' );
+			}
+		}
+		unset( $s['tours'] );
+		update_option( self::OPT, $s, false );
 	}
 
 	public static function flush() {
-		foreach ( (array) self::settings()['tours'] as $tour ) {
+		foreach ( self::tours() as $tour ) {
 			delete_transient( 'pat_stats_' . (int) $tour );
 		}
 	}
 
-	/** WhatsApp poveznica bez dodataka za praćenje (?s=…&p=…). */
-	public static function wa_url(): string {
-		$url = trim( (string) self::settings()['wa'] );
-		if ( ! preg_match( '#^https://(chat\.whatsapp\.com|wa\.me)/#i', $url ) ) {
-			return '';
-		}
-		return strtok( $url, '?' );
+	/** Očisti WhatsApp poveznicu (bez dodataka za praćenje ?s=…&p=…); neispravna = ''. */
+	public static function clean_wa( string $url ): string {
+		$url = trim( $url );
+		return preg_match( '#^https://(chat\.whatsapp\.com|wa\.me)/#i', $url ) ? (string) strtok( $url, '?' ) : '';
+	}
+
+	/** WhatsApp grupa izleta (iz okvira na ekranu izleta), inače zadana iz postavki. */
+	public static function wa_url( int $tour = 0 ): string {
+		$own = $tour ? self::clean_wa( (string) get_post_meta( $tour, '_pat_wa', true ) ) : '';
+		return '' !== $own ? $own : self::clean_wa( (string) self::settings()['wa'] );
 	}
 
 	/** Redni brojevi osoba stavke koje administrator ne broji. */
