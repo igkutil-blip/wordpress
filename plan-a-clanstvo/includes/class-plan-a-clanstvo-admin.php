@@ -591,6 +591,13 @@ final class Plan_A_Clanstvo_Admin {
 		$s['iban']      = preg_match( '/^HR\d{19}$/', $iban ) ? $iban : $s['iban'];
 		$s['model']     = preg_match( '/^\d{2}$/', (string) ( $_POST['model'] ?? '' ) ) ? (string) $_POST['model'] : '00'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 		$s['iznos']     = max( 0, round( (float) str_replace( ',', '.', sanitize_text_field( wp_unslash( $_POST['iznos'] ?? '15' ) ) ), 2 ) );
+		$iznosi = array();
+		foreach ( preg_split( '/[\r\n;]+/', sanitize_textarea_field( wp_unslash( $_POST['iznosi'] ?? '' ) ) ) as $line ) {
+			if ( preg_match( '/^\s*(\d{4})\s*[=:]\s*(\d+(?:[.,]\d{1,2})?)/', $line, $m ) ) {
+				$iznosi[] = $m[1] . '=' . str_replace( ',', '.', $m[2] );
+			}
+		}
+		$s['iznosi']    = implode( "\n", $iznosi );
 		$s['barcode']   = in_array( $_POST['barcode'] ?? '', array( 'osobni', 'slika', 'ne' ), true ) ? (string) $_POST['barcode'] : 'osobni'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 		$s['barcode_slika'] = esc_url_raw( wp_unslash( $_POST['barcode_slika'] ?? '' ) );
 		$s['izjava']        = sanitize_textarea_field( wp_unslash( $_POST['izjava'] ?? '' ) );
@@ -712,7 +719,13 @@ final class Plan_A_Clanstvo_Admin {
 				<h2>2. Članarina i 2D kod</h2>
 				<table class="form-table">
 					<?php
-					$text( 'iznos', 'Iznos (€)', '', 'small-text' );
+					$text( 'iznos', 'Iznos (€)', 'Redovna godišnja članarina.', 'small-text' );
+					?>
+					<tr><th><label for="pac-iznosi">Iznos za pojedinu godinu</label></th><td>
+						<textarea id="pac-iznosi" name="iznosi" rows="2" class="small-text" style="width:160px"><?php echo esc_textarea( (string) $s['iznosi'] ); ?></textarea>
+						<p class="description">Jedan red po godini: <code>godina=iznos</code>, npr. <code>2026=5</code> → za izlete u 2026. članarina je 5 €, za ostale godine redovni iznos. Vrijedi za e-mail s uplatnicom, 2D kod, blagajnu i pristupnicu. Prazno = svake godine redovni iznos.<?php echo ' Sada: ' . esc_html( (string) Plan_A_Clanstvo_Data::year() ) . '. → ' . esc_html( Plan_A_Clanstvo_Data::money( Plan_A_Clanstvo_Data::fee_amount() ) ) . ', ' . esc_html( (string) ( Plan_A_Clanstvo_Data::year() + 1 ) ) . '. → ' . esc_html( Plan_A_Clanstvo_Data::money( Plan_A_Clanstvo_Data::fee_amount( Plan_A_Clanstvo_Data::year() + 1 ) ) ) . '.'; ?></p>
+					</td></tr>
+					<?php
 					$text( 'primatelj', 'Primatelj' );
 					$text( 'adresa', 'Adresa primatelja' );
 					$text( 'mjesto', 'Poštanski broj i mjesto' );

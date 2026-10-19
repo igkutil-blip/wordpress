@@ -239,7 +239,7 @@ final class Plan_A_Clanstvo_Checkout {
 	private static function join_info(): string {
 		$s     = Plan_A_Clanstvo_Data::get();
 		$year  = self::cart_year();
-		$fee   = Plan_A_Clanstvo_Data::money( (float) $s['iznos'] );
+		$fee   = Plan_A_Clanstvo_Data::money( Plan_A_Clanstvo_Data::fee_amount( $year ) );
 		$items = array_values( array_filter( array_map( 'trim', preg_split( '/\R/u', (string) $s['pogodnosti'] ) ) ) );
 		$html  = '<div class="pac-info">';
 		$html .= '<p class="pac-info__lead">' . esc_html( sprintf( 'Članstvo u udruzi Plan A uvjet je za sudjelovanje na izletima. Članarina je %1$s i vrijedi za kalendarsku godinu (za ovaj izlet: %2$d.).', $fee, $year ) ) . '</p>';
@@ -326,7 +326,7 @@ final class Plan_A_Clanstvo_Checkout {
 				'ajax'   => admin_url( 'admin-ajax.php' ),
 				'nonce'  => wp_create_nonce( 'pac_member_check' ),
 				'fields' => array_keys( self::MAP ),
-				'fee'    => Plan_A_Clanstvo_Data::money( (float) $s['iznos'] ),
+				'fee'    => Plan_A_Clanstvo_Data::money( Plan_A_Clanstvo_Data::fee_amount( self::cart_year() ) ),
 				'year'   => self::cart_year(),
 			)
 		);
