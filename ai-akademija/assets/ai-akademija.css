@@ -1,0 +1,29 @@
+/* AI Akademija – cijela stranica: font, boje, gumbi koji se preljevaju iz boje u boju, zaglavlje. */
+
+:root{--aka-ink:#0B1033;--aka-blue:#1F5BFF;--aka-violet:#7B2FFF;--aka-pink:#E21EFF;--aka-cyan:#00D2FF;
+  --aka-grad:linear-gradient(100deg,#1F5BFF 0%,#7B2FFF 35%,#E21EFF 60%,#00D2FF 85%,#1F5BFF 100%)}
+body,h1,h2,h3,h4,h5,h6,.nav>li>a,.button,button,input{font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif}
+h1,h2,h3,h4,h5,h6{color:var(--aka-ink)}
+
+@keyframes aka-flow{0%{background-position:0% 50%}100%{background-position:100% 50%}}
+
+/* svi glavni gumbi (Flatsome .button.primary, WooCommerce, gumb „Prijava” u zaglavlju) */
+.button.primary:not(.is-outline),.button.alt,.checkout-button,.single_add_to_cart_button,
+.woocommerce-button,input[type=submit].button,.header-button .button{
+  background:var(--aka-grad)!important;background-size:300% 100%!important;color:#fff!important;border:0!important;
+  border-radius:12px!important;font-weight:700;text-transform:none;letter-spacing:0;
+  box-shadow:0 10px 24px -10px rgba(91,60,255,.6);animation:aka-flow 6s ease-in-out infinite alternate;
+  transition:transform .2s ease,box-shadow .2s ease}
+.button.primary:not(.is-outline):hover,.header-button .button:hover,.checkout-button:hover,.single_add_to_cart_button:hover{
+  transform:translateY(-2px);box-shadow:0 16px 30px -12px rgba(123,47,255,.7)}
+
+/* tekst koji se prelijeva – dodaj klasu aka-grad-text bilo kojem <span> */
+.aka-grad-text{background:var(--aka-grad);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;
+  color:transparent;-webkit-text-fill-color:transparent;animation:aka-flow 9s ease-in-out infinite alternate}
+
+/* zaglavlje: slogan pored logotipa (HTML element u zaglavlju) */
+.aka-slogan{display:inline-block;padding-left:18px;margin-left:4px;border-left:1.5px solid #D5DAEA;color:#2A3150;font-size:17px;font-weight:500;white-space:nowrap}
+.header-main .nav>li>a{color:var(--aka-ink);font-size:16px;font-weight:500;text-transform:none;letter-spacing:0}
+.header-main .nav>li>a:hover,.header-main .nav>li.active>a{color:var(--aka-blue)}
+
+@media (prefers-reduced-motion:reduce){.button,.aka-grad-text{animation:none!important}}
