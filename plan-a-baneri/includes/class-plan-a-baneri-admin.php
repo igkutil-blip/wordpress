@@ -40,13 +40,13 @@ final class Plan_A_Baneri_Admin {
 		$in  = wp_unslash( $_POST );
 		$out = array();
 		foreach ( $d as $k => $v ) {
-			if ( is_int( $v ) && in_array( $k, array( 'next_on', 'promo_on', 'tinder_on', 'cards_on' ), true ) ) {
+			if ( is_int( $v ) && in_array( $k, array( 'next_on', 'promo_on', 'tinder_on', 'cards_on', 'slider_on', 's2_on', 's3_on' ), true ) ) {
 				$out[ $k ] = empty( $in[ $k ] ) ? 0 : 1;
 			} elseif ( is_int( $v ) ) {
 				$out[ $k ] = absint( $in[ $k ] ?? $v );
-			} elseif ( in_array( $k, array( 'title', 'trust' ), true ) ) {
+			} elseif ( in_array( $k, array( 'title', 'trust', 's2_title', 's3_title' ), true ) ) {
 				$out[ $k ] = sanitize_textarea_field( (string) ( $in[ $k ] ?? '' ) );
-			} elseif ( in_array( $k, array( 'btn1_url', 'btn2_url', 'promo_url', 'image_url' ), true ) ) {
+			} elseif ( in_array( $k, array( 'btn1_url', 'btn2_url', 'promo_url', 'image_url', 's2_btn2_url' ), true ) ) {
 				$url       = trim( (string) ( $in[ $k ] ?? '' ) );
 				$out[ $k ] = 0 === strpos( $url, '/' ) ? '/' . ltrim( sanitize_text_field( $url ), '/' ) : esc_url_raw( $url );
 			} else {
@@ -57,12 +57,26 @@ final class Plan_A_Baneri_Admin {
 		$out['next_count']  = max( 1, min( 6, $out['next_count'] ) );
 		$out['cards_days']  = max( 7, min( 365, $out['cards_days'] ) );
 		$out['cards_max']   = max( 2, min( 20, $out['cards_max'] ) );
+		$out['interval']    = max( 4, min( 30, $out['interval'] ) );
+		$out['s2_weeks']    = max( 3, min( 10, $out['s2_weeks'] ) );
 		$out['top']         = min( 300, $out['top'] );
 		$out['top_mob']     = min( 300, $out['top_mob'] );
 		update_option( Plan_A_Baneri::OPT, $out, false );
 		Plan_A_Baneri::flush();
 		wp_safe_redirect( admin_url( 'options-general.php?page=' . self::SLUG . '&saved=1' ) );
 		exit;
+	}
+
+	private static function picker( string $k, string $label, string $img, string $help ) {
+		$s = Plan_A_Baneri::get();
+		echo '<tr><th scope="row">' . esc_html( $label ) . '</th><td>';
+		echo '<input type="hidden" name="' . esc_attr( $k ) . '" id="pab-' . esc_attr( $k ) . '" value="' . (int) $s[ $k ] . '">';
+		if ( 'image' === $k ) {
+			echo '<input type="hidden" name="image_url" id="pab-image_url" value="' . esc_attr( (string) $s['image_url'] ) . '">';
+		}
+		echo '<div id="pab-prev-' . esc_attr( $k ) . '" style="margin-bottom:8px">' . ( $img ? '<img src="' . esc_url( $img ) . '" style="max-width:320px;height:auto;border-radius:6px">' : '<em>Nije odabrana.</em>' ) . '</div>';
+		echo '<button type="button" class="button pab-pick" data-k="' . esc_attr( $k ) . '">Odaberi sliku</button> <button type="button" class="button-link pab-clear" data-k="' . esc_attr( $k ) . '">Makni</button>';
+		echo '<p class="description">' . esc_html( $help ) . '</p></td></tr>';
 	}
 
 	public static function page() {
@@ -78,7 +92,6 @@ final class Plan_A_Baneri_Admin {
 		$check = static function ( string $k, string $label, string $text ) use ( $s ) {
 			echo '<tr><th scope="row">' . esc_html( $label ) . '</th><td><label><input type="checkbox" name="' . esc_attr( $k ) . '" value="1"' . checked( ! empty( $s[ $k ] ), true, false ) . '> ' . esc_html( $text ) . '</label></td></tr>';
 		};
-		$img = (int) $s['image'] ? (string) wp_get_attachment_image_url( (int) $s['image'], 'medium' ) : (string) $s['image_url'];
 		?>
 		<div class="wrap">
 			<h1>Plan A naslovnica</h1>
@@ -94,13 +107,7 @@ final class Plan_A_Baneri_Admin {
 				<?php wp_nonce_field( 'pab_save' ); ?>
 				<h2>1. Velika slika, poruka i gumbi</h2>
 				<table class="form-table" role="presentation">
-					<tr><th scope="row">Velika slika</th><td>
-						<input type="hidden" name="image" id="pab-image" value="<?php echo (int) $s['image']; ?>">
-						<input type="hidden" name="image_url" id="pab-image_url" value="<?php echo esc_attr( (string) $s['image_url'] ); ?>">
-						<div id="pab-prev" style="margin-bottom:8px"><?php echo $img ? '<img src="' . esc_url( $img ) . '" style="max-width:320px;height:auto;border-radius:6px">' : '<em>Nije odabrana – koristi se slika najbližeg izleta.</em>'; ?></div>
-						<button type="button" class="button" id="pab-pick">Odaberi sliku</button> <button type="button" class="button-link" id="pab-clear">Makni</button>
-						<p class="description">Široka fotografija (najbolje 2400×1350 JPG, do ~400 KB). Lijeva strana se zatamni zbog teksta.</p>
-					</td></tr>
+					<?php self::picker( 'image', 'Velika slika', (int) $s['image'] ? (string) wp_get_attachment_image_url( (int) $s['image'], 'medium' ) : (string) $s['image_url'], 'Široka fotografija (najbolje 2400×1350 JPG, do ~400 KB). Lijeva strana se zatamni zbog teksta. Bez slike: slika najbližeg izleta.' ); ?>
 					<?php
 					$text( 'kicker', 'Natpis iznad naslova', '<code>{broj}</code> = broj izleta u razdoblju kartica, <code>{dana}</code> = to razdoblje. Prazno = bez natpisa.', 'large-text' );
 					$area( 'title', 'Naslov', 'Novi red = prijelom naslova.', 2 );
@@ -140,6 +147,41 @@ final class Plan_A_Baneri_Admin {
 					$text( 'tinder_btn', 'Gumb' );
 					?>
 				</table>
+				<h2>Slider (slajdovi 2 i 3)</h2>
+				<table class="form-table" role="presentation">
+					<?php
+					$check( 'slider_on', 'Slider', 'Vrh se izmjenjuje: 1. izleti (gore), 2. jedrenje, 3. kviz „Koji izlet?”. Trake i kartice izleta ispod su uvijek iste.' );
+					$text( 'interval', 'Trajanje slajda (sekunde)', 'Zadano 8. Zaustavi se kad je miš iznad ili kad netko koristi kalkulator ili kviz.', 'small-text', 'number' );
+					$text( 's1_tab', 'Naziv 1. slajda (tableta)', '', 'regular-text' );
+					?>
+				</table>
+				<h3>Slajd 2 – Jedrenje</h3>
+				<table class="form-table" role="presentation">
+					<?php
+					$check( 's2_on', 'Prikaži', 'Kalkulator „Koliko je po osobi?” i slobodni tjedni iz Plan A jedrenja (slajd se ne prikazuje ako nema slobodnih tjedana)' );
+					self::picker( 's2_image', 'Slika', (int) $s['s2_image'] ? (string) wp_get_attachment_image_url( (int) $s['s2_image'], 'medium' ) : '', 'Npr. jedrilica pred Kornatima. Bez slike: prva slika iz galerije jedrenja.' );
+					$text( 's2_tab', 'Naziv slajda (tableta)' );
+					$text( 's2_kicker', 'Natpis iznad naslova', '<code>{godina}</code> = godina prvog slobodnog tjedna.', 'large-text' );
+					$area( 's2_title', 'Naslov', 'Novi red = prijelom.', 2 );
+					$text( 's2_sub', 'Podnaslov', '', 'large-text' );
+					$text( 's2_btn1', 'Glavni gumb', 'Vodi na stranicu jedrenja.' );
+					$text( 's2_btn2', 'Drugi gumb', 'Prazno = bez drugog gumba.' );
+					$text( 's2_btn2_url', 'Poveznica drugog gumba' );
+					$text( 's2_weeks', 'Broj tjedana u kartici', '3, 6 ili 9 (zadano 3 – jedan red; više redova povisi vrh naslovnice).', 'small-text', 'number' );
+					?>
+				</table>
+				<h3>Slajd 3 – Kviz „Koji izlet je za tebe?”</h3>
+				<table class="form-table" role="presentation">
+					<?php
+					$check( 's3_on', 'Prikaži', 'Tri pitanja (koliko dana, što te privlači, kada) → 1–2 prava izleta s datumom, cijenom i slobodnim mjestima' );
+					self::picker( 's3_image', 'Slika', (int) $s['s3_image'] ? (string) wp_get_attachment_image_url( (int) $s['s3_image'], 'medium' ) : '', 'Npr. planinari na Premužićevoj stazi. Bez slike: slika drugog sljedećeg izleta.' );
+					$text( 's3_tab', 'Naziv slajda (tableta)' );
+					$text( 's3_kicker', 'Natpis iznad naslova', '', 'large-text' );
+					$area( 's3_title', 'Naslov', 'Novi red = prijelom.', 2 );
+					$text( 's3_sub', 'Podnaslov', '', 'large-text' );
+					$text( 's3_btn', 'Gumb', 'Vodi na poveznicu glavnog gumba 1. slajda (Izleti).' );
+					?>
+				</table>
 				<h2>5. Kartice sljedećih izleta</h2>
 				<table class="form-table" role="presentation">
 					<?php
@@ -156,20 +198,17 @@ final class Plan_A_Baneri_Admin {
 		</div>
 		<script>
 		(function ($) {
-			var frame;
-			$('#pab-pick').on('click', function (e) {
+			$('.pab-pick').on('click', function (e) {
 				e.preventDefault();
-				if (!frame) {
-					frame = wp.media({ title: 'Velika slika naslovnice', library: { type: 'image' }, multiple: false });
-					frame.on('select', function () {
-						var a = frame.state().get('selection').first().toJSON();
-						$('#pab-image').val(a.id); $('#pab-image_url').val('');
-						$('#pab-prev').html('<img src="' + (a.sizes && a.sizes.medium ? a.sizes.medium.url : a.url) + '" style="max-width:320px;height:auto;border-radius:6px">');
-					});
-				}
+				var k = $(this).data('k'), frame = wp.media({ title: 'Odaberi sliku', library: { type: 'image' }, multiple: false });
+				frame.on('select', function () {
+					var a = frame.state().get('selection').first().toJSON();
+					$('#pab-' + k).val(a.id); if (k === 'image') { $('#pab-image_url').val(''); }
+					$('#pab-prev-' + k).html('<img src="' + (a.sizes && a.sizes.medium ? a.sizes.medium.url : a.url) + '" style="max-width:320px;height:auto;border-radius:6px">');
+				});
 				frame.open();
 			});
-			$('#pab-clear').on('click', function () { $('#pab-image').val(0); $('#pab-image_url').val(''); $('#pab-prev').html('<em>Nije odabrana – koristi se slika najbližeg izleta.</em>'); });
+			$('.pab-clear').on('click', function () { var k = $(this).data('k'); $('#pab-' + k).val(0); if (k === 'image') { $('#pab-image_url').val(''); } $('#pab-prev-' + k).html('<em>Nije odabrana.</em>'); });
 		})(jQuery);
 		</script>
 		<?php
