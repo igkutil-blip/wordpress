@@ -9,6 +9,9 @@
  * istim redom kao popis sudionika košarice (_pac_osobe). Osoba se ne broji ako je narudžba otkazana,
  * vraćena ili neuspjela, ili ako ju je administrator u popisu označio „Ne broji” (meta _pat_x).
  *
+ * Poticaj (meta izleta _pat_seed): administrator može dodati muškarce i žene s rasponom godina koji se na stranici
+ * izleta pribrajaju pravim prijavama (shown()) dok je poticaj uključen. Ne rezervira mjesta u WooCommerceu.
+ *
  * @package Plan_A_Tinder
  */
 
@@ -198,6 +201,55 @@ final class Plan_A_Tinder {
 		}
 		set_transient( 'pat_stats_' . $tour, $out, 6 * HOUR_IN_SECONDS );
 		return $out;
+	}
+
+	/** Poticaj izleta: ['on' => bool, 'm' => 2, 'm_min' => 28, 'm_max' => 40, 'z' => …]. */
+	public static function seed( int $tour ): array {
+		$s   = get_post_meta( $tour, '_pat_seed', true );
+		$s   = is_array( $s ) ? $s : array();
+		$out = array( 'on' => ! empty( $s['on'] ) );
+		foreach ( array( 'm', 'z' ) as $k ) {
+			$out[ $k ]          = max( 0, min( 99, (int) ( $s[ $k ] ?? 0 ) ) );
+			$lo                 = max( 0, min( 99, (int) ( $s[ $k . '_min' ] ?? 0 ) ) );
+			$hi                 = max( 0, min( 99, (int) ( $s[ $k . '_max' ] ?? 0 ) ) );
+			$out[ $k . '_min' ] = $lo && $hi ? min( $lo, $hi ) : ( $lo ?: $hi );
+			$out[ $k . '_max' ] = $lo && $hi ? max( $lo, $hi ) : ( $lo ?: $hi );
+		}
+		return $out;
+	}
+
+	/** Je li poticaj uključen i ima li ikoga za dodati. */
+	public static function seed_active( int $tour ): bool {
+		$s = self::seed( $tour );
+		return $s['on'] && ( $s['m'] || $s['z'] );
+	}
+
+	/**
+	 * Brojke za stranicu izleta: prave prijave + poticaj (ako je uključen). Godine poticaja šire raspon
+	 * i broje se kao osobe s upisanom godinom (za prag prikaza raspona).
+	 */
+	public static function shown( int $tour ): array {
+		$st         = self::stats( $tour );
+		$st['real'] = $st['total'];
+		if ( ! self::seed_active( $tour ) ) {
+			return $st;
+		}
+		$seed = self::seed( $tour );
+		foreach ( array( 'm', 'z' ) as $k ) {
+			$n = $seed[ $k ];
+			if ( ! $n ) {
+				continue;
+			}
+			$st[ $k ]['n'] += $n;
+			$st['total']   += $n;
+			if ( $seed[ $k . '_min' ] ) {
+				$st[ $k ]['min']   = $st[ $k ]['min'] ? min( $st[ $k ]['min'], $seed[ $k . '_min' ] ) : $seed[ $k . '_min' ];
+				$st[ $k ]['max']   = max( $st[ $k ]['max'], $seed[ $k . '_max' ] );
+				// Raspon koji je administrator upisao prikazuje se uvijek (prag „od N osoba” štiti samo prave prijave).
+				$st[ $k ]['ages'] = max( $st[ $k ]['ages'] + $n, (int) self::settings()['min'] );
+			}
+		}
+		return $st;
 	}
 
 	/** Ukupno mjesta izleta (karte bez „prve rate”), 0 = nepoznato. */
