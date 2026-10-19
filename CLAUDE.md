@@ -190,6 +190,11 @@ Na kopiji provjereno s pravim Rank Mathom (probna skica 9076, obrisana).
 **0.8.5:** osiguranje iznad 355 € točno 2,8 % na cent. **0.8.6 + plan-a-tinder 1.2.1 (19.10.):** osiguranje se računa pri SVAKOM spremanju izleta (i objavljenog),
 jednom (opcija `pap_ins_028` = {time, changed: {id: stari iznos}}) usklađeni svi postojeći izleti; postojeće narudžbe se ne mijenjaju. Tinder gumb: „WhatsApp grupa Plana A”.
 
+**plan-a-prijave 0.8.7 (19.10.2026., obje grane) – NARUDŽBA 0 € (#9115 Zimsko III, Zrinka V.):** SpeedyCache služi stranice izleta iz predmemorije danima
+(živa 19.10.: sve od 15./16.10.), ttbm_form_nonce vrijedi ≤ 24 h → s isteklim kodom TTBM add_cart_item_data preskoči karte → stavka bez karte/termina, 0 €,
+„U obradi/plaćeno”. Popravak Plan_A_Prijave_Zastita: wp_loaded 5 istekli nonce → svjež (POST add-to-cart = proizvod izleta + ticket_qty>0); add_to_cart_validation
+bez karte → odbij; checkout: stavka izleta bez karte → makni + greška. Lokalno: istekli kod → 150 € (prije 0 €). #9115 na živoj ispravlja Igor (živa samo čitanje).
+
 ## plan-a-tinder 1.0.0 (19.10.2026., obje grane, isti zip) – „Tinder i planinarenje – vikend u Ramića dvorima” (14.–15.12.2026.)
 
 Igor unio izlet na živu kao neobjavljen (skica). Dodatak samo za izlete označene u Izleti → Tinder i planinarenje (opcija `plan_a_tinder`:
