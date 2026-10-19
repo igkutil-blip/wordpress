@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A izleti – prijave
  * Description:       Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima. Obrazac za uređivanje izleta (faza 2); stranica izleta, prijava i narudžbe bez WpTravellyja kad je on isključen (faza 3).
- * Version:           0.8.6
+ * Version:           0.8.7
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            S.R.D. Plan A
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_PRIJAVE_VERSION', '0.8.6' );
+define( 'PLAN_A_PRIJAVE_VERSION', '0.8.7' );
 define( 'PLAN_A_PRIJAVE_FILE', __FILE__ );
 define( 'PLAN_A_PRIJAVE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PLAN_A_PRIJAVE_URL', plugin_dir_url( __FILE__ ) );
@@ -37,6 +37,7 @@ require_once PLAN_A_PRIJAVE_DIR . 'includes/class-plan-a-prijave-video.php';
 require_once PLAN_A_PRIJAVE_DIR . 'includes/class-plan-a-prijave-cekanje.php';
 require_once PLAN_A_PRIJAVE_DIR . 'includes/class-plan-a-prijave-brzina.php';
 require_once PLAN_A_PRIJAVE_DIR . 'includes/class-plan-a-prijave-skica.php';
+require_once PLAN_A_PRIJAVE_DIR . 'includes/class-plan-a-prijave-zastita.php';
 
 Plan_A_Prijave_Editor::init();
 Plan_A_Prijave_Copy::init();
@@ -54,3 +55,4 @@ Plan_A_Prijave_Video::init();
 Plan_A_Prijave_Cekanje::init();
 Plan_A_Prijave_Brzina::init();
 Plan_A_Prijave_Skica::init();
+Plan_A_Prijave_Zastita::init();
