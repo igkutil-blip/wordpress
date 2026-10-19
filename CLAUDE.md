@@ -239,6 +239,7 @@ vrh vidljiv (IntersectionObserver 35 %); kratki kod se prikazuje samo jednom (na
 **1.1.2 (19.10.):** Igor je u zaglavlju teme isključio gumbe „Plan izleta 2026.” i „WhatsApp” (prelazili preko kartice Sljedeći polazak) → mali gumbi u slideru
 (`.pab-bar2`: tablete lijevo, gumbi desno; mobitel ispod tableta), postavke links_on, link1/link1_url, link2/link2_url (prazno = Plan_A_Tinder::wa_url()).
 **1.1.3 (19.10.):** tablete vidljivije (Igor: „presijavanje”): ikonica, bijeli rub, odsjaj `pab-shine` 4,5 s preko neaktivnih, `is-hello` poskok kad se slider prvi put vidi.
+**1.1.4 (19.10.):** na živoj (Flatsome „lazy load” uključen, na kopiji nije) slike 2./3. slajda bile prazne – Flatsome prepiše `<img data-src>` u prazni SVG → sada `<span class="pab-bg" data-pab-src/srcset>`, JS nakon load napravi `<img class="no-lazy skip-lazy">`.
 
 ## NA ČEKANJU (Igor 16.10.2026.): „Popis za sutra” – Super Ferrata Dinara 17.10.
 

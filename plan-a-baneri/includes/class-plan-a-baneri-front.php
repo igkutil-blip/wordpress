@@ -170,10 +170,11 @@ final class Plan_A_Baneri_Front {
 				$h .= '<span class="pab-bg' . ( $i ? '' : ' is-on' ) . '"></span>';
 				continue;
 			}
-			// Prva slika odmah, ostale tek nakon učitavanja stranice (JS prepiše data-src u src).
+			// Prva slika odmah, ostale tek nakon učitavanja stranice.
 			$h .= 0 === $i
 				? '<img class="pab-bg is-on" src="' . esc_url( $im['src'] ) . '"' . ( $im['srcset'] ? ' srcset="' . esc_attr( $im['srcset'] ) . '" sizes="100vw"' : '' ) . ' alt="' . esc_attr( $im['alt'] ) . '" fetchpriority="high" decoding="async">'
-				: '<img class="pab-bg" data-src="' . esc_url( $im['src'] ) . '"' . ( $im['srcset'] ? ' data-srcset="' . esc_attr( $im['srcset'] ) . '" sizes="100vw"' : '' ) . ' alt="' . esc_attr( $im['alt'] ) . '" decoding="async">';
+				// Ne <img data-src>: Flatsomeovo lijeno učitavanje to prepiše praznom slikom. JS od ovoga napravi <img>.
+				: '<span class="pab-bg" data-pab-src="' . esc_url( $im['src'] ) . '"' . ( $im['srcset'] ? ' data-pab-srcset="' . esc_attr( $im['srcset'] ) . '"' : '' ) . ' data-pab-alt="' . esc_attr( $im['alt'] ) . '"></span>';
 		}
 		$h .= '</div><div class="pab-slides">';
 		foreach ( $slides as $i => $sl ) {
