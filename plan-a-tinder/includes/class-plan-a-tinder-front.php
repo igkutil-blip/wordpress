@@ -24,6 +24,9 @@ final class Plan_A_Tinder_Front {
 		if ( Plan_A_Tinder::is_tour( $tour ) || ( function_exists( 'is_checkout' ) && is_checkout() && self::cart_items() ) || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
 			wp_enqueue_style( 'plan-a-tinder', PLAN_A_TINDER_URL . 'assets/tinder.css', array(), PLAN_A_TINDER_VERSION );
 		}
+		if ( Plan_A_Tinder::is_tour( $tour ) && Plan_A_Tinder::seed_active( $tour ) ) {
+			wp_enqueue_script( 'plan-a-tinder', PLAN_A_TINDER_URL . 'assets/tinder.js', array(), PLAN_A_TINDER_VERSION, true );
+		}
 	}
 
 	private static function wa_button( string $text, int $tour ): string {
@@ -69,7 +72,8 @@ final class Plan_A_Tinder_Front {
 			$all = $seats - 1; // poticaj ne smije prikazati „popunjeno” dok ima pravih slobodnih mjesta
 		}
 		$base  = max( $seats, $all, 1 );
-		echo '<div class="pat-card" aria-label="' . esc_attr( $s['title'] ) . '">';
+		$minus = Plan_A_Tinder::seed_active( $tour ) ? (int) $st['total'] - (int) $st['real'] : 0; // poticaj: toliko se oduzme od prikaza slobodnih mjesta
+		echo '<div class="pat-card" aria-label="' . esc_attr( $s['title'] ) . '"' . ( $minus > 0 ? ' data-pat-minus="' . (int) $minus . '"' : '' ) . '>';
 		echo '<p class="pat-card__h">' . esc_html( $s['title'] ) . '</p>';
 		echo '<p class="pat-card__total">' . ( $all ? esc_html( $all . ' ' . self::plural( $all, array( 'prijavljena osoba', 'prijavljene osobe', 'prijavljenih' ) ) ) : esc_html__( 'Budi prva prijava', 'plan-a-tinder' ) ) . '</p>';
 		echo '<div class="pat-card__g">';
@@ -82,8 +86,13 @@ final class Plan_A_Tinder_Front {
 		echo '</div>';
 		if ( $seats ) {
 			$free = max( 0, $seats - $all );
+			if ( class_exists( 'TTBM_Function' ) && method_exists( 'TTBM_Function', 'get_total_available' ) ) {
+				// Isti broj kao „slobodna mjesta” izleta (stvarna mjesta − poticaj), najmanje 1 dok ima stvarnih.
+				$real = max( 0, (int) TTBM_Function::get_total_available( $tour ) );
+				$free = $real ? max( 1, $real - $minus ) : 0;
+			}
 			echo '<div class="pat-bar" aria-hidden="true"><i class="pat-bar__m" style="width:' . esc_attr( (string) round( 100 * $m / $base, 1 ) ) . '%"></i><i class="pat-bar__z" style="width:' . esc_attr( (string) round( 100 * $z / $base, 1 ) ) . '%"></i></div>';
-			echo '<p class="pat-free"><span>' . esc_html( min( $all, $seats ) . ' od ' . $seats . ' mjesta' ) . '</span><span>' . ( $free ? 'slobodno još <b>' . (int) $free . '</b>' : '<b>popunjeno</b>' ) . '</span></p>';
+			echo '<p class="pat-free"><span>' . esc_html( max( 0, $seats - $free ) . ' od ' . $seats . ' mjesta' ) . '</span><span>' . ( $free ? 'slobodno još <b>' . (int) $free . '</b>' : '<b>popunjeno</b>' ) . '</span></p>';
 		}
 		echo self::wa_button( 'WhatsApp grupa Plana A', $tour ); // phpcs:ignore WordPress.Security.EscapeOutput
 		echo '<p class="pat-note">' . esc_html__( 'Prikazujemo samo broj prijavljenih i raspon godina, bez imena i ostalih podataka. Brojke se mijenjaju same sa svakom prijavom.', 'plan-a-tinder' ) . '</p>';
