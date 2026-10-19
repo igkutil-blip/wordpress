@@ -236,6 +236,8 @@ mjesec; popuštanje uvjeta → „Najbliže tvom izboru”). Pozadine se pretapa
 samo odabrani slajd (display none) i BEZ automatske vrtnje (visina). Trake i kartice zajedničke. Kartice: popunjeni na kraj (Igor).
 **1.1.1 (19.10.):** Igor: „ne vrte se” – zastajalo je dok je miš bilo gdje na slici (uvijek) → zastaje samo na bijeloj kartici; vrti se i na mobitelu, ali samo dok je
 vrh vidljiv (IntersectionObserver 35 %); kratki kod se prikazuje samo jednom (na živoj je bio upisan dvaput – Flatsome Text + još jednom u sadržaju).
+**1.1.2 (19.10.):** Igor je u zaglavlju teme isključio gumbe „Plan izleta 2026.” i „WhatsApp” (prelazili preko kartice Sljedeći polazak) → mali gumbi u slideru
+(`.pab-bar2`: tablete lijevo, gumbi desno; mobitel ispod tableta), postavke links_on, link1/link1_url, link2/link2_url (prazno = Plan_A_Tinder::wa_url()).
 
 ## NA ČEKANJU (Igor 16.10.2026.): „Popis za sutra” – Super Ferrata Dinara 17.10.
 

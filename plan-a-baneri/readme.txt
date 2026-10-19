@@ -1,7 +1,7 @@
 === Plan A baneri – vrh naslovnice ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 
 Vrh naslovnice umjesto slidera: kratki kod [plan-a-naslovnica].
@@ -23,6 +23,9 @@ pa je točno i kad je stranica iz predmemorije (SpeedyCache). Slobodna mjesta os
 Postavke → Plan A naslovnica: slika, tekstovi, gumbi i poveznice, uključivanje svakog dijela, tekst i rok trake akcije, razdoblje i broj kartica, razmak od vrha (prozirno zaglavlje teme).
 
 == Promjene ==
+
+= 1.1.2 =
+* Mali gumbi „Plan izleta 2026.” (plavi) i „WhatsApp grupa” (zeleni) u slideru – desno u redu s tabletama slajdova, isti na svim slajdovima (umjesto gumba u zaglavlju teme koji su prelazili preko kartice „Sljedeći polazak”). WhatsApp: upisana poveznica ili zajednička grupa iz Plan A Tinder.
 
 = 1.1.1 =
 * Slider se vrti i kad je miš na slici (zastane samo dok je miš na bijeloj kartici ili dok netko koristi kalkulator/kviz).
