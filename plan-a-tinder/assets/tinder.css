@@ -31,3 +31,19 @@
 .pat-year input{width:90px;margin:0}
 .pat-thanks{margin:0 0 24px;padding:16px;border:1px solid #c7ecd4;border-radius:12px;background:#f0fbf4}
 .pat-thanks .pat-wa{max-width:320px}
+
+/* 1.4.1: kompaktnija kartica – kućica za prijavu „lijepi” se uz ekran, pa mora stati gumb Rezervirajte. */
+.pat-card{padding:12px 14px;margin-bottom:12px}
+.pat-card__h{display:inline;font-size:11px}
+.pat-card__total{display:inline;margin:0 0 0 6px!important;font-size:15px}
+.pat-card__total:before{content:"· ";color:#9aa5b1;font-weight:400}
+.pat-card__g{margin-top:8px;gap:8px}
+.pat-box{flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:0 6px;padding:7px 6px}
+.pat-box__ic{font-size:15px}
+.pat-box__n{margin:0;font-size:24px}
+.pat-box__l{font-size:13px}
+.pat-box__a{flex-basis:100%;margin-top:0;font-size:12px}
+.pat-bar{height:6px;margin:10px 0 4px}
+.pat-free{font-size:12.5px}
+.pat-wa{margin-top:10px;padding:8px 12px 7px;font-size:14px}
+.pat-note{display:none}
