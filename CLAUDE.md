@@ -195,6 +195,11 @@ jednom (opcija `pap_ins_028` = {time, changed: {id: stari iznos}}) usklađeni sv
 „U obradi/plaćeno”. Popravak Plan_A_Prijave_Zastita: wp_loaded 5 istekli nonce → svjež (POST add-to-cart = proizvod izleta + ticket_qty>0); add_to_cart_validation
 bez karte → odbij; checkout: stavka izleta bez karte → makni + greška. Lokalno: istekli kod → 150 € (prije 0 €). #9115 na živoj ispravlja Igor (živa samo čitanje).
 
+**plan-a-clanstvo 1.15.9 + skripta v22 (19.10.2026., obje grane):** tablica agencije – blok = datum_izlet; promjena datuma objavljenog izleta ostavljala je
+prazne blokove (Tinder 11./12./14.12.) → Agency::drop_old šalje ag_drop za poslane ključeve budućih termina kojih više nema; skripta briše samo PRAZNE
+blokove (s osobama/listom čekanja ostaju), vraća obrisane → makni iz `plan_a_clanstvo_ag_tours`. order_rows preskače stavku bez _ttbm_date (blok „_7730”
+bez datuma nastao od #9115 – Zrinka; taj blok agencija/Igor briše ručno). Test lažnom tablicom (gstest/run6.js) prošao. Igor: skriptu v22 u tablicu članova (+ kopija).
+
 ## plan-a-tinder 1.0.0 (19.10.2026., obje grane, isti zip) – „Tinder i planinarenje – vikend u Ramića dvorima” (14.–15.12.2026.)
 
 Igor unio izlet na živu kao neobjavljen (skica). Dodatak samo za izlete označene u Izleti → Tinder i planinarenje (opcija `plan_a_tinder`:
