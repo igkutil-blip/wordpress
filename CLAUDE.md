@@ -183,6 +183,16 @@ ikonu osvježi sam (do ~dan), iPhone tek nakon ponovne instalacije.
 0. **Na vrhu stranice: „Tko unosi izlet”** – obavezan izbor, **isti popis kao Vodiči** (Krešimir Gracin, Igor Kutil,
    Ivan Videk, Sonja Papeš; novi vodič → sam se doda); ime ide u mail Igoru i u izlet; taj vodič se sam označi u Vodičima.
 
+## plan-a-tinder 1.0.0 (19.10.2026., obje grane, isti zip) – „Tinder i planinarenje – vikend u Ramića dvorima” (14.–15.12.2026.)
+
+Igor unio izlet na živu kao neobjavljen (skica). Dodatak samo za izlete označene u Izleti → Tinder i planinarenje (opcija `plan_a_tinder`:
+tours, wa, min, title): kartica „Tko dolazi” na vrhu kućice za prijavu (hook ttbm_smart_registration_controls prio 1 – Igor: „iznad rezervacije”):
+broj muškaraca/žena, raspon godina tek od `min` (3) osoba po skupini, traka X od Y mjesta (karte bez „prve rate”), gumb WhatsApp grupe
+(nova grupa „Izleti Plan A 2”, https://chat.whatsapp.com/K8g93lFVNIE0EwlmQ7NFX); blagajna: spol + godina rođenja obavezno za svaku osobu
+(meta stavke `_pat_osobe`, isti redoslijed kao `_pac_osobe`), „Hvala” s WhatsApp gumbom; admin popis (ime, spol, godina, dob, mobitel, e-mail,
+narudžba, „isključi” → `_pat_x`). Broje se narudžbe on-hold/processing/completed/pending; transient `pat_stats_{tour}`. Tablica agencije nepromijenjena.
+Na kopiji instaliran bez odabranog izleta (opciju ne može postaviti pomoćnik). Tekst objave poslan Igoru (s [NEDOSTAJE] mjestima).
+
 ## NA ČEKANJU (Igor 16.10.2026.): „Popis za sutra” – Super Ferrata Dinara 17.10.
 
 Igor misli da popis vodiču nije točan (agencija dodavala ljude/mijenjala u tablici). ISPRAVAK moje prve procjene: „Popis za sutra”
