@@ -220,6 +220,16 @@ Izbornik Izleti → Tinder izleti.
 **1.3.0 (19.10.):** POTICAJ po izletu (kartica izleta u Izleti → Tinder izleti, meta `_pat_seed` = on, m, m_min, m_max, z, z_min, z_max): dodani ♂/♀ s rasponom godina pribrajaju se pravim prijavama samo na stranici (Plan_A_Tinder::shown); upisani raspon se prikazuje uvijek (prag `min` samo za prave); poticaj nikad ne pokaže „popunjeno” dok ima pravih slobodnih mjesta (ukupno se ograniči na mjesta − 1). Ne rezervira mjesta, nije u narudžbama ni tablici. Kvačica isključuje, brojke ostaju.
 **1.4.0 (19.10.):** poticaj umanjuje i PRIKAZ slobodnih mjesta (hero `.ttbm_available_seat` – assets/tinder.js, MutationObserver jer TTBM JS osvježava broj; kartica „slobodno još” = TTBM get_total_available − poticaj), najmanje 1 dok ima stvarnih. Skriveni #ttbm_total_available, max količine i košarica ostaju stvarni – prijaviti se mogu svi stvarno slobodni (Igor: marketinški trik, ne smije blokirati prijave).
 
+## plan-a-baneri 1.0.0 (19.10.2026., obje grane, isti zip) – vrh naslovnice umjesto slidera
+
+Igor odobrio sliku (hero/mock.html u privremenoj mapi). Kratki kod `[plan-a-naslovnica]`; postavke Postavke → Plan A naslovnica (opcija `plan_a_baneri`).
+Dijelovi: velika slika (odabir iz medija; bez slike = slika najbližeg izleta) + natpis `{broj}` izleta + naslov/podnaslov + 2 gumba (Pogledaj izlete /izleti/,
+Plan izleta 2026. /plan-izleta-2026/) + kvačice; kartica „Sljedeći polazak” (do 3 nepopunjena, odbrojavanje do sata polaska ttbm_travel_start_time /
+particular, slobodna mjesta – Tinder s poticajem umanjeno); traka akcije (članarina `{iznos}` iz Clanstvo::fee_amount, `{do}`, `{dana}`, nestaje nakon
+promo_until 2026-12-31); traka Tinder (najbliži izlet s _pat_on, ♂/♀ Plan_A_Tinder::shown); kartice izleta (60 dana, min 4, max 8; oznake Još N mjesta ≤5,
+Popunjeno · lista čekanja, ♂/♀). Podaci iz Plan_A_Izleti_Data/Shortcode, transient `pab_tours` 5 min. JS: odbrojavanje, skrivanje isteklog (predmemorija).
+Full-bleed: width 100vw + margin calc(50% - 50vw). Ikone SVG (WP emoji → slike s s.w.org). Na kopiji stranica 9077 /proba-naslovnice/ (za pregled).
+
 ## NA ČEKANJU (Igor 16.10.2026.): „Popis za sutra” – Super Ferrata Dinara 17.10.
 
 Igor misli da popis vodiču nije točan (agencija dodavala ljude/mijenjala u tablici). ISPRAVAK moje prve procjene: „Popis za sutra”
