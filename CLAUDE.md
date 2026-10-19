@@ -218,6 +218,7 @@ Izbornik Izleti → Tinder izleti.
 **1.1.1:** WhatsApp grupa je JEDNA zajednička grupa Plan A za sve izlete (Igor: „Izleti Plan A 2”, kad se napuni mijenja se samo poveznica u postavkama) – polje grupe kod izleta maknuto, tekst „Pridruži se WhatsApp grupi Plan A”.
 **1.2.0:** Izleti → Tinder izleti: kvačice izleta i u Postavkama (sinkronizirano s `_pat_on`), na vrhu „Uključeni izleti (N)” s brojkama; „Naslov iznad brojača” (Igor je upisao naziv izleta – treba „Tko dolazi”).
 **1.3.0 (19.10.):** POTICAJ po izletu (kartica izleta u Izleti → Tinder izleti, meta `_pat_seed` = on, m, m_min, m_max, z, z_min, z_max): dodani ♂/♀ s rasponom godina pribrajaju se pravim prijavama samo na stranici (Plan_A_Tinder::shown); upisani raspon se prikazuje uvijek (prag `min` samo za prave); poticaj nikad ne pokaže „popunjeno” dok ima pravih slobodnih mjesta (ukupno se ograniči na mjesta − 1). Ne rezervira mjesta, nije u narudžbama ni tablici. Kvačica isključuje, brojke ostaju.
+**1.4.0 (19.10.):** poticaj umanjuje i PRIKAZ slobodnih mjesta (hero `.ttbm_available_seat` – assets/tinder.js, MutationObserver jer TTBM JS osvježava broj; kartica „slobodno još” = TTBM get_total_available − poticaj), najmanje 1 dok ima stvarnih. Skriveni #ttbm_total_available, max količine i košarica ostaju stvarni – prijaviti se mogu svi stvarno slobodni (Igor: marketinški trik, ne smije blokirati prijave).
 
 ## NA ČEKANJU (Igor 16.10.2026.): „Popis za sutra” – Super Ferrata Dinara 17.10.
 
