@@ -95,8 +95,8 @@
 		var tabs = [].slice.call(hero.querySelectorAll('.pab-tab'));
 		if (slides.length < 2) return;
 		var ms = (+hero.dataset.interval || 8) * 1000, cur = 0, timer = null, hover = false, stopped = false;
-		// Sam se vrti samo na širem ekranu: na mobitelu bi promjena visine slajda pomicala stranicu ispod.
-		var still = window.matchMedia && (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !window.matchMedia('(min-width: 850px)').matches);
+		var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		var seen = true; // vrti se samo dok je vrh stranice vidljiv (na mobitelu se tada ne pomiče ono što se čita ispod)
 		hero.style.setProperty('--pab-int', ms / 1000 + 's');
 		function loadBgs() {
 			bgs.forEach(function (b) {
@@ -107,7 +107,7 @@
 		function run() {
 			clearTimeout(timer);
 			tabs.forEach(function (t) { t.classList.remove('is-run'); });
-			if (stopped || hover || still) return;
+			if (stopped || hover || still || !seen) return;
 			var t = tabs[cur];
 			if (t) { void t.offsetWidth; t.classList.add('is-run'); }
 			timer = setTimeout(function () { go(cur + 1); }, ms);
@@ -125,8 +125,14 @@
 			run();
 		}
 		tabs.forEach(function (t, k) { t.addEventListener('click', function () { go(k); }); });
-		hero.addEventListener('mouseenter', function () { hover = true; run(); });
-		hero.addEventListener('mouseleave', function () { hover = false; run(); });
+		// Zastane samo dok je miš na bijeloj kartici (ne na cijeloj slici – miš na slici stoji gotovo uvijek).
+		hero.querySelectorAll('.pab-w,.pab-next').forEach(function (c) {
+			c.addEventListener('mouseenter', function () { hover = true; run(); });
+			c.addEventListener('mouseleave', function () { hover = false; run(); });
+		});
+		if ('IntersectionObserver' in window) {
+			new IntersectionObserver(function (en) { seen = en[0].isIntersecting; run(); }, { threshold: 0.35 }).observe(hero.querySelector('.pab-slides'));
+		}
 		// Rad u kartici (klizač, kviz, odabir tjedna, prelistavanje polazaka) zaustavi vrtnju.
 		hero.addEventListener('pointerdown', function (e) { if (e.target.closest('.pab-w,.pab-next')) { stopped = true; run(); } });
 		hero.addEventListener('focusin', function (e) { if (e.target.closest('.pab-w')) { stopped = true; run(); } });

@@ -234,6 +234,8 @@ cijena broda odabranog tjedna / n; slobodni tjedni iz Plan_A_Jedrenje_Data::publ
 1.9.4 sam označi tjedan i osobe; slika = s2_image ili Jedrenje_Slider::block_images()[0]), slajd 3 kviz (dani 1/2–3/4+, vrsta planina/ferrata/zima/more iz naziva+pojmova,
 mjesec; popuštanje uvjeta → „Najbliže tvom izboru”). Pozadine se pretapaju, slike 2/3 tek nakon load; tablete s crtom; 8 s; staje na hover i rad u kartici; na mobitelu
 samo odabrani slajd (display none) i BEZ automatske vrtnje (visina). Trake i kartice zajedničke. Kartice: popunjeni na kraj (Igor).
+**1.1.1 (19.10.):** Igor: „ne vrte se” – zastajalo je dok je miš bilo gdje na slici (uvijek) → zastaje samo na bijeloj kartici; vrti se i na mobitelu, ali samo dok je
+vrh vidljiv (IntersectionObserver 35 %); kratki kod se prikazuje samo jednom (na živoj je bio upisan dvaput – Flatsome Text + još jednom u sadržaju).
 
 ## NA ČEKANJU (Igor 16.10.2026.): „Popis za sutra” – Super Ferrata Dinara 17.10.
 

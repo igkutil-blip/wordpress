@@ -180,7 +180,7 @@
 @media (max-width:849px){
 	.pab-w{justify-self:stretch;max-width:none;padding:18px}
 	.pab-tabs{padding:0 16px 12px;justify-content:center}
-	/* Mobitel: slajdovi različite visine – prikazuje se samo odabrani (bez praznine), mijenja se tabletom ili prstom. */
+	/* Mobitel: slajdovi različite visine – prikazuje se samo odabrani (bez praznine). */
 	.pab-slide:not(.is-on){display:none}
 	.pab-slide{transition:none}
 	.pab-tab{padding:7px 12px;font-size:12px}
