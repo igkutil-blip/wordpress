@@ -270,7 +270,7 @@ final class Plan_A_Clanstvo_Form {
 		foreach ( $steps as $i => $st ) {
 			$how .= '<li><span class="pacl-how__num">' . ( $i + 1 ) . '</span><span class="pacl-how__icon">' . self::sicon( $st[0] ) . '</span><strong>' . esc_html( $st[1] ) . '</strong><small>' . esc_html( $st[2] ) . '</small></li>';
 		}
-		$fee = (float) $s['iznos'];
+		$fee = Plan_A_Clanstvo_Data::fee_amount();
 		$fee = number_format( $fee, abs( $fee - round( $fee ) ) < 0.005 ? 0 : 2, ',', '.' );
 		return '<div class="pacl pacl--page" data-pacl><div class="pacl-layout">'
 			. '<div class="pacl-side">'

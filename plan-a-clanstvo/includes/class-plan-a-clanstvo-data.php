@@ -110,6 +110,7 @@ final class Plan_A_Clanstvo_Data {
 			'guides'        => '',
 			'jan_fee'       => 1,
 			'iznos'         => 15,
+			'iznosi'        => '2026=5', // drukčiji iznos za pojedinu godinu (red „godina=iznos”), npr. 2026. snižena članarina
 			'primatelj'     => 'S.R.D. Plan A',
 			'adresa'        => 'Celovečka 60b',
 			'mjesto'        => '10040 Zagreb',
@@ -164,6 +165,18 @@ final class Plan_A_Clanstvo_Data {
 	/** Tekst s {godina} za tekuću ili zadanu godinu. */
 	public static function fill( string $text, int $year = 0 ): string {
 		return str_replace( '{godina}', (string) ( $year ?: self::year() ), $text );
+	}
+
+	/** Iznos članarine za godinu: iz „Iznos za pojedinu godinu” (npr. 2026=5), inače redovni iznos. */
+	public static function fee_amount( int $year = 0 ): float {
+		$s    = self::get();
+		$year = $year ?: self::year();
+		foreach ( preg_split( '/[\r\n;]+/', (string) ( $s['iznosi'] ?? '' ) ) as $line ) {
+			if ( preg_match( '/^\s*(\d{4})\s*[=:]\s*(\d+(?:[.,]\d{1,2})?)\s*(?:€|eur)?\s*$/iu', $line, $m ) && (int) $m[1] === $year ) {
+				return (float) str_replace( ',', '.', $m[2] );
+			}
+		}
+		return (float) $s['iznos'];
 	}
 
 	public static function year(): int {

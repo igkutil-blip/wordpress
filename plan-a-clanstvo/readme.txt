@@ -1,7 +1,7 @@
 === Plan A članstvo ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.15.10
+Stable tag: 1.15.11
 License: GPLv2 or later
 
 Pristupnica za članstvo u udruzi Plan A, potvrda klikom u e-mailu, 2D kod za članarinu,
@@ -35,6 +35,9 @@ Zaštita: podatke vide samo administratori; skriveno polje i ograničenje po IP 
 botova; poveznica za potvrdu je nasumična i vrijedi 7 dana; GDPR izvoz i brisanje po e-mailu.
 
 == Promjene ==
+
+= 1.15.11 =
+* Iznos članarine po godini (Postavke → 2. Članarina → „Iznos za pojedinu godinu”, zadano 2026=5): za izlete u 2026. članarina je 5 €, za kasnije redovni iznos (15 €). Vrijedi za e-mail s uplatnicom, 2D kod, blagajnu i pristupnicu. Već napravljeni 2D kod s drugim iznosom pravi se iznova; zajednička slika (rezerva) koristi se samo za redovni iznos.
 
 = 1.15.10 =
 * Skripta v23: u tablici članova od 1. rujna postoji i stupac „Članarina” sljedeće godine (npr. „Članarina 2027” već u listopadu 2026.), jer prijave za izlete iduće godine traže članarinu te godine. Stupac nastaje čim stranica pozove tablicu (npr. „Provjeri vezu”).

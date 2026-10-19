@@ -35,7 +35,7 @@ final class Plan_A_Clanstvo_Hub3 {
 	public static function payment( int $year = 0 ): array {
 		$s = Plan_A_Clanstvo_Data::get();
 		return array(
-			'iznos'     => (float) $s['iznos'],
+			'iznos'     => Plan_A_Clanstvo_Data::fee_amount( $year ),
 			'primatelj' => (string) $s['primatelj'],
 			'adresa'    => trim( $s['adresa'] . ', ' . $s['mjesto'], ', ' ),
 			'iban'      => (string) $s['iban'],
@@ -161,8 +161,9 @@ final class Plan_A_Clanstvo_Hub3 {
 		if ( 'ne' === $s['barcode'] ) {
 			return null;
 		}
+		$same = abs( Plan_A_Clanstvo_Data::fee_amount( $year ) - (float) $s['iznos'] ) < 0.005; // zajednička slika nosi redovni iznos
 		if ( 'slika' === $s['barcode'] ) {
-			$url = esc_url_raw( (string) $s['barcode_slika'] );
+			$url = $same ? esc_url_raw( (string) $s['barcode_slika'] ) : '';
 			return $url ? array(
 				'url'  => $url,
 				'path' => '',
@@ -170,7 +171,11 @@ final class Plan_A_Clanstvo_Hub3 {
 		}
 		list( $dir, $base ) = self::dir();
 		$file = (string) get_post_meta( $id, '_pac_barcode', true );
-		if ( $file && (int) get_post_meta( $id, '_pac_barcode_year', true ) === $year && file_exists( $dir . '/' . $file ) ) {
+		$cents = (int) round( Plan_A_Clanstvo_Data::fee_amount( $year ) * 100 );
+		$saved = get_post_meta( $id, '_pac_barcode_amt', true );
+		// Kod napravljen prije promjene iznosa (bez zapisanog iznosa = redovni) pravi se iznova.
+		$saved = '' === $saved ? (int) round( (float) $s['iznos'] * 100 ) : (int) $saved;
+		if ( $file && (int) get_post_meta( $id, '_pac_barcode_year', true ) === $year && $saved === $cents && file_exists( $dir . '/' . $file ) ) {
 			return array(
 				'url'  => $base . '/' . $file,
 				'path' => $dir . '/' . $file,
@@ -219,8 +224,8 @@ final class Plan_A_Clanstvo_Hub3 {
 			)
 		);
 		if ( is_wp_error( $res ) || 200 !== (int) wp_remote_retrieve_response_code( $res ) || '' === wp_remote_retrieve_body( $res ) ) {
-			// Ako servis ne radi, šalje se slika sa stranice (isti račun udruge).
-			$url = esc_url_raw( (string) $s['barcode_slika'] );
+			// Ako servis ne radi, šalje se slika sa stranice (isti račun udruge) – samo ako nosi isti iznos.
+			$url = $same ? esc_url_raw( (string) $s['barcode_slika'] ) : '';
 			return $url ? array(
 				'url'  => $url,
 				'path' => '',
@@ -231,6 +236,7 @@ final class Plan_A_Clanstvo_Hub3 {
 		file_put_contents( $dir . '/' . $file, wp_remote_retrieve_body( $res ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 		update_post_meta( $id, '_pac_barcode', $file );
 		update_post_meta( $id, '_pac_barcode_year', $year );
+		update_post_meta( $id, '_pac_barcode_amt', (int) round( $pay['iznos'] * 100 ) );
 		return array(
 			'url'  => $base . '/' . $file,
 			'path' => $dir . '/' . $file,
@@ -247,5 +253,6 @@ final class Plan_A_Clanstvo_Hub3 {
 		}
 		delete_post_meta( $id, '_pac_barcode' );
 		delete_post_meta( $id, '_pac_barcode_year' );
+		delete_post_meta( $id, '_pac_barcode_amt' );
 	}
 }
