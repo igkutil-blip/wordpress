@@ -199,6 +199,8 @@ bez karte → odbij; checkout: stavka izleta bez karte → makni + greška. Loka
 prazne blokove (Tinder 11./12./14.12.) → Agency::drop_old šalje ag_drop za poslane ključeve budućih termina kojih više nema; skripta briše samo PRAZNE
 blokove (s osobama/listom čekanja ostaju), vraća obrisane → makni iz `plan_a_clanstvo_ag_tours`. order_rows preskače stavku bez _ttbm_date (blok „_7730”
 bez datuma nastao od #9115 – Zrinka; taj blok agencija/Igor briše ručno). Test lažnom tablicom (gstest/run6.js) prošao. Igor: skriptu v22 u tablicu članova (+ kopija).
+**1.15.10 + skripta v23 (19.10.):** sheet_() od 1. rujna pravi i stupac „Članarina <sljedeća godina>” (Zrinka #9118 Zimsko III 15.1.2027. → mail
+„Članarina 2027 nije plaćena” je točan: izlet 2027 traži članarinu 2027, a stupca 2027 nije bilo, kvačica je bila u 2026). Test gstest/run7.js.
 
 ## plan-a-tinder 1.0.0 (19.10.2026., obje grane, isti zip) – „Tinder i planinarenje – vikend u Ramića dvorima” (14.–15.12.2026.)
 

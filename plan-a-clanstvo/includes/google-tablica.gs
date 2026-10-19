@@ -8,7 +8,7 @@
  * (po njemu se pronalazi red), a tablicu smijete sortirati i filtrirati.
  */
 var SECRET = '{{SECRET}}';
-var SCRIPT_VERSION = 22;
+var SCRIPT_VERSION = 23;
 var SITE = '{{SITE}}';
 var AG_ID = '{{AG}}';
 var SHEET_NAME = 'Članovi';
@@ -100,7 +100,10 @@ function sheet_() {
   }
   cardCol_(sh);
   noteCol_(sh);
-  yearCol_(sh, new Date().getFullYear());
+  var now = new Date();
+  yearCol_(sh, now.getFullYear());
+  // (v23) Od 1. rujna i stupac sljedeće godine – prijave za izlete iduće godine traže članarinu te godine.
+  if (now.getMonth() >= 8) yearCol_(sh, now.getFullYear() + 1);
   styleHead_(sh);
   return sh;
 }
