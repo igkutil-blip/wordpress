@@ -262,3 +262,12 @@
 	.pab-ctas .pab-btn{font-size:11px;padding:12px 6px}
 	.pab-cd b{font-size:18px}
 }
+
+/* ---- 1.1.6: mobitel – kvačice u jednom redu, tablete u slajdu ispod teksta ---- */
+@media (max-width:849px){
+	.pab-trust{flex-wrap:nowrap;justify-content:space-between;gap:6px;font-size:11px;letter-spacing:-.01em;white-space:nowrap;margin-top:10px}
+	.pab-trust li:before{margin-right:3px}
+	.pab-hero__text .pab-tabs{justify-content:flex-start;width:auto;margin-top:14px;flex-wrap:wrap}
+	.pab-bar2:not(:has(.pab-tabs)) {padding-top:2px}
+}
+@media (max-width:370px){.pab-trust{font-size:10px;gap:4px}}

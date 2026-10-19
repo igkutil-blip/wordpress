@@ -120,9 +120,20 @@
 			if (t) { void t.offsetWidth; t.classList.add('is-run'); }
 			timer = setTimeout(function () { go(cur + 1); }, ms);
 		}
+		// Na mobitelu tablete stoje u samom slajdu (ispod teksta i kvačica), na računalu u redu iznad traka.
+		var bar2 = hero.querySelector('.pab-bar2'), mq = window.matchMedia ? window.matchMedia('(max-width: 849px)') : null;
+		function placeTabs() {
+			var box = hero.querySelector('.pab-tabs');
+			if (!box || !bar2) return;
+			var text = slides[cur] && slides[cur].querySelector('.pab-hero__text');
+			if (mq && mq.matches && text) { if (box.parentNode !== text) text.appendChild(box); }
+			else if (box.parentNode !== bar2) bar2.insertBefore(box, bar2.firstChild);
+		}
+		if (mq) { if (mq.addEventListener) mq.addEventListener('change', placeTabs); else if (mq.addListener) mq.addListener(placeTabs); }
 		function go(i) {
 			loadBgs();
 			cur = (i + slides.length) % slides.length;
+			placeTabs();
 			slides.forEach(function (s, k) {
 				var on = k === cur;
 				s.classList.toggle('is-on', on);
@@ -158,6 +169,7 @@
 			if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && !e.target.closest('.pab-w,.pab-next,input')) { stopped = true; go(cur + (dx < 0 ? 1 : -1)); }
 		});
 		document.addEventListener('visibilitychange', function () { if (document.hidden) clearTimeout(timer); else run(); });
+		placeTabs();
 		run();
 	}
 
