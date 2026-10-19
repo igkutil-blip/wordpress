@@ -73,7 +73,7 @@ final class Plan_A_Tinder_Front {
 		}
 		$base  = max( $seats, $all, 1 );
 		$minus = Plan_A_Tinder::seed_active( $tour ) ? (int) $st['total'] - (int) $st['real'] : 0; // poticaj: toliko se oduzme od prikaza slobodnih mjesta
-		echo '<div class="pat-card" aria-label="' . esc_attr( $s['title'] ) . '"' . ( $minus > 0 ? ' data-pat-minus="' . (int) $minus . '"' : '' ) . '>';
+		echo '<div class="pat-card" title="' . esc_attr__( 'Prikazujemo samo broj prijavljenih i raspon godina, bez imena i ostalih podataka.', 'plan-a-tinder' ) . '" aria-label="' . esc_attr( $s['title'] ) . '"' . ( $minus > 0 ? ' data-pat-minus="' . (int) $minus . '"' : '' ) . '>';
 		echo '<p class="pat-card__h">' . esc_html( $s['title'] ) . '</p>';
 		echo '<p class="pat-card__total">' . ( $all ? esc_html( $all . ' ' . self::plural( $all, array( 'prijavljena osoba', 'prijavljene osobe', 'prijavljenih' ) ) ) : esc_html__( 'Budi prva prijava', 'plan-a-tinder' ) ) . '</p>';
 		echo '<div class="pat-card__g">';

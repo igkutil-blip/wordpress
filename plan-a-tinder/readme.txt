@@ -1,7 +1,7 @@
 === Plan A Tinder i planinarenje ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv2 or later
 
 Dodatak za izlete koje označiš (npr. Tinder i planinarenje, Tinder i jedrenje). Ostali izleti ostaju isti.
@@ -34,6 +34,9 @@ Uz izlet: _pat_on (uključeno). Uz stavku narudžbe: _pat_osobe (spol, godina ro
 Brojke na stranici spremaju se do promjene neke narudžbe (najviše 6 sati). Opcija: plan_a_tinder.
 
 == Promjene ==
+
+= 1.4.1 =
+* Kartica „Tko dolazi” upola niža (naslov i ukupno u jednom redu, brojke muškaraca/žena u jednom redu, manji WhatsApp gumb, napomena o privatnosti kao opis kartice): na računalu kućica za prijavu opet stane na ekran s gumbom Rezervirajte.
 
 = 1.4.0 =
 * Poticaj umanjuje i prikaz slobodnih mjesta izleta (npr. 7/20 umjesto 11/20) i „slobodno još” u kartici – samo prikaz: prijava i dalje ide prema stvarnim mjestima (moguće prijaviti sve stvarno slobodne). Dok ima stvarnih mjesta, prikaz nikad ne pada ispod 1.
