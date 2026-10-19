@@ -183,6 +183,11 @@ ikonu osvježi sam (do ~dan), iPhone tek nakon ponovne instalacije.
 0. **Na vrhu stranice: „Tko unosi izlet”** – obavezan izbor, **isti popis kao Vodiči** (Krešimir Gracin, Igor Kutil,
    Ivan Videk, Sonja Papeš; novi vodič → sam se doda); ime ide u mail Igoru i u izlet; taj vodič se sam označi u Vodičima.
 
+**plan-a-prijave 0.8.4 (19.10.2026., obje grane):** dok izlet nije objavljen (draft/pending/future), svako spremanje (wp_after_insert_post) iznova:
+SEO (Seo::fill force – i preko ručno upisanog), osiguranje (usluga s „osiguranj” = Unos::insurance(cijena „Uplata”)), kategorija trajanja (ttbm_tour_org,
+ostali pojmovi ostaju) – klasa Plan_A_Prijave_Skica; predložak (_pap_template) se ne dira. Nakon objave ništa samo (SEO: ručno ostaje, usporedba tolerantnija – Seo::same).
+Na kopiji provjereno s pravim Rank Mathom (probna skica 9076, obrisana).
+
 ## plan-a-tinder 1.0.0 (19.10.2026., obje grane, isti zip) – „Tinder i planinarenje – vikend u Ramića dvorima” (14.–15.12.2026.)
 
 Igor unio izlet na živu kao neobjavljen (skica). Dodatak samo za izlete označene u Izleti → Tinder i planinarenje (opcija `plan_a_tinder`:
