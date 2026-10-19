@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Plan A baneri – vrh naslovnice
  * Description:       Kratki kod [plan-a-naslovnica] umjesto slidera: velika slika s porukom i dva gumba, kartica „Sljedeći polazak” (odbrojavanje, slobodna mjesta), traka akcije (npr. članarina 5 €), traka Tinder izleta (brojač ♂/♀) i kartice sljedećih izleta. Podaci iz postojećih izleta (Plan A izleti).
- * Version:           1.1.4
+ * Version:           1.1.5
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Plan A
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PLAN_A_BANERI_VERSION', '1.1.4' );
+define( 'PLAN_A_BANERI_VERSION', '1.1.5' );
 define( 'PLAN_A_BANERI_URL', plugin_dir_url( __FILE__ ) );
 define( 'PLAN_A_BANERI_DIR', plugin_dir_path( __FILE__ ) );
 
