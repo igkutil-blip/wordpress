@@ -140,8 +140,21 @@
 .pab-link svg{flex:none}
 .pab-link--plan{background:var(--pab-sky)}
 .pab-link--wa{background:#25a244}
-.pab-tab{position:relative;overflow:hidden;min-height:0;margin:0;border:0;border-radius:99px;padding:8px 16px;background:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#fff;font:inherit;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:none;cursor:pointer;line-height:1.2}
-.pab-tab.is-on{background:rgba(255,255,255,.92);color:var(--pab-navy)}
+.pab-tab{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:7px;min-height:0;margin:0;border:1.5px solid rgba(255,255,255,.55);border-radius:99px;padding:9px 18px;background:rgba(255,255,255,.18);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#fff;font:inherit;font-weight:700;font-size:14px;letter-spacing:.03em;text-transform:none;cursor:pointer;line-height:1.2;box-shadow:0 4px 14px rgba(0,0,0,.18);transition:background .2s,transform .2s,border-color .2s}
+.pab-tab svg{flex:none;position:relative}
+.pab-tab:hover{background:rgba(255,255,255,.3);border-color:#fff;transform:translateY(-2px)}
+.pab-tab.is-on{background:#fff;border-color:#fff;color:var(--pab-navy)}
+/* Presijavanje: svjetlosni odsjaj prelazi preko neaktivnih tableta (jedna za drugom), da se vidi da se mogu kliknuti. */
+.pab-tab:not(.is-on):before{content:"";position:absolute;top:0;bottom:0;left:-60%;width:50%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);transform:skewX(-20deg);animation:pab-shine 4.5s ease-in-out infinite}
+.pab-tab:nth-child(2):before{animation-delay:.35s}
+.pab-tab:nth-child(3):before{animation-delay:.7s}
+.pab-tab:nth-child(4):before{animation-delay:1.05s}
+@keyframes pab-shine{0%,62%{left:-60%}82%,100%{left:130%}}
+/* Prvi put kad se slider pojavi tablete kratko poskoče. */
+.pab-tabs.is-hello .pab-tab{animation:pab-hello .7s ease both}
+.pab-tabs.is-hello .pab-tab:nth-child(2){animation-delay:.12s}
+.pab-tabs.is-hello .pab-tab:nth-child(3){animation-delay:.24s}
+@keyframes pab-hello{0%{transform:translateY(0)}35%{transform:translateY(-6px)}65%{transform:translateY(1px)}100%{transform:translateY(0)}}
 .pab-tab i{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--pab-orange)}
 .pab-tab.is-run i{width:100%;transition:width linear var(--pab-int,8s)}
 .pab-tab span{position:relative}
@@ -193,7 +206,7 @@
 	/* Mobitel: slajdovi različite visine – prikazuje se samo odabrani (bez praznine). */
 	.pab-slide:not(.is-on){display:none}
 	.pab-slide{transition:none}
-	.pab-tab{padding:7px 12px;font-size:12px}
+	.pab-tab{padding:8px 13px;font-size:13px;gap:6px}
 	.pab-calc__big b{font-size:32px}
 }
-@media (prefers-reduced-motion:reduce){.pab-bg,.pab-slide{transition:none}.pab-tab.is-run i{transition:none;width:0}}
+@media (prefers-reduced-motion:reduce){.pab-bg,.pab-slide{transition:none}.pab-tab.is-run i{transition:none;width:0}.pab-tab:before,.pab-tabs.is-hello .pab-tab{animation:none!important}}

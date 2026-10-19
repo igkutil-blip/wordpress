@@ -133,6 +133,7 @@ final class Plan_A_Baneri_Front {
 		$slides = array(
 			array(
 				'tab'   => (string) $s['s1_tab'],
+				'icon'  => 'M2.5 20 9 8.5l4 6.5 2.5-3.5 6 8.5z',
 				'img'   => $img,
 				'inner' => self::slide_tours( $s, $tours, $soon ),
 			),
@@ -142,6 +143,7 @@ final class Plan_A_Baneri_Front {
 			if ( $sail ) {
 				$slides[] = array(
 					'tab'   => (string) $s['s2_tab'],
+					'icon'  => 'M12 3v13M12 4l7 11h-7M12 7l-6 8h6M3 18h18l-2 3H5z',
 					'img'   => self::image_of( (int) $s['s2_image'] ?: (int) $sail['image'] ),
 					'inner' => self::slide_sailing( $s, $sail ),
 				);
@@ -151,6 +153,7 @@ final class Plan_A_Baneri_Front {
 				$second   = $quiz[1]['image'] ?? 0;
 				$slides[] = array(
 					'tab'   => (string) $s['s3_tab'],
+					'icon'  => 'M9.2 9a3 3 0 1 1 4.3 2.7c-.9.5-1.5 1.2-1.5 2.3M12 17.5v.5M12 21.5a9.5 9.5 0 1 0 0-19 9.5 9.5 0 0 0 0 19z',
 					'img'   => self::image_of( (int) $s['s3_image'] ?: (int) $second ),
 					'inner' => self::slide_quiz( $s, $tours ),
 				);
@@ -184,7 +187,7 @@ final class Plan_A_Baneri_Front {
 		if ( $many ) {
 			$h .= '<div class="pab-tabs" role="tablist">';
 			foreach ( $slides as $i => $sl ) {
-				$h .= '<button type="button" role="tab" class="pab-tab' . ( $i ? '' : ' is-on' ) . '" aria-selected="' . ( $i ? 'false' : 'true' ) . '" data-i="' . (int) $i . '"><span>' . esc_html( $sl['tab'] ) . '</span><i aria-hidden="true"></i></button>';
+				$h .= '<button type="button" role="tab" class="pab-tab' . ( $i ? '' : ' is-on' ) . '" aria-selected="' . ( $i ? 'false' : 'true' ) . '" data-i="' . (int) $i . '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="' . esc_attr( $sl['icon'] ) . '"/></svg><span>' . esc_html( $sl['tab'] ) . '</span><i aria-hidden="true"></i></button>';
 			}
 			$h .= '</div>';
 		}
