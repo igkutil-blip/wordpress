@@ -130,8 +130,14 @@
 			c.addEventListener('mouseenter', function () { hover = true; run(); });
 			c.addEventListener('mouseleave', function () { hover = false; run(); });
 		});
+		var tabsBox = hero.querySelector('.pab-tabs'), helloed = false;
 		if ('IntersectionObserver' in window) {
-			new IntersectionObserver(function (en) { seen = en[0].isIntersecting; run(); }, { threshold: 0.35 }).observe(hero.querySelector('.pab-slides'));
+			new IntersectionObserver(function (en) {
+				seen = en[0].isIntersecting;
+				// Kad se slider prvi put vidi, tablete kratko poskoče (poziv da se klikne).
+				if (seen && !helloed && tabsBox) { helloed = true; setTimeout(function () { tabsBox.classList.add('is-hello'); }, 900); }
+				run();
+			}, { threshold: 0.35 }).observe(hero.querySelector('.pab-slides'));
 		}
 		// Rad u kartici (klizač, kviz, odabir tjedna, prelistavanje polazaka) zaustavi vrtnju.
 		hero.addEventListener('pointerdown', function (e) { if (e.target.closest('.pab-w,.pab-next')) { stopped = true; run(); } });
