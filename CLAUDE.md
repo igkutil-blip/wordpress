@@ -160,7 +160,7 @@ ikonu osvježi sam (do ~dan), iPhone tek nakon ponovne instalacije.
 4. **Cijene:** karta „Uplata” (naziv fiksan) – kolege upisuju cijenu i broj mjesta (= najviše osoba); bez rezervirano/opis/
    prodano/dodaj kartu. **Prva rata:** polje „Iznos prve rate (€)” ispod cijene, s oznakom „opcija” – prazno = nema rata;
    upisano → karta „Uplata prve rate” s tim iznosom (dijeli mjesta s „Uplata”). **Osiguranje kolege ne vide** – računa se samo (0.7.14,
-   podaci agencije 14.10.2026.): cijena **≤ 355 € → 9,95 €**, **> 355 € → 2,8 % cijene zaokruženo naviše na 50 centi** (0.7.15; 480 → 13,50 €, 400 → 11,50 €);
+   podaci agencije 14.10.2026.): cijena **≤ 355 € → 9,95 €**, **> 355 € → točno 2,8 % cijene, na cent** (0.8.5, Igor 19.10.; prije 0.7.15–0.8.4 naviše na 50 centi; 480 → 13,44 €, 400 → 11,20 €);
    iznos u mailu Igoru (Plan_A_Prijave_Unos::insurance).
 5. **Uključeno / nije uključeno i aktivnosti:** sve postojeće stavke s kvačicama i ikonicama, **bez dodavanja novih**
    i bez mijenjanja ikonica (to radi Igor u adminu). Kvačica u jednom stupcu miče istu stavku iz drugog.
@@ -210,11 +210,6 @@ SE VEĆ SASTAVLJA IZ TABLICE (ag_list, stanje u trenutku slanja – 16.10. 08:29
 Moguće razlike: izmjene u tablici nakon 08:29; osobe upisane izvan bloka (ispod naslova drugog izleta / drugi list); „Vodiči: –” jer
 izlet nije u Planu izleta → popis ide samo Igoru (admin), ne vodiču. S weba su samo slobodna mjesta (Ops::free_seats, Cekanje) i lista čekanja.
 Čeka se Igor: što točno ne odgovara (tko fali / koji podatak). Ideje: ponovno slanje popisa na zahtjev (gumb), vodiči iz izleta kad nema u planu.
-
-## NA ČEKANJU (Igor 16.10.2026.): osiguranje – vratiti izračun
-
-Osiguranje (Plan_A_Prijave_Unos::insurance): cijena **do 355 € → 9,95 €**, **iznad 355 € → 2,8 % cijene** – bez zaokruživanja
-naviše na 50 centi iz 0.7.15 (sada: 480 € → 13,50 €; po novom 13,44 €). Ako nije jasno kako zaokružiti (na cent), pitati Igora.
 
 ## STANJE ŽIVE 14.10.2026. (20:45, provjereno)
 

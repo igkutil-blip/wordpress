@@ -18,7 +18,7 @@ final class Plan_A_Prijave_Unos {
 	const TPL_META  = '_pap_template';
 	const UNOS_META = '_pap_unos';
 
-	/** Osiguranje (podaci agencije, 14.10.2026.): do 355 € cijene aranžmana 9,95 €, iznad toga 2,8 % cijene zaokruženo naviše na 50 centi. */
+	/** Osiguranje (podaci agencije, 14.10.2026.): do 355 € cijene aranžmana 9,95 €, iznad toga 2,8 % cijene (na cent, bez zaokruživanja naviše – Igor 19.10.2026.). */
 	const INS_LIMIT = 355;
 	const INS_PRICE = '9.95';
 	const INS_RATE  = 0.028;
@@ -28,7 +28,7 @@ final class Plan_A_Prijave_Unos {
 		if ( $price <= self::INS_LIMIT ) {
 			return self::INS_PRICE;
 		}
-		return number_format( ceil( round( $price * self::INS_RATE * 2, 4 ) ) / 2, 2, '.', '' ); // naviše na 50 centi
+		return number_format( round( $price * self::INS_RATE, 2 ), 2, '.', '' ); // točno 2,8 %, na cent
 	}
 
 	/** Slike: glavna + najmanje 4 (najviše 20) za galeriju, 3:2. */
@@ -388,7 +388,7 @@ final class Plan_A_Prijave_Unos {
 		submit_button( 'Spremi' );
 		echo '</form>';
 
-		echo '<h2>3. Predložak za nove izlete</h2><p>Iz predloška se u svaki novi izlet kolega kopiraju: <strong>Važno</strong> (uvjeti, agencija, izjava), <strong>pitanja „Važno za izlet”</strong> (kolege upisuju odgovore, istim redoslijedom), <strong>Zašto s nama i kontakt</strong>, početne kvačice <strong>uključeno / nije uključeno</strong> i naziv usluge <strong>osiguranja</strong> (iznos se računa sam: do ' . (int) self::INS_LIMIT . ' € = 9,95 €, iznad toga 2,8 % cijene zaokruženo naviše na 50 centi). Predložak se nikad ne objavljuje.</p>';
+		echo '<h2>3. Predložak za nove izlete</h2><p>Iz predloška se u svaki novi izlet kolega kopiraju: <strong>Važno</strong> (uvjeti, agencija, izjava), <strong>pitanja „Važno za izlet”</strong> (kolege upisuju odgovore, istim redoslijedom), <strong>Zašto s nama i kontakt</strong>, početne kvačice <strong>uključeno / nije uključeno</strong> i naziv usluge <strong>osiguranja</strong> (iznos se računa sam: do ' . (int) self::INS_LIMIT . ' € = 9,95 €, iznad toga 2,8 % cijene). Predložak se nikad ne objavljuje.</p>';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="pap_unos_template">';
 		wp_nonce_field( 'pap_unos_template' );
 		echo '<p><button class="button">' . ( $tpl ? 'Otvori predložak' : 'Napravi predložak (iz zadnjeg objavljenog izleta)' ) . '</button></p></form>';
@@ -1112,7 +1112,7 @@ final class Plan_A_Prijave_Unos {
 		}
 		update_post_meta( $id, 'ttbm_ticket_type', $tickets );
 
-		// Osiguranje: do 355 € 9,95 €, iznad toga 2,8 % cijene, naviše na 50 centi (self::insurance).
+		// Osiguranje: do 355 € 9,95 €, iznad toga 2,8 % cijene (self::insurance).
 		$tpl_s   = Plan_A_Prijave_Tour::rows( $src, 'ttbm_extra_service_data' );
 		$ins     = $tpl_s ? $tpl_s[0] : array( 'service_name' => 'Osiguranje od otkaza', 'extra_service_description' => 'opcionalno' );
 		$service = array();
