@@ -113,7 +113,14 @@ final class Plan_A_Baneri_Front {
 		return '<span class="' . esc_attr( $cls ) . '">od <b>' . wp_kses( $t['price'], array( 'span' => array( 'class' => true ), 'bdi' => array() ) ) . '</b></span>';
 	}
 
+	private static $done = false;
+
 	public static function render(): string {
+		// Samo jednom na stranici (kratki kod upisan dvaput dao bi dva cijela vrha jedan ispod drugog).
+		if ( self::$done ) {
+			return '';
+		}
+		self::$done = true;
 		$s     = Plan_A_Baneri::get();
 		$tours = Plan_A_Baneri::tours();
 		$today = current_time( 'Y-m-d' );
