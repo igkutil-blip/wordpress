@@ -1,0 +1,33 @@
+/* Plan A Tinder i planinarenje – kartica „Tko dolazi”, košarica i stranica „Hvala”. */
+.pat-card{margin:0 0 16px;padding:16px;border:1px solid #e6eaee;border-radius:14px;background:#fff;color:#1d2b38;font-family:inherit;line-height:1.4}
+.pat-card p{margin:0}
+.pat-card__h{color:#6b7785;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.pat-card__total{margin:2px 0 12px!important;color:#13304a;font-size:19px;font-weight:700}
+.pat-card__g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pat-box{display:flex;flex-direction:column;align-items:center;padding:12px 8px 10px;border-radius:12px;text-align:center}
+.pat-box--m{background:#e8f4fb;color:#1479ad}
+.pat-box--z{background:#fcebf0;color:#b83d61}
+.pat-box__ic{font-size:20px;line-height:1}
+.pat-box__n{margin:4px 0 2px;font-size:38px;font-weight:700;line-height:1}
+.pat-box__l{color:#13304a;font-size:15px;font-weight:600}
+.pat-box__a{margin-top:3px;color:#6b7785;font-size:13px}
+.pat-bar{display:flex;height:9px;margin:14px 0 6px;overflow:hidden;border-radius:999px;background:#eef1f4}
+.pat-bar i{display:block}
+.pat-bar__m{background:#3aa3d9}
+.pat-bar__z{background:#e07a98}
+.pat-free{display:flex;justify-content:space-between;color:#6b7785;font-size:14px}
+.pat-free b{color:#13304a}
+.pat-wa{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px 0 0;padding:11px 14px 9px;border-radius:8px;background:#25d366;color:#fff!important;font-size:15px;font-weight:700;text-decoration:none!important}
+.pat-wa:hover{background:#1ebe5b}
+.pat-note{margin-top:12px!important;padding-top:10px;border-top:1px solid #e6eaee;color:#6b7785;font-size:12.5px;line-height:1.45}
+.pat-checkout{margin:20px 0 10px;padding:16px;border:1px solid #e6eaee;border-radius:12px;background:#f8fafb}
+.pat-checkout h3{margin:0 0 6px;font-size:18px}
+.pat-checkout__tour{margin:12px 0 4px;font-size:15px}
+.pat-muted{color:#6b7785;font-size:14px}
+.pat-person{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin:10px 0 0;padding:10px 12px;border:1px solid #e6eaee;border-radius:10px;background:#fff}
+.pat-person legend{padding:0 4px;font-weight:700}
+.pat-sex{display:inline-flex;gap:14px}
+.pat-sex label,.pat-year{display:inline-flex;align-items:center;gap:6px;margin:0;font-weight:400}
+.pat-year input{width:90px;margin:0}
+.pat-thanks{margin:0 0 24px;padding:16px;border:1px solid #c7ecd4;border-radius:12px;background:#f0fbf4}
+.pat-thanks .pat-wa{max-width:320px}

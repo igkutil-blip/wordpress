@@ -183,6 +183,29 @@ ikonu osvježi sam (do ~dan), iPhone tek nakon ponovne instalacije.
 0. **Na vrhu stranice: „Tko unosi izlet”** – obavezan izbor, **isti popis kao Vodiči** (Krešimir Gracin, Igor Kutil,
    Ivan Videk, Sonja Papeš; novi vodič → sam se doda); ime ide u mail Igoru i u izlet; taj vodič se sam označi u Vodičima.
 
+## plan-a-tinder 1.0.0 (19.10.2026., obje grane, isti zip) – „Tinder i planinarenje – vikend u Ramića dvorima” (14.–15.12.2026.)
+
+Igor unio izlet na živu kao neobjavljen (skica). Dodatak samo za izlete označene u Izleti → Tinder i planinarenje (opcija `plan_a_tinder`:
+tours, wa, min, title): kartica „Tko dolazi” na vrhu kućice za prijavu (hook ttbm_smart_registration_controls prio 1 – Igor: „iznad rezervacije”):
+broj muškaraca/žena, raspon godina tek od `min` (3) osoba po skupini, traka X od Y mjesta (karte bez „prve rate”), gumb WhatsApp grupe
+(nova grupa „Izleti Plan A 2”, https://chat.whatsapp.com/K8g93lFVNIE0EwlmQ7NFX); blagajna: spol + godina rođenja obavezno za svaku osobu
+(meta stavke `_pat_osobe`, isti redoslijed kao `_pac_osobe`), „Hvala” s WhatsApp gumbom; admin popis (ime, spol, godina, dob, mobitel, e-mail,
+narudžba, „isključi” → `_pat_x`). Broje se narudžbe on-hold/processing/completed/pending; transient `pat_stats_{tour}`. Tablica agencije nepromijenjena.
+Na kopiji instaliran bez odabranog izleta (opciju ne može postaviti pomoćnik). Tekst objave poslan Igoru (s [NEDOSTAJE] mjestima).
+
+## NA ČEKANJU (Igor 16.10.2026.): „Popis za sutra” – Super Ferrata Dinara 17.10.
+
+Igor misli da popis vodiču nije točan (agencija dodavala ljude/mijenjala u tablici). ISPRAVAK moje prve procjene: „Popis za sutra”
+SE VEĆ SASTAVLJA IZ TABLICE (ag_list, stanje u trenutku slanja – 16.10. 08:29), uključuje ručno dodane redove u bloku izleta.
+Moguće razlike: izmjene u tablici nakon 08:29; osobe upisane izvan bloka (ispod naslova drugog izleta / drugi list); „Vodiči: –” jer
+izlet nije u Planu izleta → popis ide samo Igoru (admin), ne vodiču. S weba su samo slobodna mjesta (Ops::free_seats, Cekanje) i lista čekanja.
+Čeka se Igor: što točno ne odgovara (tko fali / koji podatak). Ideje: ponovno slanje popisa na zahtjev (gumb), vodiči iz izleta kad nema u planu.
+
+## NA ČEKANJU (Igor 16.10.2026.): osiguranje – vratiti izračun
+
+Osiguranje (Plan_A_Prijave_Unos::insurance): cijena **do 355 € → 9,95 €**, **iznad 355 € → 2,8 % cijene** – bez zaokruživanja
+naviše na 50 centi iz 0.7.15 (sada: 480 € → 13,50 €; po novom 13,44 €). Ako nije jasno kako zaokružiti (na cent), pitati Igora.
+
 ## STANJE ŽIVE 14.10.2026. (20:45, provjereno)
 
 prijave 0.8.1, clanstvo 1.15.8, jedrenje 1.9.3, seo 1.0.3, kontakt 1.0.0, ostali isti; WpTravelly isključen, ali se sam nadogradio na 2.3.6.
