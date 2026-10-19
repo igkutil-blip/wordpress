@@ -192,6 +192,9 @@ broj muškaraca/žena, raspon godina tek od `min` (3) osoba po skupini, traka X 
 (meta stavke `_pat_osobe`, isti redoslijed kao `_pac_osobe`), „Hvala” s WhatsApp gumbom; admin popis (ime, spol, godina, dob, mobitel, e-mail,
 narudžba, „isključi” → `_pat_x`). Broje se narudžbe on-hold/processing/completed/pending; transient `pat_stats_{tour}`. Tablica agencije nepromijenjena.
 Na kopiji instaliran bez odabranog izleta (opciju ne može postaviti pomoćnik). Tekst objave poslan Igoru (s [NEDOSTAJE] mjestima).
+**1.1.0 (19.10.):** izlet se uključuje kvačicom na ekranu izleta (okvir „Tinder – Tko dolazi”, meta `_pat_on`, vlastita WhatsApp grupa `_pat_wa`,
+inače zadana iz postavki) – isti dodatak za Tinder i planinarenje, Tinder i jedrenje (kao običan izlet) itd. Opcija `tours` iz 1.0.0 jednom prenesena u meta.
+Izbornik Izleti → Tinder izleti.
 
 ## NA ČEKANJU (Igor 16.10.2026.): „Popis za sutra” – Super Ferrata Dinara 17.10.
 
