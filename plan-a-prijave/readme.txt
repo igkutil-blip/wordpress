@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.8.3
+Stable tag: 0.8.4
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,10 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.8.4 =
+* Dok izlet nije objavljen (skica, na čekanju, zakazan), svako spremanje iznova složi iz podataka izleta: SEO (ključna riječ, SEO naslov, opis za Google – i ako je ranije nešto upisano), osiguranje od otkaza prema cijeni karte „Uplata” (kao kod unosa kolega) i kategoriju prema trajanju. Nakon objave se ništa od toga ne mijenja samo (ručne izmjene SEO-a ostaju).
+* SEO nakon objave: ručna promjena prepoznaje se pouzdanije (Rank Math pri spremanju zna promijeniti zapis teksta).
 
 = 0.8.3 =
 * Brzina: prva slika izleta učitava se odmah (preload), slider se pokaže čim stigne prva slika (ne čeka sličice sa strane).

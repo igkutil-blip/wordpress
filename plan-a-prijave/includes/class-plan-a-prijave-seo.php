@@ -1,8 +1,9 @@
 <?php
 /**
  * SEO (Rank Math) iz podataka izleta: ključna riječ, SEO naslov, opis za Google i
- * alternativni tekst glavne slike. Polje se popunjava samo ako je prazno ili ako u
- * njemu još stoji ono što je ovdje zadnji put složeno – ručne promjene se ne diraju.
+ * alternativni tekst glavne slike. Dok izlet nije objavljen, složi se iznova pri svakom spremanju.
+ * Nakon objave polje se popunjava samo ako je prazno ili ako u njemu još stoji ono što je ovdje
+ * zadnji put složeno – ručne promjene se ne diraju.
  *
  * @package Plan_A_Prijave
  */
@@ -45,7 +46,7 @@ final class Plan_A_Prijave_Seo {
 	public static function box_html( $post ) {
 		$new = self::build( (int) $post->ID, $post );
 		$url = wp_nonce_url( admin_url( 'admin-post.php?action=pap_seo_fill&post=' . (int) $post->ID ), 'pap_seo_' . (int) $post->ID );
-		echo '<p>Ključna riječ, SEO naslov i opis za Google slažu se sami iz naziva, datuma, trajanja, cijene i opisa izleta. Prazna polja se popune sama; ono što ste ručno promijenili ostaje.</p>';
+		echo '<p>Ključna riječ, SEO naslov i opis za Google slažu se sami iz naziva, datuma, trajanja, cijene i opisa izleta. Dok izlet nije objavljen, pri svakom spremanju (Spremi skicu) slože se iznova iz podataka izleta. Nakon objave prazna polja se popune sama, a ono što ste ručno promijenili ostaje.</p>';
 		echo '<table class="widefat striped" style="max-width:900px"><tbody>'
 			. '<tr><th style="width:150px">Ključna riječ</th><td>' . esc_html( $new['rank_math_focus_keyword'] ) . '</td></tr>'
 			. '<tr><th>SEO naslov</th><td>' . esc_html( $new['rank_math_title'] ) . '</td></tr>'
@@ -81,12 +82,14 @@ final class Plan_A_Prijave_Seo {
 			return;
 		}
 		$id   = (int) $id;
+		// Dok izlet nije objavljen, SEO se uvijek složi iznova iz podataka izleta (cijena, datum, naziv… se još mijenjaju).
+		$force = $force || ( class_exists( 'Plan_A_Prijave_Skica' ) && Plan_A_Prijave_Skica::unpublished( $post ) );
 		$new  = self::build( $id, $post );
 		$auto = get_post_meta( $id, self::AUTO, true );
 		$auto = is_array( $auto ) ? $auto : array();
 		foreach ( array( 'rank_math_focus_keyword', 'rank_math_title', 'rank_math_description' ) as $k ) {
 			$cur = (string) get_post_meta( $id, $k, true );
-			if ( '' === $new[ $k ] || ( ! $force && '' !== $cur && $cur !== ( $auto[ $k ] ?? null ) ) ) {
+			if ( '' === $new[ $k ] || ( ! $force && '' !== $cur && ! self::same( $cur, (string) ( $auto[ $k ] ?? '' ) ) ) ) {
 				continue; // ručno upisano – ostaje
 			}
 			update_post_meta( $id, $k, $new[ $k ] );
@@ -99,6 +102,14 @@ final class Plan_A_Prijave_Seo {
 		if ( $img && '' === trim( (string) get_post_meta( $img, '_wp_attachment_image_alt', true ) ) ) {
 			update_post_meta( $img, '_wp_attachment_image_alt', self::clean( $post->post_title ) );
 		}
+	}
+
+	/** Isti tekst i kad ga je Rank Math pri spremanju malo promijenio (entiteti, razmaci, kose crte). */
+	private static function same( string $a, string $b ): bool {
+		$n = static function ( string $s ): string {
+			return trim( preg_replace( '/\s+/u', ' ', html_entity_decode( wp_unslash( $s ), ENT_QUOTES, 'UTF-8' ) ) );
+		};
+		return '' !== $b && $n( $a ) === $n( $b );
 	}
 
 	/* ------------------------------------------------------------------ */
