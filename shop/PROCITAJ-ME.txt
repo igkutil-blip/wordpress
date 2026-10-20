@@ -1,4 +1,4 @@
-DOMESTIC SPIRITS – probna trgovina (verzija 0.3.0)
+DOMESTIC SPIRITS – probna trgovina (verzija 0.4.0)
 
 Kako otvoriti: raspakirajte ZIP i prenesite sadržaj mape (index.html, trgovina.html, proizvod.html,
 kosarica.html, kontakt.html i mapu assets) na bilo koji web hosting ili poddomenu (npr. proba.vasadomena.hr).

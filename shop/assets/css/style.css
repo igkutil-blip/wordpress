@@ -347,3 +347,65 @@ dialog::backdrop{background:#251a18b3;backdrop-filter:blur(3px)}
   form.checkout{grid-template-columns:1fr}
   .done h1{font-size:40px}
 }
+
+/* mobitel – naslovnica (0.4.0) */
+@media(max-width:720px){
+  .header{padding:10px 16px 12px}
+  .nav{position:relative}
+  .nav:after{content:'';position:absolute;top:0;right:0;bottom:0;width:44px;background:linear-gradient(90deg,#f6f1e900,var(--cream));pointer-events:none}
+  .nav .wrap{padding-right:40px}
+
+  /* vrh: slika s bocama u pozadini, tekst preko */
+  .hero{display:block;min-height:0;height:490px}
+  .hero-img{position:absolute;inset:auto 0 0 0;width:100%;height:320px;object-position:70% 70%}
+  .hero:before{display:block;background:linear-gradient(180deg,var(--cream) 0,var(--cream) 36%,#f6f1e9cc 46%,#f6f1e900 62%)}
+  .hero-text{padding:18px 0 0}
+  .hero .eyebrow{font-size:10px;letter-spacing:.2em}
+  .hero h1{font-size:36px;margin:8px 0 8px}
+  .hero p{font-size:17px;margin-bottom:14px}
+  .hero .actions{gap:16px;flex-wrap:nowrap}
+  .hero .btn{font-size:15px;padding:11px 18px}
+  .hero .link{font-size:14px}
+  .compare-link{margin-top:10px;font-size:12px}
+
+  /* kategorije: jedan red, povlači se prstom */
+  .cats{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin:10px -16px 0;padding:0 16px;scrollbar-width:none}
+  .cats::-webkit-scrollbar{display:none}
+  .cat{flex:0 0 38%;aspect-ratio:1.15;scroll-snap-align:start}
+  .cat span{font-size:19px;left:10px;bottom:6px}
+  .cat span svg{width:16px;height:16px}
+
+  /* izdvojeno: vrtuljak */
+  .sec{margin-top:26px}
+  .sec-head{margin-bottom:10px}
+  #izdvojeno{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:0 16px 4px;scrollbar-width:none}
+  #izdvojeno::-webkit-scrollbar{display:none}
+  #izdvojeno .pcard{flex:0 0 62%;scroll-snap-align:start}
+  #izdvojeno .pcard .row{flex-direction:row}
+  #izdvojeno .pcard .row .btn{width:auto}
+
+  /* traka proizvođači: tekst preko slike */
+  .band{display:block;height:230px;max-height:none;margin-top:22px}
+  .band img{position:absolute;inset:0;height:100%;max-height:none;object-position:65% center}
+  .band:after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--cream) 0,#f6f1e9e6 34%,#f6f1e900 68%)}
+  .band div{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:0 16px 14px}
+  .band h2{font-size:30px;margin-bottom:8px}
+
+  /* drugi red proizvoda: kompaktni retci */
+  .grid3{gap:8px}
+  .hcard{grid-template-columns:92px 1fr;gap:12px;padding:8px 12px 8px 4px}
+  .hcard .ph img{aspect-ratio:1/1.1}
+  .hcard>div{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:10px;text-align:left}
+  .hcard h3,.hcard .meta{grid-column:1/-1}
+  .hcard h3{font-size:19px}
+  .hcard .price{margin:8px 0 0;font-size:21px}
+  .hcard .btn{margin-top:8px}
+
+  /* poklon: tekst preko slike */
+  .gift{display:block;height:270px;aspect-ratio:auto;max-height:none;min-height:0}
+  .gift img{position:absolute;height:100%;object-position:78% center}
+  .gift:before{display:block;background:linear-gradient(180deg,#f3ece1f2 0,#f3ece1cc 40%,#f3ece100 70%)}
+  .gift>div{padding:18px 16px}
+  .gift h2{font-size:30px;margin-bottom:12px}
+  .gift .btn{padding:10px 18px;font-size:15px}
+}
