@@ -11,7 +11,7 @@
 @font-face{font-family:'DS Sans';font-style:normal;font-weight:600;font-display:swap;src:url(../fonts/inter-latin-600-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 
 :root{
-  --cream:#f6f1e9;--card:#f8f3ec;--paper:#fbf8f3;--burgundy:#6e2a36;--burgundy-d:#56202a;
+  --cream:#f6f1e9;--card:#f9f5ef;--paper:#fbf8f3;--burgundy:#6e2a36;--burgundy-d:#56202a;
   --gold:#a5824c;--ink:#1f1a17;--muted:#6f665d;--line:#ddd3c5;
   --serif:'DS Serif',Georgia,'Times New Roman',serif;--sans:'DS Sans',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
 }
@@ -59,9 +59,9 @@ h1,h2,h3{font-family:var(--serif);font-weight:500;margin:0;letter-spacing:-.01em
 .nav .horeca{margin-left:auto;padding-left:20px;border-left:1px solid #c9bdad}
 
 /* naslovnica – hero */
-.hero{position:relative;overflow:hidden;min-height:440px;display:flex;align-items:center;background:var(--cream)}
-.hero-img{position:absolute;inset:0 0 0 auto;width:62%;height:100%;object-fit:cover;object-position:center}
-.hero:before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,var(--cream) 38%,#f6f1e9e6 44%,#f6f1e900 62%)}
+.hero{position:relative;overflow:hidden;min-height:clamp(440px,33vw,620px);display:flex;align-items:center;background:var(--cream)}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:70% center}
+.hero:before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,var(--cream) 0,#f6f1e9f2 30%,#f6f1e9b3 42%,#f6f1e900 58%)}
 .hero .wrap{position:relative;z-index:2;width:100%}
 .hero-text{max-width:560px;padding:48px 0}
 .hero h1{font-size:76px;line-height:.98;margin:18px 0 22px;letter-spacing:-.02em}
@@ -97,7 +97,7 @@ h1,h2,h3{font-family:var(--serif);font-weight:500;margin:0;letter-spacing:-.01em
 
 /* traka proizvođači */
 .band{position:relative;display:grid;grid-template-columns:1.6fr 1fr;align-items:center;min-height:180px;margin-top:20px;background:var(--cream);overflow:hidden}
-.band img{width:100%;height:100%;object-fit:cover;-webkit-mask-image:linear-gradient(90deg,#000 80%,#0000);mask-image:linear-gradient(90deg,#000 80%,#0000)}
+.band img{width:100%;height:100%;max-height:300px;object-fit:cover;object-position:center 60%;-webkit-mask-image:linear-gradient(90deg,#000 80%,#0000);mask-image:linear-gradient(90deg,#000 80%,#0000)}
 .band div{padding:24px 32px}
 .band h2{font-size:44px;line-height:1.05;margin-bottom:14px}
 
@@ -107,10 +107,11 @@ h1,h2,h3{font-family:var(--serif);font-weight:500;margin:0;letter-spacing:-.01em
 .hcard h3{font-size:21px}
 .hcard .price{display:block;margin:12px 0 14px}
 
-.gift{position:relative;display:grid;grid-template-columns:.75fr 1.5fr;align-items:center;background:#ece3d5;border-radius:4px;overflow:hidden;margin:12px 0 0;min-height:170px}
-.gift>div{padding:26px 36px;position:relative;z-index:1}
+.gift{position:relative;display:flex;align-items:center;background:#ece3d5;border-radius:4px;overflow:hidden;margin:12px 0 0;aspect-ratio:4/1;max-height:320px;min-height:200px}
+.gift>div{padding:26px 44px;position:relative;z-index:2}
 .gift h2{font-size:42px;line-height:1.02;margin-bottom:18px}
-.gift img{width:100%;height:100%;object-fit:cover;object-position:right center}
+.gift img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:right center}
+.gift:before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#f3ece1d9 0,#f3ece199 30%,#f3ece100 50%)}
 
 /* podnožje */
 .foot{background:var(--burgundy);color:#f7ece2;margin-top:12px}
@@ -183,8 +184,17 @@ h1,h2,h3{font-family:var(--serif);font-weight:500;margin:0;letter-spacing:-.01em
 .reasons{background:#ebe2d4;padding:24px 28px;border-radius:4px}
 .reasons h3{font-size:26px;margin-bottom:12px}
 .reasons ul{padding-left:18px;margin:0}
+.reasons dl{margin:0}
+.reasons dt{font-size:12px;color:var(--muted);margin-top:12px}
+.reasons dt:first-child{margin-top:0}
+.reasons dd{margin:2px 0 0;color:var(--ink)}
+.panel .extra{border-left:2px solid var(--gold);padding-left:14px;font-style:italic}
+.medal{width:44px;height:44px;border-radius:50%;background:#e9e0d1;color:#8d8d93;display:grid;place-items:center}
+.medal svg.i{width:30px;height:30px}
+.medal.big{width:120px;height:120px;flex-shrink:0}
+.medal.big svg.i{width:72px;height:72px}
 .reasons .closing{font:italic 500 18px var(--serif);color:var(--burgundy);margin:16px 0 0}
-.serve-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.serve-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
 .serve-card{background:#efe7da;border-radius:6px;padding:22px}
 .serve-card .top{display:flex;justify-content:space-between;color:var(--gold)}
 .serve-card svg{width:58px;height:58px;stroke-width:1.3}
@@ -288,14 +298,14 @@ dialog::backdrop{background:#251a18b3;backdrop-filter:blur(3px)}
   .nav .horeca{margin-left:0}
   .hero{flex-direction:column;align-items:stretch;min-height:0}
   .hero:before{display:none}
-  .hero-img{position:static;width:100%;height:260px;order:2}
+  .hero-img{position:static;width:100%;height:240px;order:2;object-position:72% center}
   .hero-text{padding:26px 0 22px}
   .hero h1{font-size:44px;margin:12px 0 14px}
   .hero p{font-size:20px;margin-bottom:20px}
   .hero .actions{gap:20px}
   .cats{grid-template-columns:1fr 1fr;gap:10px}
   .cat span{font-size:22px;left:12px;bottom:8px}
-  .sec-head h2{font-size:28px}
+  .sec-head h2{font-size:25px}
   .grid4{gap:10px}
   .pcard{padding:10px 10px 12px}
   .pcard h3{font-size:17px}
@@ -308,10 +318,11 @@ dialog::backdrop{background:#251a18b3;backdrop-filter:blur(3px)}
   .band div{padding:18px 16px}
   .band h2{font-size:34px}
   .grid3{grid-template-columns:1fr}
-  .gift{grid-template-columns:1fr}
+  .gift{flex-direction:column;align-items:stretch;aspect-ratio:auto;max-height:none}
+  .gift:before{display:none}
+  .gift img{position:static;height:200px;object-position:75% center}
   .gift>div{padding:22px 20px}
   .gift h2{font-size:34px}
-  .gift img{height:170px}
   .foot .wrap{grid-template-columns:1fr;justify-items:center;text-align:center;padding-top:16px;padding-bottom:16px}
   .foot nav{justify-content:center;gap:16px}
   .shop-head h1{font-size:40px}

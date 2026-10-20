@@ -123,7 +123,7 @@
     else if (marka_) { list = list.filter(function (p) { return p.marka === marka_; }); naslov = (D.proizvodjaci.filter(function (m) { return m.id === marka_; })[0] || {}).naziv || naslov; }
     else if (kat === 'proizvodjaci') naslov = 'Proizvođači';
     else if (kat === 'akcije') { naslov = 'Akcije'; list = list.filter(function (p) { return p.akcija; }); }
-    else if (kat) { var k = D.kategorije.filter(function (c) { return c.id === kat; })[0]; if (k) { naslov = k.naziv; list = list.filter(function (p) { return p.kategorija === kat; }); } }
+    else if (kat) { var k = D.kategorije.filter(function (c) { return c.id === kat; })[0]; if (k) { naslov = k.naziv; list = list.filter(function (p) { return p.kategorija === kat || (p.takodjer || []).indexOf(kat) > -1; }); } }
     document.title = naslov + ' | Domestic Spirits';
     $('#crumb-now').textContent = naslov;
     $('#shop-title').textContent = naslov;
@@ -153,9 +153,18 @@
     casa: '<path d="M21 12h30l-3 24c-.7 7-5.3 12-12 12s-11.3-5-12-12l-3-24Z"/><path d="M24 27h24M36 48v13m-12 0h24"/>',
     kava: '<path d="M13 29h40v12a17 17 0 0 1-17 17h-6a17 17 0 0 1-17-17V29Z"/><path d="M53 31h4a8 8 0 0 1 0 16h-5M9 62h52M25 10c-7 6 7 8 0 14m13-14c-7 6 7 8 0 14"/>',
     kolac: '<path d="m14 29 34-14 12 19v24H14V29Zm0 0 46 5M14 43h46M9 63h55"/><path d="M31 29c-3-6 0-12 5-12s8 6 5 12M36 17c0-5 4-7 7-7"/>',
+    tanjur: '<circle cx="37" cy="37" r="21"/><circle cx="37" cy="37" r="14"/><path d="M7 10v19m5-19v19M3 10v14c0 8 13 8 13 0V10M10 31v30m54-51v51m0-51c-7 9-7 18 0 21"/>',
+    riba: '<path d="M14 35C26 16 45 16 60 35 45 54 26 54 14 35Zm0 0L4 23v24l10-12ZM35 20l7-9 4 14m-11 25 6 10 6-14"/><circle cx="49" cy="32" r="1.5"/>',
+    sir: '<path d="m12 30 32-16 16 16v28H12V30Zm0 0h48M44 14v16"/><circle cx="25" cy="44" r="4"/><circle cx="47" cy="48" r="3"/><path d="M35 30v6"/>',
+    koktel: '<path d="M12 21h48L36 46 12 21Zm24 25v16m-12 0h24M38 21l12-13h9M20 29h32"/><path d="M14 21a12 12 0 1 1 19-10"/>',
+    medalja: '<circle cx="36" cy="44" r="17"/><circle cx="36" cy="44" r="11"/><path d="m25 30-9-20h14l6 12m11 8 9-20H42l-6 12"/>',
     temp: '<path d="M31 41V15a7 7 0 0 1 14 0v26a13 13 0 1 1-14 0Z"/><path d="M38 26v25m11-31h8m-8 10h5m-5 10h8"/><circle cx="38" cy="53" r="5"/>'
   };
   function svg(k) { return '<svg class="i" viewBox="0 0 72 72">' + ICON[k] + '</svg>'; }
+  function ukratko(p) {
+    var rows = (p.podaci || []).filter(function (r) { return /^(Vrsta|Geografsko podrijetlo|Gastro preporuka|Proizvođač)$/.test(r[0]); });
+    return rows.length ? '<div class="reasons"><h3>Ukratko o proizvodu</h3><dl>' + rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1].charAt(0).toUpperCase() + r[1].slice(1)) + '</dd>'; }).join('') + '</dl></div>' : '';
+  }
   if (page === 'proizvod') {
     var p = byId(qs.get('id')) || P[0], kk = D.kategorije.filter(function (c) { return c.id === p.kategorija; })[0];
     document.title = ime(p) + ' · ' + p.vrsta + ' | Domestic Spirits';
@@ -168,25 +177,25 @@
     var h = '<div class="crumb"><a href="index.html">Početna</a><span>/</span>' + (kk ? '<a href="trgovina.html?kat=' + kk.id + '">' + kk.naziv + '</a><span>/</span>' : '') + '<span>' + esc(ime(p)) + '</span></div>' +
       '<section class="product"><div><div class="photo"><img id="main-img" src="' + p.slika + '" alt="' + esc(ime(p)) + '" width="900" height="900"><span class="photo-cap" id="cap">' + esc(gal[0].opis) + '</span></div>' +
       (gal.length > 1 ? '<div class="thumbs">' + gal.map(function (g, i) { return '<button type="button" class="thumb' + (i ? '' : ' on') + '" data-i="' + i + '"><img src="' + g.slika + '" alt=""><span>' + esc(g.naziv) + '</span></button>'; }).join('') + '</div>' : '') + '</div>' +
-      '<div class="pinfo"><div class="eyebrow">' + esc(p.vrsta) + '</div><h1>' + esc(marka(p)) + '<span>' + esc(p.naziv) + '</span></h1>' +
+      '<div class="pinfo"><div class="eyebrow">' + esc(p.eyebrow || p.vrsta) + '</div><h1>' + esc(marka(p)) + '<span>' + esc(p.naziv) + '</span></h1>' +
       (p.kratko ? '<p class="intro">' + esc(p.kratko) + '</p>' : '') +
-      '<div class="facts"><div><strong>' + l(p.zapremnina) + '</strong><span>Zapremnina</span></div>' + (p.alkohol ? '<div><strong>' + esc(p.alkohol) + '</strong><span>Alkohol</span></div>' : '') + '<div><strong>' + esc(p.podrijetlo || 'Hrvatska') + '</strong><span>Podrijetlo</span></div></div>' +
-      (p.nagrade ? '<div class="awards">' + p.nagrade.map(function (n) { return '<a href="#t-nagrade" data-tab-go="nagrade"><img src="' + n.slika + '" alt=""><span><b>' + esc(n.naslov) + '</b><small>' + esc(n.mjesto) + '</small></span></a>'; }).join('') + '</div>' : '') +
+      '<div class="facts"><div><strong>' + l(p.zapremnina) + '</strong><span>Zapremnina</span></div>' + (p.alkohol ? '<div><strong>' + esc(p.alkohol) + '</strong><span>Alkohol</span></div>' : p.temperatura ? '<div><strong>' + esc(p.temperatura) + '</strong><span>Posluživanje</span></div>' : '') + '<div><strong>' + esc(p.podrijetlo || 'Hrvatska') + '</strong><span>Podrijetlo</span></div></div>' +
+      (p.nagrade ? '<div class="awards">' + p.nagrade.map(function (n) { return '<a href="#t-nagrade" data-tab-go="nagrade">' + (n.slika ? '<img src="' + n.slika + '" alt="">' : '<span class="medal">' + svg('medalja') + '</span>') + '<span><b>' + esc(n.naslov) + '</b><small>' + esc(n.mjesto) + '</small></span></a>'; }).join('') + '</div>' : '') +
       '<div class="buy"><div><span class="price">' + eur(p.cijena) + '</span><span class="unit">' + eur(p.cijena / p.zapremnina) + '/l</span></div>' +
       (p.sidrena ? '<p class="anchor">' + esc(p.sidrena) + '</p>' : '<p class="anchor">PDV uključen.</p>') +
       '<div class="buyrow"><div class="qty"><button type="button" id="minus" aria-label="Manje">−</button><input id="qty" type="number" min="1" max="99" value="1" aria-label="Količina"><button type="button" id="plus" aria-label="Više">+</button></div><button class="btn" id="add">' + I.bag + 'Dodaj u košaricu</button></div>' +
       '<div class="plinks"><span>' + (p.pakiranje ? 'Pakiranje: ' + esc(p.pakiranje) : 'Dostava na kućnu adresu') + '</span><a href="kontakt.html#dostava">Dostava i plaćanje</a></div></div>' +
-      (p.posluzivanje ? '<div class="serve-mini">' + p.posluzivanje.map(function (s) { return '<div><span>' + esc(s.naziv) + '</span><b>' + esc(s.kolicina) + '</b></div>'; }).join('') + '<a href="#t-posluzivanje" data-tab-go="posluzivanje">Kako poslužiti →</a></div>' : '') +
+      (p.mini ? '<div class="serve-mini">' + p.mini.map(function (s) { return '<div><span>' + esc(s[0]) + '</span><b>' + esc(s[1]) + '</b></div>'; }).join('') + '<a href="#t-posluzivanje" data-tab-go="posluzivanje">Kako poslužiti →</a></div>' : '') +
       '</div></section>' +
       '<section id="info"><div class="tabs" role="tablist">' + tabs.map(function (t, i) { return '<button type="button" role="tab" id="t-' + t[0] + '" aria-selected="' + (i === 0) + '" data-tab="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
-      '<div class="panel" id="opis"><div class="cols"><div><div class="eyebrow">Domaća priča</div><h2>' + esc(ime(p)) + '</h2>' +
-      (p.opis || [p.vrsta + ' iz ponude hrvatskih proizvođača, ' + l(p.zapremnina) + '.', 'Za dodatne informacije o proizvodu slobodno nam se javite.']).map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('') + '</div>' +
-      (p.razlozi ? '<div class="reasons"><h3>' + esc(p.razloziNaslov || 'Zašto odabrati ovaj proizvod?') + '</h3><ul>' + p.razlozi.map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('') + '</ul>' + (p.zakljucak ? '<p class="closing">' + esc(p.zakljucak) + '</p>' : '') + '</div>' : '') + '</div></div>' +
-      (p.posluzivanje ? '<div class="panel" id="posluzivanje" hidden><div class="eyebrow">' + esc(marka(p)) + ' · Gastro preporuka</div><h2>Tri načina za uživanje.</h2><div class="serve-cards">' +
-        p.posluzivanje.map(function (s, i) { return '<article class="serve-card"><div class="top">' + svg(s.ikona) + '<span class="num">0' + (i + 1) + '</span></div><h3>' + esc(s.naziv) + '</h3><div class="dose">' + esc(s.kolicina) + '</div><p>' + esc(s.opis) + '</p></article>'; }).join('') +
+      '<div class="panel" id="opis"><div class="cols"><div><div class="eyebrow">Domaća priča</div><h2>' + esc(p.naslovOpisa || ime(p)) + '</h2>' +
+      (p.opis || [p.vrsta + ' iz ponude hrvatskih proizvođača, ' + l(p.zapremnina) + '.', 'Za dodatne informacije o proizvodu slobodno nam se javite.']).map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('') + (p.dodatno ? '<p class="extra">' + esc(p.dodatno) + '</p>' : '') + '</div>' +
+      (p.razlozi ? '<div class="reasons"><h3>' + esc(p.razloziNaslov || 'Zašto odabrati ovaj proizvod?') + '</h3><ul>' + p.razlozi.map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('') + '</ul>' + (p.zakljucak ? '<p class="closing">' + esc(p.zakljucak) + '</p>' : '') + '</div>' : ukratko(p)) + '</div></div>' +
+      (p.posluzivanje ? '<div class="panel" id="posluzivanje" hidden><div class="eyebrow">' + esc(marka(p)) + ' · Gastro preporuka</div><h2>' + esc(p.posluzivanjeNaslov || 'Kako poslužiti.') + '</h2><div class="serve-cards">' +
+        p.posluzivanje.map(function (s, i) { return '<article class="serve-card"><div class="top">' + svg(s.ikona) + '<span class="num">0' + (i + 1) + '</span></div><h3>' + esc(s.naziv) + '</h3>' + (s.kolicina ? '<div class="dose">' + esc(s.kolicina) + '</div>' : '') + '<p>' + esc(s.opis) + '</p></article>'; }).join('') +
         '</div>' + (p.temperatura ? '<div class="serve-temp">' + svg('temp') + '<div><span>Temperatura serviranja</span><strong>' + esc(p.temperatura) + '</strong></div><p>Odaberite svoj način posluživanja.</p></div>' : '') + '</div>' : '') +
       (p.nagrade ? '<div class="panel" id="nagrade" hidden><div class="eyebrow">Izvorna priznanja</div><h2>Nagrađena kvaliteta.</h2><div class="award-list">' +
-        p.nagrade.map(function (n) { return '<article><button type="button" data-zoom="' + n.slika + '" data-cap="' + esc(n.naslov + ' · ' + n.mjesto) + '"><img src="' + n.slika + '" alt="' + esc(n.naslov) + '"></button><div><h3>' + esc(n.naslov) + '</h3><p>' + esc(n.tekst) + '</p></div></article>'; }).join('') + '</div></div>' : '') +
+        p.nagrade.map(function (n) { return '<article>' + (n.slika ? '<button type="button" data-zoom="' + n.slika + '" data-cap="' + esc(n.naslov + ' · ' + n.mjesto) + '"><img src="' + n.slika + '" alt="' + esc(n.naslov) + '"></button>' : '<span class="medal big">' + svg('medalja') + '</span>') + '<div><h3>' + esc(n.naslov) + '</h3><p>' + esc(n.tekst) + '</p></div></article>'; }).join('') + '</div></div>' : '') +
       '<div class="panel" id="detalji" hidden><div class="eyebrow">Sve na jednom mjestu</div><h2>Podaci o proizvodu.</h2><table class="data"><tbody>' +
         podaci.map(function (r) { return '<tr><th>' + esc(r[0]) + '</th><td>' + esc(r[1]) + '</td></tr>'; }).join('') + '</tbody></table></div></section>' +
       '<section class="sec related"><div class="sec-head"><h2>Možda će vam se svidjeti</h2><a class="link" href="trgovina.html">Pogledaj sve ' + I.arrow + '</a></div><div class="grid4">' +
