@@ -1,0 +1,12 @@
+DOMESTIC SPIRITS – probna trgovina (verzija 0.1.0)
+
+Kako otvoriti: raspakirajte ZIP i prenesite sadržaj mape (index.html, trgovina.html, proizvod.html,
+kosarica.html, kontakt.html i mapu assets) na bilo koji web hosting ili poddomenu (npr. proba.vasadomena.hr).
+Radi i lokalno: otvorite index.html u pregledniku.
+
+Proizvodi, cijene i tekstovi: assets/js/data.js
+Slike proizvoda: assets/img/proizvodi/ (900×900 JPG na krem podlozi)
+Slike naslovnice: assets/img/naslovnica/ (hero, 4 kategorije, proizvođači, poklon)
+Postavka "probno: true" u data.js – narudžba i kontakt poruka se ne šalju; prikazuje se kratka napomena.
+
+Stranice su označene noindex (Google ih ne indeksira) dok je trgovina probna.
