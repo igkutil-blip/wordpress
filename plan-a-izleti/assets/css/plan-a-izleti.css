@@ -348,6 +348,11 @@
 	line-height: 1;
 }
 
+.paiz .paiz-act .paiz-fa {
+	display: block;
+	flex: none;
+}
+
 .paiz .paiz-act__letter,
 .paiz .paiz-act--more {
 	font-family: inherit;

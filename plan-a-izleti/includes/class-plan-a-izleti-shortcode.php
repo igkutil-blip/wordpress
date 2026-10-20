@@ -64,12 +64,12 @@ final class Plan_A_Izleti_Shortcode {
 		$post = get_post();
 		if ( is_singular() && $post && has_shortcode( $post->post_content, self::TAG ) ) {
 			wp_enqueue_style( 'plan-a-izleti' );
-			self::enqueue_icon_fonts();
 		}
 	}
 
 	/**
-	 * Fontovi ikona aktivnosti iz WpTravellyja (Font Awesome 6 i Mage Icons).
+	 * Fontovi ikona aktivnosti iz WpTravellyja (Font Awesome 6 i Mage Icons) – samo kad
+	 * neka ikonica nije ugrađeni SVG (Plan_A_Izleti_Fa) ni vlastita (pap-ic).
 	 * WpTravelly ih učitava samo na svojim stranicama; ovdje se učitavaju iste
 	 * datoteke pod istim nazivima (handle), pa se nikad ne učitaju dvaput.
 	 */
@@ -119,7 +119,6 @@ final class Plan_A_Izleti_Shortcode {
 		}
 		wp_enqueue_style( 'plan-a-izleti' );
 		wp_enqueue_script( 'plan-a-izleti' );
-		self::enqueue_icon_fonts();
 
 		// Renderiraju se svi izleti; u trenutnom rezultatu filtra vidi se prvih $show,
 		// a "Prikaži još izleta" otkriva sljedećih $step (vidi assets/js).
@@ -648,9 +647,17 @@ final class Plan_A_Izleti_Shortcode {
 		$html = '<div class="paiz-card__acts">';
 		foreach ( $shown as $term ) {
 			$icon  = Plan_A_Izleti_Categories::activity_icon( $term->term_id );
-			$inner = '' !== $icon
-				? '<i class="' . esc_attr( $icon ) . '" aria-hidden="true"></i>'
-				: '<span class="paiz-act__letter" aria-hidden="true">' . esc_html( mb_strtoupper( mb_substr( $term->name, 0, 1 ) ) ) . '</span>';
+			$svg   = '' !== $icon ? Plan_A_Izleti_Fa::svg( $icon ) : '';
+			if ( '' !== $svg ) {
+				$inner = $svg;
+			} elseif ( '' !== $icon ) {
+				$inner = '<i class="' . esc_attr( $icon ) . '" aria-hidden="true"></i>';
+				if ( 0 !== strpos( $icon, 'pap-ic' ) ) { // vlastite ikonice (plan-a-prijave) ne trebaju fontove
+					self::enqueue_icon_fonts();
+				}
+			} else {
+				$inner = '<span class="paiz-act__letter" aria-hidden="true">' . esc_html( mb_strtoupper( mb_substr( $term->name, 0, 1 ) ) ) . '</span>';
+			}
 			$html .= '<button type="button" class="paiz-act" aria-label="' . esc_attr( $term->name ) . '" data-paiz-tip="' . esc_attr( $term->name ) . '">' . $inner . '</button>';
 		}
 		if ( $rest ) {

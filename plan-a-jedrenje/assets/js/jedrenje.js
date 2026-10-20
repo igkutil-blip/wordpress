@@ -323,7 +323,19 @@
 			return;
 		}
 
+		// Zamućene pozadine slajdova: trenutni i susjedni (ostali tek kad dođu na red).
+		function loadBg(i) {
+			[i - 1, i, i + 1].forEach(function (k) {
+				var span = slides[((k % slides.length) + slides.length) % slides.length].querySelector('[data-pajd-bg]');
+				if (span) {
+					span.style.backgroundImage = 'url("' + span.getAttribute('data-pajd-bg') + '")';
+					span.removeAttribute('data-pajd-bg');
+				}
+			});
+		}
+
 		function setActive(i) {
+			loadBg(i);
 			if (i === index && slides[i].classList.contains('is-active')) {
 				return;
 			}
@@ -342,6 +354,12 @@
 			if (counter) {
 				counter.textContent = i + 1;
 			}
+		}
+
+		if (document.readyState === 'complete') {
+			loadBg(0);
+		} else {
+			window.addEventListener('load', function () { loadBg(index); });
 		}
 
 		function go(i, smooth) {
