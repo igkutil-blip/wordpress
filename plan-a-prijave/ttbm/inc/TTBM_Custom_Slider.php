@@ -134,7 +134,7 @@
 									$height = isset($metadata['height']) ? absint($metadata['height']) : 0;
 								}
 								?>
-                                <div class="sliderItem" data-slide-index="<?php echo esc_html($count); ?>" data-target-popup="superSlider" data-placeholder>
+                                <div class="sliderItem<?php echo 1 === $count ? ' activeSlide' : ''; // Plan A: prva slika vidljiva odmah (prije JS-a) ?>" data-slide-index="<?php echo esc_html($count); ?>" data-target-popup="superSlider" data-placeholder>
 									<?php self::render_bg_layer($image_url, $width, $height, (string) $big, $count > 1 && $count < sizeof($image_ids)); // Plan A: prvi i zadnji (viri lijevo) odmah, ostali poslije ?>
                                 </div>
 								<?php

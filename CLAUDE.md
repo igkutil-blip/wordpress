@@ -203,6 +203,14 @@ bez datuma nastao od #9115 – Zrinka; taj blok agencija/Igor briše ručno). Te
 „Članarina 2027 nije plaćena” je točan: izlet 2027 traži članarinu 2027, a stupca 2027 nije bilo, kvačica je bila u 2026). Test gstest/run7.js.
 **1.15.11 (19.10.):** članarina po godini – postavka `iznosi` (Postavke → 2. Članarina → „Iznos za pojedinu godinu”, redovi `godina=iznos`, zadano `2026=5`; Igor: do 31.12.2026. 5 €, za izlete 2027.+ 15 €). Data::fee_amount($year) → Hub3::payment, mail/uplatnica/2D kod, blagajna, pristupnica (tekuća godina). 2D kod se pravi iznova ako se iznos promijenio (`_pac_barcode_amt`); zajednička slika (rezerva/„slika”) samo za redovni iznos. Već poslani mailovi s 15 € za 2026. se NE šalju ponovno. llms.txt (plan-a-seo) još piše 15 €.
 
+**BRZINA 20.10.2026. – plan-a-prijave 0.8.8 + plan-a-izleti 1.24.2 + plan-a-jedrenje 1.9.5 (obje grane, isti zipovi):** izlet: prvi `.sliderItem` ima
+`activeSlide` već u HTML-u (prije translateX(100%) dok JS ne krene – LCP render delay); `[data-bg-image]` > 300 px ispod ekrana (povezani izleti, vodiči) →
+IntersectionObserver (`ttbm_pap_defer_bg`, data-pap-io 1/2, rootMargin 400); vodič `medium_large`. Izleti: ikonice `fas fa-*` iz ICON_GUESS kao ugrađeni SVG
+(Plan_A_Izleti_Fa, oblici iz fa-solid-900.ttf), pap-ic bez fontova, FA/mage CSS samo kad ikonica nije pokrivena. Jedrenje: zamućene pozadine slajdova
+(`data-pajd-bg`) tek za trenutni ± 1. Kopija mob (prije → poslije): izlet 64 → 77 (LCP 14,5 → 4,2 s), izleti 74 → 80, jedrenje 75 → 87 (2,4 → 0,7 MB).
+Igoru poslane optimizirane slike (slike-brzina.zip: Sonja, vodič s amblemima, Hvar-1, Igor, Krešimir – PNG 2 MB → JPG ~200 KB) za zamjenu u medijima.
+Ostaje: SpeedyCache postavke (C) zajedno s Igorom, naslovnica na živoj = PNG banneri (nije kod).
+
 ## plan-a-tinder 1.0.0 (19.10.2026., obje grane, isti zip) – „Tinder i planinarenje – vikend u Ramića dvorima” (14.–15.12.2026.)
 
 Igor unio izlet na živu kao neobjavljen (skica). Dodatak samo za izlete označene u Izleti → Tinder i planinarenje (opcija `plan_a_tinder`:

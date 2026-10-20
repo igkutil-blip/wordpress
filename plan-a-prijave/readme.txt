@@ -1,7 +1,7 @@
 === Plan A izleti – prijave ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 0.8.7
+Stable tag: 0.8.8
 License: GPLv2 or later
 
 Vlastiti sustav izleta i prijava za Plan A, po uzoru na WpTravelly i s istim podacima.
@@ -57,6 +57,9 @@ WpTravellyjev obrazac s istim podacima.
 Za probu: instalirati samo na kopiji stranice (staging).
 
 == Promjene ==
+
+= 0.8.8 =
+* Brzina stranice izleta: prva slika slidera vidljiva je odmah iz HTML-a (prije je čekala JavaScript); slike daleko ispod ekrana (povezani izleti, vodiči) učitaju se tek kad se do njih dođe; slika vodiča u manjoj veličini (768 px) umjesto izvornika.
 
 = 0.8.7 =
 * Ispravak narudžbi od 0 € (#9115): SpeedyCache danima čuva stranicu izleta, a sigurnosni kod obrasca vrijedi najviše 24 sata – s isteklim kodom izlet je ulazio u košaricu bez karte, termina i cijene. Sada se istekli kod obrasca izleta sam zamijeni svježim (prijava prolazi s pravom cijenom), proizvod izleta ne može u košaricu bez karte (npr. izravna poveznica), a blagajna ne propušta stavku izleta bez karte.

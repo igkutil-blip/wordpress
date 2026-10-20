@@ -176,7 +176,10 @@ final class Plan_A_Jedrenje_Slider {
 				)
 			);
 			$html .= '<figure class="pajd-slide' . ( 0 === $i ? ' is-active' : '' ) . '" role="group" aria-roledescription="slide" aria-label="' . esc_attr( ( $i + 1 ) . ' od ' . $count ) . '" data-full="' . esc_url( (string) $full ) . '">'
-				. ( $bg ? '<span class="pajd-slide__bg" style="background-image:url(' . esc_url( $bg ) . ')" aria-hidden="true"></span>' : '' )
+				// Zamućena pozadina: odmah samo za prvi slajd, ostale JS kad dođu na red (brzina).
+				. ( $bg ? ( 0 === $i
+					? '<span class="pajd-slide__bg" style="background-image:url(' . esc_url( $bg ) . ')" aria-hidden="true"></span>'
+					: '<span class="pajd-slide__bg" data-pajd-bg="' . esc_url( $bg ) . '" aria-hidden="true"></span>' ) : '' )
 				. $img
 				. ( $caption ? '<figcaption class="pajd-slide__cap">' . esc_html( $caption ) . '</figcaption>' : '' )
 				. '</figure>';

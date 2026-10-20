@@ -264,6 +264,43 @@ function ttbm_alert($this, attr = 'alert') {
     });
 }(jQuery));
 //====================================================================Load Bg Image=================//
+// Plan A: slike daleko ispod ekrana (povezani izleti, vodiči…) učitaju se tek kad se do njih dođe.
+var ttbm_pap_io = null;
+function ttbm_pap_defer_bg(target) {
+    if (!('IntersectionObserver' in window) || target.closest('.superSlider, .sliderAllItem').length) {
+        return false;
+    }
+    let el = target[0];
+    if (el.getAttribute('data-pap-io') === '2') {
+        return false;
+    }
+    if (el.getAttribute('data-pap-io') === '1') {
+        return true;
+    }
+    if (el.getBoundingClientRect().top < (window.innerHeight || 800) + 300) {
+        return false;
+    }
+    if (!ttbm_pap_io) {
+        ttbm_pap_io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) {
+                    return;
+                }
+                ttbm_pap_io.unobserve(entry.target);
+                entry.target.setAttribute('data-pap-io', '2');
+                let t = jQuery(entry.target);
+                let bg_url = ttbm_normalize_bg_url(t.data('bg-image'));
+                if (t.outerHeight() === 0 && bg_url) {
+                    ttbm_resize_bg_image_area(t, bg_url);
+                }
+                ttbm_apply_bg_image(t, bg_url);
+            });
+        }, {rootMargin: '400px 0px'});
+    }
+    el.setAttribute('data-pap-io', '1');
+    ttbm_pap_io.observe(el);
+    return true;
+}
 function ttbm_normalize_bg_url(bg_url) {
     if (!bg_url || bg_url.width === 0 || bg_url === 'undefined') {
         return typeof ttbm_empty_image_url !== 'undefined' ? ttbm_empty_image_url : '';
@@ -447,6 +484,9 @@ function ttbm_loadBgImage(scope) {
                     dLoaderRemove(target);
                     return;
                 }
+                if (ttbm_pap_defer_bg(target)) {
+                    return;
+                }
                 let height = target.outerHeight();
                 if (height === 0 && !inSlider) {
                     ttbm_resize_bg_image_area(target, bg_url);
@@ -610,6 +650,10 @@ function ttbm_resize_bg_image_area(target, bg_url) {
             let bg_url = ttbm_normalize_bg_url(target.data('bg-image'));
             let currentBg = target.css('background-image') || '';
             if (currentBg !== 'none' && bg_url && currentBg.indexOf(bg_url) !== -1) {
+                dLoaderRemove(target);
+                return;
+            }
+            if (ttbm_pap_defer_bg(target)) {
                 dLoaderRemove(target);
                 return;
             }

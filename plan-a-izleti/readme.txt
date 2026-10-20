@@ -1,7 +1,7 @@
 === Plan A izleti ===
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.24.1
+Stable tag: 1.24.2
 License: GPLv2 or later
 
 Shortcode [plan-a-izleti] prikazuje nadolazeće izlete iz dodatka WpTravelly (Tour Booking Manager) u mreži s filtrom po kategorijama i mjesecima.
@@ -109,6 +109,9 @@ Shortcode [plan-a-plan-izleta] zamjenjuje ručno pisani popis na stranici plana 
   slike="yes" (uz svaki izlet njegova fotografija; zadano bez fotografija).
 
 == Promjene ==
+
+= 1.24.2 =
+* Brzina: najčešće ikonice aktivnosti (planinar, bicikl, jedrilica…) ugrađene su kao SVG, pa popis izleta i naslovnica više ne učitavaju cijeli Font Awesome i Mage Icons (~275 KB); za ostale ikonice učitavaju se kao i prije.
 
 = 1.24.1 =
 * Plan izleta: vraćene dvije kućice s padajućim izbornikom na vrhu („Izleti” i „Termin” – izbor mjeseca) umjesto gumba za odabir; ostali novi izgled ostaje.
