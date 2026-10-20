@@ -108,6 +108,7 @@
 
   /* ---------- naslovnica ---------- */
   if (page === 'naslovnica') {
+    if (S.usporedba && S.originalnaStranica) $('.hero .actions').insertAdjacentHTML('afterend', '<a class="compare-link" href="' + esc(S.originalnaStranica) + '" target="_blank" rel="noopener">Pogledaj originalnu stranicu ↗</a>');
     $('#cats').innerHTML = D.kategorije.map(function (k) {
       return '<a class="cat" href="trgovina.html?kat=' + k.id + '"><img src="' + k.slika + '" alt="" loading="lazy"><span>' + k.naziv + ' ' + I.arrow + '</span></a>';
     }).join('');
@@ -184,6 +185,7 @@
       '<div class="buy"><div><span class="price">' + eur(p.cijena) + '</span><span class="unit">' + eur(p.cijena / p.zapremnina) + '/l</span></div>' +
       (p.sidrena ? '<p class="anchor">' + esc(p.sidrena) + '</p>' : '<p class="anchor">PDV uključen.</p>') +
       '<div class="buyrow"><div class="qty"><button type="button" id="minus" aria-label="Manje">−</button><input id="qty" type="number" min="1" max="99" value="1" aria-label="Količina"><button type="button" id="plus" aria-label="Više">+</button></div><button class="btn" id="add">' + I.bag + 'Dodaj u košaricu</button></div>' +
+      (S.usporedba && p.original ? '<a class="btn ghost compare" href="' + esc(p.original) + '" target="_blank" rel="noopener">Usporedi s originalom ↗</a>' : '') +
       '<div class="plinks"><span>' + (p.pakiranje ? 'Pakiranje: ' + esc(p.pakiranje) : 'Dostava na kućnu adresu') + '</span><a href="kontakt.html#dostava">Dostava i plaćanje</a></div></div>' +
       (p.mini ? '<div class="serve-mini">' + p.mini.map(function (s) { return '<div><span>' + esc(s[0]) + '</span><b>' + esc(s[1]) + '</b></div>'; }).join('') + '<a href="#t-posluzivanje" data-tab-go="posluzivanje">Kako poslužiti →</a></div>' : '') +
       '</div></section>' +

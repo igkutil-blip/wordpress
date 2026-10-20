@@ -1,12 +1,15 @@
 /* Domestic Spirits – podaci trgovine (proizvodi, kategorije, postavke)
    postavke.probno: true = narudžba se ne šalje nikamo, samo se prikaže potvrda
+   postavke.usporedba: true = gumbi „Usporedi s originalom” (proizvod.original, originalnaStranica); false = nigdje se ne prikazuju
    proizvod.izdvojeno: 1 = gornji red naslovnice, 2 = donji red; takodjer = dodatne kategorije */
 window.DS = {
   "postavke": {
     "probno": true,
     "besplatnaDostavaOd": 60,
     "besplatnaDostavaPodrucje": "Zagrebačke županije",
-    "tvrtka": "Domestic Spirits d.o.o."
+    "tvrtka": "Domestic Spirits d.o.o.",
+    "usporedba": true,
+    "originalnaStranica": "https://domesticspirits.hr/"
   },
   "kategorije": [
     {
@@ -194,7 +197,8 @@ window.DS = {
           "Staklena boca, navojni čep"
         ]
       ],
-      "sidrena": "Sidrena cijena na dan 02.05.2025.: 12,60 €"
+      "sidrena": "Sidrena cijena na dan 02.05.2025.: 12,60 €",
+      "original": "https://domesticspirits.hr/proizvod/avellana-ljesnjak-liker-od-lesnjaka/"
     },
     {
       "id": "san-montano-teranino",
@@ -291,7 +295,8 @@ window.DS = {
           "staklena boca, silikonski čep"
         ]
       ],
-      "sidrena": "Sidrena cijena na dan 02.05.2025.: 25,00 €"
+      "sidrena": "Sidrena cijena na dan 02.05.2025.: 25,00 €",
+      "original": "https://domesticspirits.hr/proizvod/san-montano-teranino/"
     },
     {
       "id": "kravata-malvazija",
@@ -393,7 +398,8 @@ window.DS = {
           "staklena boca, pluteni čep"
         ]
       ],
-      "sidrena": "Sidrena cijena na dan 02.05.2025.: 9,20 €"
+      "sidrena": "Sidrena cijena na dan 02.05.2025.: 9,20 €",
+      "original": "https://domesticspirits.hr/proizvod/kravata-malvazija-075l/"
     },
     {
       "id": "bogati-medica",
@@ -501,7 +507,8 @@ window.DS = {
           "staklena boca, navojni čep"
         ]
       ],
-      "sidrena": "Sidrena cijena na dan 02.05.2025.: 11,30 €"
+      "sidrena": "Sidrena cijena na dan 02.05.2025.: 11,30 €",
+      "original": "https://domesticspirits.hr/proizvod/bogati-medica-070l/"
     },
     {
       "id": "kravata-teran",
@@ -602,7 +609,8 @@ window.DS = {
           "staklena boca, pluteni čep"
         ]
       ],
-      "sidrena": "Sidrena cijena na dan 02.05.2025.: 11,90 €"
+      "sidrena": "Sidrena cijena na dan 02.05.2025.: 11,90 €",
+      "original": "https://domesticspirits.hr/proizvod/primores-plavac-mali-postup/"
     },
     {
       "id": "san-montano-biska",
@@ -705,7 +713,8 @@ window.DS = {
           "staklena boca, silikonski čep"
         ]
       ],
-      "sidrena": "Sidrena cijena na dan 02.05.2025.: 24,00 €"
+      "sidrena": "Sidrena cijena na dan 02.05.2025.: 24,00 €",
+      "original": "https://domesticspirits.hr/proizvod/san-montano-biska/"
     },
     {
       "id": "patrik-limoncello",
@@ -816,7 +825,8 @@ window.DS = {
           "staklena boca, silikonski čep"
         ]
       ],
-      "sidrena": "Sidrena cijena na dan 02.05.2025.: 15,50 €"
+      "sidrena": "Sidrena cijena na dan 02.05.2025.: 15,50 €",
+      "original": "https://domesticspirits.hr/proizvod/patrik-limoncello-050l/"
     }
   ]
 };
