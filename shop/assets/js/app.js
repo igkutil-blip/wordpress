@@ -78,7 +78,6 @@
   function add(key, q, from) {
     q = q || 1; setQty(key, (cart[key] || 0) + q);
     var it = item(key); toast(q + ' × ' + it.naziv + ' – dodano u košaricu.');
-    fly(from, it.slika);
   }
   function refresh() {
     var n = cartCount();
@@ -87,21 +86,6 @@
     renderDrawer();
     if (page === 'kosarica') renderCart();
   }
-  function bump() { $$('.badge').forEach(function (b) { b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); }); }
-
-  /* boca „leti” u košaricu */
-  function fly(from, src) {
-    var target = mobile.matches ? $('.bnav .cartlink') : $('#open-cart');
-    if (calm || !from || !target) { bump(); return; }
-    var img = from.closest('article, .product, .qv, .gift-page'); img = img && $('img', img);
-    var a = (img || from).getBoundingClientRect(), b = target.getBoundingClientRect();
-    var f = document.createElement('img'); f.src = src; f.className = 'flyer';
-    f.style.cssText = 'left:' + (a.left + a.width / 2 - 30) + 'px;top:' + (a.top + a.height / 2 - 30) + 'px';
-    document.body.appendChild(f);
-    requestAnimationFrame(function () { f.style.transform = 'translate(' + (b.left + b.width / 2 - a.left - a.width / 2) + 'px,' + (b.top + b.height / 2 - a.top - a.height / 2) + 'px) scale(.25)'; f.style.opacity = '.4'; });
-    setTimeout(function () { f.remove(); bump(); }, 650);
-  }
-
   /* lista želja */
   function isFav(id) { return favs.indexOf(id) > -1; }
   function toggleFav(id, btn) {
@@ -243,12 +227,12 @@
   }
   function photo(p) { return '<a class="ph" href="' + url(p) + '" tabindex="-1" aria-hidden="true"><img src="' + p.slika + '" alt="" loading="lazy" width="900" height="900">' + (p.slika2 ? '<img class="alt2" src="' + p.slika2 + '" alt="" loading="lazy">' : '') + '</a>'; }
   function card(p) {
-    return '<article class="pcard reveal"><div class="phw">' + photo(p) + '<div class="tags">' + badges(p) + '</div>' + tools(p) + '</div>' +
+    return '<article class="pcard"><div class="phw">' + photo(p) + '<div class="tags">' + badges(p) + '</div>' + tools(p) + '</div>' +
       '<h3><a href="' + url(p) + '">' + esc(ime(p)) + '</a></h3><div class="meta">' + l(p.zapremnina) + '<i>·</i>' + esc(p.vrsta) + '</div>' +
       '<div class="row"><span class="price">' + eur(p.cijena) + '</span><button class="btn sm" data-add="' + p.id + '" aria-label="U košaricu: ' + esc(ime(p)) + '">U košaricu</button></div></article>';
   }
   function hcard(p) {
-    return '<article class="pcard hcard reveal"><div class="phw">' + photo(p) + '<div class="tags">' + badges(p) + '</div></div><div>' +
+    return '<article class="pcard hcard"><div class="phw">' + photo(p) + '<div class="tags">' + badges(p) + '</div></div><div>' +
       '<h3><a href="' + url(p) + '">' + esc(ime(p)) + '</a></h3><div class="meta">' + l(p.zapremnina) + '<i>·</i>' + esc(p.vrsta) + '</div>' +
       '<span class="price">' + eur(p.cijena) + '</span><button class="btn sm" data-add="' + p.id + '" aria-label="U košaricu: ' + esc(ime(p)) + '">U košaricu</button>' +
       '<button type="button" class="ico fav' + (isFav(p.id) ? ' on' : '') + '" data-fav="' + p.id + '" aria-pressed="' + isFav(p.id) + '" aria-label="Spremi u omiljene: ' + esc(ime(p)) + '">' + I.heart + '</button></div></article>';
@@ -294,30 +278,22 @@
     draw(); $('#quiz').showModal();
   }
 
-  /* lagana pojava pri listanju */
-  function reveal() {
-    var els = $$('.reveal:not(.in)');
-    if (calm || !('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('in'); }); return; }
-    var io = new IntersectionObserver(function (en) { en.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { rootMargin: '0px 0px -40px 0px' });
-    els.forEach(function (e, i) { e.style.transitionDelay = (i % 4) * 60 + 'ms'; io.observe(e); });
-  }
-
   /* ---------- naslovnica ---------- */
   if (page === 'naslovnica') {
     if (S.usporedba && S.originalnaStranica) $('.hero .actions').insertAdjacentHTML('afterend', '<a class="compare-link" href="' + esc(S.originalnaStranica) + '" target="_blank" rel="noopener">Pogledaj originalnu stranicu ↗</a>');
-    $('#prednosti').innerHTML = D.prednosti.map(function (x) { return '<div class="perk reveal">' + svg(x.ikona) + '<div><b>' + esc(x.naslov) + '</b><span>' + esc(x.tekst) + '</span></div></div>'; }).join('');
+    $('#prednosti').innerHTML = D.prednosti.map(function (x) { return '<div class="perk">' + svg(x.ikona) + '<div><b>' + esc(x.naslov) + '</b><span>' + esc(x.tekst) + '</span></div></div>'; }).join('');
     $('#cats').innerHTML = D.kategorije.map(function (k) {
       var n = k.id === 'poklon-paketi' ? 0 : P.filter(function (p) { return p.kategorija === k.id || (p.takodjer || []).indexOf(k.id) > -1; }).length;
-      return '<a class="cat reveal" href="' + (k.id === 'poklon-paketi' ? 'poklon.html' : 'trgovina.html?kat=' + k.id) + '"><img src="' + k.slika + '" alt="" loading="lazy"><span>' + k.naziv + ' ' + I.arrow + '</span><small>' + (n ? n + ' ' + (n === 1 ? 'proizvod' : n < 5 ? 'proizvoda' : 'proizvoda') : 'Složi svoj') + '</small></a>';
+      return '<a class="cat" href="' + (k.id === 'poklon-paketi' ? 'poklon.html' : 'trgovina.html?kat=' + k.id) + '"><img src="' + k.slika + '" alt="" loading="lazy"><span>' + k.naziv + ' ' + I.arrow + '</span><small>' + (n ? n + ' ' + (n === 1 ? 'proizvod' : n < 5 ? 'proizvoda' : 'proizvoda') : 'Složi svoj') + '</small></a>';
     }).join('');
     $('#izdvojeno').innerHTML = P.filter(function (p) { return p.izdvojeno === 1; }).map(card).join('');
     $('#izdvojeno2').innerHTML = P.filter(function (p) { return p.izdvojeno === 2; }).map(hcard).join('');
     var aw = [];
     P.forEach(function (p) { (p.nagrade || []).forEach(function (n) { aw.push({ p: p, n: n }); }); });
-    $('#priznanja-list').innerHTML = aw.map(function (x) { return '<a class="aw reveal" href="' + url(x.p) + '">' + (x.n.slika ? '<img src="' + x.n.slika + '" alt="">' : '<span class="medal">' + svg('medalja') + '</span>') + '<span><b>' + esc(x.n.naslov) + '</b><small>' + esc(x.n.mjesto) + '</small><em>' + esc(ime(x.p)) + '</em></span></a>'; }).join('');
+    $('#priznanja-list').innerHTML = aw.map(function (x) { return '<a class="aw" href="' + url(x.p) + '">' + (x.n.slika ? '<img src="' + x.n.slika + '" alt="">' : '<span class="medal">' + svg('medalja') + '</span>') + '<span><b>' + esc(x.n.naslov) + '</b><small>' + esc(x.n.mjesto) + '</small><em>' + esc(ime(x.p)) + '</em></span></a>'; }).join('');
     var R = D.recenzije;
     if (R && R.popis.length && (!R.primjer || S.probno)) {
-      $('#recenzije-list').innerHTML = R.popis.map(function (r) { var p = byId(r.proizvod); return '<figure class="rev reveal">' + stars(r.ocjena) + '<blockquote>„' + esc(r.tekst) + '”</blockquote><figcaption><b>' + esc(r.ime) + '</b>, ' + esc(r.mjesto) + (p ? '<a href="' + url(p) + '">' + esc(ime(p)) + '</a>' : '') + '</figcaption></figure>'; }).join('');
+      $('#recenzije-list').innerHTML = R.popis.map(function (r) { var p = byId(r.proizvod); return '<figure class="rev">' + stars(r.ocjena) + '<blockquote>„' + esc(r.tekst) + '”</blockquote><figcaption><b>' + esc(r.ime) + '</b>, ' + esc(r.mjesto) + (p ? '<a href="' + url(p) + '">' + esc(ime(p)) + '</a>' : '') + '</figcaption></figure>'; }).join('');
     } else $('#recenzije').remove();
   }
 
@@ -355,16 +331,14 @@
       $('#list').innerHTML = l2.map(card).join('');
       $('#empty').hidden = !!l2.length;
       $('#empty-text').textContent = kat === 'akcije' ? 'Trenutno nema proizvoda na akciji. Prijavite se na novosti u podnožju i prvi saznajte za sljedeću.' : kat === 'favoriti' ? 'Još niste spremili nijedan proizvod. Dodirnite srce na kartici proizvoda.' : 'Nema proizvoda za odabrane uvjete.';
-      reveal();
     };
     if (kat === 'proizvodjaci' && !marka_) {
       $('#sort').hidden = true;
       $('#list').innerHTML = D.proizvodjaci.map(function (m) {
         var ps = P.filter(function (p) { return p.marka === m.id; });
-        return '<article class="pcard reveal"><div class="phw"><a class="ph" href="trgovina.html?marka=' + m.id + '"><img src="' + ps[0].slika + '" alt="" loading="lazy"></a></div><h3><a href="trgovina.html?marka=' + m.id + '">' + m.naziv + '</a></h3><div class="meta">' + ps.length + ' ' + (ps.length === 1 ? 'proizvod' : 'proizvoda') + '</div><div class="row" style="justify-content:center"><a class="link" href="trgovina.html?marka=' + m.id + '">Pogledaj ' + I.arrow + '</a></div></article>';
+        return '<article class="pcard"><div class="phw"><a class="ph" href="trgovina.html?marka=' + m.id + '"><img src="' + ps[0].slika + '" alt="" loading="lazy"></a></div><h3><a href="trgovina.html?marka=' + m.id + '">' + m.naziv + '</a></h3><div class="meta">' + ps.length + ' ' + (ps.length === 1 ? 'proizvod' : 'proizvoda') + '</div><div class="row" style="justify-content:center"><a class="link" href="trgovina.html?marka=' + m.id + '">Pogledaj ' + I.arrow + '</a></div></article>';
       }).join('');
       $('#count').textContent = D.proizvodjaci.length + ' proizvođača';
-      reveal();
     } else { $('#sort').addEventListener('change', draw); draw(); }
   }
 
@@ -548,5 +522,4 @@
   }
 
   refresh();
-  reveal();
 })();
