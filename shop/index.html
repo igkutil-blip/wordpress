@@ -8,10 +8,11 @@
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="assets/img/ikona.png">
 <link rel="preload" href="assets/fonts/eb-garamond-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/style.css?v=0.4.0">
+<link rel="stylesheet" href="assets/css/style.css?v=0.5.0">
 </head>
 <body data-page="naslovnica">
 <div id="ds-header"></div>
+<main id="main">
 <section class="hero">
 <img class="hero-img" src="assets/img/naslovnica/hero.jpg" srcset="assets/img/naslovnica/hero-900.jpg 900w, assets/img/naslovnica/hero.jpg 1800w" sizes="(max-width:720px) 1500px, 100vw" alt="Avellana i Kravata Malvazija na kamenom zidu iznad mora" fetchpriority="high">
 <div class="wrap"><div class="hero-text">
@@ -19,23 +20,30 @@
 <h1>Dobra kapljica.<br>Domaća priča.</h1>
 <p>Vina, rakije i likeri hrvatskih proizvođača.</p>
 <div class="actions"><a class="btn" href="trgovina.html">Istraži ponudu <svg class="i" viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5"/></svg></a>
-<a class="link" href="trgovina.html?kat=poklon-paketi">Pronađi poklon <svg class="i" viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5"/></svg></a></div>
+<a class="link" href="poklon.html">Složi poklon <svg class="i" viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5"/></svg></a></div>
 </div></div>
 </section>
-<main class="wrap">
+<div class="wrap">
+<div class="perks" id="prednosti"></div>
 <div class="cats" id="cats"></div>
 <section class="sec"><div class="sec-head"><h2>Izdvajamo iz ponude</h2><a href="trgovina.html">Pogledaj sve <svg class="i" viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5"/></svg></a></div>
 <div class="grid4" id="izdvojeno"></div></section>
-</main>
+<section class="quizband reveal"><div><div class="eyebrow" style="color:#e8c99a">Kviz · 3 pitanja</div><h2>Ne znate što odabrati?</h2><p>Odgovorite na tri kratka pitanja i preporučit ćemo vam kapljicu po vašem ukusu – za sebe ili za poklon.</p></div>
+<button class="btn light" type="button" data-quiz>Pronađi svoju kapljicu <svg class="i" viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5"/></svg></button>
+<svg class="i deco" viewBox="0 0 72 72" aria-hidden="true"><path d="M21 12h30l-3 24c-.7 7-5.3 12-12 12s-11.3-5-12-12l-3-24Z"/><path d="M24 27h24M36 48v13m-12 0h24"/></svg></section>
+</div>
 <section class="band"><img src="assets/img/naslovnica/proizvodjaci.jpg" alt="Vinogradi i maslinici iznad mora" loading="lazy">
 <div><h2>Upoznajte ljude<br>iza etikete.</h2><a class="link" style="color:var(--ink)" href="trgovina.html?kat=proizvodjaci">Istraži proizvođače <svg class="i" viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5"/></svg></a></div></section>
-<main class="wrap">
+<div class="wrap">
 <div class="grid3" id="izdvojeno2"></div>
-<section class="gift"><div><h2>Poklon s domaćim<br>potpisom.</h2><a class="btn" href="trgovina.html?kat=poklon-paketi">Odaberi poklon <svg class="i" viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5"/></svg></a></div>
+<section class="sec" id="priznanja"><div class="sec-head"><h2>Nagrađena kvaliteta</h2></div><div class="awards-row" id="priznanja-list"></div></section>
+<section class="gift"><div><h2>Poklon s domaćim<br>potpisom.</h2><p class="gift-p">Odaberite kutiju, složite do tri boce i dodajte čestitku.</p><a class="btn" href="poklon.html">Složi svoj poklon <svg class="i" viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5"/></svg></a></div>
 <img src="assets/img/naslovnica/poklon.jpg" alt="Poklon kutija s Avellanom i San Montanom" loading="lazy"></section>
+<section class="sec" id="recenzije"><div class="sec-head"><h2>Što kažu kupci</h2></div><div class="revs" id="recenzije-list"></div></section>
+</div>
 </main>
 <div id="ds-footer"></div>
-<script src="assets/js/data.js?v=0.4.0"></script>
-<script src="assets/js/app.js?v=0.4.0"></script>
+<script src="assets/js/data.js?v=0.5.0"></script>
+<script src="assets/js/app.js?v=0.5.0"></script>
 </body>
 </html>

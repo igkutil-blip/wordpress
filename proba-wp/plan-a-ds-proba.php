@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Domestic Spirits – probna trgovina
  * Description: Statička probna trgovina (mapa shop/) za pregled na kopiji stranice. Adresa: /domestic-spirits/
- * Version: 0.4.0
+ * Version: 0.5.0
  * Author: Igor Kutil
  */
 

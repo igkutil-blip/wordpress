@@ -1,7 +1,9 @@
 /* Domestic Spirits – podaci trgovine (proizvodi, kategorije, postavke)
    postavke.probno: true = narudžba se ne šalje nikamo, samo se prikaže potvrda
    postavke.usporedba: true = gumbi „Usporedi s originalom” (proizvod.original, originalnaStranica); false = nigdje se ne prikazuju
-   proizvod.izdvojeno: 1 = gornji red naslovnice, 2 = donji red; takodjer = dodatne kategorije */
+   proizvod.izdvojeno: 1 = gornji red naslovnice, 2 = donji red; takodjer = dodatne kategorije
+   PRIMJER-podaci (kontakt, dostava, kutije, recenzije) izmišljeni su za prezentaciju – prije prave prodaje zamijeniti.
+   recenzije.primjer: true = prikazuju se samo dok je postavke.probno true. */
 window.DS = {
   "postavke": {
     "probno": true,
@@ -9,7 +11,42 @@ window.DS = {
     "besplatnaDostavaPodrucje": "Zagrebačke županije",
     "tvrtka": "Domestic Spirits d.o.o.",
     "usporedba": true,
-    "originalnaStranica": "https://domesticspirits.hr/"
+    "originalnaStranica": "https://domesticspirits.hr/",
+    "dostava": {
+      "cijena": 4.9,
+      "besplatnoOd": 60,
+      "besplatnoPodrucje": "Zagrebačke županije",
+      "pbrPrefiks": "10",
+      "rok": "1–2 radna dana",
+      "pouzece": 1.0
+    },
+    "kontakt": {
+      "tel": "+385 1 555 0123",
+      "telLink": "+38515550123",
+      "email": "info@domesticspirits.hr",
+      "adresa": "Zagreb, Hrvatska",
+      "radnoVrijeme": "pon–pet 8–16 h"
+    },
+    "poklon": {
+      "kutije": [
+        {
+          "id": "kraft",
+          "naziv": "Kraft kutija s logotipom",
+          "opis": "Smeđi karton, svileni papir i žig bačve.",
+          "cijena": 4.5,
+          "mjesta": 3
+        },
+        {
+          "id": "drvo",
+          "naziv": "Drvena kutija s poklopcem",
+          "opis": "Masivno drvo, utisnut logotip, za posebne prilike.",
+          "cijena": 12.0,
+          "mjesta": 3
+        }
+      ],
+      "cestitka": 1.5,
+      "najmanjeBoca": 1
+    }
   },
   "kategorije": [
     {
@@ -198,7 +235,15 @@ window.DS = {
         ]
       ],
       "sidrena": "Sidrena cijena na dan 02.05.2025.: 12,60 €",
-      "original": "https://domesticspirits.hr/proizvod/avellana-ljesnjak-liker-od-lesnjaka/"
+      "original": "https://domesticspirits.hr/proizvod/avellana-ljesnjak-liker-od-lesnjaka/",
+      "znacke": [
+        "nagradeno"
+      ],
+      "okus": "slatko",
+      "prilika": [
+        "desert",
+        "aperitiv"
+      ]
     },
     {
       "id": "san-montano-teranino",
@@ -296,7 +341,15 @@ window.DS = {
         ]
       ],
       "sidrena": "Sidrena cijena na dan 02.05.2025.: 25,00 €",
-      "original": "https://domesticspirits.hr/proizvod/san-montano-teranino/"
+      "original": "https://domesticspirits.hr/proizvod/san-montano-teranino/",
+      "znacke": [
+        "omiljeno"
+      ],
+      "okus": "vocno",
+      "prilika": [
+        "aperitiv",
+        "desert"
+      ]
     },
     {
       "id": "kravata-malvazija",
@@ -399,7 +452,11 @@ window.DS = {
         ]
       ],
       "sidrena": "Sidrena cijena na dan 02.05.2025.: 9,20 €",
-      "original": "https://domesticspirits.hr/proizvod/kravata-malvazija-075l/"
+      "original": "https://domesticspirits.hr/proizvod/kravata-malvazija-075l/",
+      "okus": "vino",
+      "prilika": [
+        "jelo"
+      ]
     },
     {
       "id": "bogati-medica",
@@ -508,7 +565,15 @@ window.DS = {
         ]
       ],
       "sidrena": "Sidrena cijena na dan 02.05.2025.: 11,30 €",
-      "original": "https://domesticspirits.hr/proizvod/bogati-medica-070l/"
+      "original": "https://domesticspirits.hr/proizvod/bogati-medica-070l/",
+      "znacke": [
+        "nagradeno"
+      ],
+      "okus": "slatko",
+      "prilika": [
+        "desert",
+        "aperitiv"
+      ]
     },
     {
       "id": "kravata-teran",
@@ -610,7 +675,11 @@ window.DS = {
         ]
       ],
       "sidrena": "Sidrena cijena na dan 02.05.2025.: 11,90 €",
-      "original": "https://domesticspirits.hr/proizvod/primores-plavac-mali-postup/"
+      "original": "https://domesticspirits.hr/proizvod/primores-plavac-mali-postup/",
+      "okus": "vino",
+      "prilika": [
+        "jelo"
+      ]
     },
     {
       "id": "san-montano-biska",
@@ -714,7 +783,15 @@ window.DS = {
         ]
       ],
       "sidrena": "Sidrena cijena na dan 02.05.2025.: 24,00 €",
-      "original": "https://domesticspirits.hr/proizvod/san-montano-biska/"
+      "original": "https://domesticspirits.hr/proizvod/san-montano-biska/",
+      "znacke": [
+        "nagradeno"
+      ],
+      "okus": "gorko",
+      "prilika": [
+        "aperitiv",
+        "digestiv"
+      ]
     },
     {
       "id": "patrik-limoncello",
@@ -826,7 +903,91 @@ window.DS = {
         ]
       ],
       "sidrena": "Sidrena cijena na dan 02.05.2025.: 15,50 €",
-      "original": "https://domesticspirits.hr/proizvod/patrik-limoncello-050l/"
+      "original": "https://domesticspirits.hr/proizvod/patrik-limoncello-050l/",
+      "znacke": [
+        "novo"
+      ],
+      "okus": "vocno",
+      "prilika": [
+        "aperitiv",
+        "desert",
+        "koktel",
+        "digestiv"
+      ],
+      "slika2": "assets/img/proizvodi/patrik-limoncello-straga.jpg"
     }
-  ]
+  ],
+  "prednosti": [
+    {
+      "ikona": "bacva",
+      "naslov": "Domaći proizvođači",
+      "tekst": "Odabrana pića iz cijele Hrvatske"
+    },
+    {
+      "ikona": "medalja",
+      "naslov": "Nagrađena kvaliteta",
+      "tekst": "Zlato i srebro na ocjenjivanjima"
+    },
+    {
+      "ikona": "kutija",
+      "naslov": "Sigurno pakiranje",
+      "tekst": "Svaka boca zaštićena u kartonu"
+    },
+    {
+      "ikona": "kamion",
+      "naslov": "Besplatna dostava",
+      "tekst": "Iznad 60 € u Zagrebačkoj županiji"
+    }
+  ],
+  "recenzije": {
+    "primjer": true,
+    "popis": [
+      {
+        "ime": "Marija K.",
+        "mjesto": "Zagreb",
+        "ocjena": 5,
+        "proizvod": "avellana-ljesnjak",
+        "tekst": "Avellana je postala obavezna u našoj kavi nedjeljom. Stigla je brzo i odlično zapakirana."
+      },
+      {
+        "ime": "Tomislav B.",
+        "mjesto": "Velika Gorica",
+        "ocjena": 5,
+        "proizvod": "san-montano-teranino",
+        "tekst": "Teranino sam kupio za poklon tastu – pitao je gdje se može naći još. Preporuka!"
+      },
+      {
+        "ime": "Ana P.",
+        "mjesto": "Samobor",
+        "ocjena": 5,
+        "proizvod": "patrik-limoncello",
+        "tekst": "Dobro ohlađen Limoncello ljeti je savršen. Složila sam i poklon kutiju za prijateljicu."
+      },
+      {
+        "ime": "Davor M.",
+        "mjesto": "Zaprešić",
+        "ocjena": 4,
+        "proizvod": "kravata-teran",
+        "tekst": "Teran uz pršut i sir – pun pogodak. Lijepa boca, dobra cijena."
+      }
+    ]
+  },
+  "znacke": {
+    "nagradeno": "Nagrađeno",
+    "omiljeno": "Omiljeno",
+    "novo": "Novo"
+  },
+  "okusi": {
+    "slatko": "Slatko i kremasto",
+    "vocno": "Voćno i osvježavajuće",
+    "gorko": "Gorko-biljno",
+    "vino": "Vino"
+  },
+  "prilike": {
+    "aperitiv": "Aperitiv",
+    "desert": "Uz desert",
+    "jelo": "Uz jelo",
+    "digestiv": "Digestiv",
+    "koktel": "Kokteli"
+  }
 };
