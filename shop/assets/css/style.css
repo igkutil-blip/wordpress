@@ -730,7 +730,7 @@ input.bad,textarea.bad{border-color:#9d1f34!important;background:#fff6f6!importa
 }
 .sortbox{display:flex;align-items:center;gap:12px}
 .filters.f2{margin-top:8px;align-items:center}
-.flabel{font-size:13px;color:var(--muted);margin-right:2px;display:inline-flex;align-items:center;gap:6px}
+.flabel{font-size:13px;color:var(--muted);margin-right:2px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .chip.sm{padding:4px 12px;font-size:13px}
 .gift-p{margin:0 0 16px;max-width:340px;color:#3f3934}
 @media(max-width:720px){
