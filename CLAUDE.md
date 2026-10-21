@@ -56,6 +56,7 @@ Svi dodaci koje radimo za Domestic Spirits nalaze se pod **jednim izbornikom „
 prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju podstavku (ništa po drugim izbornicima).
 - Zajednička datoteka `wp-dodaci/zajednicko/domestic-menu.php` (klasa `Domestic_Menu`) kopira se u svaki dodatak kao
   `includes/domestic-menu.php` i mora biti ista u svima (kao `Plan_A_Email` kod Plan A). Podstavka: `Domestic_Menu::add( slug, naslov, callback, poredak )`.
+- **Proizvođač svih dodataka je obrt Vertikal** (Igor 21.10.2026.): u zaglavlju dodatka `Author: Vertikal, obrt` (nikad osobno ime ni alat).
 - Dodaci: mapa `wp-dodaci/domestic-<naziv>/`, glavna datoteka `domestic-<naziv>.php`, prefiks klasa `Domestic_`, prava `manage_woocommerce`.
 - Popis dodataka (dopunjavati):
   - **domestic-proizvod 0.1.0** (u izradi, 21.10.2026.): stranica proizvoda u novom izgledu (template_include za označene ili sve proizvode),
