@@ -211,6 +211,10 @@ IntersectionObserver (`ttbm_pap_defer_bg`, data-pap-io 1/2, rootMargin 400); vod
 Igoru poslane optimizirane slike (slike-brzina.zip: Sonja, vodič s amblemima, Hvar-1, Igor, Krešimir – PNG 2 MB → JPG ~200 KB) za zamjenu u medijima.
 Ostaje: SpeedyCache postavke (C) zajedno s Igorom, naslovnica na živoj = PNG banneri (nije kod).
 
+**plan-a-izleti 1.24.3 (21.10.2026., obje grane):** „Predloži ekipi” → „Pošalji u WhatsApp” na Androidu nije ništa radio (klijent na Tinder izletu + Igorov
+Android): Web Share (slika + tekst) izbačen, mobitel = location.href wa.me (ista kartica), računalo = nova kartica; slika ostaje u pregledu i kao og:image u WhatsAppu.
+Sadrži i 1.24.2 (SVG ikonice). WhatsApp blokiran iz sesije – provjera na pravom mobitelu Igor.
+
 ## plan-a-tinder 1.0.0 (19.10.2026., obje grane, isti zip) – „Tinder i planinarenje – vikend u Ramića dvorima” (14.–15.12.2026.)
 
 Igor unio izlet na živu kao neobjavljen (skica). Dodatak samo za izlete označene u Izleti → Tinder i planinarenje (opcija `plan_a_tinder`:
