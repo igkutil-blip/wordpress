@@ -1,0 +1,245 @@
+<?php
+/**
+ * Podaci proizvoda: postavke, polja kartice „Domestic”, atributi, cijena po litri, povijest cijene.
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+final class Domestic_Proizvod_Data {
+
+	const OPT = 'domestic_proizvod';
+
+	/** Ključevi atributa → prepoznati nazivi (mala slova, bez kvačica). */
+	const ATTR = array(
+		'marka'       => array( 'marka', 'proizvodac', 'brand' ),
+		'vrsta'       => array( 'vrsta', 'vrsta pica', 'tip' ),
+		'zapremnina'  => array( 'zapremnina', 'zapremnina boce', 'volumen', 'kolicina' ),
+		'alkohol'     => array( 'alkohol', 'udio alkohola', 'alkoholna jakost' ),
+		'podrijetlo'  => array( 'podrijetlo', 'geografsko podrijetlo', 'porijeklo', 'regija' ),
+		'temperatura' => array( 'temperatura', 'temperatura serviranja', 'temperatura posluzivanja' ),
+		'gastro'      => array( 'gastro preporuka', 'uz sto', 'uz sto se posluzuje', 'preporuka' ),
+		'okus'        => array( 'okus' ),
+		'pakiranje'   => array( 'pakiranje' ),
+		'ambalaza'    => array( 'ambalaza' ),
+	);
+
+	/** Ikone za posluživanje (naziv za izbornik). */
+	const IKONE = array(
+		'casa'   => 'Čaša',
+		'kava'   => 'Kava',
+		'kolac'  => 'Slastica',
+		'tanjur' => 'Jelo',
+		'riba'   => 'Riba',
+		'sir'    => 'Pršut i sir',
+		'koktel' => 'Koktel',
+	);
+
+	public static function init(): void {
+		// povijest cijene (za najnižu cijenu u 30 dana kod akcija)
+		add_action( 'woocommerce_after_product_object_save', array( __CLASS__, 'remember_price' ) );
+	}
+
+	/* ---------- postavke ---------- */
+
+	public static function settings(): array {
+		$d = array(
+			'nacin'        => 'oznaceni', // oznaceni | svi
+			'rok'          => '1–2 radna dana',
+			'besplatno_od' => '60',
+			'podrucje'     => 'Zagrebačke županije',
+			'novo_dana'    => '60',
+		);
+		$o = get_option( self::OPT, array() );
+		return array_merge( $d, is_array( $o ) ? $o : array() );
+	}
+
+	/** Prikazuje li se proizvod u novom izgledu. */
+	public static function is_on( $product ): bool {
+		$product = wc_get_product( $product );
+		if ( ! $product ) {
+			return false;
+		}
+		if ( 'svi' === self::settings()['nacin'] ) {
+			return 'no' !== $product->get_meta( '_dsp_on' );
+		}
+		return 'yes' === $product->get_meta( '_dsp_on' );
+	}
+
+	/* ---------- kartica „Domestic” ---------- */
+
+	public static function meta( WC_Product $p ): array {
+		$arr = function ( $k ) use ( $p ) {
+			$v = $p->get_meta( $k );
+			return is_array( $v ) ? $v : array();
+		};
+		return array(
+			'eyebrow'         => (string) $p->get_meta( '_dsp_eyebrow' ),
+			'naslov'          => (string) $p->get_meta( '_dsp_naslov' ),
+			'razlozi_naslov'  => (string) $p->get_meta( '_dsp_razlozi_naslov' ),
+			'razlozi'         => array_values( array_filter( array_map( 'trim', $arr( '_dsp_razlozi' ) ) ) ),
+			'zakljucak'       => (string) $p->get_meta( '_dsp_zakljucak' ),
+			'posluzivanje'    => array_values( array_filter( $arr( '_dsp_posluzivanje' ), function ( $r ) { return ! empty( $r['naziv'] ); } ) ),
+			'nagrade'         => array_values( array_filter( $arr( '_dsp_nagrade' ), function ( $r ) { return ! empty( $r['naslov'] ); } ) ),
+			'omiljeno'        => 'yes' === $p->get_meta( '_dsp_omiljeno' ),
+			'sidrena'         => (string) $p->get_meta( '_dsp_sidrena' ),
+		);
+	}
+
+	/* ---------- atributi ---------- */
+
+	public static function norm( string $s ): string {
+		$s = mb_strtolower( trim( wp_strip_all_tags( $s ) ) );
+		$s = strtr( $s, array( 'č' => 'c', 'ć' => 'c', 'š' => 's', 'ž' => 'z', 'đ' => 'd' ) );
+		return trim( preg_replace( '/[^a-z0-9 ]+/', ' ', $s ) );
+	}
+
+	/** Svi vidljivi atributi: [ [naziv, vrijednost, ključ|null], … ]. */
+	public static function attributes( WC_Product $p ): array {
+		$out = array();
+		$src = $p->is_type( 'variation' ) ? wc_get_product( $p->get_parent_id() ) : $p;
+		foreach ( $src->get_attributes() as $a ) {
+			if ( ! $a instanceof WC_Product_Attribute || ! $a->get_visible() ) {
+				continue;
+			}
+			$label = wc_attribute_label( $a->get_name(), $src );
+			if ( $a->is_taxonomy() ) {
+				$vals = wc_get_product_terms( $src->get_id(), $a->get_name(), array( 'fields' => 'names' ) );
+			} else {
+				$vals = $a->get_options();
+			}
+			$val = implode( ', ', array_filter( array_map( 'trim', (array) $vals ) ) );
+			if ( '' === $val ) {
+				continue;
+			}
+			$out[] = array( $label, $val, self::key_for( $label ) );
+		}
+		return $out;
+	}
+
+	public static function key_for( string $label ): ?string {
+		$n = self::norm( $label );
+		foreach ( self::ATTR as $k => $names ) {
+			if ( in_array( $n, $names, true ) ) {
+				return $k;
+			}
+		}
+		return null;
+	}
+
+	/** Vrijednost atributa po ključu (marka, zapremnina…). */
+	public static function attr( WC_Product $p, string $key ): string {
+		foreach ( self::attributes( $p ) as $a ) {
+			if ( $a[2] === $key ) {
+				return $a[1];
+			}
+		}
+		return '';
+	}
+
+	/** Zapremnina u litrama iz teksta („0,7 l”, „0,70L”, „700 ml”). */
+	public static function litres( string $s ): float {
+		if ( ! preg_match( '/(\d+(?:[.,]\d+)?)\s*(ml|cl|l)?/i', $s, $m ) ) {
+			return 0.0;
+		}
+		$n = (float) str_replace( ',', '.', $m[1] );
+		$u = strtolower( $m[2] ?? '' );
+		if ( 'ml' === $u || ( '' === $u && $n > 10 ) ) {
+			$n /= 1000;
+		} elseif ( 'cl' === $u ) {
+			$n /= 100;
+		}
+		return $n > 0 && $n < 30 ? $n : 0.0;
+	}
+
+	/** „0,70 l” za prikaz. */
+	public static function litres_label( float $l ): string {
+		return rtrim( rtrim( number_format( $l, 2, ',', '' ), '0' ), ',' ) . ' l';
+	}
+
+	/** Naslov rastavljen na marku i ostatak („AVELLANA” + „Lješnjak”). */
+	public static function title_parts( WC_Product $p ): array {
+		$name  = $p->get_name();
+		$marka = self::attr( $p, 'marka' );
+		if ( $marka && 0 === stripos( $name, $marka ) ) {
+			$rest = trim( substr( $name, strlen( $marka ) ), " \t-–·" );
+			return array( $marka, $rest );
+		}
+		return array( $name, '' );
+	}
+
+	/* ---------- oznake ---------- */
+
+	public static function badges( WC_Product $p ): array {
+		$m = self::meta( $p );
+		$b = array();
+		if ( $p->is_on_sale() ) {
+			$b['akcija'] = 'Akcija';
+		}
+		if ( $m['nagrade'] ) {
+			$b['nagradeno'] = 'Nagrađeno';
+		}
+		$days    = (int) self::settings()['novo_dana'];
+		$created = $p->get_date_created();
+		if ( $days > 0 && $created && $created->getTimestamp() > time() - $days * DAY_IN_SECONDS ) {
+			$b['novo'] = 'Novo';
+		}
+		if ( $m['omiljeno'] ) {
+			$b['omiljeno'] = 'Omiljeno';
+		}
+		return $b;
+	}
+
+	/* ---------- povijest cijene ---------- */
+
+	public static function remember_price( $p ): void {
+		if ( ! $p instanceof WC_Product || $p->is_type( 'variable' ) ) {
+			return;
+		}
+		$price = (float) $p->get_price();
+		if ( $price <= 0 ) {
+			return;
+		}
+		$h = $p->get_meta( '_dsp_cijene' );
+		$h = is_array( $h ) ? $h : array();
+		$d = current_time( 'Y-m-d' );
+		if ( end( $h ) === $price && isset( $h[ array_key_last( $h ) ] ) ) {
+			return;
+		}
+		$h[ $d ] = $price;
+		// čuvamo zadnjih 400 dana
+		$min = gmdate( 'Y-m-d', time() - 400 * DAY_IN_SECONDS );
+		$h   = array_filter( $h, function ( $k ) use ( $min ) { return $k >= $min; }, ARRAY_FILTER_USE_KEY );
+		ksort( $h );
+		update_post_meta( $p->get_id(), '_dsp_cijene', $h );
+	}
+
+	/** Najniža cijena u zadnjih 30 dana prije akcije (ili null ako nema podataka). */
+	public static function lowest_30( WC_Product $p ): ?float {
+		$h = $p->get_meta( '_dsp_cijene' );
+		$regular = (float) $p->get_regular_price();
+		if ( ! is_array( $h ) || ! $h ) {
+			return $regular > 0 ? $regular : null;
+		}
+		ksort( $h );
+		$from  = gmdate( 'Y-m-d', time() - 30 * DAY_IN_SECONDS );
+		$start = $p->get_date_on_sale_from() ? $p->get_date_on_sale_from()->date( 'Y-m-d' ) : current_time( 'Y-m-d' );
+		$vals  = array();
+		$prev  = null;
+		foreach ( $h as $d => $v ) {
+			if ( $d < $from ) {
+				$prev = (float) $v; // cijena koja je vrijedila na početku razdoblja
+				continue;
+			}
+			if ( $d < $start ) {
+				$vals[] = (float) $v;
+			}
+		}
+		if ( null !== $prev ) {
+			$vals[] = $prev;
+		}
+		if ( ! $vals && $regular > 0 ) {
+			$vals[] = $regular;
+		}
+		return $vals ? min( $vals ) : null;
+	}
+}

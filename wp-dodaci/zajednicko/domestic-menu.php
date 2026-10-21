@@ -32,10 +32,11 @@ if ( ! class_exists( 'Domestic_Menu' ) ) {
 			usort( self::$items, function ( $a, $b ) { return $a['order'] <=> $b['order']; } );
 			$first = self::$items[0];
 			add_menu_page( 'Domestic', 'Domestic', self::CAP, self::SLUG, $first['cb'], 'dashicons-store', 56 );
-			foreach ( self::$items as $i => $it ) {
-				// prva podstavka preuzima adresu glavnog izbornika, da nema dvostruke stavke „Domestic”
-				add_submenu_page( self::SLUG, $it['title'], $it['title'], $it['cap'], $i ? $it['slug'] : self::SLUG, $it['cb'] );
+			foreach ( self::$items as $it ) {
+				add_submenu_page( self::SLUG, $it['title'], $it['title'], $it['cap'], $it['slug'], $it['cb'] );
 			}
+			// bez dvostruke podstavke „Domestic” (glavna stavka otvara prvu podstavku); adrese podstavki ostaju stalne
+			remove_submenu_page( self::SLUG, self::SLUG );
 		}
 	}
 	add_action( 'admin_menu', array( 'Domestic_Menu', 'register' ), 9 );

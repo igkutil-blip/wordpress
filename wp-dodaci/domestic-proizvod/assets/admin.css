@@ -1,0 +1,24 @@
+/* Domestic – administracija */
+#woocommerce-product-data ul.wc-tabs li.domestic_options a::before{content:"\f513";font-family:dashicons}
+.dsp-admin .dsp-a-sec{padding:12px 16px;border-bottom:1px solid #eee}
+.dsp-admin .dsp-a-sec h4{margin:4px 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:#6e2a36}
+.dsp-admin .dsp-a-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:0 0 8px!important;padding:0!important}
+.dsp-admin .dsp-a-row label{float:none!important;margin:0!important;width:210px!important}
+.dsp-admin .dsp-a-row input[type=text],.dsp-admin .dsp-a-row textarea{flex:1;min-width:220px;float:none!important;width:auto!important}
+.dsp-admin .dsp-a-short{max-width:140px}
+.dsp-admin .dsp-a-help{color:#646970;font-size:12px;margin:6px 0 0!important;padding:0!important}
+.dsp-admin .dsp-a-switch{display:flex;align-items:center;gap:8px;float:none!important;width:auto!important;margin:0 0 6px!important}
+.dsp-admin .dsp-a-item{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px;margin-bottom:8px;padding:8px;background:#f9f6f1;border:1px solid #e6ddd0;border-radius:4px}
+.dsp-admin .dsp-a-item input[type=text]{flex:1;min-width:140px;width:auto!important;float:none!important}
+.dsp-admin .dsp-a-item select{float:none!important;width:auto!important}
+.dsp-admin .dsp-a-col{flex:1;display:flex;flex-direction:column;gap:6px;min-width:220px}
+.dsp-admin .dsp-a-col textarea,.dsp-admin .dsp-a-col input{width:100%!important}
+.dsp-admin .dsp-a-img{width:72px;height:72px;border:1px dashed #b9ab96;border-radius:4px;background:#fff;cursor:pointer;padding:2px;display:grid;place-items:center;color:#6e2a36;font-size:12px}
+.dsp-admin .dsp-a-img img{max-width:100%;max-height:100%;object-fit:contain}
+.dsp-admin .dsp-a-del{color:#b32d2e}
+.dsp-admin .dsp-a-ok{color:#2f6d4f;font-weight:600}
+.dsp-admin .dsp-a-no{color:#8c8f94}
+.dsp-admin .dsp-a-miss{color:#b32d2e}
+.dsp-a-table td{vertical-align:middle}
+.dsp-a-thumb img{width:48px;height:48px;object-fit:cover;border-radius:3px}
+.dsp-a-actions{white-space:nowrap}
