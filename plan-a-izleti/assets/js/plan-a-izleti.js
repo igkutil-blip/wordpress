@@ -407,109 +407,26 @@
 	}
 
 	/**
-	 * "Predloži ekipi". Poveznica je wa.me (radi i bez JavaScripta). Na mobitelu s
-	 * Web Share API-jem otvara se sustavni izbornik za dijeljenje, uz istaknutu
-	 * sliku ako uređaj podržava dijeljenje datoteka. Ako dijeljenje ne uspije
-	 * (osim kad ga korisnik sam odustane), otvara se wa.me.
+	 * "Predloži ekipi". Poveznica je wa.me s tekstom poruke (radi i bez JavaScripta).
+	 * "Pošalji u WhatsApp" uvijek otvara WhatsApp izravno: sustavni izbornik za
+	 * dijeljenje (slika + tekst) na dijelu Android mobitela nije ništa napravio.
+	 * Slika izleta se u WhatsAppu i dalje vidi kao pregled poveznice.
 	 */
-	var shareFiles = {};
-
 	function isMobile() {
 		return !! ( window.matchMedia && window.matchMedia( '(hover: none) and (pointer: coarse)' ).matches );
-	}
-
-	// Slika se počne preuzimati već pri dodiru, da bude spremna u trenutku klika.
-	function prefetchImage( link ) {
-		var src = link.getAttribute( 'data-paiz-share-image' );
-		if ( ! src || shareFiles[ src ] || ! window.fetch || ! window.File ) {
-			return src ? shareFiles[ src ] : null;
-		}
-		shareFiles[ src ] = window.fetch( src, { credentials: 'same-origin' } )
-			.then( function ( response ) {
-				if ( ! response.ok ) {
-					throw new Error( 'image' );
-				}
-				return response.blob();
-			} )
-			.then( function ( blob ) {
-				var type = blob.type || 'image/jpeg';
-				var name = ( src.split( '?' )[ 0 ].split( '/' ).pop() || 'izlet.jpg' ).replace( /[^\w.-]/g, '' ) || 'izlet.jpg';
-				return new window.File( [ blob ], name, { type: type } );
-			} )
-			.catch( function () {
-				return null;
-			} );
-		return shareFiles[ src ];
-	}
-
-	function withTimeout( promise, ms ) {
-		return Promise.race( [
-			promise,
-			new Promise( function ( resolve ) {
-				window.setTimeout( function () {
-					resolve( null );
-				}, ms );
-			} ),
-		] );
 	}
 
 	function openWhatsApp( link ) {
 		window.location.href = link.href;
 	}
 
-	// iPhone/iPad: uz sliku se tekst poruke može izgubiti, pa se dijeli samo tekst.
-	function isIOS() {
-		var ua = window.navigator.userAgent || '';
-		return /iphone|ipad|ipod/i.test( ua ) || ( 'MacIntel' === window.navigator.platform && window.navigator.maxTouchPoints > 1 );
-	}
-
-	/**
-	 * Dijeljenje na mobitelu:
-	 * - uređaj podržava dijeljenje datoteka: slika kartice izleta + tekst poruke s poveznicom,
-	 * - iPhone ili bez podrške za datoteke: samo tekst poruke s poveznicom,
-	 * - neuspjeh (osim kad korisnik odustane): wa.me s tekstom poruke.
-	 */
-	function share( link ) {
-		var title = link.getAttribute( 'data-paiz-share-title' ) || '';
-		var text = link.getAttribute( 'data-paiz-share-text' ) || '';
-		var url = link.getAttribute( 'data-paiz-share-url' ) || '';
-		var message = text + '\n' + url; // poveznica u tekstu: ne gubi se ni uz sliku
-		var pending = isIOS() ? Promise.resolve( null ) : ( prefetchImage( link ) || Promise.resolve( null ) );
-
-		withTimeout( pending, 2000 )
-			.then( function ( file ) {
-				if ( file && navigator.canShare && navigator.canShare( { files: [ file ] } ) ) {
-					return navigator.share( { title: title, text: message, files: [ file ] } );
-				}
-				return navigator.share( { text: message } );
-			} )
-			.catch( function ( error ) {
-				if ( ! error || 'AbortError' !== error.name ) {
-					openWhatsApp( link );
-				}
-			} );
-	}
-
 	function initShare() {
 		var selector = '[data-paiz-share]';
-		var canShare = !! navigator.share && isMobile();
 
-		if ( canShare && ! isIOS() ) {
-			var warm = function ( event ) {
-				var link = event.target.closest && event.target.closest( selector );
-				if ( link ) {
-					prefetchImage( link );
-				}
-			};
-			document.addEventListener( 'pointerdown', warm, { passive: true } );
-			document.addEventListener( 'focusin', warm );
-		}
-
-		// Dijeljenje kao i prije: mobitel = sustavni izbornik (slika + tekst, iPhone samo
-		// tekst), računalo = wa.me u novoj kartici. Poziva se izravno iz klika.
+		// Mobitel: ista kartica (aplikacija WhatsApp preuzme poveznicu), računalo: nova kartica.
 		function send( link ) {
-			if ( canShare ) {
-				share( link );
+			if ( isMobile() ) {
+				openWhatsApp( link );
 				return;
 			}
 			// Bez "noopener" u trećem argumentu: tada window.open uvijek vraća null.
@@ -528,17 +445,14 @@
 			}
 			if ( preview.wanted() ) {
 				event.preventDefault();
-				if ( canShare && ! isIOS() ) {
-					prefetchImage( link ); // slika spremna dok korisnik čita pregled
-				}
 				preview.open( link, send );
 				return;
 			}
-			if ( ! canShare ) {
-				return; // obična wa.me poveznica u novoj kartici
+			if ( isMobile() ) {
+				event.preventDefault();
+				openWhatsApp( link );
 			}
-			event.preventDefault();
-			share( link );
+			// računalo: obična wa.me poveznica u novoj kartici
 		} );
 	}
 

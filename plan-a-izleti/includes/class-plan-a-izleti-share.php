@@ -1,7 +1,6 @@
 <?php
 /**
- * "Predloži ekipi": dijeljenje izleta preko WhatsAppa (wa.me) ili sustavnog
- * izbornika za dijeljenje na mobitelu (Web Share API, vidi assets/js).
+ * "Predloži ekipi": dijeljenje izleta preko WhatsAppa (wa.me, vidi assets/js).
  *
  * Na stranici izleta gumb se ispisuje u bloku za rezervaciju: u predlošku "smart"
  * na kuki `ttbm_smart_registration_controls` (unutar kartice za rezervaciju, koju
