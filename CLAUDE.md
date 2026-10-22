@@ -99,4 +99,5 @@ račun – za povratak), novi `elly`/`lochlan.ns.cloudflare.com` upisani kod reg
 je besplatno). DNSSEC isključen (nema DS). Poslužitelj MyDataKnox cp064, IP **185.62.73.116**. Svi A zapisi → 185.62.73.116; Proxied samo
 root i www, ostalo (mail, ftp, cpanel, whm, webmail, webdisk, autoconfig, autodiscover, cpcalendars, cpcontacts, **proba**) DNS only.
 MX/SPF/DKIM/SRV uvezeni iz živog DNS-a. SSL/TLS = Full. cPanel Zone Editor se NE koristi (nije autoritativan).
-Probna kopija: proba.domesticspirits.hr (Softaculous klon) – nakon aktivacije zone pokrenuti AutoSSL u cPanelu.
+Probna kopija: proba.domesticspirits.hr (Softaculous klon) RADI od 22.10. 21 h: Let's Encrypt (AutoSSL), sve poveznice na proba (0 na živu),
+noindex/nofollow (Rank Math), REST /wp-json 200, nginx. Pristup iz sesije dopušten. Čeka: DS_PROBA_* (aplikacijska lozinka) za rad preko REST-a.
