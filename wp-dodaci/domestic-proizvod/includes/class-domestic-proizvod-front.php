@@ -491,6 +491,7 @@ final class Domestic_Proizvod_Front {
 		}
 		$d = self::dostava_placanje( $st, (string) $url );
 		$desno[] = self::section( 'dostava', 'Dostava i plaćanje', 'Cijene dostave, rok slanja i načini plaćanja', $d, true );
+		$nav['dostava'] = 'Dostava i plaćanje';
 
 		// Recenzije – WooCommerceov predložak
 		if ( comments_open( $p->get_id() ) && 'yes' === get_option( 'woocommerce_enable_reviews', 'yes' ) ) {

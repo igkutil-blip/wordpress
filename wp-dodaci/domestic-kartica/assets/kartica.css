@@ -75,7 +75,10 @@
 .dsk-ukupno{font-size:13px;color:#746a5f}
 .dsk-filter{position:relative}
 .dsk-filter+.dsk-filter{border-left:1px solid #e2d6c3}
-.dsk-filter>summary{list-style:none;display:flex;align-items:center;gap:10px;min-width:190px;height:56px;padding:0 14px 0 16px;cursor:pointer;user-select:none;border-radius:11px}
+.dsk-filter>summary{list-style:none;display:flex;align-items:center;gap:10px;min-width:190px;height:56px;padding:0 14px 0 16px;cursor:pointer;user-select:none;border-radius:0}
+.dsk-filter:first-child>summary{border-radius:11px 0 0 11px}
+.dsk-filter:last-child>summary{border-radius:0 11px 11px 0}
+.dsk-filter:only-child>summary{border-radius:11px}
 .dsk-filter>summary::-webkit-details-marker{display:none}
 .dsk-filter>summary:hover{background:#f3ece1}
 .dsk-filter[open]>summary{background:#f0e9de}
