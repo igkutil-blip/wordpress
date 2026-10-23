@@ -184,3 +184,61 @@ a.dsk-opcija:hover{background:#f0e9de}
 .dsk-zaglavlje .off-canvas .header-search-form .search-field{height:44px!important;border:0!important;background:transparent!important;box-shadow:none!important;padding:0 6px 0 18px!important;font:400 15px var(--ds-sans,inherit)!important}
 .dsk-zaglavlje .off-canvas .header-search-form .ux-search-submit{height:44px!important;width:48px;margin:0!important;border:0!important;background:transparent!important;color:#702833!important;box-shadow:none!important}
 .dsk-zaglavlje .mfp-close{color:#f7f3eb!important;opacity:1}
+
+/* ---------- gornja traka: tamna, krem tekst, zlatni kamion; mobitel jedan kratki redak ---------- */
+.dsk-zaglavlje #top-bar{background:#29231f!important;min-height:34px}
+.dsk-zaglavlje #top-bar .flex-row{min-height:34px}
+.dsk-zaglavlje #top-bar .nav>li>a,.dsk-zaglavlje #top-bar .nav>li{color:rgba(247,243,235,.82)!important;font:400 12px var(--ds-sans,inherit)!important;letter-spacing:.04em;text-transform:none}
+.dsk-zaglavlje #top-bar .nav>li>a:hover{color:#fff!important}
+.dsk-zaglavlje #top-bar .nav-divided>li+li>a:after{border-color:rgba(247,243,235,.25)}
+.dsk-traka{display:inline-flex;align-items:center;gap:8px;color:#f7f3eb;font:400 12.5px/1.3 var(--ds-sans,inherit);letter-spacing:.03em;text-transform:none}
+.dsk-traka svg{width:18px;height:18px;flex-shrink:0;fill:none;stroke:#ad8d53;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.dsk-traka-kratka{display:none}
+@media (max-width:849px){
+  .dsk-zaglavlje #top-bar,.dsk-zaglavlje #top-bar .flex-row{min-height:32px;height:32px}
+  .dsk-zaglavlje #top-bar .mobile-nav{justify-content:center}
+  .dsk-traka{font-size:12px;letter-spacing:.02em;white-space:nowrap}
+  .dsk-traka-duga{display:none}.dsk-traka-kratka{display:inline}
+}
+
+/* ---------- traka kategorija: krem, tanke crte, bordo + zlatni naglasak ---------- */
+.dsk-zaglavlje #wide-nav{background:#f7f3eb!important;border-top:1px solid #e2d6c3;border-bottom:1px solid #e2d6c3;min-height:48px}
+.dsk-zaglavlje #wide-nav .flex-row{min-height:48px}
+.dsk-zaglavlje #wide-nav .header-bottom-nav.nav-left{justify-content:center;width:100%;gap:6px}
+.dsk-zaglavlje #wide-nav .flex-col.flex-left{flex:1 1 100%;max-width:100%}
+.dsk-zaglavlje #wide-nav .flex-col.flex-right{display:none!important}
+.dsk-zaglavlje #wide-nav .header-bottom-nav.nav-left{flex-wrap:nowrap}
+.dsk-zaglavlje .header-main .top-divider{display:none}
+.dsk-zaglavlje #wide-nav .header-bottom-nav>li{margin:0}
+.dsk-zaglavlje #wide-nav .header-bottom-nav>li>a{position:relative;padding:15px 14px!important;color:#29231f!important;font:500 13px/1 var(--ds-sans,inherit)!important;letter-spacing:.12em}
+.dsk-zaglavlje #wide-nav .header-bottom-nav>li>a:after{content:'';position:absolute;left:14px;right:14px;bottom:8px;height:2px;background:#ad8d53;transform:scaleX(0);transition:transform .2s}
+.dsk-zaglavlje #wide-nav .header-bottom-nav>li>a:hover,.dsk-zaglavlje #wide-nav .header-bottom-nav>li.dsk-sad>a,.dsk-zaglavlje #wide-nav .header-bottom-nav>li.active>a{color:#702833!important}
+.dsk-zaglavlje #wide-nav .header-bottom-nav>li>a:hover:after,.dsk-zaglavlje #wide-nav .header-bottom-nav>li.dsk-sad>a:after,.dsk-zaglavlje #wide-nav .header-bottom-nav>li.active>a:after{transform:scaleX(1)}
+@media (prefers-reduced-motion:reduce){.dsk-zaglavlje #wide-nav .header-bottom-nav>li>a:after{transition:none}}
+/* mobitel: kategorije kao vodoravni niz tableta ispod zaglavlja */
+@media (max-width:849px){
+  .dsk-zaglavlje #wide-nav.hide-for-medium{display:block!important;min-height:0;border-top:0}
+  .dsk-zaglavlje #wide-nav .flex-row{min-height:0;padding:0!important}
+  .dsk-zaglavlje #wide-nav .flex-col.hide-for-medium.flex-left{display:block!important;width:100%;max-width:100%}
+  .dsk-zaglavlje #wide-nav .flex-col.flex-right{display:none!important}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav.nav-left{display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:8px;overflow-x:auto;padding:9px 15px!important;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav.nav-left::-webkit-scrollbar{display:none}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav>li{flex:0 0 auto}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav>li>a{padding:8px 13px!important;border:1px solid #d9cebc;border-radius:17px;background:#fbf8f3;font-size:12px!important;letter-spacing:.08em;white-space:nowrap}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav>li>a:after{display:none}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav>li.dsk-sad>a{background:#702833;border-color:#702833;color:#fff!important}
+}
+
+/* ---------- izbornik na mobitelu ---------- */
+.dsk-izb-vrh{padding:18px 20px 14px;border-bottom:1px solid #e2d6c3;margin-bottom:14px}
+.dsk-izb-vrh img{display:block;max-width:190px;height:auto}
+.dsk-zaglavlje .off-canvas .nav-sidebar>li.menu-item>a{display:flex!important;align-items:center;justify-content:space-between}
+.dsk-zaglavlje .off-canvas .nav-sidebar>li.menu-item:not(.has-child)>a:after{content:'';width:7px;height:7px;border-right:1.5px solid #ad8d53;border-top:1.5px solid #ad8d53;transform:rotate(45deg);margin-right:4px}
+.dsk-zaglavlje .off-canvas .nav-sidebar>li.dsk-sad>a{color:#702833!important;background:#f0e9de;box-shadow:inset 3px 0 0 #702833}
+.dsk-zaglavlje .off-canvas .nav-sidebar>li.account-item{margin-top:10px;border-top:1px solid #e2d6c3!important}
+.dsk-zaglavlje .off-canvas .nav-sidebar>li.account-item>a{font-weight:500!important;color:#702833!important}
+.dsk-izb-dno{padding:18px 22px 28px}
+.dsk-izb-veze{display:flex;flex-wrap:wrap;gap:6px 18px;margin-bottom:16px}
+.dsk-izb-veze a{font:400 14px var(--ds-sans,inherit);color:#5d544c!important}
+.dsk-izb-dostava{display:flex;align-items:flex-start;gap:10px;margin:0;padding:12px 14px;border-radius:8px;background:#f0e9de;font:400 13px/1.4 var(--ds-sans,inherit);color:#29231f}
+.dsk-izb-dostava svg{width:20px;height:20px;flex-shrink:0;fill:none;stroke:#ad8d53;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}

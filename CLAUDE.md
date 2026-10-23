@@ -143,6 +143,13 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     vrunsko, dugačije, đem, bariq, Ganitno→Granatno…), „sa”→„s” osim ispred s/z/š/ž/ps/ks/mn, „biti će”→„bit će”, °C, „% vol.”, razmaci.
     Podaci: oznake ujednačene (Naziv vina/likera→Naziv, NAPOMENA→Napomena, Temperatura posluživanja→serviranja), vrijednost velikim
     početnim slovom bez točke. Domestic → Tekstovi: uključi/isključi, vlastiti rječnik „pogrešno => ispravno”, pregled naziva prije/poslije.
+  - **domestic-kartica 0.5.0** (Igor: izbornik na mobitelu, siva traka kategorija, zlatna gornja traka): klasa `Domestic_Kartica_Zaglavlje`.
+    Gornja traka #29231F, krem tekst, zlatni kamion; filtar theme_mod_topbar_left: računalo = Flatsomeov tekst (bez velikih slova), mobitel =
+    postavka `traka_kratka` („Besplatna dostava iznad 60 € · Zagrebačka županija”) u jednom retku. Traka kategorija (#wide-nav, Flatsome
+    nav_position_bg #424242) → krem s crtama #e2d6c3, Jost 500 13 px razmak .12em, sredina, bordo + zlatna crta pri prelasku/trenutna (.dsk-sad
+    iz JS-a po putanji); na mobitelu prikazana (inače hide-for-medium) kao vodoravni niz tableta, trenutna bordo i pomaknuta u vidik.
+    Izbornik na mobitelu (JS u #main-menu): logo gore, strelice uz kategorije, trenutna s bordo crtom, Prijava odvojena, dolje poveznice iz
+    gornje trake (O nama, Blog, O shopu) + kartica dostave. top-divider skriven.
   - **domestic-kartica 0.4.1**: izbornik na mobitelu (Flatsome off-canvas) krem #f7f3eb, crte #e2d6c3, Jost 500, pretraga u njemu kao tableta;
     pretraga: riječ do 2 slova samo na početku riječi, usred riječi tek od 3 slova („av” 35 → 8 rezultata).
   - **domestic-kartica 0.4.0** (Igor: pretraga i košarica u zaglavlju, prijedlozi sa sličicama dok se tipka): klasa `Domestic_Kartica_Trazilica`

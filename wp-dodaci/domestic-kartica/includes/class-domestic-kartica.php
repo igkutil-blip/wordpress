@@ -75,7 +75,8 @@ final class Domestic_Kartica {
 			'stupci'     => 4,
 			'nedavno'    => 'yes',
 			'trazilica'  => 'yes', // prijedlozi pretrage i novo polje u zaglavlju
-			'zaglavlje'  => 'yes', // novi izgled pretrage i ikone košarice
+			'zaglavlje'  => 'yes', // novi izgled zaglavlja: gornja traka, kategorije, pretraga, košarica, izbornik na mobitelu
+			'traka_kratka' => 'Besplatna dostava iznad 60 € · Zagrebačka županija',
 		);
 	}
 
@@ -94,6 +95,7 @@ final class Domestic_Kartica {
 		add_action( 'wp_head', array( __CLASS__, 'preload' ), 2 );
 		Domestic_Kartica_Trgovina::init();
 		Domestic_Kartica_Trazilica::init();
+		Domestic_Kartica_Zaglavlje::init();
 	}
 
 	/* ---------- fontovi: Marcellus (naslovi, cijene) + Jost (tekst), lokalno, s hrvatskim slovima ---------- */
