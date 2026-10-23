@@ -6,6 +6,15 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
 - Ništa iz Plan A projekta (dodaci, pravila, stranice srd-plan-a.hr) ne vrijedi ovdje, osim ako Igor to izričito kaže.
 - Promjene za Domestic Spirit idu samo u ovu granu.
 
+## ⛔ ADRESE SE NE MIJENJAJU – STROGO ZABRANJENO (Igor 23.10.2026., SEO godinama gradi)
+
+- Sve adrese ostaju iste: proizvodi (`/proizvod/<slug>/`), kategorije, stranice, blog, **i adrese slika** (`/wp-content/uploads/…`).
+  Ne mijenjati slugove, permalinke, nazive datoteka slika ni strukturu stalnih veza.
+- Slike (logotipi, proizvodi): stari naziv datoteke, naslov i alt tekst **ostaju**. Nova slika se postavlja **zamjenom datoteke na istoj
+  adresi** (pomoćnik `POST domestic-pomocnik/v1/medij/<id>`, polje `datoteka`, isti format), ne novim prilogom.
+- Nove adrese smiju nastati samo za nove stvari (npr. `/age-verification/callback`). Kod prijenosa na živu: nakon zamjene slika očistiti
+  Cloudflare predmemoriju (root i www su Proxied).
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,
@@ -52,8 +61,11 @@ briga o radu shopa, mjesečni izvještaj (posjetitelji → košarica → kupnja)
 
 ## Logotipi i boje (Igor 23.10.2026.)
 
-`identitet/` = očišćeni logotipi + README gdje koji ide (Flatsome `site_logo`/`site_logo_dark`, `logo_width` 300, ikona stranice,
-mail, Rank Math). Službene boje: tamna #29231F, zlatna #AD8D53, krem #F7F3EB, bordo #702833. Na probi postavljeno 23.10.
+`identitet/` = očišćeni logotipi + README gdje koji ide. Na probi (23.10.) novi logotipi su upisani **u stare datoteke** (iste adrese):
+prilog 4047 `2025/03/Why-We-Do-This-Photoroom.png` = logo zaglavlja (Flatsome `site_logo`, `logo_width` 300, ujedno slika u mailovima),
+3653 `2024/03/domestic-spirits-logo.jpg` = logo na kremi 1200×201 (Flatsome `site_logo_dark`, Rank Math slika za dijeljenje i logo organizacije),
+3766 `2024/11/cropped-domestic-spirits.png` = ikona stranice (+ 32/180/192/270). Novi prilozi 4871–4876 obrisani.
+Službene boje: tamna #29231F, zlatna #AD8D53, krem #F7F3EB, bordo #702833.
 Napomena za Igora: Rank Math „sameAs” Facebook pokazuje na facebook.com/primores.hr (vjerojatno pogrešno).
 
 ## Izdanja: proba i živa (Igor 23.10.2026.)
@@ -99,7 +111,7 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     Mailovi zadržani (`pre_wp_mail`, zadnjih 50 u `domestic_pomocnik_mailovi`) ili preusmjereni na jednu adresu „[PROBA → primatelj]”;
     noindex + blog_public 0; crvena traka „PROBNA KOPIJA”. REST `domestic-pomocnik/v1` (install_plugins): GET status, POST plugin
     (multipart `zip` s jednom mapom domestic-*, `activate=1`, zamjenjuje postojeću), GET/POST `opcija/domestic_*` ({"vrijednost"} ili {"spoji"}),
-    GET mailovi; 0.2.0: GET/POST `tema` (theme mods, skalarne), opcije i `rank-math-options-titles|general`, `woocommerce_email_header_image`.
+    GET mailovi; 0.3.0: POST `medij/<id>` (zamjena datoteke slike na istoj adresi, izvedenice i site-icon veličine); 0.2.0: GET/POST `tema` (theme mods, skalarne), opcije i `rank-math-options-titles|general`, `woocommerce_email_header_image`.
     Domestic → Pomoćnik (proba). Igor ga jednom ručno učita; dalje sve dodatke učitavam sam.
   - **domestic-provjera-dobi 0.1.0** (23.10.2026.): provjera punoljetnosti preko e-Građana/mGrađana (čl. 11.a). Domestic → Provjera dobi
     (opcija `domestic_provjera_dobi`: uključeno, okruženje test/prod, client_id + issuer/authorize/token/jwks po okruženju – zadano iz

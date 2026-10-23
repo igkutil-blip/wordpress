@@ -104,6 +104,7 @@ final class Domestic_Pomocnik {
 			array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'tema_citaj' ), 'permission_callback' => $perm ),
 			array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'tema_pisi' ), 'permission_callback' => $perm ),
 		) );
+		register_rest_route( self::NS, '/medij/(?P<id>\\d+)', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'medij' ), 'permission_callback' => $perm ) );
 		register_rest_route( self::NS, '/mailovi', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'mailovi' ), 'permission_callback' => $perm ) );
 	}
 
@@ -233,6 +234,49 @@ final class Domestic_Pomocnik {
 			}
 		}
 		return self::tema_citaj();
+	}
+
+	/**
+	 * Zamjena datoteke postojeće slike NA ISTOJ ADRESI (SEO: adresa, naziv datoteke, naslov i alt ostaju).
+	 * Multipart polje „datoteka”; ekstenzija mora biti ista kao postojeća. Stare izvedenice se brišu i ponovno izrađuju.
+	 */
+	public static function medij( WP_REST_Request $req ) {
+		$id   = (int) $req['id'];
+		$put  = get_attached_file( $id );
+		$f    = $req->get_file_params()['datoteka'] ?? null;
+		if ( ! $put || 'attachment' !== get_post_type( $id ) || ! wp_attachment_is_image( $id ) ) {
+			return new WP_Error( 'dspm_medij', 'Nema slike s tim ID-om.', array( 'status' => 404 ) );
+		}
+		if ( ! $f || UPLOAD_ERR_OK !== ( $f['error'] ?? 1 ) || ! is_uploaded_file( $f['tmp_name'] ) ) {
+			return new WP_Error( 'dspm_medij', 'Nedostaje datoteka (polje „datoteka”).', array( 'status' => 400 ) );
+		}
+		$stara = strtolower( pathinfo( $put, PATHINFO_EXTENSION ) );
+		$nova  = wp_check_filetype_and_ext( $f['tmp_name'], 'x.' . $stara );
+		if ( empty( $nova['type'] ) || strtolower( (string) $nova['ext'] ) !== $stara ) {
+			return new WP_Error( 'dspm_medij', 'Nova slika mora biti istog formata (.' . $stara . ') da adresa ostane ista.', array( 'status' => 400 ) );
+		}
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+		$meta = wp_get_attachment_metadata( $id );
+		$dir  = trailingslashit( dirname( $put ) );
+		foreach ( (array) ( $meta['sizes'] ?? array() ) as $v ) {
+			if ( ! empty( $v['file'] ) && file_exists( $dir . $v['file'] ) ) {
+				wp_delete_file( $dir . $v['file'] );
+			}
+		}
+		if ( ! empty( $meta['original_image'] ) && file_exists( $dir . $meta['original_image'] ) ) {
+			wp_delete_file( $dir . $meta['original_image'] );
+		}
+		if ( ! move_uploaded_file( $f['tmp_name'], $put ) ) {
+			return new WP_Error( 'dspm_medij', 'Spremanje datoteke nije uspjelo.', array( 'status' => 500 ) );
+		}
+		if ( 'site-icon' === get_post_meta( $id, '_wp_attachment_context', true ) ) {
+			require_once ABSPATH . 'wp-admin/includes/class-wp-site-icon.php';
+			add_filter( 'intermediate_image_sizes_advanced', array( new WP_Site_Icon(), 'additional_sizes' ) ); // 32, 180, 192, 270
+		}
+		$nm = wp_generate_attachment_metadata( $id, $put );
+		wp_update_attachment_metadata( $id, $nm );
+		clean_post_cache( $id );
+		return array( 'id' => $id, 'url' => wp_get_attachment_url( $id ), 'sirina' => $nm['width'] ?? null, 'visina' => $nm['height'] ?? null, 'velicine' => array_keys( (array) ( $nm['sizes'] ?? array() ) ) );
 	}
 
 	public static function mailovi(): array {
