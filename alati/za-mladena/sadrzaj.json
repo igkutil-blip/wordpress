@@ -1,0 +1,429 @@
+{
+ "naslov": "Likeri i rakije – pitanja za provjeru",
+ "podnaslov": "Postavljanje proizvoda na novi web domesticspirits.hr · listopad 2026.",
+ "uvod": [
+  "Pri postavljanju novih fotografija i opisa za likere i rakije zabilježili smo podatke koje trebate potvrditi ili ispraviti. Sva pitanja odnose se samo na proizvode.",
+  "U stupac „Vaš odgovor” upišite potvrdu (npr. „da”, „točno”) ili ispravak. Ako nešto nedostaje, na kraju dokumenta je tablica za vaše dodatne stavke."
+ ],
+ "odjeljci": [
+  {
+   "naslov": "1. Medalje i nagrade",
+   "uvod": "U opisima se spominju medalje za koje na webu nema slike medalje ili diplome. Ako imate slike, pošaljite ih – dodat ćemo ih u galeriju proizvoda.",
+   "stupci": [
+    "Proizvod",
+    "Pitanje"
+   ],
+   "redovi": [
+    [
+     "BOGATI Medica 0,20 l, 0,70 l i 1 l",
+     "Opis kaže: srebrna medalja na 8. CROSPIRIT-u 2026. Je li godina točna? Imate li sliku medalje?"
+    ],
+    [
+     "BOGATI Teranino 0,20 l i 0,70 l",
+     "Opis kaže: zlatna medalja na 8. CROSPIRIT-u 2026. Na webu postoji neiskorištena značka „CroSpirit Gold 2023.” – pripada li Teraninu? Koja je godina točna?"
+    ],
+    [
+     "San MONTANO Biska 0,70 l",
+     "Opis spominje srebrnu medalju na 8. CROSPIRIT-u. Koje godine? Imate li sliku medalje?"
+    ],
+    [
+     "San MONTANO Smokva 0,70 l",
+     "Opis spominje srebrnu medalju na 8. CROSPIRIT-u. Koje godine? Imate li sliku medalje?"
+    ],
+    [
+     "STRAVA 1 l",
+     "Opis spominje srebro na CROSPIRIT-u 28. 10. 2025. Imate li sliku medalje?"
+    ],
+    [
+     "TERROAR Viljamovka 0,70 l",
+     "Srebro na 7. CROSPIRIT-u (28. 10. 2025.). Imate li sliku medalje?"
+    ],
+    [
+     "TERROAR Šljivovica 0,70 l",
+     "Srebro na 8. CROSPIRIT-u (2026.). Imate li sliku medalje?"
+    ],
+    [
+     "TERROAR Marelica 0,70 l",
+     "Zlato na 8. CROSPIRIT-u (2026.). Imate li sliku medalje?"
+    ]
+   ]
+  },
+  {
+   "naslov": "2. Skriveni proizvodi",
+   "uvod": "Ovi proizvodi postoje u trgovini, ali kupci ih ne vide. Nove fotografije su im već postavljene – status nismo mijenjali.",
+   "stupci": [
+    "Proizvod",
+    "Pitanje"
+   ],
+   "redovi": [
+    [
+     "STRAVA glava 0,38 l (13 €) i 0,10 l (6 €)",
+     "Skriveni su od 5. 12. 2025., a vode se kao da su na stanju. Na stranici glave 0,75 l prikazani su u izboru zapremnine kao „Rasprodano”. Prodaju li se još? Ako da, objavit ćemo ih."
+    ],
+    [
+     "BOGATI Čokolada 1 l",
+     "Skrivena; na stranici Čokolade 0,70 l prikazana je kao „Rasprodano”. Prodaje li se još?"
+    ],
+    [
+     "Šokac Divlja kruška 0,70 l",
+     "Skrivena. Prodaje li se još? Ako da, objavit ćemo je."
+    ],
+    [
+     "STRAVA glava 0,75 l – stara stranica",
+     "Osim stranice u trgovini postoji i starija stranica istog proizvoda (adresa …/strava-glava-primores/), skrivena iz popisa proizvoda. Treba li je zadržati (npr. zbog starih poveznica) ili je možemo isključiti?"
+    ]
+   ]
+  },
+  {
+   "naslov": "3. Podaci u opisima",
+   "uvod": "Podaci koji se u opisu ne slažu s etiketom ili nedostaju.",
+   "stupci": [
+    "Proizvod",
+    "Pitanje"
+   ],
+   "redovi": [
+    [
+     "Patrik Travarica 0,20 l",
+     "U opisu piše „Vrsta: Liker”, a na etiketi „specijalna rakija travarica”. Može li vrsta biti „Rakija (travarica)”?"
+    ],
+    [
+     "TRAVA specijalna rakija 0,50 l",
+     "Na etiketi piše TRAVARICA, a proizvod se u trgovini zove TRAVA – koji je ispravan naziv? Kao proizvođač upisana je cijela rečenica („Za Domestic Spirits d.o.o. proizvodi i puni Patrik obrt”) – može li samo „Patrik obrt”?"
+    ],
+    [
+     "Vinovica prirodna rakija od vina 0,70 l",
+     "Je li ispravan naziv „Vinovica prirodna rakija od vina 0,70 l”? (u trgovini je upisan s crticama)"
+    ],
+    [
+     "Patrik Hawk's Gin 0,50 l i Patrik Navy Strength Dry Gin 0,50 l",
+     "Nedostaje EAN kod. U opisu stoji naslov „Primjeri koktela s ginom” bez koktela – dopisati koktele ili ukloniti naslov?"
+    ],
+    [
+     "Gothic Vodka Premium 0,70 l",
+     "Opis je napisan kao popis podataka. Smijemo li ga urediti kao kod ostalih proizvoda (tekst + tablica podataka)?"
+    ]
+   ]
+  },
+  {
+   "naslov": "4. Temperatura serviranja",
+   "uvod": "Temperature koje treba potvrditi.",
+   "stupci": [
+    "Proizvod",
+    "Pitanje"
+   ],
+   "redovi": [
+    [
+     "San MONTANO Teranino 0,70 l i 1,50 l Limited",
+     "U opisu piše 5 °C. Je li to točno za Teranino?"
+    ],
+    [
+     "San MONTANO Biska 0,70 l",
+     "Na kartici posluživanja upisano je 8–10 °C (uobičajeno za bisku, nije vaš podatak). Potvrđujete li?"
+    ],
+    [
+     "Šokac Divlja kruška 0,70 l",
+     "U trgovini piše „dobro ohlađeno”, a proizvođač na svojoj stranici preporučuje sobnu temperaturu. Što da piše?"
+    ]
+   ]
+  },
+  {
+   "naslov": "5. Kako poslužiti – načini i količine",
+   "uvod": "Na svakoj stranici proizvoda nalazi se kartica „Kako poslužiti” s tri načina posluživanja i količinom pića po porciji. Načini su većinom iz vaših opisa, a količine su naš prijedlog. Molimo potvrdite ili ispravite (proizvodi s istom karticom su zajedno).",
+   "stupci": [
+    "Proizvodi",
+    "Na stranici piše"
+   ],
+   "posluzivanje": [
+    {
+     "proizvodi": [
+      "AVELLANA Liker od lješnjaka 0,20 l",
+      "AVELLANA Liker od lješnjaka 0,70 l",
+      "AVELLANA Liker od lješnjaka 1 l"
+     ],
+     "stavke": [
+      "U čašici – 0,05 l: Samostalno posluživanje",
+      "U kavici – 0,03 l: Kao dodatak kavi",
+      "U slastici – 0,10 l: Kao sastojak slastice"
+     ]
+    },
+    {
+     "proizvodi": [
+      "AVELLANA Premium 0,70 l"
+     ],
+     "stavke": [
+      "Na ledu – 0,03 l: Prelijte preko jedne veće kocke leda.",
+      "Espresso koktel – 0,015 l: + 0,045 l votke, + 0,045 l espressa, + 0,0075 l šećernog sirupa. Protresite s ledom i procijedite.",
+      "Sladoled s kavom – 0,02 l: 2 kuglice sladoleda od vanilije + 1 espresso. Prelijte likerom i kavom."
+     ]
+    },
+    {
+     "proizvodi": [
+      "BOGATI Karamela 1 l"
+     ],
+     "stavke": [
+      "Na ledu – 0,03 l: Poslužite u niskoj čaši s jednom kockom leda.",
+      "Uz espresso – 0,02 l: Dodajte jednom espressu za notu karamele.",
+      "Uz sladoled – 0,02 l: Prelijte preko sladoleda od vanilije."
+     ]
+    },
+    {
+     "proizvodi": [
+      "BOGATI Medica 0,20 l",
+      "BOGATI Medica 0,70 l",
+      "BOGATI Medica 1 l"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: Mala čašica prije obroka.",
+      "Uz slasticu – 0,03 l: Poslužite uz medenjake ili suhe kolače.",
+      "Kao digestiv – 0,03 l: Mala čašica nakon obroka."
+     ]
+    },
+    {
+     "proizvodi": [
+      "BOGATI Orahovac 0,20 l",
+      "BOGATI Orahovac 1 l"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: Mala čašica prije obroka.",
+      "Uz slasticu – 0,03 l: Poslužite uz kolač od oraha.",
+      "Kao digestiv – 0,03 l: Mala čašica nakon obroka."
+     ]
+    },
+    {
+     "proizvodi": [
+      "BOGATI Ruža 1 l"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: U maloj čašici, prije obroka.",
+      "Uz slasticu – 0,03 l: U čašici uz lagani desert.",
+      "Uz pjenušac – 0,02 l: Dodajte suhom pjenušcu."
+     ]
+    },
+    {
+     "proizvodi": [
+      "BOGATI Teranino 0,20 l",
+      "BOGATI Teranino 0,70 l",
+      "BOGATI Vanilija 1 l",
+      "BOGATI Višnjevac 0,20 l",
+      "BOGATI Višnjevac 0,70 l",
+      "BOGATI Višnjevac 1 l",
+      "Patrik Borovnica 1 l",
+      "Promex Borovnica 1 l",
+      "Golfer liker 0,70 l (skriven)"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: U maloj čašici, prije obroka.",
+      "Uz slasticu – 0,03 l: U čašici uz omiljeni desert.",
+      "S ledom – 0,03 l: Prelijte preko kocke leda."
+     ]
+    },
+    {
+     "proizvodi": [
+      "BOGATI Čokolada 0,70 l",
+      "BOGATI Čokolada 1 l (skriven)"
+     ],
+     "stavke": [
+      "U čašici – 0,03 l: Samostalno posluživanje kao aperitiv.",
+      "Na ledu – 0,03 l: Prelijte preko jedne veće kocke leda.",
+      "Uz sladoled – 0,02 l: Prelijte preko sladoleda od vanilije."
+     ]
+    },
+    {
+     "proizvodi": [
+      "San MONTANO Biska 0,70 l"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: U maloj čašici, prije obroka.",
+      "Kao digestiv – 0,03 l: U maloj čašici, nakon obroka.",
+      "S ledom – 0,03 l: Poslužite s jednom kockicom leda."
+     ]
+    },
+    {
+     "proizvodi": [
+      "San MONTANO Smokva 0,70 l"
+     ],
+     "stavke": [
+      "Samostalno – 0,03 l: Piti dobro rashlađen.",
+      "Uz slastice – 0,03 l: Poslužite čašicu uz voćni desert.",
+      "U slastici – 0,02 l: Kao dodatak kremi ili voćnom preljevu."
+     ]
+    },
+    {
+     "proizvodi": [
+      "San MONTANO Teranino 0,70 l",
+      "San MONTANO Teranino 1,50 l Limited"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: U maloj čašici, prije obroka.",
+      "Uz slastice – 0,03 l: Poslužite čašicu uz desert.",
+      "Za kušanje – 0,02 l: Čaša za destilate, pijuckajte polako."
+     ]
+    },
+    {
+     "proizvodi": [
+      "STRAVA 0,10 l"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: U maloj čašici, prije obroka.",
+      "Kao digestiv – 0,03 l: U maloj čašici, nakon obroka.",
+      "U hladnoj čašici – 0,03 l: Čašicu rashladite prije posluživanja."
+     ]
+    },
+    {
+     "proizvodi": [
+      "STRAVA 1 l",
+      "STRAVA glava 0,10 l (skriven)",
+      "STRAVA glava 0,38 l (skriven)",
+      "STRAVA glava 0,75 l"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: U maloj čašici, prije obroka.",
+      "Kao digestiv – 0,03 l: U maloj čašici, nakon obroka.",
+      "U hladnoj čašici – 0,03 l: Praznu čašicu stavite u škrinju 10 minuta."
+     ]
+    },
+    {
+     "proizvodi": [
+      "TERROAR Dunja 0,70 l",
+      "TERROAR Marelica 0,70 l",
+      "TERROAR Viljamovka 0,70 l",
+      "TERROAR Šljivovica 0,70 l",
+      "Patrik Loza Muškatna 0,70 l",
+      "Patrik Viljamovka 0,20 l",
+      "Patrik Viljamovka sa zlatnim listićima 0,70 l",
+      "Šokac Divlja kruška 0,70 l (skriven)"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: U maloj čašici, prije obroka.",
+      "Kao digestiv – 0,03 l: U maloj čašici, nakon obroka.",
+      "Za kušanje – 0,02 l: Čaša za destilate, pijuckajte polako."
+     ]
+    },
+    {
+     "proizvodi": [
+      "TRAVA specijalna rakija 0,50 l",
+      "Patrik Travarica 0,20 l",
+      "Patrik Šljivovica 0,20 l"
+     ],
+     "stavke": [
+      "Kao digestiv – 0,03 l: U maloj čašici, nakon obroka.",
+      "Kao aperitiv – 0,03 l: U maloj čašici, prije obroka.",
+      "Za kušanje – 0,02 l: Čaša za destilate, pijuckajte polako."
+     ]
+    },
+    {
+     "proizvodi": [
+      "Patrik Hawk's Gin 0,50 l",
+      "Driver's Holiday Gin 0,70 l (skriven)",
+      "Gin Gavran Raven's 23 0,70 l"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: Rashlađen, u maloj čašici.",
+      "S tonikom – 0,05 l: 100 ml tonika, led i kriška limete.",
+      "Gin Fizz – 0,045 l: 30 ml limuna, 10 ml šećernog sirupa, soda."
+     ]
+    },
+    {
+     "proizvodi": [
+      "Patrik Limoncello 0,50 l"
+     ],
+     "stavke": [
+      "Samostalno – 0,03 l: Dobro rashlađen, u maloj čašici.",
+      "Uz slastice – 0,03 l: U čašici uz lagani desert.",
+      "Limoncello Spritz – 0,04 l: 60 ml rosé pjenušca, soda, led i limun."
+     ]
+    },
+    {
+     "proizvodi": [
+      "Patrik Mix likeri 4 × 0,05 l"
+     ],
+     "stavke": [
+      "U čašici – 0,03 l: Jedan okus bez dodataka.",
+      "Kušanje – 0,01 l: Po okusu, u zasebnoj čašici.",
+      "Uz slasticu – 0,03 l: Odabrani liker u čašici uz desert."
+     ]
+    },
+    {
+     "proizvodi": [
+      "Patrik Mix rakija 4 × 0,05 l"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: Odabrana rakija prije obroka.",
+      "Kušanje – 0,01 l: Po okusu, u zasebnoj čašici.",
+      "Kao digestiv – 0,03 l: Odabrana rakija nakon obroka."
+     ]
+    },
+    {
+     "proizvodi": [
+      "Patrik Navy Strength Dry Gin 0,50 l"
+     ],
+     "stavke": [
+      "S tonikom – 0,03 l: 90 ml tonika, led, đumbir i list limete.",
+      "Gimlet – 0,04 l: 20 ml sirupa od limete, rashlađena čaša.",
+      "Ginger Mule – 0,03 l: 15 ml soka limete, đumbirovo pivo."
+     ]
+    },
+    {
+     "proizvodi": [
+      "Promex Brusnica 1 l"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: U maloj čašici, prije obroka.",
+      "Uz divljač – 0,03 l: Kao pratnja jelima od divljači.",
+      "Za kušanje – 0,02 l: Čaša za destilate, pijuckajte polako."
+     ]
+    },
+    {
+     "proizvodi": [
+      "Promex Medica 1 l"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: U maloj čašici, prije obroka.",
+      "Uz slastice – 0,03 l: Čašica likera uz desert.",
+      "Za kušanje – 0,02 l: Čaša za destilate, pijuckajte polako."
+     ]
+    },
+    {
+     "proizvodi": [
+      "Promex Pelin 1 l"
+     ],
+     "stavke": [
+      "Kao aperitiv – 0,03 l: U maloj čašici, prije obroka.",
+      "Kao digestiv – 0,03 l: U maloj čašici, nakon obroka.",
+      "S tonikom – 0,03 l: Dodajte 0,09 l tonika, led i krišku limuna."
+     ]
+    },
+    {
+     "proizvodi": [
+      "Good Spirit Kova 0,70 l"
+     ],
+     "stavke": [
+      "Samostalno – 0,03 l: U maloj čašici, bez dodataka.",
+      "Uz slasticu – 0,03 l: U čašici uz čokoladni desert.",
+      "U koktelu – 0,03 l: Espresso Martini: uz votku i espresso."
+     ]
+    },
+    {
+     "proizvodi": [
+      "Gothic Vodka Premium 0,70 l"
+     ],
+     "stavke": [
+      "Samostalno – 0,03 l: Rashlađena, u maloj čašici.",
+      "S ledom – 0,03 l: Poslužite preko kocke leda.",
+      "Moscow Mule – 0,045 l: 120 ml đumbirova piva, 10 ml soka limete."
+     ]
+    },
+    {
+     "proizvodi": [
+      "Vinovica prirodna rakija od vina 0,70 l"
+     ],
+     "stavke": [
+      "Kao digestiv – 0,03 l: U maloj čašici, nakon obroka.",
+      "Uz slavonska jela – 0,03 l: Uz sir ili tradicionalne mesne specijalitete.",
+      "Za kušanje – 0,02 l: Čaša za destilate, pijuckajte polako."
+     ]
+    }
+   ]
+  }
+ ]
+}
