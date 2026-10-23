@@ -103,6 +103,11 @@ prilog 4047 `2025/03/Why-We-Do-This-Photoroom.png` = logo zaglavlja (Flatsome `s
 Službene boje: tamna #29231F, zlatna #AD8D53, krem #F7F3EB, bordo #702833.
 Napomena za Igora: Rank Math „sameAs” Facebook pokazuje na facebook.com/primores.hr (vjerojatno pogrešno).
 
+## Za provjeru s Mladenom (Igor 23.10.2026.)
+
+Sve nejasnoće s proizvoda (medalje bez slike, godine, autorske količine posluživanja, podaci iz bloga) upisivati u `izdanja/ZA-PROVJERU.md`
+– Igor na kraju obrade svih proizvoda traži popis za provjeru.
+
 ## Izdanja: proba i živa (Igor 23.10.2026.)
 
 `izdanja/proba/` = zipovi trenutno na proba.domesticspirits.hr (+ STANJE.md), `izdanja/ziva/` = odobreni i instalirani na živoj (+ STANJE.md),
