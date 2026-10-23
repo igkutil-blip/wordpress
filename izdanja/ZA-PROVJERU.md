@@ -86,6 +86,12 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 - **TRAVA**: na etiketi piše TRAVARICA (Patrik), a proizvod se zove TRAVA; polje „Proizvođač” je cijela rečenica i prikazuje se kao marka iznad
   naslova („Za Domestic Spirits d.o.o. proizvodi i puni „Patrik obrt””) – skratiti na „Patrik obrt”?
 
+### Vinovica prirodna rakija od vina 0,70 l (3159) – 23.10.2026.
+- **Posluživanje**: Kao digestiv 0,03 l, Uz slavonska jela 0,03 l (sir, mesni specijaliteti – iz opisa), Za kušanje 0,02 l – količine prijedlozi.
+- Naziv u bazi „Vinovica-prirodna-rakija-070L” – na stranici se prikazuje „Vinovica prirodna rakija od vina” (rječnik u Domestic → Tekstovi).
+  Bolje ispraviti i u bazi (slug ostaje). SEO naslov (Rank Math) i dalje „… 0,70L”.
+- Opis: retci prelomljeni usred rečenice (svaki redak poseban odlomak) – urediti.
+
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
   temperatura „Po želji” su sa stranice proizvoda.

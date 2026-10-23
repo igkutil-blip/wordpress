@@ -108,6 +108,9 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   studio+posl 5142–5149, ikone Šokca 5101–5103 (ista kartica). Grupne **1978 `terroar-skupna-1.jpg` i 1979 `-2.jpg`** (iste u sva 4 paketa, zajedničke
   svim TERROAR-ima + 1979 u „TERROAR Premium” 2360) zamijenjene JEDNOM (uvoz Viljamovke), ostali `dodatne: false`; alt grupnih ručno (dodatak
   bi upisao naziv jednog proizvoda). Ključ ikone `led` ne postoji (casa, kava, kolac, tanjur, riba, sir, koktel) – ilustracija ga pokriva.
+- (23.10.) **Vinovica prirodna rakija od vina 0,70 l** (3159): 3165 ambijent, 5150, 5151, 3166 stražnja zamijenjena (alt ručno), ikone Promex Brusnice
+  5137–5139 (ista mjesta: čaša, tanjur, čaša za destilate). Naziv u bazi „Vinovica-prirodna-rakija-070L” → na probi opcija `domestic_tekst.rjecnik`
+  „Vinovica-prirodna-rakija-070L => Vinovica prirodna rakija od vina 0,70 l” (samo prikaz; **prenijeti i na živu**).
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
