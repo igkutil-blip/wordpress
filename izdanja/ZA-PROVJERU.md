@@ -80,6 +80,12 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 - **Teranino 0,70 l**: temperatura „5 C” (kao Limited) – potvrditi 5 °C.
 - **Promex Brusnica 1 l** (1105): Kao aperitiv 0,03 l, Uz divljač 0,03 l, Za kušanje 0,02 l – količine prijedlozi; „u rashlađenim čašama” iz opisa.
 
+### TRAVA specijalna rakija 0,50 l (834) i TERROAR Viljamovka, Šljivovica, Marelica, Dunja 0,70 l – 23.10.2026.
+- **Posluživanje**: aperitiv 0,03 l, digestiv 0,03 l, kušanje 0,02 l – količine prijedlozi; „Poslužiti ohlađeno” / „dobro ohlađeno” iz opisa.
+- **Medalje bez slike**: Viljamovka srebro 7. CROSPIRIT (28.10.2025.), Šljivovica srebro i **Marelica zlato** 8. CROSPIRIT (2026.).
+- **TRAVA**: na etiketi piše TRAVARICA (Patrik), a proizvod se zove TRAVA; polje „Proizvođač” je cijela rečenica i prikazuje se kao marka iznad
+  naslova („Za Domestic Spirits d.o.o. proizvodi i puni „Patrik obrt””) – skratiti na „Patrik obrt”?
+
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
   temperatura „Po želji” su sa stranice proizvoda.

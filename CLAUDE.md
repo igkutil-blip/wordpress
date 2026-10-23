@@ -103,6 +103,11 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   (S tonikom = čaša s limunom); **San MONTANO Biska** (739): 740 PNG, 5123, 5124, ikone 5125–5127 (S ledom); **Smokva** (718): 729 PNG, 5128, 5129,
   ikone 5130–5132; **Teranino 0,70 l** (717): 732 PNG, 5133, 5134, ikone Teranina Limited 5096–5098 (ista kartica). Glavne slike nisu dijeljene.
 - (23.10.) **Promex Brusnica 1 l** (1105): 1106 PNG, 5135, 5136, ikone 5137–5139 (čaša, tanjur „Uz divljač”, čaša za destilate).
+- (23.10.) **TRAVA specijalna rakija 0,50 l** (834, slug primores-travarica): 2612, 5140, 5141, ikone Patrik Travarice 5090–5092 (ista kartica).
+  **TERROAR Viljamovka/Šljivovica/Marelica/Dunja 0,70 l** (1985/1982/1984/1983): glavne 1981/1980/1977/1976 (koriste ih i poklon paketi – ista boca),
+  studio+posl 5142–5149, ikone Šokca 5101–5103 (ista kartica). Grupne **1978 `terroar-skupna-1.jpg` i 1979 `-2.jpg`** (iste u sva 4 paketa, zajedničke
+  svim TERROAR-ima + 1979 u „TERROAR Premium” 2360) zamijenjene JEDNOM (uvoz Viljamovke), ostali `dodatne: false`; alt grupnih ručno (dodatak
+  bi upisao naziv jednog proizvoda). Ključ ikone `led` ne postoji (casa, kava, kolac, tanjur, riba, sir, koktel) – ilustracija ga pokriva.
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
