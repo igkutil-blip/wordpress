@@ -143,6 +143,8 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     vrunsko, dugačije, đem, bariq, Ganitno→Granatno…), „sa”→„s” osim ispred s/z/š/ž/ps/ks/mn, „biti će”→„bit će”, °C, „% vol.”, razmaci.
     Podaci: oznake ujednačene (Naziv vina/likera→Naziv, NAPOMENA→Napomena, Temperatura posluživanja→serviranja), vrijednost velikim
     početnim slovom bez točke. Domestic → Tekstovi: uključi/isključi, vlastiti rječnik „pogrešno => ispravno”, pregled naziva prije/poslije.
+  - **domestic-kartica 0.4.1**: izbornik na mobitelu (Flatsome off-canvas) krem #f7f3eb, crte #e2d6c3, Jost 500, pretraga u njemu kao tableta;
+    pretraga: riječ do 2 slova samo na početku riječi, usred riječi tek od 3 slova („av” 35 → 8 rezultata).
   - **domestic-kartica 0.4.0** (Igor: pretraga i košarica u zaglavlju, prijedlozi sa sličicama dok se tipka): klasa `Domestic_Kartica_Trazilica`
     (postavke `trazilica`, `zaglavlje`): REST GET `domestic-kartica/v1/trazi?q=` (javno, 6 proizvoda: sličica thumbnail, marka, naziv, cijena,
     rasprodano + ukupno + poveznica „Prikaži sve”); traži bez kvačica (remove_accents, đ→d) po nazivu (početak riječi više), marki, kategoriji, SKU;

@@ -90,8 +90,8 @@ final class Domestic_Kartica_Trazilica {
 				$u_nazivu = strpos( ' ' . $r['n'], ' ' . $w );
 				if ( false !== $u_nazivu ) {
 					$s += 10;
-				} elseif ( false !== strpos( $r['n'], $w ) ) {
-					$s += 6;
+				} elseif ( strlen( $w ) > 2 && false !== strpos( $r['n'], $w ) ) {
+					$s += 6; // usred riječi tek od 3 slova („av” ne nalazi „kravata”)
 				} elseif ( false !== strpos( ' ' . $r['t'], ' ' . $w ) ) {
 					$s += 4;
 				} elseif ( strlen( $w ) > 2 && false !== strpos( $r['t'], $w ) ) {
