@@ -9,10 +9,19 @@ Natuknice za kraj obrade proizvoda – Igor pita, Mladen potvrdi ili ispravi. Ka
   Slike medalje nema nigdje (ni na drugim Medicama ni u biblioteci). Jedina CroSpirit slika je **zlatna 2023.** (`2025/03/2023_CroSpirit_Gold.png`, prilog 4255,
   ne koristi se). Pitati: točna godina (2026. ili 2023.?), slika medalje/diplome – onda dodati u galeriju sve tri Medice.
   Koji je liker dobio zlato 2023. (prilog 4255)?
-- **Posluživanje** (kartica iz paketa, 0,20 l): Kao aperitiv / Uz slasticu (medenjaci, suhi kolači) / Kao digestiv, po **0,03 l** – autorski prijedlozi, ne proizvođača.
+- **Posluživanje** (kartica iz paketa, ista za 0,20 / 0,70 / 1 l): Kao aperitiv / Uz slasticu (medenjaci, suhi kolači) / Kao digestiv, po **0,03 l** –
+  autorski prijedlozi, ne proizvođača.
+
+### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
+- **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
+  temperatura „Po želji” su sa stranice proizvoda.
+
+### BOGATI Čokolada 1 l (1345) – 23.10.2026.
+- Proizvod je **privatan** (nije objavljen, kupci ga ne vide; na Čokoladi 0,70 l zato nema izbora zapremnine). Slike su ipak postavljene.
+  Pitati: objaviti ili ostaviti skriveno (nema ga više u ponudi?).
 
 ### BOGATI Čokolada 0,70 l (1589) – 23.10.2026.
-- **Posluživanje** (kartica iz paketa): U čašici 0,03 l (aperitiv), Na ledu 0,03 l, Uz sladoled od vanilije 0,02 l – autorski prijedlozi
+- **Posluživanje** (kartica iz paketa, ista i za 1 l): U čašici 0,03 l (aperitiv), Na ledu 0,03 l, Uz sladoled od vanilije 0,02 l – autorski prijedlozi
   (prema uobičajenom posluživanju čokoladnih likera, Mozart), nisu od proizvođača.
 
 ### BOGATI Karamela 1 l (1348) – 23.10.2026.

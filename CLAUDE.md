@@ -58,6 +58,13 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
 - BOGATI Karamela 1 l (1348, 23.10.): 4072 ambijent (`2018/03/liker-karamela-bogati-domestic-spirits.png`; alt bio prazan → popunjen, `alt_glavna`),
   4977 studio, 4978 posluživanje, ikone 4979 led, 4980 espresso, 4981 sladoled.
 
+- 5 paketa (23.10.): **Orahovac 1 l** (1353): 4074 ambijent, 4982 studio, 4983 posluživanje, ikone 4984 aperitiv, 4985 slastica, 4986 digestiv.
+  **Orahovac 0,20 l** (4272): 4278 ambijent, 4987, 4988, ikone iste (4984–4986). **Medica 1 l** (1352): 4073 ambijent (alt popunjen), 4989, 4990.
+  **Medica 0,70 l** (1600): dijelila je 4073 s 1 l → glavna sada **4063** (stara slika Medice 0,70 `2018/03/bogati-medica-07-domestic-spirits.png`,
+  ista adresa; koristi je i naslovnica 247×296), 4991 `studio-bogati-medica-07-…`, 4992 `posluzivanje-bogati-medica-07-…`; ikone Medice 4969–4971
+  za sve tri zapremnine. **Čokolada 1 l** (1345, **privatan** proizvod): 3545 `cokolada-scaled.jpg` (izvornik cokolada.jpg ostaje star), 4993, 4994,
+  ikone 4974–4976. uvoz.py: `ikone[].id` = već učitana ista ikona (ne reže se ni ne učitava).
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,

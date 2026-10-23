@@ -2,10 +2,11 @@
 #   python3 -I alati/uvoz-slika/uvoz.py <postavke.json>
 # Postavke (JSON): proizvod, glavna (ID stare glavne slike), mapa (raspakirani paket), ambijent, studio, posluzivanje (nazivi datoteka),
 #   alt {datoteka: alt}, alt_glavna (samo ako je stari alt prazan), naziv (kratki naziv za naslove slika), oznaka (za nazive ikona), ostale (ID-ovi koji ostaju iza u galeriji),
-#   ikone [{ime, ikona, naziv, kolicina, opis, alt}] – redom s kartice posluživanja, izlaz (mapa za obrađene slike).
+#   ikone [{ime, ikona, naziv, kolicina, opis, alt, id?}] – redom s kartice posluživanja (id = već učitana ista ikona, npr. druga zapremnina –
+#   ne reže se ni ne učitava ponovno), izlaz (mapa za obrađene slike).
 # Ambijentalna ide u staru glavnu sliku na istoj adresi i u istom formatu (PNG → 256 boja + paleta=1), studio/posluživanje/ikone su nove.
 # Sve slike se ponovno spremaju (bez metapodataka); tekstovi iz paketa se ne učitavaju.
-import os, sys, json, base64, urllib.request, time, uuid
+import os, re, sys, json, base64, urllib.request, time, uuid
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 P = json.load(open(sys.argv[1], encoding='utf-8'))
@@ -98,6 +99,8 @@ r -= 1
 S = 392
 print('krugovi', sredista, 'r', r)
 for (x, y), ik in zip(sredista, P['ikone']):
+    if ik.get('id'):
+        continue
     c = k.crop((x - S // 2, y - S // 2, x + S // 2, y + S // 2))
     van = ImageChops.difference(c, Image.new('RGB', c.size, bg)).convert('L').point(lambda v: 0 if v < 6 else (255 if v > 16 else int((v - 6) * 255 / 10)))
     m = Image.new('L', (S * 4, S * 4), 0)
@@ -120,7 +123,7 @@ st = nova(os.path.join(OUT, P['studio']), P['alt'][P['studio']], P['naziv'] + ' 
 po = nova(os.path.join(OUT, P['posluzivanje']), P['alt'][P['posluzivanje']], P['naziv'] + ' – kako poslužiti', 'image/jpeg')
 pos = []
 for ik in P['ikone']:
-    sid = nova(os.path.join(OUT, f"posluzivanje-ikona-{P['oznaka']}-{ik['ime']}.png"), ik['alt'], P['naziv'].split(' 0,')[0] + ' – ' + ik['naziv'].lower(), 'image/png')
+    sid = ik.get('id') or nova(os.path.join(OUT, f"posluzivanje-ikona-{P['oznaka']}-{ik['ime']}.png"), ik['alt'], re.sub(r'\s+[\d,]+\s*l$', '', P['naziv']) + ' – ' + ik['naziv'].lower(), 'image/png')
     pos.append({'ikona': ik['ikona'], 'naziv': ik['naziv'], 'kolicina': ik['kolicina'], 'opis': ik['opis'], 'slika': sid})
 slike = [{'id': P['glavna']}, {'id': st}, {'id': po}] + [{'id': i} for i in P.get('ostale', [])]
 r = req(f"wc/v3/products/{P['proizvod']}", json.dumps({'images': slike, 'meta_data': [{'key': '_dsp_posluzivanje', 'value': pos}]}).encode(), method='PUT')
