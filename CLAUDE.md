@@ -264,6 +264,11 @@ redirect_uri, scope=age.alcohol, state, nonce, code_challenge(S256); povratak ?c
 (grant_type, code, redirect_uri, client_id, code_verifier) iz backenda; provjeriti potpis (JWKS), aud, nonce, exp, iss; code_verifier nikad u
 pregledniku/URL-u/localStorage; ne pohranjivati osobne podatke. Testni korisnik: JEDAN e-mail (Google Play / Apple račun) javiti s registrirane
 adrese; nakon testiranja službena potvrda produkcijske spremnosti. Kontakti: tehnika **m-gradjani@mpudt.hr**, poslovno evidencija-trgovci@mingo.hr.
+**23.10.2026. odgovor ministarstva:** povratna adresa probe dodana. Testna aplikacija mGrađani: iOS javni TestFlight (poveznica u mailu),
+Android – javiti e-mail testera (Google Play račun) pa šalju poveznicu. Testni korisnici ePASS (maloljetni i punoljetni; podaci u mailu –
+NE u git). Za produkciju moraju na testnoj bazi vidjeti barem jedan uspješno autoriziran session (cijeli tok + izdan token).
+Stanje probe: dodatak aktivan, `ukljuceno` no, okruženje test, **client_id još nije upisan** (Igor upisuje u Domestic → Provjera dobi),
+rute /age-verification/start i /callback rade (302).
 
 ## Živa Mladenova stranica – javno pročitano 22.10.2026. (bez prijave)
 
