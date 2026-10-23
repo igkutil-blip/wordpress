@@ -422,7 +422,8 @@ i Kvarner”, 305 „Domaće rakije, likeri i pivo”. 16 novih objava 4895–49
 Dubrovački podrumi, Kurtalj, Mikša, Antunović, OPG Čuković, Patrik, Promex, Gavran, Good Spirit, Gothic (Golden Steam), Misna vina Đakovo/Vinovica,
 Slavonica. Tekst iz opisa proizvoda + javnih izvora (oprezno). Naslovne slike 4915–4945 `2026/10/blog-<slug>.jpg` 1600×900 složene iz slika
 proizvoda (bijela pozadina → krem multiply, crna → tamna #29231F lighten, mješovito → kvadratne pločice). Skripte: `alati/blog-partneri/`.
-Preskočeni: Kosovo Vranac (nije hrvatski), Aloe Vera sokovi. Fotografije sa stranica vinarija NE mogu se skinuti (mreža sesije blokira
+Igorove fotografije 1920×1080 (23.10.) zamijenile složene bannere na istim adresama: Patrik 4933, Promex 4935, Gavran 4937, Good Spirit (Kova) 4939,
+Gothic 4941 – altovi prepisani prema novim fotografijama. Preskočeni: Kosovo Vranac (nije hrvatski), Aloe Vera sokovi. Fotografije sa stranica vinarija NE mogu se skinuti (mreža sesije blokira
 vanjske domene) – Igor treba dodati domene u Allowed domains. Stranica /vinarije/ = stranica objava (sve objave, i rakije).
 Proširenja (dodaci.py: regija, tablica „Za stolom”/„Kako poslužiti” class dsb-stol, savjet class dsb-savjet; stare 4 dobile „Za stolom”),
 upis `prosiri.py`; redoslijed `redoslijed.py` (vinarije noviji datum → prve na popisu). Opisi kategorija = uvod na stranici regije; Style → „Savjeti”.
