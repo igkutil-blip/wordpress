@@ -67,6 +67,11 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     (kategorija „Domestic proba”, SKU DSP-…; uvoz skriptom preko WC REST). Nova adresa za pregled: stranica https://test.srd-plan-a.hr/domestic-proizvod/
     (WP stranica 9095, popis 7 proizvoda s poveznicama); stari demo /domestic-spirits/ (plan-a-ds-proba) ostaje netaknut. OTVORENO: fontovi na kopiji se ne učitavaju (status error),
     lokalno rade. Lokalna proba: WP 7.1.3 + WC 11.2.1 + SQLite (git klon), WooCommerce „coming soon” isključiti.
+  - **domestic-pomocnik 0.1.0** (23.10.2026.): SAMO za probnu kopiju – na domesticspirits.hr/www sam se isključi (samo obavijest).
+    Mailovi zadržani (`pre_wp_mail`, zadnjih 50 u `domestic_pomocnik_mailovi`) ili preusmjereni na jednu adresu „[PROBA → primatelj]”;
+    noindex + blog_public 0; crvena traka „PROBNA KOPIJA”. REST `domestic-pomocnik/v1` (install_plugins): GET status, POST plugin
+    (multipart `zip` s jednom mapom domestic-*, `activate=1`, zamjenjuje postojeću), GET/POST `opcija/domestic_*` ({"vrijednost"} ili {"spoji"}),
+    GET mailovi. Domestic → Pomoćnik (proba). Igor ga jednom ručno učita; dalje sve dodatke učitavam sam.
   - **domestic-provjera-dobi 0.1.0** (23.10.2026.): provjera punoljetnosti preko e-Građana/mGrađana (čl. 11.a). Domestic → Provjera dobi
     (opcija `domestic_provjera_dobi`: uključeno, okruženje test/prod, client_id + issuer/authorize/token/jwks po okruženju – zadano iz
     mgradjani(-test).gov.hr/idp, opseg svi/kategorije, trajanje potvrde, ručni redirect, dijagnostika; gumb „Test veze” = well-known + JWKS).
@@ -89,7 +94,7 @@ PKCE S256, token_endpoint_auth `none` (bez tajne), RS256 (JWKS), subject pairwis
 produkcija: https://mgradjani.gov.hr/idp (produkcija tek nakon odobrenja). **Registrirani redirect URI (iz obrasca): `https://domesticspirits.hr/age-verification/callback`**
 – jedini; za kopiju stranice treba od ministarstva tražiti dodatni URI. Provjera prije plaćanja, za svaku narudžbu; odbijanje = nema narudžbe;
 na narudžbu samo „provjereno + vrijeme”. Iz sesije su gov.hr i domesticspirits.hr blokirani (Igor dodaje domene u postavke okruženja).
-Plan: dodaci domestic-pomocnik (kopija: mailovi preusmjereni, noindex, REST za zip) i domestic-provjera-dobi. Rad samo na kopiji Mladenove stranice
+Dodaci: domestic-pomocnik (vidi popis dodataka) i domestic-provjera-dobi. Rad samo na kopiji Mladenove stranice
 (Igor radi klon); živa = samo čitanje (DS_URL / DS_WP_USER / DS_WP_APP_PASSWORD), kopija DS_PROBA_*.
 Tehnička uputa MinGo (PDF, 7 str., /UserDocsImages/Trgovina/Tehnicka_uputa_provjera punoljetnosti.pdf): authorize s response_type=code, client_id,
 redirect_uri, scope=age.alcohol, state, nonce, code_challenge(S256); povratak ?code&state (state obavezno provjeriti); POST /idp/token
