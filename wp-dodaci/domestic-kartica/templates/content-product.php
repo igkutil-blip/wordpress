@@ -36,7 +36,7 @@ echo '>';
 				</div>
 			<?php endif; ?>
 			<?php if ( $flatsome && 'yes' === $s['brzi'] ) : ?>
-				<a href="#quick-view" class="quick-view dsk-brzi" role="button" data-prod="<?php echo (int) $product->get_id(); ?>" aria-haspopup="dialog" aria-expanded="false" data-flatsome-role-button>Brzi pregled</a>
+				<a href="#quick-view" class="quick-view dsk-brzi" role="button" data-prod="<?php echo (int) $product->get_id(); ?>" aria-haspopup="dialog" aria-expanded="false" aria-label="Brzi pregled: <?php echo esc_attr( $product->get_name() ); ?>" data-flatsome-role-button><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg><span>Brzi pregled</span></a>
 			<?php endif; ?>
 			<?php do_action( 'domestic_kartica_slika', $product ); ?>
 		</div>

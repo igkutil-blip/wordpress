@@ -11,9 +11,16 @@
 .dsk-oznaka-akcija{background:var(--dsk-naglasak);color:#fff}
 .dsk-oznaka-rasprodano{background:#555;color:#fff}
 .dsk-oznaka-nagradeno{background:#c9a24a;color:#fff}
-.dsk-brzi{position:absolute;right:10px;bottom:10px;z-index:2;padding:5px 12px;border-radius:20px;background:color-mix(in srgb,var(--dsk-pozadina) 92%,transparent);border:1px solid rgba(41,35,31,.14);color:var(--dsk-tekst)!important;font-size:12px;letter-spacing:.02em;opacity:0}
-.dsk-brzi:hover{background:var(--dsk-naglasak);border-color:var(--dsk-naglasak);color:#fff!important}
-.dsk-slika:hover .dsk-brzi,.dsk-brzi:focus{opacity:1}
+.dsk-kartica .dsk-brzi{position:absolute;left:50%;bottom:14px;z-index:2;transform:translateX(-50%);display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 16px;margin:0;border-radius:19px;background:rgba(41,35,31,.86);color:#f7f3eb!important;font:500 13px/1 var(--ds-sans,inherit);letter-spacing:.03em;white-space:nowrap;opacity:0;transition:opacity .2s,background-color .2s;box-shadow:0 4px 14px rgba(41,35,31,.18)}
+.dsk-kartica .dsk-brzi svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.dsk-kartica .dsk-brzi:hover{background:var(--dsk-naglasak)}
+.dsk-slika:hover .dsk-brzi,.dsk-kartica .dsk-brzi:focus-visible{opacity:1}
+/* dodir (mobitel): mali okrugli gumb s okom, uvijek vidljiv */
+@media (hover:none){
+  .dsk-kartica .dsk-brzi{left:auto;right:8px;bottom:8px;transform:none;width:36px;height:36px;padding:0;justify-content:center;opacity:1;background:rgba(247,243,235,.92);color:#29231f!important;border:1px solid rgba(41,35,31,.14);box-shadow:none}
+  .dsk-kartica .dsk-brzi span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+}
+@media (prefers-reduced-motion:reduce){.dsk-kartica .dsk-brzi{transition:none}}
 .dsk-tekst{display:flex;flex-direction:column;flex:1;gap:4px;padding:12px 14px 14px}
 .dsk-tekst p{margin:0!important}
 .dsk-kategorija,.dsk-marka{font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.7}

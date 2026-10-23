@@ -143,6 +143,8 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     vrunsko, dugačije, đem, bariq, Ganitno→Granatno…), „sa”→„s” osim ispred s/z/š/ž/ps/ks/mn, „biti će”→„bit će”, °C, „% vol.”, razmaci.
     Podaci: oznake ujednačene (Naziv vina/likera→Naziv, NAPOMENA→Napomena, Temperatura posluživanja→serviranja), vrijednost velikim
     početnim slovom bez točke. Domestic → Tekstovi: uključi/isključi, vlastiti rječnik „pogrešno => ispravno”, pregled naziva prije/poslije.
+  - **domestic-kartica 0.3.1**: „Brzi pregled” = tamna tableta (#29231F 86 %) s ikonom oka u sredini dna slike, pojavi se pri prelasku
+    mišem (samo prozirnost, bez pomaka), bordo na prelazak; na dodirnim zaslonima (hover:none) uvijek vidljiv okrugli krem gumb s okom dolje desno.
   - **domestic-kartica 0.3.0** (Igor: bijelo ispod artikala, filteri gore kao Plan A, nedavno dolje, 4 u redu, ljepše stranice):
     klasa `Domestic_Kartica_Trgovina` (trgovina, kategorije, pretraga proizvoda; postavka `raspored` gore|tema, `stupci` 4, `nedavno`):
     filtri theme_mod_category_sidebar → none, category_row_count → 4, tablet 3, category_shadow → 0 (has-shadow bojao karticu bijelo);
