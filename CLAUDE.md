@@ -293,3 +293,15 @@ Na kopiji ISKLJUČENO (23.10.): KEKS Pay (pravo plaćanje), Google Site Kit, CTX
 **VAŽNO: na živoj i kopiji već je aktivan tuđi dodatak „IT-podrška Age Gate (NIAS)” 1.2.2** (IT-podrška d.o.o., provjerapunoljetnosti.hr) –
 e-Građani/mGrađani OIDC+PKCE, REST `nias/v1/start` i `nias/v1/callback`. Registrirani redirect `/age-verification/callback` na živoj = 404,
 tj. ne poklapa se s REST callbackom → vjerojatno nije podešen/ne radi. Prije izrade domestic-provjera-dobi Igor odlučuje: podesiti njihov ili naš.
+
+## Blog – partneri (Igor 23.10.2026.: vinarije i domaći proizvođači)
+
+Sve 4 stare objave (Pilato 2710, Ferenac 2525, Lagena 2012, Grgurević 1183) su trenutni partneri – ništa nije uklonjeno; tekst i adrese
+isti, dodan blok „U našoj ponudi” ([products ids=… orderby="post__in" columns="4"]) i kategorija regije. Nove kategorije: 304 „Vinarije Istra
+i Kvarner”, 305 „Domaće rakije, likeri i pivo”. 16 novih objava 4895–4910 (permalink /%postname%/): Pavlomir, Franković, Petrač, Trdenić,
+Dubrovački podrumi, Kurtalj, Mikša, Antunović, OPG Čuković, Patrik, Promex, Gavran, Good Spirit, Gothic (Golden Steam), Misna vina Đakovo/Vinovica,
+Slavonica. Tekst iz opisa proizvoda + javnih izvora (oprezno). Naslovne slike 4915–4945 `2026/10/blog-<slug>.jpg` 1600×900 složene iz slika
+proizvoda (bijela pozadina → krem multiply, crna → tamna #29231F lighten, mješovito → kvadratne pločice). Skripte: `alati/blog-partneri/`.
+Preskočeni: Kosovo Vranac (nije hrvatski), Aloe Vera sokovi. Fotografije sa stranica vinarija NE mogu se skinuti (mreža sesije blokira
+vanjske domene) – Igor treba dodati domene u Allowed domains. Stranica /vinarije/ = stranica objava (sve objave, i rakije).
+Flatsome blog ima engleske natpise (Posted on, Continue reading, Category Archives) – ispraviti prijevod (otvoreno).
