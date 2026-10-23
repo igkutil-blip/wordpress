@@ -140,6 +140,25 @@ const galerija = stranica(`
   </div>
 </div>`);
 
+const seo = stranica(`
+<div class="okvir" style="display:flex;flex-direction:column;justify-content:center;padding-bottom:110px">
+  <div class="nad">SEO · web shop star 10 godina</div><h2>Sve poveznice su sačuvane</h2>
+  <div class="opis" style="margin-top:14px;max-width:1500px">Nove fotografije postavljene su <b>na iste adrese</b> kao stare, a proizvodi i kategorije zadržali su svoje poveznice. Deset godina pozicija na Googleu, poveznica s drugih stranica i podijeljenih objava ostaje netaknuto.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:70px;margin-top:44px;align-items:center">
+    <div style="display:grid;gap:22px">
+    ${[['Proizvodi', '/proizvod/san-montano-teranino/'], ['Kategorije', '/kategorija-proizvoda/jaka-alkoholna-pica/'], ['Fotografije', '/wp-content/uploads/2017/09/montano-teranino-liker-1.png']].map(([n, u]) => `<div style="background:#efe7dc;border:1px solid #e2d6c3;border-radius:16px;padding:22px 28px;display:flex;gap:22px;align-items:center"><div style="width:46px;height:46px;border-radius:50%;background:#702833;color:#F7F3EB;display:flex;align-items:center;justify-content:center;font:500 26px Jost;flex:none">✓</div><div><div style="font:400 28px Marcellus">${n} – ista adresa</div><div style="font:400 19px Jost;color:#7a6f64;margin-top:4px;word-break:break-all">domesticspirits.hr${u}</div></div></div>`).join('')}
+    </div>
+    <div style="text-align:center">
+      <div style="display:flex;align-items:center;justify-content:center;gap:26px">
+        <div><div style="width:250px;height:250px;background:#fff;border:1px solid #e2d6c3;border-radius:14px;display:flex;align-items:center;justify-content:center"><img src="${f('par/732-stara.png')}" style="max-width:88%;max-height:88%"></div><div class="oznaka prije" style="margin-top:14px">Prije</div></div>
+        <div style="font:400 54px Jost;color:#AD8D53">→</div>
+        <div><div class="ekran" style="width:330px;height:330px"><img src="${f('par/732-nova.png')}" style="width:100%;height:100%;object-fit:cover"></div><div class="oznaka sada" style="margin-top:14px">Sada</div></div>
+      </div>
+      <div style="font:400 19px Jost;color:#7a6f64;margin-top:22px">isti link: …/uploads/2017/09/montano-teranino-liker-1.png</div>
+    </div>
+  </div>
+</div>`);
+
 const scene = {
   '01-naslov': naslov,
   '02-kategorija': split('Kategorija', 'Likeri i rakije', 'snimke/kat-stara.png', 'snimke/kat-nova.png',
@@ -160,6 +179,7 @@ const scene = {
   '09-glava': glava,
   '10-mobitel': telefoni,
   '11-dijeljenje': dijeljenje,
+  '11b-seo': seo,
   '12-brojke': brojke,
   '13-kraj': kraj,
 };

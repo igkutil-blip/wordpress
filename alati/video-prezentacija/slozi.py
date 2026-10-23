@@ -5,22 +5,23 @@ FPS = 30
 X = 0.7  # trajanje pretapanja
 
 SCENE = [  # (ime, trajanje, vrsta)
-    ('01-naslov', 5.5, 'zoom'),
+    ('01-naslov', 5.0, 'zoom'),
     ('02-kategorija', 7.5, 'zoom'),
     ('03-proizvod', 7.5, 'zoom'),
     ('04-listanje', 10.5, 'listanje'),
     ('04b-glava', 7.5, 'zoom'),
     ('04c-galerija', 6.5, 'zoom'),
-    ('05-foto1', 6.5, 'zoom'),
-    ('06-foto2', 6.5, 'zoom'),
-    ('06b-foto3', 6.5, 'zoom'),
+    ('05-foto1', 6.0, 'zoom'),
+    ('06-foto2', 6.0, 'zoom'),
+    ('06b-foto3', 6.0, 'zoom'),
     ('07-posluzivanje', 6.5, 'zoom'),
     ('08-zapremnine', 6.5, 'zoom'),
     ('09-glava', 5.5, 'zoom'),
     ('10-mobitel', 7.5, 'zoom'),
     ('11-dijeljenje', 6.5, 'zoom'),
-    ('12-brojke', 7.0, 'zoom'),
-    ('13-kraj', 6.5, 'zoom'),
+    ('11b-seo', 8.0, 'zoom'),
+    ('12-brojke', 6.5, 'zoom'),
+    ('13-kraj', 6.0, 'zoom'),
 ]
 
 

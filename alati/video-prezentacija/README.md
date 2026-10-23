@@ -1,6 +1,6 @@
 # Video „Likeri i rakije – prije i sada” (23. 10. 2026.)
 
-1920×1080, 30 fps, ~100 s (bez zatamnjenja na početku – kreće od uvodne slike), vlastita sintetizirana glazba (bez tuđih prava). Blog namjerno izostavljen.
+1920×1080, 30 fps, ~104 s, scena „Sve poveznice su sačuvane” (SEO, 10 godina) (bez zatamnjenja na početku – kreće od uvodne slike), vlastita sintetizirana glazba (bez tuđih prava). Blog namjerno izostavljen.
 
 1. `snimi.js` – snimke žive (prije) i probne stranice (sada), računalo i mobitel (Age Gate i kolačići se zatvaraju).
 2. `elementi.js` – izrezi nove stranice (Kako poslužiti, okvir kupnje).
