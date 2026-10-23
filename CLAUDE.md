@@ -263,6 +263,12 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     novih); „Kako poslužiti” i u zapisu „0,03 l kao aperitiv, …” (količina ispred naziva). **0.3.0**: uloge i po ključnoj riječi
     (`1-ambijent`, `2-studio`, `3-posluzivanje`) – tada nove dobivaju naziv `studio-/posluzivanje-<naziv stare glavne>`; opisi stavki SAMO s iste
     marke i vrste (prve 2 riječi); traženje proizvoda po najduljoj riječi mape (oblí apostrof). **0.3.1**: bez „-scaled” u nazivu novih slika.
+  - **domestic-kartica 0.6.2** (Igor: slika kategorije „Likeri i rakije”): slika kategorije prije se vidjela samo u Flatsomeovoj traci naslova
+    (skrivena od 0.3.0) → `Trgovina::slika_kategorije()`: na stranici kategorije s `thumbnail_id` širine ≥ 1200 px (filtar
+    `domestic_kartica_slika_kategorije_min`) zaglavlje `.dsk-naslov-slika` = krem okvir, lijevo putanja + H1 (+ opis kategorije ako postoji),
+    desno slika 240–300 px (cover, 50 % 58 %); mobitel slika gore 150 px. Stare male slike (HoReCa, Vina, Pivo…) se i dalje ne prikazuju.
+    Kategorija 82 „Likeri i rakije” (`jaka-alkoholna-pica`): slika **2392** `2020/12/strong-spirits-set-hard-alcoholic-drinks-glasses_127657-850.jpg`
+    zamijenjena Igorovom (Teranino, Avellana, STRAVA, TERROAR Dunja; 1600², ista adresa, alt popunjen).
   - **domestic-proizvod 0.7.4** (Igor: STRAVA glava ima tri zapremnine – „prikaži u izboru ali stavi da su rasprodane”): Data::siblings uzima i
     PRIVATNE proizvode istog naziva/kategorije → u izboru zapremnine `span.dsp-vol-opt.dsp-vol-nema` (crtkano, precrtana zapremnina, „RASPRODANO”,
     bez poveznice, aria-disabled); objavljeni koji nisu na stanju = isti izgled, ali s poveznicom. Status se ne mijenja. Ista zapremnina: ostaje

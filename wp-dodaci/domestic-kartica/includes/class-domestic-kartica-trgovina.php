@@ -202,8 +202,28 @@ final class Domestic_Kartica_Trgovina {
 		} else {
 			$h1 = 'Svi proizvodi';
 		}
-		$c = '<a href="' . esc_url( $shop ) . '">Svi proizvodi</a>' . ( $put ? '<span>/</span>' . implode( '<span>/</span>', $put ) : '' );
-		return '<header class="dsk-naslov">' . ( is_shop() ? '' : '<nav class="dsk-put" aria-label="Putanja">' . $c . '</nav>' ) . '<h1>' . esc_html( $h1 ) . '</h1></header>';
+		$c     = '<a href="' . esc_url( $shop ) . '">Svi proizvodi</a>' . ( $put ? '<span>/</span>' . implode( '<span>/</span>', $put ) : '' );
+		$tekst = ( is_shop() ? '' : '<nav class="dsk-put" aria-label="Putanja">' . $c . '</nav>' ) . '<h1>' . esc_html( $h1 ) . '</h1>';
+		$slika = self::slika_kategorije();
+		if ( ! $slika ) {
+			return '<header class="dsk-naslov">' . $tekst . '</header>';
+		}
+		$opis = is_product_taxonomy() ? wp_strip_all_tags( (string) term_description() ) : '';
+		$opis = '' !== trim( $opis ) ? '<p class="dsk-naslov-opis">' . esc_html( wp_trim_words( $opis, 32 ) ) . '</p>' : '';
+		return '<header class="dsk-naslov dsk-naslov-slika"><div class="dsk-naslov-tekst">' . $tekst . $opis . '</div><div class="dsk-naslov-img">' . $slika . '</div></header>';
+	}
+
+	/** Slika kategorije kao traka uz naslov – samo nove, dovoljno velike slike (stare male ostaju skrivene kao do sada). */
+	private static function slika_kategorije(): string {
+		if ( ! is_product_category() ) {
+			return '';
+		}
+		$id = (int) get_term_meta( get_queried_object_id(), 'thumbnail_id', true );
+		$m  = $id ? wp_get_attachment_metadata( $id ) : array();
+		if ( ! $id || (int) ( $m['width'] ?? 0 ) < (int) apply_filters( 'domestic_kartica_slika_kategorije_min', 1200 ) ) {
+			return '';
+		}
+		return (string) wp_get_attachment_image( $id, 'large', false, array( 'class' => 'dsk-naslov-slika-img', 'loading' => 'eager', 'fetchpriority' => 'high', 'sizes' => '(max-width: 720px) 100vw, 640px' ) );
 	}
 
 	private static function hr_poredak( string $k, string $t ): string {
