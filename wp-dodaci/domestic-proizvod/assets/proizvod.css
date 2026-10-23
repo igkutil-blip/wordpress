@@ -144,6 +144,22 @@ body.dsp-page,body.dsp-page #wrapper,body.dsp-page #main{background:#f7f3eb!impo
 .dsp-serve h4{font-size:17px}
 .dsp-dose{color:var(--b);font-size:13px}
 .dsp-serve p{font-size:11px;color:var(--m);margin:4px 0 0!important}
+.dsp .dsp-serve-ilu{width:112px;height:112px;margin:-4px auto 6px;object-fit:contain}
+.dsp-serve-sa-ilu{padding-top:10px!important}
+/* dostava i plaćanje */
+.dsp-dp{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:12px}
+.dsp-dp-col{background:var(--box);border:1px solid #e2d8c8;border-radius:4px;padding:14px 16px}
+.dsp .dsp-dp h4{display:flex;align-items:center;gap:8px;font-size:16px;margin:0 0 8px}
+.dsp-dp h4 .dsp-i{width:22px;height:22px;color:var(--g)}
+.dsp-dp ul{list-style:none;margin:0!important;padding:0}
+.dsp-dp li{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid #e2d8c8;font-size:13px;margin:0!important}
+.dsp-dp li:first-child{border-top:0}
+.dsp-dp li span{color:var(--m)}
+.dsp-dp li b{font-weight:500;text-align:right;white-space:nowrap}
+.dsp-dp li b small{display:block;font-weight:400;font-size:11.5px;color:var(--b)}
+.dsp-dp-plac li{justify-content:flex-start;align-items:center;gap:8px}
+.dsp-dp-plac .dsp-i{width:16px;height:16px;color:var(--b)}
+.dsp-dp-nap{font-size:12px;color:var(--m);margin:0 0 8px!important}
 .dsp-award{display:flex;align-items:flex-start;gap:15px;margin-bottom:20px}
 .dsp-award img{width:46px;height:46px;border-radius:50%;object-fit:cover;mix-blend-mode:multiply;cursor:zoom-in;flex-shrink:0}
 .dsp-medal{width:46px;height:46px;border-radius:50%;background:var(--box);display:grid;place-items:center;color:var(--g);flex-shrink:0}
@@ -260,4 +276,12 @@ body.dsp-page,body.dsp-page #wrapper,body.dsp-page #main{background:#f7f3eb!impo
   .dsp-qv{padding:0 16px 20px}
   .dsp-qv .dsp-product{grid-template-columns:1fr;gap:18px}
   .dsp-qv .dsp-track{height:260px}
+}
+
+@media(max-width:760px){
+  .dsp-serve{grid-template-columns:1fr;gap:8px}
+  .dsp-serve article.dsp-serve-sa-ilu{display:grid;grid-template-columns:76px 1fr;column-gap:12px;align-items:center;text-align:left;padding:8px 12px!important}
+  .dsp-serve-sa-ilu .dsp-serve-ilu{grid-row:span 3;width:76px!important;height:76px!important;margin:0!important}
+  .dsp-serve-sa-ilu h4{font-size:16px}
+  .dsp-serve-sa-ilu p{margin:2px 0 0!important}
 }

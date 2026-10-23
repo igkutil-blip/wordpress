@@ -153,6 +153,15 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     vrunsko, dugačije, đem, bariq, Ganitno→Granatno…), „sa”→„s” osim ispred s/z/š/ž/ps/ks/mn, „biti će”→„bit će”, °C, „% vol.”, razmaci.
     Podaci: oznake ujednačene (Naziv vina/likera→Naziv, NAPOMENA→Napomena, Temperatura posluživanja→serviranja), vrijednost velikim
     početnim slovom bez točke. Domestic → Tekstovi: uključi/isključi, vlastiti rječnik „pogrešno => ispravno”, pregled naziva prije/poslije.
+  - **domestic-proizvod 0.7.1** (Igor: originalne ikone s kartice posluživanja, velika slika ne treba, prostor za dostavu/plaćanje):
+    stavka `_dsp_posluzivanje` ima `slika` (ID ilustracije; admin polje „ID ilustracije”) → u kućici slika 112 px umjesto SVG ikone; mobitel =
+    retci (ilustracija 76 px lijevo). Velika slika posluživanja (3. slika galerije) u sekciji SAMO kad nema kućica. „Dostava i plaćanje” otvoreno,
+    iz WooCommercea: zone (≤3 županije poimence, inače „Ostatak Hrvatske”), flat_rate cijena + free_shipping „besplatno iznad X”, rok slanja,
+    uključeni načini plaćanja (proba: bankovni prijenos, pouzeće; živa će sama pokazati KEKS Pay), napomena o pakiranju, poveznica na uvjete.
+    **PRAVILO (Igor): uz svaki proizvod uvijek izrezati originalne ilustracije s njegove kartice posluživanja** (krug r≈167 oko (322|799|1277, 587)
+    na 1600 px, isječak 392 px, krem pozadina #F7F3EB → prozirna, PNG 280 px, naziv `posluzivanje-ikona-<…>.png`) i upisati tekst s kartice
+    u `_dsp_posluzivanje`. Klasične Avellane (0,20/0,70/1 l): 4888 čašica, 4889 kava, 4890 slastica; Premium: 4891 led, 4892 espresso koktel,
+    4893 sladoled s kavom.
   - **domestic-kartica 0.5.1** (Igor: sve kategorije na prvom ekranu mobitela): traka kategorija na mobitelu u 2 retka (flex-wrap, sredina,
     tablete 11 px), bez listanja. **domestic-proizvod 0.6.4**: „Još domaćih priča” = 6 malih kartica u redu (kvadratna slika woocommerce_single,
     kategorija · zapremnina, naziv 2 retka, cijena + Pogledaj), ≤1000 px 3 u redu, mobitel vodoravno 2,4 vidljive.

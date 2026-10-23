@@ -104,6 +104,7 @@ final class Domestic_Proizvod_Admin {
 							<input type="text" name="dsp_pos[naziv][]" value="<?php echo esc_attr( $r['naziv'] ?? '' ); ?>" placeholder="Naziv (U čašici)">
 							<input type="text" name="dsp_pos[kolicina][]" value="<?php echo esc_attr( $r['kolicina'] ?? '' ); ?>" placeholder="Količina (0,05 l)" class="dsp-a-short">
 							<input type="text" name="dsp_pos[opis][]" value="<?php echo esc_attr( $r['opis'] ?? '' ); ?>" placeholder="Kratki opis">
+							<input type="number" min="0" name="dsp_pos[slika][]" value="<?php echo ! empty( $r['slika'] ) ? (int) $r['slika'] : ''; ?>" placeholder="ID ilustracije" class="dsp-a-short" title="ID slike iz Medija – ilustracija s kartice posluživanja (umjesto ikone)">
 							<button type="button" class="button dsp-a-del" aria-label="Ukloni">×</button>
 						</div>
 					<?php endforeach; ?>
@@ -168,6 +169,7 @@ final class Domestic_Proizvod_Admin {
 				'naziv'    => $naziv,
 				'kolicina' => sanitize_text_field( $src['kolicina'][ $i ] ?? '' ),
 				'opis'     => sanitize_text_field( $src['opis'][ $i ] ?? '' ),
+				'slika'    => absint( $src['slika'][ $i ] ?? 0 ),
 			);
 		}
 		$p->update_meta_data( '_dsp_posluzivanje', $pos );

@@ -444,7 +444,8 @@ final class Domestic_Proizvod_Front {
 			if ( $m['posluzivanje'] ) {
 				$k .= '<div class="dsp-serve">';
 				foreach ( $m['posluzivanje'] as $r ) {
-					$k .= '<article><div class="dsp-serve-ico">' . self::svg( isset( self::SVG[ $r['ikona'] ?? '' ] ) ? $r['ikona'] : 'casa' ) . '</div><h4>' . esc_html( $r['naziv'] ) . '</h4>'
+					$ilu = ! empty( $r['slika'] ) ? wp_get_attachment_image( (int) $r['slika'], 'medium', false, array( 'class' => 'dsp-serve-ilu', 'alt' => '', 'loading' => 'lazy' ) ) : '';
+					$k  .= '<article' . ( $ilu ? ' class="dsp-serve-sa-ilu"' : '' ) . '>' . ( $ilu ? $ilu : '<div class="dsp-serve-ico">' . self::svg( isset( self::SVG[ $r['ikona'] ?? '' ] ) ? $r['ikona'] : 'casa' ) . '</div>' ) . '<h4>' . esc_html( $r['naziv'] ) . '</h4>'
 						. ( ! empty( $r['kolicina'] ) ? '<div class="dsp-dose">' . esc_html( $r['kolicina'] ) . '</div>' : '' )
 						. ( ! empty( $r['opis'] ) ? '<p>' . esc_html( $r['opis'] ) . '</p>' : '' ) . '</article>';
 				}
@@ -455,7 +456,7 @@ final class Domestic_Proizvod_Front {
 			if ( $temp ) {
 				$k .= '<div class="dsp-temp"><span>Temperatura serviranja</span><strong>' . esc_html( $temp ) . '</strong></div>';
 			}
-			if ( $upute ) {
+			if ( $upute && ! $m['posluzivanje'] ) { // velika kartica samo kad nema kućica s načinima posluživanja
 				$k .= '<button type="button" class="dsp-guide dsp-zoomable" data-full="' . esc_url( wp_get_attachment_image_url( $upute, 'full' ) ) . '">'
 					. wp_get_attachment_image( $upute, 'woocommerce_single', false, array( 'loading' => 'lazy' ) )
 					. '<span>Povećaj sliku ' . self::svg( 'zoom' ) . '</span></button>';
@@ -488,15 +489,8 @@ final class Domestic_Proizvod_Front {
 			$o_shopu = get_page_by_path( 'o-shopu' );
 			$url     = $o_shopu ? get_permalink( $o_shopu ) : '';
 		}
-		$d = '';
-		if ( (float) $st['besplatno_od'] > 0 ) {
-			$d .= '<p>Za narudžbe čiji ukupan iznos premašuje ' . esc_html( self::eur( (float) $st['besplatno_od'] ) ) . ( $st['podrucje'] ? ', dostava na području ' . esc_html( $st['podrucje'] ) . ' je besplatna.' : ', dostava je besplatna.' ) . '</p>';
-		}
-		$d .= '<p>Šaljemo u ' . esc_html( $st['rok'] ) . '.</p>';
-		if ( $url ) {
-			$d .= '<a class="dsp-link" href="' . esc_url( $url ) . '">Pročitaj uvjete dostave i plaćanja →</a>';
-		}
-		$desno[] = self::section( 'dostava', 'Dostava i plaćanje', 'Uvjeti i dostupne informacije', $d );
+		$d = self::dostava_placanje( $st, (string) $url );
+		$desno[] = self::section( 'dostava', 'Dostava i plaćanje', 'Cijene dostave, rok slanja i načini plaćanja', $d, true );
 
 		// Recenzije – WooCommerceov predložak
 		if ( comments_open( $p->get_id() ) && 'yes' === get_option( 'woocommerce_enable_reviews', 'yes' ) ) {
@@ -510,6 +504,70 @@ final class Domestic_Proizvod_Front {
 			$h .= '<a href="#dsp-' . esc_attr( $k ) . '" data-dsp-open="' . esc_attr( $k ) . '">' . esc_html( $t ) . '</a>';
 		}
 		return $h . '</nav><section class="dsp-info" id="dsp-info"><div>' . implode( '', $lijevo ) . '</div><div>' . implode( '', $desno ) . '</div></section>';
+	}
+
+	/** Dostava i plaćanje iz WooCommercea (zone i načini dostave, uključeni načini plaćanja) – uvijek točno. */
+	private static function dostava_placanje( array $st, string $url ): string {
+		$zone = array();
+		if ( class_exists( 'WC_Shipping_Zones' ) ) {
+			$drz = WC()->countries->get_states( 'HR' );
+			foreach ( WC_Shipping_Zones::get_zones() as $z ) {
+				$mjesta = array();
+				$samo_hr = false;
+				foreach ( $z['zone_locations'] as $l ) {
+					if ( 'state' === $l->type && 0 === strpos( $l->code, 'HR:' ) ) {
+						$mjesta[] = $drz[ substr( $l->code, 3 ) ] ?? $l->code;
+					} elseif ( 'country' === $l->type && 'HR' === $l->code ) {
+						$samo_hr = true;
+					}
+				}
+				$cijena = '';
+				$besplatno = '';
+				foreach ( $z['shipping_methods'] as $m ) {
+					if ( 'yes' !== $m->enabled ) {
+						continue;
+					}
+					if ( 'flat_rate' === $m->id && '' !== (string) $m->get_option( 'cost' ) && is_numeric( str_replace( ',', '.', (string) $m->get_option( 'cost' ) ) ) ) {
+						$cijena = self::eur( (float) str_replace( ',', '.', (string) $m->get_option( 'cost' ) ) );
+					} elseif ( 'free_shipping' === $m->id ) {
+						$min       = (float) $m->get_option( 'min_amount' );
+						$besplatno = $min > 0 ? 'besplatno iznad ' . self::eur( $min ) : 'besplatno';
+					} elseif ( 'local_pickup' === $m->id || 'pickup_location' === $m->id ) {
+						$besplatno = $besplatno ? $besplatno : 'osobno preuzimanje';
+					}
+				}
+				if ( ! $cijena && ! $besplatno ) {
+					continue;
+				}
+				$gdje   = $mjesta && count( $mjesta ) <= 3 ? implode( ' i ', array_reverse( $mjesta ) ) : ( $mjesta || $samo_hr ? 'Ostatak Hrvatske' : $z['zone_name'] );
+				$zone[] = array( $gdje, $cijena, $besplatno );
+			}
+		}
+		$plac = array();
+		if ( function_exists( 'WC' ) && WC()->payment_gateways() ) {
+			foreach ( WC()->payment_gateways()->payment_gateways() as $g ) {
+				if ( 'yes' === $g->enabled ) {
+					$plac[] = wp_strip_all_tags( $g->get_title() );
+				}
+			}
+		}
+		$h = '<div class="dsp-dp"><div class="dsp-dp-col"><h4>' . self::svg( 'kamion' ) . 'Dostava</h4><ul>';
+		foreach ( $zone as list( $gdje, $cijena, $besplatno ) ) {
+			$h .= '<li><span>' . esc_html( $gdje ) . '</span><b>' . esc_html( $cijena ? $cijena : $besplatno ) . ( $cijena && $besplatno ? '<small>' . esc_html( $besplatno ) . '</small>' : '' ) . '</b></li>';
+		}
+		$h .= '<li><span>Rok slanja</span><b>' . esc_html( $st['rok'] ) . '</b></li></ul></div>';
+		if ( $plac ) {
+			$h .= '<div class="dsp-dp-col"><h4>' . self::svg( 'stit' ) . 'Plaćanje</h4><ul class="dsp-dp-plac">';
+			foreach ( $plac as $t ) {
+				$h .= '<li>' . self::svg( 'check' ) . esc_html( $t ) . '</li>';
+			}
+			$h .= '</ul></div>';
+		}
+		$h .= '</div><p class="dsp-dp-nap">Boce pakiramo pažljivo, zaštićene za prijevoz.</p>';
+		if ( $url ) {
+			$h .= '<a class="dsp-link" href="' . esc_url( $url ) . '">Svi uvjeti dostave i plaćanja →</a>';
+		}
+		return $h;
 	}
 
 	/* ---------- povezani ---------- */
