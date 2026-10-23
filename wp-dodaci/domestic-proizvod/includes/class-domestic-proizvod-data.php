@@ -224,6 +224,12 @@ final class Domestic_Proizvod_Data {
 				$tekst .= '<p>' . $red . '</p>';
 			}
 		}
+		if ( Domestic_Proizvod_Tekst::ukljuceno() ) {
+			foreach ( $podaci as $k => $r ) {
+				$podaci[ $k ] = array( Domestic_Proizvod_Tekst::oznaka( $r[0] ), Domestic_Proizvod_Tekst::vrijednost( $r[1] ) );
+			}
+			$tekst = Domestic_Proizvod_Tekst::html( $tekst );
+		}
 		return self::$opis[ $id ] = array( 'podaci' => $podaci, 'tekst' => $tekst );
 	}
 
@@ -266,7 +272,7 @@ final class Domestic_Proizvod_Data {
 
 	/** Naziv bez zapremnine na kraju („AVELLANA Liker od lješnjaka 0,70L” → „AVELLANA Liker od lješnjaka”). */
 	public static function name_without_volume( string $name ): string {
-		return trim( preg_replace( '/[\s,–-]*\d+(?:[.,]\d+)?\s*(ml|cl|l)\b\.?\s*$/iu', '', $name ) );
+		return trim( preg_replace( '/[\s,–-]*(?:\d+\s*[xX×]\s*)?\d+(?:[.,]\d+)?\s*(ml|cl|l)\b\.?\*?\s*$/iu', '', $name ) );
 	}
 
 	/** Naslov rastavljen na marku i ostatak („AVELLANA” + „Liker od lješnjaka”). Bez atributa Marka: velika slova na početku naziva. */

@@ -112,6 +112,14 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     povjerenje (na stanju + rok, besplatna dostava, sigurno pakiranje), zatim uvod, nagrade, „Kako poslužiti ↓”). Sličice = vodoravna traka
     (3 vidljive, strelice listaju po 3, ostale lazy). Mobitel: slika preko cijele širine min(46vh,360px), traka 3,6 sličice, naslov, cijena,
     gumb; traka „Dodaj u košaricu” na dnu kad gumb nije vidljiv (prvi ekran uvijek ima cijenu i gumb). Sekcije i povezani kao 0.3.
+  - **domestic-proizvod 0.5.0** (23.10., Igor: jednobrazni tekstovi, „neka unose kako hoće”): klasa `Domestic_Proizvod_Tekst` –
+    SAMO PRIKAZ (front; baza, admin i slugovi netaknuti). Filtri: the_title (product), woocommerce_product_get_name, short_description,
+    the_content (product), get_term/get_terms (product_cat/tag). Naziv: razmaci, zvjezdica na kraju van, „0,75” bez jedinice → 0,75 l,
+    zapremnine „0,75 l”/„1 l”/„4 × 0,05 l”, navodnici „…”, „ – ”, rječnik NAZIVI (Malvazija istarska, Pinot bijeli/sivi, sur lie, Rosé,
+    Cuvée, Exclusive, Mix…). Tekst (opis, podaci; adrese/e-mail netaknute): rječnik ISPRAVCI (tipfeleri nađeni hunspell-hr provjerom:
+    vrunsko, dugačije, đem, bariq, Ganitno→Granatno…), „sa”→„s” osim ispred s/z/š/ž/ps/ks/mn, „biti će”→„bit će”, °C, „% vol.”, razmaci.
+    Podaci: oznake ujednačene (Naziv vina/likera→Naziv, NAPOMENA→Napomena, Temperatura posluživanja→serviranja), vrijednost velikim
+    početnim slovom bez točke. Domestic → Tekstovi: uključi/isključi, vlastiti rječnik „pogrešno => ispravno”, pregled naziva prije/poslije.
   - **domestic-kartica 0.2.2** (Igor izabrao br. 3 iz usporedbe 5 parova): **Marcellus** (naslovi, nazivi, cijene; samo 400, kao slova
     logotipa) + **Jost** 400/500 (tekst; datoteka 500 za težine 500–700). Naslov proizvoda, sekcije i „Još domaćih priča” VELIKIM slovima
     s razmakom .05–.06em; kartice u trgovini normalna slova. Caslon/Inter/Cormorant izbačeni. Usporedba (scratchpad fontovi-usporedba.png):

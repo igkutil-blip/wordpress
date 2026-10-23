@@ -32,6 +32,8 @@ final class Domestic_Proizvod_Admin {
 		Domestic_Menu::add( 'domestic-stranica-proizvoda', 'Stranica proizvoda', array( __CLASS__, 'page_settings' ), 80 );
 		add_action( 'admin_post_dsp_save_settings', array( __CLASS__, 'save_settings' ) );
 		add_action( 'admin_post_dsp_extract', array( __CLASS__, 'apply_extract' ) );
+		Domestic_Menu::add( 'domestic-tekstovi', 'Tekstovi', array( __CLASS__, 'page_tekst' ), 70 );
+		add_action( 'admin_post_dsp_tekst', array( __CLASS__, 'save_tekst' ) );
 	}
 
 	public static function assets( $hook ): void {
@@ -406,6 +408,67 @@ final class Domestic_Proizvod_Admin {
 			)
 		);
 		wp_safe_redirect( add_query_arg( 'dsp_msg', rawurlencode( 'Spremljeno.' ), admin_url( 'admin.php?page=domestic-stranica-proizvoda' ) ) );
+		exit;
+	}
+
+	/* ---------- Tekstovi: jednobrazan prikaz ---------- */
+
+	public static function page_tekst(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+		$s = Domestic_Proizvod_Tekst::postavke();
+		echo '<div class="wrap dsp-admin"><h1>Tekstovi</h1>';
+		self::notice();
+		echo '<p>Nazivi, kategorije i opisi proizvoda uređuju se <b>samo pri prikazu</b> u trgovini: ovdje u administraciji ostaju kako su upisani, a kupci vide jednobrazan i pravopisno ispravan tekst. Adrese stranica se ne mijenjaju.</p>';
+		echo '<details><summary><b>Pravila koja se primjenjuju</b></summary><ul style="list-style:disc;margin-left:20px">'
+			. '<li>Zapremnine: 0,75L · 0,75 L · 0.75l → <code>0,75 l</code>; 1,00L → <code>1 l</code>; 4x0,05L → <code>4 × 0,05 l</code></li>'
+			. '<li>Navodnici "…" → <code>„…”</code>; crtica između riječi → <code>–</code>; zvjezdica na kraju naziva se uklanja</li>'
+			. '<li>Alkohol: 20 vol. % · 20%vol → <code>20 % vol.</code>; temperatura: 8-10°C → <code>8 – 10 °C</code></li>'
+			. '<li>„sa” samo ispred s, z, š, ž (sa sirom, s voćem); „biti će” → „bit će”; razmaci (dvostruki, prije zareza, iza zareza)</li>'
+			. '<li>Podaci: jednake oznake (Naziv vina / Naziv likera → Naziv, NAPOMENA → Napomena), vrijednost počinje velikim slovom, bez točke na kraju</li>'
+			. '<li>Sorte malim slovom (Malvazija istarska, Pinot sivi), Rosé, Cuvée, ispravci tipfelera iz opisa (vrunsko, dugačije, đem …)</li></ul></details>';
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+		wp_nonce_field( 'dsp_tekst' );
+		echo '<input type="hidden" name="action" value="dsp_tekst"><table class="form-table">';
+		echo '<tr><th>Uređivanje prikaza</th><td><label><input type="checkbox" name="ukljuceno" value="yes" ' . checked( $s['ukljuceno'], 'yes', false ) . '> uključeno</label></td></tr>';
+		echo '<tr><th><label for="rjecnik">Vlastiti ispravci</label></th><td><textarea id="rjecnik" name="rjecnik" rows="6" class="large-text code" placeholder="pogrešno => ispravno">' . esc_textarea( $s['rjecnik'] ) . '</textarea><p class="description">Jedan po retku, npr. <code>Excluzive => Exclusive</code>. Vrijedi za nazive i opise (cijele riječi, točno ovako napisane).</p></td></tr>';
+		echo '</table><p><button class="button button-primary">Spremi</button></p></form>';
+
+		$rows = '';
+		$n    = 0;
+		foreach ( wc_get_products( array( 'limit' => -1, 'status' => array( 'publish', 'private' ), 'orderby' => 'title', 'order' => 'ASC' ) ) as $p ) {
+			$izvor = $p->get_name( 'edit' );
+			$novo  = Domestic_Proizvod_Tekst::naziv( $izvor );
+			if ( $novo !== $izvor ) {
+				$n++;
+				$rows .= '<tr><td><a href="' . esc_url( get_edit_post_link( $p->get_id() ) ) . '">' . esc_html( $izvor ) . '</a></td><td><b>' . esc_html( $novo ) . '</b></td></tr>';
+			}
+		}
+		echo '<h2>Nazivi proizvoda (' . (int) $n . ' se prikazuje drukčije)</h2><table class="widefat striped" style="max-width:1000px"><thead><tr><th>Upisano</th><th>Prikazuje se</th></tr></thead><tbody>' . ( $rows ? $rows : '<tr><td colspan="2">Svi nazivi su već jednobrazni.</td></tr>' ) . '</tbody></table>';
+		$rows = '';
+		foreach ( get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false ) ) as $t ) {
+			$novo = Domestic_Proizvod_Tekst::kategorija( $t->name );
+			if ( $novo !== $t->name ) {
+				$rows .= '<tr><td>' . esc_html( $t->name ) . '</td><td><b>' . esc_html( $novo ) . '</b></td></tr>';
+			}
+		}
+		echo '<h2>Kategorije</h2><table class="widefat striped" style="max-width:1000px"><tbody>' . ( $rows ? $rows : '<tr><td>Bez promjena.</td></tr>' ) . '</tbody></table></div>';
+	}
+
+	public static function save_tekst(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) || ! check_admin_referer( 'dsp_tekst' ) ) {
+			wp_die( 'Nema dozvole.' );
+		}
+		update_option(
+			Domestic_Proizvod_Tekst::OPT,
+			array(
+				'ukljuceno' => 'yes' === ( $_POST['ukljuceno'] ?? '' ) ? 'yes' : 'no',
+				'rjecnik'   => sanitize_textarea_field( wp_unslash( $_POST['rjecnik'] ?? '' ) ),
+			),
+			false
+		);
+		wp_safe_redirect( add_query_arg( 'dsp_msg', rawurlencode( 'Spremljeno.' ), admin_url( 'admin.php?page=domestic-tekstovi' ) ) );
 		exit;
 	}
 }

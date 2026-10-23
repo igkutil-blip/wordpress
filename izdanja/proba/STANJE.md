@@ -8,12 +8,13 @@ Softaculous klon žive stranice (22.10.2026.), isti hosting (MyDataKnox cp064). 
 |---|---|---|---|
 | domestic-pomocnik | 0.3.1 | aktivan | učitao Igor 23.10.2026.; mailovi preusmjereni na Igorovu adresu; 0.2.0 postavke teme, 0.3.0 zamjena slike na istoj adresi, 0.3.1 ?v= za zamijenjene slike (nginx cache) |
 | domestic-kartica | 0.2.2 | aktivan, nova kartica **uključena** | 23.10.2026.; krem pozadina cijele stranice #f6f1e9, kartice na kremi, bordo #702833; 0.2.2 fontovi Marcellus + Jost na cijeloj stranici |
-| domestic-proizvod | 0.4.3 | aktivan, novi izgled za **sve** proizvode | 23.10.2026.; UX prvi ekran: 2 stupca, cijena i gumb odmah, traka sličica, puni naziv |
+| domestic-proizvod | 0.5.0 | aktivan, novi izgled za **sve** proizvode | 23.10.2026.; UX prvi ekran: 2 stupca, cijena i gumb odmah, traka sličica, puni naziv |
 | domestic-provjera-dobi | 0.1.0 | aktivan, provjera **isključena** | 23.10.2026.; test okruženje, kategorije: vina, jaka alkoholna pića, pivo, horeca, poklon paketi (bez aloe vere i suvenira); čeka client_id i redirect URI za probu kod ministarstva |
 
 ## Promjene u odnosu na živu (samo na probi)
 
 - Novi logotipi upisani u **stare datoteke na istim adresama** (identitet/README.md): zaglavlje 300 px, ikona stranice, mailovi, Rank Math; zaglavlje krem #F7F3EB.
+- Tekstovi (domestic-proizvod 0.5.0): nazivi, kategorije i opisi jednobrazni samo pri prikazu; baza i adrese netaknute.
 - WooCommerce: decimalni separator „,” i tisuće „.” (12,60 €) – na živoj je još „.”.
 - Isključeni: KEKS Pay (pravo plaćanje), Google Site Kit, CTX Feed, IT-podrška Age Gate (NIAS) – zamijenjen našim dodatkom.
 
