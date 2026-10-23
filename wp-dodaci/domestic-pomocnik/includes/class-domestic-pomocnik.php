@@ -272,6 +272,7 @@ final class Domestic_Pomocnik {
 	/**
 	 * Zamjena datoteke postojeće slike NA ISTOJ ADRESI (SEO: adresa, naziv datoteke, naslov i alt ostaju).
 	 * Multipart polje „datoteka”; ekstenzija mora biti ista kao postojeća. Stare izvedenice se brišu i ponovno izrađuju.
+ * Polje „paleta=1” (samo PNG bez prozirnosti): izvedenice se sažimaju na 256 boja.
 	 */
 	public static function medij( WP_REST_Request $req ) {
 		$id   = (int) $req['id'];
@@ -307,13 +308,24 @@ final class Domestic_Pomocnik {
 			add_filter( 'intermediate_image_sizes_advanced', array( new WP_Site_Icon(), 'additional_sizes' ) ); // 32, 180, 192, 270
 		}
 		$nm = wp_generate_attachment_metadata( $id, $put );
+		// paleta=1: PNG fotografije bez prozirnosti – izvedenice sažeti na 256 boja (isti naziv i adresa, višestruko manje)
+		if ( 'png' === $stara && $req->get_param( 'paleta' ) && function_exists( 'imagetruecolortopalette' ) ) {
+			foreach ( (array) ( $nm['sizes'] ?? array() ) as $k => $v ) {
+				$fp = $dir . $v['file'];
+				$im = file_exists( $fp ) ? imagecreatefrompng( $fp ) : false;
+				if ( $im && imagetruecolortopalette( $im, true, 256 ) && imagepng( $im, $fp, 9 ) ) {
+					clearstatcache( true, $fp );
+					$nm['sizes'][ $k ]['filesize'] = filesize( $fp );
+				}
+			}
+		}
 		wp_update_attachment_metadata( $id, $nm );
 		clean_post_cache( $id );
 		$ver        = get_option( 'domestic_pomocnik_verzije', array() );
 		$ver        = is_array( $ver ) ? $ver : array();
 		$ver[ $id ] = time();
 		update_option( 'domestic_pomocnik_verzije', $ver, false );
-		return array( 'id' => $id, 'url' => wp_get_attachment_url( $id ), 'sirina' => $nm['width'] ?? null, 'visina' => $nm['height'] ?? null, 'velicine' => array_keys( (array) ( $nm['sizes'] ?? array() ) ) );
+		return array( 'id' => $id, 'url' => wp_get_attachment_url( $id ), 'sirina' => $nm['width'] ?? null, 'visina' => $nm['height'] ?? null, 'velicine' => array_map( static function ( $v ) { return $v['filesize'] ?? null; }, (array) ( $nm['sizes'] ?? array() ) ) );
 	}
 
 	public static function mailovi(): array {

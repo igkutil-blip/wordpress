@@ -26,6 +26,10 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
 - `2025/03/liker-domesticspirits.jpg` (4233) je zajednički natpis u opisima 43 proizvoda – NE zamjenjivati slikom za jedan proizvod.
 - Napravljeno: Avellana 0,70 l (751): 4276 ambijent (staro ime liker-od-ljesnjaka-07L.png), 4879 studio, 4880 posluživanje, 2047 i 3311
   medalje (obrađene; koriste ih i 0,20 l, 1 l, Avellana poklon paket). 4276 je i u galeriji „Avellana u pratnji” (4841).
+  23.10. druga verzija po pravilima (paket s alt.txt): 4276/4879/4880 zamijenjeni, alt 4880 „… – kako poslužiti, boca uz čašu likera”;
+  medalje iste (nisu dirane). Ambijent PNG: PIL quantize MEDIANCUT 256 + Floyd-Steinberg (2,5 MB → 0,83 MB), izvedenice `paleta=1`
+  (510 px 380 → 160 KB). **Postupak za sve PNG fotografije na starim adresama.** Pravila za izradu slika dana Igoru (format 1:1 1600, JPG 85 %,
+  redoslijed, kompozicija, nazivi studio-/posluzivanje-, alt.txt, bez izvora).
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
@@ -160,7 +164,7 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     Mailovi zadržani (`pre_wp_mail`, zadnjih 50 u `domestic_pomocnik_mailovi`) ili preusmjereni na jednu adresu „[PROBA → primatelj]”;
     noindex + blog_public 0; crvena traka „PROBNA KOPIJA”. REST `domestic-pomocnik/v1` (install_plugins): GET status, POST plugin
     (multipart `zip` s jednom mapom domestic-*, `activate=1`, zamjenjuje postojeću), GET/POST `opcija/domestic_*` ({"vrijednost"} ili {"spoji"}),
-    GET mailovi; 0.3.1: `?v=` na zamijenjenim slikama; 0.3.0: POST `medij/<id>` (zamjena datoteke slike na istoj adresi, izvedenice i site-icon veličine); 0.2.0: GET/POST `tema` (theme mods, skalarne), opcije i `rank-math-options-titles|general`, `woocommerce_email_header_image`.
+    GET mailovi; 0.3.2: `medij/<id>` + `paleta=1` = PNG izvedenice sažete na 256 boja (GD, isti nazivi); 0.3.1: `?v=` na zamijenjenim slikama; 0.3.0: POST `medij/<id>` (zamjena datoteke slike na istoj adresi, izvedenice i site-icon veličine); 0.2.0: GET/POST `tema` (theme mods, skalarne), opcije i `rank-math-options-titles|general`, `woocommerce_email_header_image`.
     Domestic → Pomoćnik (proba). Igor ga jednom ručno učita; dalje sve dodatke učitavam sam.
   - **domestic-provjera-dobi 0.1.0** (23.10.2026.): provjera punoljetnosti preko e-Građana/mGrađana (čl. 11.a). Domestic → Provjera dobi
     (opcija `domestic_provjera_dobi`: uključeno, okruženje test/prod, client_id + issuer/authorize/token/jwks po okruženju – zadano iz

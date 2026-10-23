@@ -458,7 +458,7 @@ final class Domestic_Proizvod_Front {
 			if ( $upute ) {
 				$k .= '<button type="button" class="dsp-guide dsp-zoomable" data-full="' . esc_url( wp_get_attachment_image_url( $upute, 'full' ) ) . '">'
 					. wp_get_attachment_image( $upute, 'woocommerce_single', false, array( 'loading' => 'lazy' ) )
-					. '<span>Povećaj ilustrirane upute ' . self::svg( 'zoom' ) . '</span></button>';
+					. '<span>Povećaj sliku ' . self::svg( 'zoom' ) . '</span></button>';
 			}
 			$desno[]             = self::section( 'posluzivanje', 'Kako poslužiti', 'Preporuka za ovaj proizvod', $k, true );
 			$nav['posluzivanje'] = 'Posluživanje';
