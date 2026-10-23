@@ -34,6 +34,9 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   kvantiziran). Važeća pravila: `identitet/PRAVILA-ZA-SLIKE.txt` (zamjenjuju sva prethodna): studijska boca 85 % visine (vrh 6 %, dno 91 %),
   ambijent 75–80 % (vrh 10 %, dno 88 %), sve isto postavljeno, bez zatamnjivanja, posluživanje = ilustrirana kartica s ikonama, sve JPG.
   domestic-proizvod 0.6.2: oznake ispod sličica isključene (`slike` = '').
+- Avellana 0,20 l (2734): 3829 ambijent (PNG 256 boja + paleta), 4881 studio, 4882 posluživanje, 3311 medalja; **2815 (zadnja strana boce,
+  stara firma) maknuta iz galerije – ne vraćati** (prilog ostaje). Avellana 1 l (748): 3891 ambijent, 4883 studio, 4884 posluživanje,
+  2047 + 3311 medalje (Igor: dodati stare medalje).
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
