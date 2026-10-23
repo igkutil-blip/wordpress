@@ -102,6 +102,7 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
 - (23.10.) **Promex Medica 1 l** (1115): 1116 PNG, 5113, 5114, ikone 5115–5117; **Promex Pelin 1 l** (1113): 1114 PNG, 5118, 5119, ikone 5120–5122
   (S tonikom = čaša s limunom); **San MONTANO Biska** (739): 740 PNG, 5123, 5124, ikone 5125–5127 (S ledom); **Smokva** (718): 729 PNG, 5128, 5129,
   ikone 5130–5132; **Teranino 0,70 l** (717): 732 PNG, 5133, 5134, ikone Teranina Limited 5096–5098 (ista kartica). Glavne slike nisu dijeljene.
+- (23.10.) **Promex Brusnica 1 l** (1105): 1106 PNG, 5135, 5136, ikone 5137–5139 (čaša, tanjur „Uz divljač”, čaša za destilate).
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 

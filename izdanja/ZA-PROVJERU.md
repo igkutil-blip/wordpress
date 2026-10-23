@@ -75,6 +75,7 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 - **Biska**: na kartici posluživanja temperatura **8–10 °C** (uobičajeno za bisku, nije podatak San Montana) – potvrditi.
 - **Biska i Smokva**: opisi spominju **srebrnu medalju na 8. CROSPIRIT-u** – slika medalje nema, godina?
 - **Teranino 0,70 l**: temperatura „5 C” (kao Limited) – potvrditi 5 °C.
+- **Promex Brusnica 1 l** (1105): Kao aperitiv 0,03 l, Uz divljač 0,03 l, Za kušanje 0,02 l – količine prijedlozi; „u rashlađenim čašama” iz opisa.
 
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
