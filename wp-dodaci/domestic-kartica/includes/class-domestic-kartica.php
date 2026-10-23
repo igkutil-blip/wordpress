@@ -47,6 +47,7 @@ final class Domestic_Kartica {
 			'zaobljenje' => 8,
 			'okvir'      => 'yes',
 			'sjena'      => 'no',
+			'stranica'   => '',
 			'css'        => '',
 		);
 	}
@@ -76,6 +77,13 @@ final class Domestic_Kartica {
 	}
 
 	public static function css(): void {
+		$poz = sanitize_hex_color( (string) self::postavke()['stranica'] );
+		if ( $poz ) {
+			// pozadina cijele stranice (Flatsome: wrapper, sadržaj, glavni dio zaglavlja)
+			wp_register_style( 'domestic-pozadina', false, array(), DSK_VER );
+			wp_enqueue_style( 'domestic-pozadina' );
+			wp_add_inline_style( 'domestic-pozadina', "body,#wrapper,#main,.page-wrapper,.shop-page-title,.header-main,.header-wrapper .header-bg-color{background-color:{$poz}!important}" );
+		}
 		if ( 'yes' !== self::postavke()['ukljuceno'] ) {
 			return;
 		}

@@ -382,6 +382,8 @@ final class Domestic_Proizvod_Admin {
 		echo '<tr><th><label for="rok">Rok slanja</label></th><td><input id="rok" name="rok" class="regular-text" value="' . esc_attr( $s['rok'] ) . '"><p class="description">Piše uz „Na stanju · šaljemo u …”.</p></td></tr>';
 		echo '<tr><th><label for="od">Besplatna dostava od (€)</label></th><td><input id="od" name="besplatno_od" class="small-text" value="' . esc_attr( $s['besplatno_od'] ) . '"> <input name="podrucje" class="regular-text" value="' . esc_attr( $s['podrucje'] ) . '" placeholder="područje, npr. Zagrebačke županije"><p class="description">0 = ne prikazuje se.</p></td></tr>';
 		echo '<tr><th><label for="novo">Oznaka „Novo”</label></th><td><input id="novo" name="novo_dana" class="small-text" value="' . esc_attr( $s['novo_dana'] ) . '"> dana nakon dodavanja proizvoda (0 = bez oznake)</td></tr>';
+		echo '<tr><th><label for="slike">Oznake slika</label></th><td><input id="slike" name="slike" class="large-text" value="' . esc_attr( $s['slike'] ) . '"><p class="description">Redom za 1., 2., 3. sliku proizvoda, odvojeno s |. Prva je glavna slika, ostale iz galerije.</p></td></tr>';
+		echo '<tr><th><label for="dostava_url">Uvjeti dostave</label></th><td><input id="dostava_url" name="dostava_url" class="large-text" value="' . esc_attr( $s['dostava_url'] ) . '" placeholder="https://…/dostava/"><p class="description">Poveznica „Uvjeti dostave” ispod okvira za kupnju (prazno = bez poveznice).</p></td></tr>';
 		echo '</table><p><button class="button button-primary">Spremi</button></p></form>';
 		echo '<h2>Za Flatsome UX Builder</h2><p>Dijelovi stranice dostupni su i kao kratki kodovi, ako se raspored želi složiti ručno: <code>[domestic_proizvod dio="galerija"]</code>, <code>[domestic_proizvod dio="kupnja"]</code>, <code>[domestic_proizvod dio="kartice"]</code>, <code>[domestic_proizvod dio="povezani"]</code> ili cijela stranica <code>[domestic_proizvod]</code>.</p></div>';
 	}
@@ -399,6 +401,8 @@ final class Domestic_Proizvod_Admin {
 				'besplatno_od' => (string) max( 0, (float) str_replace( ',', '.', (string) ( $post['besplatno_od'] ?? '0' ) ) ),
 				'podrucje'     => sanitize_text_field( $post['podrucje'] ?? '' ),
 				'novo_dana'    => (string) max( 0, absint( $post['novo_dana'] ?? 0 ) ),
+				'slike'        => sanitize_text_field( $post['slike'] ?? '' ),
+				'dostava_url'  => esc_url_raw( trim( (string) ( $post['dostava_url'] ?? '' ) ) ),
 			)
 		);
 		wp_safe_redirect( add_query_arg( 'dsp_msg', rawurlencode( 'Spremljeno.' ), admin_url( 'admin.php?page=domestic-stranica-proizvoda' ) ) );

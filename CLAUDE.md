@@ -72,6 +72,16 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     (kategorija „Domestic proba”, SKU DSP-…; uvoz skriptom preko WC REST). Nova adresa za pregled: stranica https://test.srd-plan-a.hr/domestic-proizvod/
     (WP stranica 9095, popis 7 proizvoda s poveznicama); stari demo /domestic-spirits/ (plan-a-ds-proba) ostaje netaknut. OTVORENO: fontovi na kopiji se ne učitavaju (status error),
     lokalno rade. Lokalna proba: WP 7.1.3 + WC 11.2.1 + SQLite (git klon), WooCommerce „coming soon” isključiti.
+  - **domestic-proizvod 0.2.0** (23.10.2026., Igorov mobilni dizajn s chatgpt.site uzorka): krem #f6f1e9, okvir #efe7dc, crte #e2d6c3,
+    bordo #6b2b35, zlatna #9b7b45; putanja „Svi proizvodi / kategorija / MARKA”; naslov MARKA + podnaslov (bez atributa Marka: velika slova
+    na početku naziva), red „0,70 l · % vol. · podrijetlo”; galerija = klizač (scroll-snap) s oznakom „U ambijentu · 1 / 3”, strelice, povećanje,
+    sličice s oznakama iz postavke `slike` („U ambijentu|Studijska|Kako poslužiti” = glavna slika + galerija redom); okvir kupnje: „Odaberi
+    zapremninu” = srodni proizvodi istog naziva bez zapremnine u istoj kategoriji (Data::siblings, filtar domestic_proizvod_zapremnine),
+    velika cijena + €/l + PDV, sidrena cijena izvučena iz price_html ispod, količina −/+ (Flatsomeovi −/+ skriveni), „Dodaj u košaricu” s
+    ikonom, dostava (+ `dostava_url`); uvodna rečenica (preskače „Naziv: vrijednost”), red nagrada, poveznice na sekcije, <details> harmonika
+    (O proizvodu otvoreno, Podaci, Kako poslužiti, Nagrade + godine, Recenzije); traka na dnu (≤720 px) kad gumb nije vidljiv.
+    Računalo: galerija lijevo (sticky), naslov i kupnja desno. Zapremnina i iz naziva („0,70L”). Flatsome „Filtriraj” skriven.
+  - **domestic-kartica 0.1.1**: + `stranica` = pozadina cijele stranice (body, #wrapper, #main, .header-main).
   - **domestic-kartica 0.1.0** (23.10.2026.): kartica proizvoda u petlji (trgovina, kategorije, povezani, Flatsome blokovi) – filter
     `wc_get_template_part` (content/product) → `templates/content-product.php`; u Flatsomeu omot `div.product-small.col > .col-inner`
     (mreža .products.row), inače `li`. Opcija `domestic_kartica`: uključeno, redoslijed elemenata (kategorija, marka, naziv, podaci =

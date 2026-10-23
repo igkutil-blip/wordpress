@@ -48,6 +48,8 @@ final class Domestic_Proizvod_Data {
 			'besplatno_od' => '60',
 			'podrucje'     => 'Zagrebačke županije',
 			'novo_dana'    => '60',
+			'slike'        => 'U ambijentu|Studijska|Kako poslužiti',
+			'dostava_url'  => '',
 		);
 		$o = get_option( self::OPT, array() );
 		return array_merge( $d, is_array( $o ) ? $o : array() );
@@ -153,18 +155,70 @@ final class Domestic_Proizvod_Data {
 
 	/** „0,70 l” za prikaz. */
 	public static function litres_label( float $l ): string {
-		return rtrim( rtrim( number_format( $l, 2, ',', '' ), '0' ), ',' ) . ' l';
+		return ( abs( $l - round( $l ) ) < 0.001 ? (string) (int) round( $l ) : number_format( $l, 2, ',', '' ) ) . ' l'; // 1 l, 0,70 l
 	}
 
-	/** Naslov rastavljen na marku i ostatak („AVELLANA” + „Lješnjak”). */
+	/** Zapremnina iz naziva proizvoda („… 0,70L”, „… 1 l”, „… 700 ml”) – zadnja pojava. */
+	public static function litres_from_name( string $name ): float {
+		if ( ! preg_match_all( '/(\d+(?:[.,]\d+)?)\s*(ml|cl|l)\b/iu', $name, $m, PREG_SET_ORDER ) ) {
+			return 0.0;
+		}
+		$z = end( $m );
+		return self::litres( $z[1] . ' ' . $z[2] );
+	}
+
+	/** Zapremnina proizvoda u litrama: atribut, inače naziv. */
+	public static function litres_of( WC_Product $p ): float {
+		$v = self::attr( $p, 'zapremnina' );
+		$l = $v ? self::litres( $v ) : 0.0;
+		return $l > 0 ? $l : self::litres_from_name( $p->get_name() );
+	}
+
+	/** Naziv bez zapremnine na kraju („AVELLANA Liker od lješnjaka 0,70L” → „AVELLANA Liker od lješnjaka”). */
+	public static function name_without_volume( string $name ): string {
+		return trim( preg_replace( '/[\s,–-]*\d+(?:[.,]\d+)?\s*(ml|cl|l)\b\.?\s*$/iu', '', $name ) );
+	}
+
+	/** Naslov rastavljen na marku i ostatak („AVELLANA” + „Liker od lješnjaka”). Bez atributa Marka: velika slova na početku naziva. */
 	public static function title_parts( WC_Product $p ): array {
-		$name  = $p->get_name();
+		$name  = self::name_without_volume( $p->get_name() );
 		$marka = self::attr( $p, 'marka' );
 		if ( $marka && 0 === stripos( $name, $marka ) ) {
 			$rest = trim( substr( $name, strlen( $marka ) ), " \t-–·" );
 			return array( $marka, $rest );
 		}
+		if ( preg_match( '/^((?:[\p{Lu}\d][\p{Lu}\d\'’&.\-]*\s+)+)(\p{Lu}\p{Ll}.*)$/u', $name, $m ) ) {
+			return array( trim( $m[1] ), trim( $m[2] ) );
+		}
 		return array( $name, '' );
+	}
+
+	/**
+	 * Isti proizvod u drugim zapremninama (zasebni proizvodi istog naziva bez zapremnine, u istoj kategoriji).
+	 *
+	 * @return array [ [ WC_Product, litre ], … ] sortirano po zapremnini, uključuje i ovaj proizvod; prazno ako nema drugih.
+	 */
+	public static function siblings( WC_Product $p ): array {
+		$base = self::norm( self::name_without_volume( $p->get_name() ) );
+		$cats = $p->get_category_ids();
+		if ( '' === $base || ! $cats || ! self::litres_of( $p ) ) {
+			return array();
+		}
+		$ids = wc_get_products( array( 'limit' => 200, 'status' => 'publish', 'return' => 'ids', 'product_category_id' => $cats, 'type' => 'simple' ) );
+		$out = array();
+		foreach ( array_unique( array_merge( array( $p->get_id() ), $ids ) ) as $id ) {
+			$x = (int) $id === $p->get_id() ? $p : wc_get_product( $id );
+			if ( ! $x || ( $x->get_id() !== $p->get_id() && ! $x->is_visible() ) ) {
+				continue;
+			}
+			$l = self::litres_of( $x );
+			if ( $l > 0 && self::norm( self::name_without_volume( $x->get_name() ) ) === $base ) {
+				$out[ (string) $l ] = array( $x, $l );
+			}
+		}
+		ksort( $out, SORT_NUMERIC );
+		$out = array_values( (array) apply_filters( 'domestic_proizvod_zapremnine', $out, $p ) );
+		return count( $out ) > 1 ? $out : array();
 	}
 
 	/* ---------- oznake ---------- */

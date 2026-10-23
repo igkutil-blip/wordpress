@@ -1,19 +1,41 @@
-/* Domestic – stranica proizvoda: galerija, kartice, povećanje slike, traka „U košaricu” */
+/* Domestic – stranica proizvoda: klizač slika s oznakama, povećanje, količina −/+, sekcije, traka „Dodaj u košaricu” */
 (function () {
   'use strict';
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var root = $('.dsp'); if (!root) return;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* galerija */
-  var main = $('.dsp-main');
-  $$('.dsp-thumb').forEach(function (b) {
-    b.addEventListener('click', function () {
-      if (!main) return;
-      main.removeAttribute('srcset'); main.src = b.getAttribute('data-src'); main.setAttribute('data-full', b.getAttribute('data-full'));
-      $$('.dsp-thumb').forEach(function (t) { t.classList.toggle('on', t === b); });
+  /* klizač */
+  var track = $('.dsp-track'), slides = $$('.dsp-slide'), cur = 0;
+  function go(i) {
+    if (!track || !slides.length) return;
+    i = (i + slides.length) % slides.length;
+    track.scrollTo({ left: i * track.clientWidth, behavior: reduce ? 'auto' : 'smooth' });
+  }
+  function mark(i) {
+    cur = i;
+    var c = $('.dsp-chip-t'), n = $('.dsp-chip-n');
+    if (c) c.textContent = slides[i].getAttribute('data-label');
+    if (n) n.textContent = String(i + 1);
+    $$('.dsp-thumb').forEach(function (t, k) { t.classList.toggle('on', k === i); t.setAttribute('aria-current', k === i ? 'true' : 'false'); });
+  }
+  if (track) {
+    var tm;
+    track.addEventListener('scroll', function () {
+      clearTimeout(tm);
+      tm = setTimeout(function () { var i = Math.round(track.scrollLeft / track.clientWidth); if (i !== cur && slides[i]) mark(i); }, 60);
+    }, { passive: true });
+    track.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(cur + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(cur - 1); }
     });
-  });
+    window.addEventListener('resize', function () { track.scrollLeft = cur * track.clientWidth; });
+  }
+  var pv = $('.dsp-prev'), nx = $('.dsp-next');
+  if (pv) pv.addEventListener('click', function () { go(cur - 1); });
+  if (nx) nx.addEventListener('click', function () { go(cur + 1); });
+  $$('.dsp-thumb').forEach(function (t) { t.addEventListener('click', function () { var i = +t.getAttribute('data-i'); mark(i); go(i); }); });
 
   /* povećanje */
   var dlg;
@@ -26,37 +48,46 @@
     }
     $('img', dlg).src = src; dlg.showModal();
   }
-  if (main) main.addEventListener('click', function () { zoom(main.getAttribute('data-full') || main.src); });
-  var zb = $('.dsp-zoom'); if (zb && main) zb.addEventListener('click', function () { zoom(main.getAttribute('data-full') || main.src); });
+  function curImg() { var im = slides[cur] && $('img', slides[cur]); return im ? (im.getAttribute('data-full') || im.currentSrc || im.src) : ''; }
+  slides.forEach(function (s) { var im = $('img', s); if (im) im.addEventListener('click', function () { zoom(curImg()); }); });
+  var zb = $('.dsp-zoom'); if (zb) zb.addEventListener('click', function () { var s = curImg(); if (s) zoom(s); });
   $$('.dsp-zoomable').forEach(function (i) { i.addEventListener('click', function () { zoom(i.getAttribute('data-full') || i.src); }); });
 
-  /* kartice */
-  function show(name, go) {
-    var tab = $('[role=tab][data-dsp-tab="' + name + '"]'); if (!tab) return;
-    $$('[role=tab]').forEach(function (b) { b.setAttribute('aria-selected', String(b === tab)); });
-    $$('.dsp-panel').forEach(function (p) { p.hidden = p.id !== 'dsp-' + name; });
-    if (go) $('#dsp-info').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-  $$('[data-dsp-tab]').forEach(function (b) {
-    b.addEventListener('click', function (e) { e.preventDefault(); show(b.getAttribute('data-dsp-tab'), b.getAttribute('role') !== 'tab'); });
+  /* količina −/+ */
+  $$('.dsp-cart .quantity').forEach(function (q) {
+    var inp = $('input.qty', q); if (!inp || inp.type === 'hidden' || $('.dsp-step', q)) return;
+    function step(d) {
+      var min = parseFloat(inp.min) || 1, max = parseFloat(inp.max) || Infinity, st = parseFloat(inp.step) || 1;
+      var v = Math.min(max, Math.max(min, (parseFloat(inp.value) || min) + d * st));
+      inp.value = v; inp.dispatchEvent(new Event('change', { bubbles: true })); upd();
+    }
+    var m = document.createElement('button'), p = document.createElement('button');
+    m.type = p.type = 'button'; m.className = p.className = 'dsp-step';
+    m.textContent = '−'; p.textContent = '+'; m.setAttribute('aria-label', 'Manje'); p.setAttribute('aria-label', 'Više');
+    q.insertBefore(m, inp); q.appendChild(p);
+    function upd() { var min = parseFloat(inp.min) || 1, max = parseFloat(inp.max) || Infinity, v = parseFloat(inp.value) || min; m.disabled = v <= min; p.disabled = v >= max; }
+    m.addEventListener('click', function () { step(-1); }); p.addEventListener('click', function () { step(1); });
+    inp.addEventListener('input', upd); upd();
   });
-  $$('[role=tab]').forEach(function (b, i, all) {
-    b.addEventListener('keydown', function (e) {
-      var n = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : null; if (n === null) return;
-      var t = all[(n + all.length) % all.length]; t.focus(); show(t.getAttribute('data-dsp-tab'));
-    });
-  });
-  if (/^#(tab-reviews|reviews|comment-\d+|dsp-recenzije)$/.test(location.hash)) show('recenzije');
 
-  /* traka „U košaricu” kad glavni gumb nije vidljiv */
+  /* sekcije: poveznice otvaraju sekciju */
+  function open(name) {
+    var d = $('#dsp-' + name); if (!d) return;
+    d.open = true;
+    d.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  }
+  $$('[data-dsp-open]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); open(a.getAttribute('data-dsp-open')); }); });
+  if (/^#(tab-reviews|reviews|comment-\d+|dsp-recenzije)$/.test(location.hash)) open('recenzije');
+
+  /* traka na dnu kad glavni gumb nije vidljiv */
   var st = $('.dsp-sticky'), btn = $('.dsp-cart .single_add_to_cart_button');
   if (st && btn && 'IntersectionObserver' in window) {
     new IntersectionObserver(function (en) {
-      var on = !en[0].isIntersecting && en[0].boundingClientRect.top < 0;
+      var on = !en[0].isIntersecting;
       st.classList.toggle('on', on); st.setAttribute('aria-hidden', String(!on)); $('button', st).tabIndex = on ? 0 : -1;
     }).observe(btn);
     $('button', st).addEventListener('click', function () {
-      if (btn.classList.contains('disabled') || btn.disabled) { btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+      if (btn.classList.contains('disabled') || btn.disabled) { btn.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); return; }
       btn.click();
     });
   }

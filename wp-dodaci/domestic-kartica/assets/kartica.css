@@ -33,3 +33,4 @@
 .dsk-kartica .dsk-gumb .added_to_cart{display:block;margin-top:6px;font-size:12px;text-align:center}
 .dsk-kartica.product-small .dsk-unutra{padding:0}
 @media (max-width:549px){.dsk-tekst{padding:10px 10px 12px}.dsk-kartica .dsk-naziv{font-size:14px!important}}
+.dsk-kartica:not(.dsk-sa-sjenom) .dsk-unutra{box-shadow:none!important}

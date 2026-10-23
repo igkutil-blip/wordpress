@@ -12,15 +12,10 @@ while ( have_posts() ) :
 	global $product;
 	$product = wc_get_product( get_the_ID() );
 	?>
-	<main id="main" class="dsp-wrap">
+	<div class="dsp-wrap">
 		<?php
-		woocommerce_breadcrumb(
-			array(
-				'wrap_before' => '<nav class="dsp-crumb" aria-label="Putanja">',
-				'wrap_after'  => '</nav>',
-				'delimiter'   => '<span>/</span>',
-			)
-		);
+		echo Domestic_Proizvod_Front::crumb( $product ); // phpcs:ignore WordPress.Security.EscapeOutput
+		add_filter( 'woocommerce_product_single_add_to_cart_text', function ( $t ) { return 'Dodaj u košaricu'; } );
 		if ( post_password_required() ) {
 			echo get_the_password_form(); // phpcs:ignore WordPress.Security.EscapeOutput
 		} else {
@@ -35,7 +30,7 @@ while ( have_posts() ) :
 			do_action( 'woocommerce_after_single_product' );
 		}
 		?>
-	</main>
+	</div>
 	<?php
 endwhile;
 
