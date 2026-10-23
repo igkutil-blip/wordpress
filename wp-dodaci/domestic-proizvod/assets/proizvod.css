@@ -238,3 +238,4 @@ body.dsp-page,body.dsp-page #wrapper,body.dsp-page #main{background:#f7f3eb!impo
   .dsp-sticky .dsp-i{width:19px;height:19px}
 }
 @media(prefers-reduced-motion:reduce){.dsp-sticky{transition:none}}
+.dsp .dsp-strip-btn[hidden]{display:none!important}
