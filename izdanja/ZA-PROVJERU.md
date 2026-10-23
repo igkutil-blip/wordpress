@@ -43,6 +43,11 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
   Mix – kušanje 0,01 l po okusu; Loza – kao Viljamovka; Promex Borovnica – kao Patrik Borovnica. Porcije su urednički prijedlozi.
 - Navy Strength: u opisu vise „Alk. % Vol.: 59.0”, „Primjeri koktela s ginom” i prazan „EAN kod:” (kao Hawk's) – urediti.
 
+### Patrik Šljivovica 0,20 l (3084) – 23.10.2026.
+- **Posluživanje** (kartica iz paketa): Kao digestiv 0,03 l, Kao aperitiv 0,03 l, Za kušanje 0,02 l (čaša za destilate) – urednički prijedlozi;
+  „idealno kao digestiv” i „Dobro ohlađeno” su sa stranice proizvoda.
+- Stara slika „patrik-piramide-1.jpg” (grupna, bez Šljivovice) ostaje glavna slika **Travarice 0,20 l** – Travarici treba vlastita slika.
+
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
   temperatura „Po želji” su sa stranice proizvoda.

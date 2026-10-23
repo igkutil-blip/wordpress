@@ -88,6 +88,10 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   3746, 5064, 5065, ikone 5066–5068 (tonik, Gimlet, Ginger Mule); **Mix rakija** (1630): 1631 (glavna), 5069, 5070, 1632 stražnja zamijenjena (PNG),
   ikone 5071–5073; **Mix likeri** (1641): 1639, 5074, 5075, 1640 zamijenjena, ikone 5076–5078; **Loza Muškatna** (2758): 2759, 5079, 5080, 2760
   zamijenjena, ikone Viljamovke 5052–5054. domestic-slike **0.3.2**: ambijentalna = slika istog naziva kao GLAVNA slika proizvoda (ne prva po zipu).
+- (23.10.) **Patrik Šljivovica 0,20 l** (3084): stara glavna 1943 `2020/02/patrik-piramide-1.jpg` = grupna slika (Travarica, Medovača, Višnja,
+  Borovnica – bez Šljivovice) i glavna je **Travarici 1942** → NE zamijenjena; Šljivovica dobila NOVU glavnu 5082 `2022/07/patrik-sljivovica-020l.jpg`
+  (paket preimenovan, uvoz s `cilj: 0`), 5083 studio, 5084 posluživanje, ikone 5085–5087 (čaše); 1943 maknuta iz njezine galerije (prilog ostaje).
+  Paket Travarice: ambijentalnu kao NOVU sliku (ne na 1943).
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
