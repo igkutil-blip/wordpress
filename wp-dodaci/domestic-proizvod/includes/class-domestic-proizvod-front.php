@@ -516,29 +516,29 @@ final class Domestic_Proizvod_Front {
 
 	public static function related( WC_Product $p ): string {
 		$ids = $p->get_upsell_ids();
-		if ( count( $ids ) < 4 ) {
-			$ids = array_unique( array_merge( $ids, wc_get_related_products( $p->get_id(), 8, $ids ) ) );
+		if ( count( $ids ) < 6 ) {
+			$ids = array_unique( array_merge( $ids, wc_get_related_products( $p->get_id(), 12, $ids ) ) );
 		}
-		if ( count( $ids ) < 4 ) {
+		if ( count( $ids ) < 6 ) {
 			// dopuna iz istih kategorija (uključuje i proizvode skrivene iz kataloga, ako je i ovaj skriven)
-			$more = wc_get_products( array( 'limit' => 8, 'status' => 'publish', 'return' => 'ids', 'exclude' => array_merge( array( $p->get_id() ), $ids ), 'product_category_id' => $p->get_category_ids(), 'orderby' => 'rand' ) );
+			$more = wc_get_products( array( 'limit' => 12, 'status' => 'publish', 'return' => 'ids', 'exclude' => array_merge( array( $p->get_id() ), $ids ), 'product_category_id' => $p->get_category_ids(), 'orderby' => 'rand' ) );
 			$ids  = array_unique( array_merge( $ids, $more ) );
 		}
 		$hidden = 'hidden' === $p->get_catalog_visibility();
 		$ids    = array_slice( array_values( array_filter( $ids, function ( $id ) use ( $hidden, $p ) {
 			$x = wc_get_product( $id );
 			return $x && (int) $id !== $p->get_id() && 'publish' === $x->get_status() && ( $x->is_visible() || ( $hidden && 'hidden' === $x->get_catalog_visibility() ) );
-		} ) ), 0, 4 );
+		} ) ), 0, 6 );
 		if ( ! $ids ) {
 			return '';
 		}
 		$h = '<section class="dsp-related"><div class="dsp-rel-head"><h2>Još domaćih priča.</h2><a href="' . esc_url( wc_get_page_permalink( 'shop' ) ) . '">Pogledaj sve →</a></div><div class="dsp-grid">';
-		foreach ( array_slice( $ids, 0, 3 ) as $id ) {
+		foreach ( $ids as $id ) {
 			$x   = wc_get_product( $id );
 			$l   = Domestic_Proizvod_Data::litres_of( $x );
 			$cat = self::primary_cat( $x );
 			$meta = array_filter( array( $cat ? $cat->name : '', $l ? Domestic_Proizvod_Data::litres_label( $l ) : '' ) );
-			$h  .= '<a class="dsp-card" href="' . esc_url( $x->get_permalink() ) . '"><span class="dsp-card-img">' . $x->get_image( 'woocommerce_thumbnail' ) . '</span>'
+			$h  .= '<a class="dsp-card" href="' . esc_url( $x->get_permalink() ) . '"><span class="dsp-card-img">' . $x->get_image( 'woocommerce_single', array( 'loading' => 'lazy', 'sizes' => '(max-width: 760px) 45vw, 220px' ) ) . '</span>'
 				. ( $meta ? '<span class="dsp-card-cat">' . esc_html( implode( ' · ', $meta ) ) . '</span>' : '' )
 				. '<h3>' . esc_html( Domestic_Proizvod_Data::name_without_volume( $x->get_name() ) ) . '</h3>'
 				. '<span class="dsp-card-row"><strong>' . esc_html( self::eur( (float) wc_get_price_to_display( $x ) ) ) . '</strong><span>Pogledaj ' . self::svg( 'desno' ) . '</span></span></a>';

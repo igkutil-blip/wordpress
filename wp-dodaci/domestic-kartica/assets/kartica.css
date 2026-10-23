@@ -221,10 +221,10 @@ a.dsk-opcija:hover{background:#f0e9de}
   .dsk-zaglavlje #wide-nav .flex-row{min-height:0;padding:0!important}
   .dsk-zaglavlje #wide-nav .flex-col.hide-for-medium.flex-left{display:block!important;width:100%;max-width:100%}
   .dsk-zaglavlje #wide-nav .flex-col.flex-right{display:none!important}
-  .dsk-zaglavlje #wide-nav .header-bottom-nav.nav-left{display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:8px;overflow-x:auto;padding:9px 15px!important;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav.nav-left{display:flex;flex-wrap:wrap!important;justify-content:center;gap:6px;overflow:visible;padding:8px 10px 10px!important}
   .dsk-zaglavlje #wide-nav .header-bottom-nav.nav-left::-webkit-scrollbar{display:none}
   .dsk-zaglavlje #wide-nav .header-bottom-nav>li{flex:0 0 auto}
-  .dsk-zaglavlje #wide-nav .header-bottom-nav>li>a{padding:8px 13px!important;border:1px solid #d9cebc;border-radius:17px;background:#fbf8f3;font-size:12px!important;letter-spacing:.08em;white-space:nowrap}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav>li>a{padding:7px 11px!important;border:1px solid #d9cebc;border-radius:15px;background:#fbf8f3;font-size:11px!important;letter-spacing:.06em;white-space:nowrap}
   .dsk-zaglavlje #wide-nav .header-bottom-nav>li>a:after{display:none}
   .dsk-zaglavlje #wide-nav .header-bottom-nav>li.dsk-sad>a{background:#702833;border-color:#702833;color:#fff!important}
 }

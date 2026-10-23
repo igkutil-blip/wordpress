@@ -63,12 +63,11 @@ final class Domestic_Kartica_Zaglavlje {
     var put=location.pathname;
     m.querySelectorAll('.nav-sidebar > li.menu-item > a').forEach(function(a){ try{ if(put.indexOf(new URL(a.href).pathname)===0 && new URL(a.href).pathname!=='/') a.parentNode.classList.add('dsk-sad'); }catch(e){} });
   }
-  /* traka kategorija na mobitelu: trenutna kategorija vidljiva i označena */
+  /* traka kategorija: trenutna kategorija označena */
   function traka(){
     var n=document.querySelector('#wide-nav .header-bottom-nav.nav-left'); if(!n) return;
     var put=location.pathname, on=null;
     n.querySelectorAll('li.menu-item > a').forEach(function(a){ try{ var p=new URL(a.href).pathname; if(p!=='/' && put.indexOf(p)===0){ a.parentNode.classList.add('dsk-sad'); on=a.parentNode; } }catch(e){} });
-    if(on && window.matchMedia('(max-width: 849px)').matches){ n.scrollLeft=on.offsetLeft-16; }
   }
   if(document.readyState!=='loading'){slozi();traka();} else document.addEventListener('DOMContentLoaded',function(){slozi();traka();});
 })();

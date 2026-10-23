@@ -150,6 +150,9 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     vrunsko, dugačije, đem, bariq, Ganitno→Granatno…), „sa”→„s” osim ispred s/z/š/ž/ps/ks/mn, „biti će”→„bit će”, °C, „% vol.”, razmaci.
     Podaci: oznake ujednačene (Naziv vina/likera→Naziv, NAPOMENA→Napomena, Temperatura posluživanja→serviranja), vrijednost velikim
     početnim slovom bez točke. Domestic → Tekstovi: uključi/isključi, vlastiti rječnik „pogrešno => ispravno”, pregled naziva prije/poslije.
+  - **domestic-kartica 0.5.1** (Igor: sve kategorije na prvom ekranu mobitela): traka kategorija na mobitelu u 2 retka (flex-wrap, sredina,
+    tablete 11 px), bez listanja. **domestic-proizvod 0.6.4**: „Još domaćih priča” = 6 malih kartica u redu (kvadratna slika woocommerce_single,
+    kategorija · zapremnina, naziv 2 retka, cijena + Pogledaj), ≤1000 px 3 u redu, mobitel vodoravno 2,4 vidljive.
   - **domestic-kartica 0.5.0** (Igor: izbornik na mobitelu, siva traka kategorija, zlatna gornja traka): klasa `Domestic_Kartica_Zaglavlje`.
     Gornja traka #29231F, krem tekst, zlatni kamion; filtar theme_mod_topbar_left: računalo = Flatsomeov tekst (bez velikih slova), mobitel =
     postavka `traka_kratka` („Besplatna dostava iznad 60 € · Zagrebačka županija”) u jednom retku. Traka kategorija (#wide-nav, Flatsome
