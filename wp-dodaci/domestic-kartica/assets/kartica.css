@@ -261,3 +261,27 @@ a.dsk-opcija:hover{background:#f0e9de}
 .dsk-izb-veze a{font:400 14px var(--ds-sans,inherit);color:#5d544c!important}
 .dsk-izb-dostava{display:flex;align-items:flex-start;gap:10px;margin:0;padding:12px 14px;border-radius:8px;background:#f0e9de;font:400 13px/1.4 var(--ds-sans,inherit);color:#29231f}
 .dsk-izb-dostava svg{width:20px;height:20px;flex-shrink:0;fill:none;stroke:#ad8d53;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- traka na dnu (mobitel) ---------- */
+.dsk-dno{display:none}
+@media (max-width:849px){
+  .dsk-ima-dno{padding-bottom:calc(58px + env(safe-area-inset-bottom))}
+  .dsk-dno{position:fixed;left:0;right:0;bottom:0;z-index:98;display:grid;grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;padding:0 0 env(safe-area-inset-bottom);background:rgba(247,243,235,.97);border-top:1px solid #e2d6c3;box-shadow:0 -4px 16px rgba(52,38,23,.07);font-family:var(--ds-sans,inherit)}
+  .dsk-dno a{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:58px;color:#29231f!important;font:500 10.5px/1 var(--ds-sans,inherit);letter-spacing:.02em}
+  .dsk-dno svg{width:23px;height:23px;fill:none;stroke:#ad8d53;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .dsk-dno a.dsk-sad{color:#702833!important}
+  .dsk-dno a.dsk-sad svg{stroke:#702833}
+  .dsk-dno a.dsk-sad:before{content:'';position:absolute;top:-1px;left:28%;right:28%;height:2px;background:#702833}
+  .dsk-dno-broj{position:absolute;top:6px;left:calc(50% + 5px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#702833;color:#fff;font:600 10px/17px var(--ds-sans,inherit);text-align:center}
+  .dsk-dno-broj[data-n="0"]{display:none}
+  .dsk-dno a.dsk-otvoreno{color:#702833!important}
+  .dsk-dno a.dsk-otvoreno svg{stroke:#702833}
+  .dsk-dno-panel{position:fixed;left:0;right:0;top:0;z-index:100000;padding:12px 14px;background:#f7f3eb;border-bottom:1px solid #e2d6c3;box-shadow:0 8px 24px rgba(52,38,23,.14)}
+  .dsk-dno-panel[hidden]{display:none}
+  .dsk-dno-panel form{position:relative;display:flex;align-items:center;gap:8px;margin:0;height:48px;padding:0 6px 0 14px;border:1px solid #d9cebc;border-radius:24px;background:#fbf8f3}
+  .dsk-dno-panel svg{width:20px;height:20px;flex:none;fill:none;stroke:#702833;stroke-width:1.8;stroke-linecap:round}
+  .dsk-dno-panel input[type=search]{flex:1;min-width:0;height:44px;margin:0;padding:0;border:0!important;background:none!important;box-shadow:none!important;font:400 16px var(--ds-sans,inherit);color:#29231f}
+  .dsk-dno-zatvori{flex:none;width:36px;height:36px;margin:0;padding:0;border:0;border-radius:50%;background:#efe7dc;color:#29231f;font:400 22px/36px var(--ds-sans,inherit);text-align:center}
+  .dsk-dno-panel .dsk-prijedlozi{left:0;right:0;top:calc(100% + 8px)}
+  .dsk-ima-dno .dsp-sticky{bottom:calc(58px + env(safe-area-inset-bottom));padding-bottom:10px}
+}

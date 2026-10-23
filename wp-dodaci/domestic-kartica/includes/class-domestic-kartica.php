@@ -77,6 +77,7 @@ final class Domestic_Kartica {
 			'trazilica'  => 'yes', // prijedlozi pretrage i novo polje u zaglavlju
 			'zaglavlje'  => 'yes', // novi izgled zaglavlja: gornja traka, kategorije, pretraga, košarica, izbornik na mobitelu
 			'traka_kratka' => 'Besplatna dostava iznad 60 € · Zagrebačka županija',
+			'donja_traka'  => 'yes', // mobitel: stalna traka na dnu (Početna, Ponuda, Pokloni, Traži, Košarica)
 		);
 	}
 

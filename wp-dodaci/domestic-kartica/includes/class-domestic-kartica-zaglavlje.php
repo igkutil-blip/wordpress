@@ -13,6 +13,76 @@ final class Domestic_Kartica_Zaglavlje {
 	public static function init(): void {
 		add_filter( 'theme_mod_topbar_left', array( __CLASS__, 'traka' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'skripta' ), 30 );
+		add_action( 'wp_footer', array( __CLASS__, 'donja_traka' ), 5 );
+		add_filter( 'woocommerce_add_to_cart_fragments', array( __CLASS__, 'fragment' ) );
+		add_filter( 'body_class', array( __CLASS__, 'klasa_dno' ) );
+	}
+
+	private static function dno_ukljuceno(): bool {
+		return self::ukljuceno() && 'yes' === Domestic_Kartica::postavke()['donja_traka'] && ! ( function_exists( 'is_checkout' ) && is_checkout() );
+	}
+
+	public static function klasa_dno( array $c ): array {
+		if ( self::dno_ukljuceno() ) {
+			$c[] = 'dsk-ima-dno';
+		}
+		return $c;
+	}
+
+	const DNO_IKONE = array(
+		'pocetna' => '<path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h4.5v-5.5h4V20h4.5V9.5"/>',
+		'ponuda'  => '<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>',
+		'pokloni' => '<path d="M4 10h16v3H4zM5.5 13h13v7.5h-13zM12 10v10.5"/><path d="M12 10c-2-3.5-5.5-3.5-5.5-1.5S9.5 10 12 10Zm0 0c2-3.5 5.5-3.5 5.5-1.5S14.5 10 12 10Z"/>',
+		'trazi'   => '<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/>',
+		'kosarica'=> '<path d="M5 8h14l-1.2 12H6.2L5 8Z"/><path d="M9 10V6.5a3 3 0 0 1 6 0V10"/>',
+	);
+
+	private static function broj(): int {
+		return function_exists( 'WC' ) && WC()->cart ? (int) WC()->cart->get_cart_contents_count() : 0;
+	}
+
+	private static function broj_html(): string {
+		$n = self::broj();
+		return '<span class="dsk-dno-broj" data-n="' . $n . '">' . $n . '</span>';
+	}
+
+	/** Broj u košarici se osvježava s WooCommerceovim fragmentima (dodavanje bez ponovnog učitavanja). */
+	public static function fragment( $f ) {
+		if ( self::ukljuceno() ) {
+			$f['span.dsk-dno-broj'] = self::broj_html();
+		}
+		return $f;
+	}
+
+	/** Mobitel: stalna krem traka na dnu s najvažnijim mjestima. */
+	public static function donja_traka(): void {
+		if ( ! self::dno_ukljuceno() ) {
+			return;
+		}
+		$shop   = wc_get_page_permalink( 'shop' );
+		$poklon = get_terms( array( 'taxonomy' => 'product_cat', 'search' => 'poklon', 'hide_empty' => true, 'parent' => 0, 'number' => 1 ) );
+		$poklon = ! is_wp_error( $poklon ) && $poklon ? $poklon[0] : null;
+		$sad    = is_front_page() ? 'pocetna' : ( is_cart() ? 'kosarica' : ( $poklon && is_tax( 'product_cat', $poklon->term_id ) ? 'pokloni' : ( is_shop() || is_product_taxonomy() || is_product() ? 'ponuda' : '' ) ) );
+		$stavke = array(
+			'pocetna'  => array( home_url( '/' ), 'Početna' ),
+			'ponuda'   => array( $shop, 'Ponuda' ),
+			'pokloni'  => $poklon ? array( get_term_link( $poklon ), 'Pokloni' ) : null,
+			'trazi'    => array( add_query_arg( array( 's' => '', 'post_type' => 'product' ), home_url( '/' ) ), 'Traži' ),
+			'kosarica' => array( wc_get_cart_url(), 'Košarica' ),
+		);
+		$h = '';
+		foreach ( array_filter( $stavke ) as $k => $v ) {
+			$h .= '<a href="' . esc_url( $v[0] ) . '" class="dsk-dno-' . $k . ( $sad === $k ? ' dsk-sad' : '' ) . '"' . ( $sad === $k ? ' aria-current="page"' : '' ) . '>'
+				. '<svg viewBox="0 0 24 24" aria-hidden="true">' . self::DNO_IKONE[ $k ] . '</svg>' . ( 'kosarica' === $k ? self::broj_html() : '' )
+				. '<span>' . esc_html( $v[1] ) . '</span></a>';
+		}
+		echo '<nav class="dsk-dno dsk-dno-' . count( array_filter( $stavke ) ) . '" aria-label="Brzi izbornik">' . $h . '</nav>'; // phpcs:ignore WordPress.Security.EscapeOutput
+		// pretraga iz trake: vlastiti panel na vrhu (prijedlozi iz trazilica.js se spajaju sami na input[name="s"])
+		echo '<div class="dsk-dno-panel" id="dsk-dno-panel" hidden><form role="search" method="get" class="searchform dsk-trazi" action="' . esc_url( home_url( '/' ) ) . '">'
+			. '<label class="screen-reader-text" for="dsk-dno-s">Pretraži proizvode</label>'
+			. '<svg viewBox="0 0 24 24" aria-hidden="true">' . self::DNO_IKONE['trazi'] . '</svg>'
+			. '<input type="search" id="dsk-dno-s" name="s" placeholder="Pretraži likere, vina, rakije…" autocomplete="off"><input type="hidden" name="post_type" value="product">'
+			. '<button type="button" class="dsk-dno-zatvori" aria-label="Zatvori pretragu">×</button></form></div>';
 	}
 
 	private static function ukljuceno(): bool {
@@ -89,7 +159,27 @@ final class Domestic_Kartica_Zaglavlje {
       n.appendChild(li);
     }
   }
-  if(document.readyState!=='loading'){slozi();traka();} else document.addEventListener('DOMContentLoaded',function(){slozi();traka();});
+  /* traka na dnu: Traži = panel pretrage na vrhu, Košarica = Flatsomeova bočna košarica (ako postoji) */
+  function dno(){
+    var t=document.querySelector('.dsk-dno-trazi'), k=document.querySelector('.dsk-dno-kosarica'), pn=document.getElementById('dsk-dno-panel');
+    function zatvori(){ if(pn){ pn.hidden=true; t&&t.classList.remove('dsk-otvoreno'); } }
+    if(t&&pn){
+      t.addEventListener('click',function(e){
+        e.preventDefault(); e.stopPropagation();
+        if(!pn.hidden){ zatvori(); return; }
+        pn.hidden=false; t.classList.add('dsk-otvoreno');
+        var i=pn.querySelector('input[name="s"]'); if(i){ i.focus(); }
+      });
+      pn.querySelector('.dsk-dno-zatvori').addEventListener('click',zatvori);
+      document.addEventListener('keydown',function(e){ if(e.key==='Escape') zatvori(); });
+      document.addEventListener('click',function(e){ if(!pn.hidden && !pn.contains(e.target) && !t.contains(e.target)) zatvori(); });
+    }
+    if(k) k.addEventListener('click',function(e){
+      var c=document.querySelector('#masthead .show-for-medium .header-cart-link.off-canvas-toggle');
+      if(c){ e.preventDefault(); c.click(); }
+    });
+  }
+  if(document.readyState!=='loading'){slozi();traka();dno();} else document.addEventListener('DOMContentLoaded',function(){slozi();traka();dno();});
 })();
 JS;
 }

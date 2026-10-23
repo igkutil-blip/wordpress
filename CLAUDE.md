@@ -162,6 +162,11 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     na 1600 px, isječak 392 px, krem pozadina #F7F3EB → prozirna, PNG 280 px, naziv `posluzivanje-ikona-<…>.png`) i upisati tekst s kartice
     u `_dsp_posluzivanje`. Klasične Avellane (0,20/0,70/1 l): 4888 čašica, 4889 kava, 4890 slastica; Premium: 4891 led, 4892 espresso koktel,
     4893 sladoled s kavom.
+  - **domestic-kartica 0.6.0** (Igor: krem traka na dnu mobitela iz probnog shopa 0.5.0): postavka `donja_traka` (yes), ≤849 px, wp_footer
+    `nav.dsk-dno`: Početna · Ponuda · Pokloni (prva kategorija proizvoda „poklon”) · Traži · Košarica (broj = WC fragment `span.dsk-dno-broj`);
+    trenutna bordo + crta gore; nije na blagajni. Traži = vlastiti panel na vrhu (`#dsk-dno-panel`, form.searchform → prijedlozi iz trazilica.js),
+    Košarica = Flatsomeova bočna košarica (klik na .header-cart-link.off-canvas-toggle), bez JS-a vodi na /cart/. body.dsk-ima-dno padding 58 px,
+    traka „Dodaj u košaricu” (.dsp-sticky) podignuta iznad nje.
   - **domestic-kartica 0.5.5** (Igor: traka kategorija pri listanju na mobitelu prevelika): kad Flatsome zalijepi zaglavlje (`.header-wrapper.stuck`)
     mreža 4 × 2 bez ikona, polja 34 px (126 → 70 px); na vrhu stranice nepromijenjeno.
   - **domestic-kartica 0.5.4**: otvoreno/označeno polje trake filtera ispunjava cijelu kućicu (summary bez zaobljenja, samo krajnja polja

@@ -97,6 +97,7 @@ final class Domestic_Kartica_Admin {
 			. ' &nbsp; <label><input type="checkbox" name="nedavno" value="yes" ' . checked( $s['nedavno'], 'yes', false ) . '> „Nedavno pregledano” ispod artikala</label>'
 			. '<p><label><input type="checkbox" name="trazilica" value="yes" ' . checked( $s['trazilica'], 'yes', false ) . '> pretraga s prijedlozima dok se tipka (sličice; bez obzira na kvačice; marka, kategorija, šifra)</label><br><label><input type="checkbox" name="zaglavlje" value="yes" ' . checked( $s['zaglavlje'], 'yes', false ) . '> novi izgled zaglavlja (gornja traka, kategorije, pretraga, košarica, izbornik na mobitelu)</label></p>'
 			. '<p>gornja traka na mobitelu <input name="traka_kratka" class="regular-text" value="' . esc_attr( $s['traka_kratka'] ) . '"><br><span class="description">Kratki tekst u jednom retku; na računalu ostaje tekst iz Flatsomea (Gornja traka).</span></p>'
+			. '<p><label><input type="checkbox" name="donja_traka" value="yes" ' . checked( $s['donja_traka'], 'yes', false ) . '> traka na dnu mobitela (Početna, Ponuda, Pokloni, Traži, Košarica s brojem)</label></p>'
 			. '<p class="description">Trgovina, kategorije i pretraga: naslov kategorije, filteri Kategorija / Cijena / Poredaj (padajući izbornici), uređene stranice 1, 2, 3. Adrese kategorija ostaju iste.</p></td></tr>';
 		echo '<tr><th>Pozadina cijele stranice</th><td><input class="dsk-boja" name="stranica" value="' . esc_attr( $s['stranica'] ) . '"><p class="description">Npr. krem #f6f1e9 za cijelu stranicu i zaglavlje. Prazno = boja iz teme. Vrijedi i kad je nova kartica isključena.</p></td></tr>';
 		echo '<tr><th>Fontovi</th><td><select name="fontovi"><option value="cijela" ' . selected( $s['fontovi'], 'cijela', false ) . '>Marcellus + Jost na cijeloj stranici</option><option value="shop" ' . selected( $s['fontovi'], 'shop', false ) . '>samo kartice i stranica proizvoda</option><option value="ne" ' . selected( $s['fontovi'], 'ne', false ) . '>fontovi teme</option></select><p class="description">Učitavaju se s ove stranice (bez Googlea), samo latinica i hrvatska slova, ~40 KB za prvi prikaz.</p></td></tr>';
@@ -153,6 +154,7 @@ final class Domestic_Kartica_Admin {
 				'trazilica'  => 'yes' === ( $p['trazilica'] ?? '' ) ? 'yes' : 'no',
 				'zaglavlje'  => 'yes' === ( $p['zaglavlje'] ?? '' ) ? 'yes' : 'no',
 				'traka_kratka' => sanitize_text_field( $p['traka_kratka'] ?? '' ),
+				'donja_traka'  => 'yes' === ( $p['donja_traka'] ?? '' ) ? 'yes' : 'no',
 			),
 			false
 		);
