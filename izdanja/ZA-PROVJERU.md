@@ -11,6 +11,10 @@ Natuknice za kraj obrade proizvoda – Igor pita, Mladen potvrdi ili ispravi. Ka
   Koji je liker dobio zlato 2023. (prilog 4255)?
 - **Posluživanje** (kartica iz paketa, 0,20 l): Kao aperitiv / Uz slasticu (medenjaci, suhi kolači) / Kao digestiv, po **0,03 l** – autorski prijedlozi, ne proizvođača.
 
+### BOGATI Čokolada 0,70 l (1589) – 23.10.2026.
+- **Posluživanje** (kartica iz paketa): U čašici 0,03 l (aperitiv), Na ledu 0,03 l, Uz sladoled od vanilije 0,02 l – autorski prijedlozi
+  (prema uobičajenom posluživanju čokoladnih likera, Mozart), nisu od proizvođača.
+
 ### AVELLANA Premium 0,70 l (3697)
 - **Posluživanje**: Na ledu 0,03 l; Espresso koktel 0,015 l + 0,045 l votke + 0,045 l espressa + 0,0075 l šećernog sirupa; Sladoled s kavom 0,02 l –
   autorski prijedlozi (prilagođeno prema Frangelico).

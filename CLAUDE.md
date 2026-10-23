@@ -50,6 +50,11 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   (Kao aperitiv / Uz slasticu / Kao digestiv, 0,03 l). Paket: količine 0,03 l i medenjaci = autorski prijedlozi – Mladen da potvrdi. Medalje nema u paketu
   (opis spominje srebro CROSPIRIT 2026.).
 
+- BOGATI Čokolada 0,70 l (1589, 23.10.): 4062 ambijent (`2018/03/bogati-cokolada-07-domestic-spirits-prednja.png`, PNG 256 + paleta), 4972 studio,
+  4973 posluživanje, ikone 4974 čašica, 4975 led, 4976 sladoled. **Uvoz paketa sad skriptom `alati/uvoz-slika/uvoz.py <postavke.json>`**
+  (primjer postavki u zaglavlju skripte; `--bez-ucitavanja` = samo pripremi i pregledaj ikone): sama nađe krugove ikona na kartici
+  (x iz najšireg reda, y = gornji rub kruga od 420 px + r), PNG/JPG prema staroj glavnoj slici, galerija glavna → studio → posluživanje → `ostale`.
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,
