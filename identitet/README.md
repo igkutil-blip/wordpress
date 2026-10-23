@@ -1,6 +1,6 @@
 # Domestic Spirits – logotipi i boje (Igor 23.10.2026.)
 
-Očišćene kopije (bez metapodataka) iz Igorova paketa; izvornik paketa se ne sprema u git.
+Očišćene kopije (bez metapodataka) iz Igorova paketa. Cijeli izvorni paket (sve veličine, ikone, favicon, izvornici): `izvorno/Domestic-Spirits-WordPress-logo-ikone.zip`.
 
 | Datoteka | Mjesto u WordPressu |
 |---|---|
