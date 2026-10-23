@@ -50,6 +50,11 @@ tvrtke, P5 otkrivanje proizvoda, P6 marketing i vjernost, P7 plaćanje i dostava
 knjigovodstvu i Emiliji. Uvjeti: 50 % predujam, 50 % po isporuci; Faza 1 rok 1–2 tjedna. Održavanje 100 €/mj.: do 10 novih artikala + obrada fotografija,
 briga o radu shopa, mjesečni izvještaj (posjetitelji → košarica → kupnja) s prijedlozima za poboljšanje.
 
+## Izdanja: proba i živa (Igor 23.10.2026.)
+
+`izdanja/proba/` = zipovi trenutno na proba.domesticspirits.hr (+ STANJE.md), `izdanja/ziva/` = odobreni i instalirani na živoj (+ STANJE.md),
+izvorni kod u `wp-dodaci/`. Pakiranje: `alati/zip-dodatak.sh <naziv>`. Postupak u `izdanja/README.md`. Uvijek ažurirati STANJE.md.
+
 ## WordPress dodaci za Mladenov shop – PRAVILO (Igor 21.10.2026.)
 
 Svi dodaci koje radimo za Domestic Spirits nalaze se pod **jednim izbornikom „Domestic”** u lijevoj traci WordPress admina:
