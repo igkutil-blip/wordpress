@@ -21,7 +21,7 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 ### Gin: Gavran Raven's 23 0,70 l (3405), Driver's Holiday 0,70 l (3132); Višnjevac 0,70 l i 1 l (1595, 1354) – 23.10.2026.
 - **Gin posluživanje**: Kao aperitiv 0,03 l (urednički), S tonikom 0,05 l (100 ml tonika, led, limeta), Gin Fizz 0,045 l (30 ml limuna, 10 ml sirupa,
   soda) – klasične recepture; Driver's Holiday temperatura „Dobro ohlađeno” = opća preporuka (nije sa stranice proizvoda).
-- ~~**Driver's Holiday Gin je privatan** – objaviti?~~ Igor: objaviti → objavljen na probi 23.10.2026. (na živoj isto kod prijenosa).
+- ~~**Driver's Holiday Gin je privatan** – objaviti?~~ Igor: **ostaje skriven**, objavljuju se samo nove slike (postavljene).
 - Driver's Holiday: u opisu visi redak „Primjeri koktela s ginom” bez sadržaja (i kod Patrik ginova) – dopisati koktele ili maknuti?
 - Gavran: adresa proizvoda je `/proizvod/gin-gavran-ravens-23-050l/`, a naziv kaže 0,70 l (adresa se NE mijenja – samo za znanje).
 
