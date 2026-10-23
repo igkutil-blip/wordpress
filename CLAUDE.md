@@ -56,7 +56,7 @@ Svi dodaci koje radimo za Domestic Spirits nalaze se pod **jednim izbornikom „
 prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju podstavku (ništa po drugim izbornicima).
 - Zajednička datoteka `wp-dodaci/zajednicko/domestic-menu.php` (klasa `Domestic_Menu`) kopira se u svaki dodatak kao
   `includes/domestic-menu.php` i mora biti ista u svima (kao `Plan_A_Email` kod Plan A). Podstavka: `Domestic_Menu::add( slug, naslov, callback, poredak )`.
-- **Proizvođač svih dodataka je obrt Vertikal** (Igor 21.10.2026.): u zaglavlju dodatka `Author: Vertikal, obrt` (nikad osobno ime ni alat).
+- **Proizvođač svih dodataka je Vertikal** (Igor 21. i 23.10.2026.): u zaglavlju dodatka `Author: Vertikal` (bez „obrt”; nikad osobno ime ni alat).
 - Dodaci: mapa `wp-dodaci/domestic-<naziv>/`, glavna datoteka `domestic-<naziv>.php`, prefiks klasa `Domestic_`, prava `manage_woocommerce`.
 - Popis dodataka (dopunjavati):
   - **domestic-proizvod 0.1.0** (u izradi, 21.10.2026.): stranica proizvoda u novom izgledu (template_include za označene ili sve proizvode),
@@ -67,6 +67,19 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     (kategorija „Domestic proba”, SKU DSP-…; uvoz skriptom preko WC REST). Nova adresa za pregled: stranica https://test.srd-plan-a.hr/domestic-proizvod/
     (WP stranica 9095, popis 7 proizvoda s poveznicama); stari demo /domestic-spirits/ (plan-a-ds-proba) ostaje netaknut. OTVORENO: fontovi na kopiji se ne učitavaju (status error),
     lokalno rade. Lokalna proba: WP 7.1.3 + WC 11.2.1 + SQLite (git klon), WooCommerce „coming soon” isključiti.
+  - **domestic-provjera-dobi 0.1.0** (23.10.2026.): provjera punoljetnosti preko e-Građana/mGrađana (čl. 11.a). Domestic → Provjera dobi
+    (opcija `domestic_provjera_dobi`: uključeno, okruženje test/prod, client_id + issuer/authorize/token/jwks po okruženju – zadano iz
+    mgradjani(-test).gov.hr/idp, opseg svi/kategorije, trajanje potvrde, ručni redirect, dijagnostika; gumb „Test veze” = well-known + JWKS).
+    Rute kao stranice (rewrite), ne REST: `/age-verification/start?_dsd=nonce` i **`/age-verification/callback` = registrirani URI** (WC sesija
+    dostupna). Transakcija u transientu `dsd_tx_` + sha256(state), 15 min, jednokratna, vezana na WC customer id; verifier/nonce samo na
+    poslužitelju. JWT: samo RS256, JWK→PEM (≥ 2048 bita), potpis prije claimova, iss/aud(/azp)/exp obavezan/iat/nbf/nonce, tolerancija 60 s.
+    age.alcohol ravno ili ugniježđeno, true/1/"true"; sve ostalo blokira. Callback parametre čita iz QUERY_STRING (WP briše $_GET['error']!).
+    Blagajna: klasična (kartica + CSS skriva obrazac + `woocommerce_after_checkout_validation`) i blok (render_block + store_api_cart_errors).
+    Meta narudžbe `_dsd_provjereno/_dsd_vrijeme/_dsd_okruzenje`; potvrda se briše nakon narudžbe (svaka narudžba nova provjera); sub se odbacuje.
+    Uzor: tuđi „IT-podrška Age Gate (NIAS)” (GPL; readme + DOCUMENTATION.md javno čitljivi na kopiji, PHP ne). Lokalni test (scratchpad
+    test_dob.py + mu-plugin mock-idp.php, pravi RS256 tokeni): 29/29 + blok blagajna/Store API odbija. Na kopiji: Igor ručno učitava zip
+    (aplikacijska lozinka ne radi za wp-admin upload), zatim isključiti IT-podrška dodatak. Za pravi test na kopiji ministarstvo mora dodati
+    redirect `https://proba.domesticspirits.hr/age-verification/callback`.
 
 ## Provjera dobi – mGrađani (Zakon o trgovini NN 59/26, rok bio 15.9.2026.)
 

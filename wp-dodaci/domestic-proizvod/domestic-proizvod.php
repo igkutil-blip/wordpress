@@ -3,7 +3,7 @@
  * Plugin Name: Domestic – stranica proizvoda
  * Description: Novi izgled stranice proizvoda (galerija, kupnja, posluživanje, nagrade, podaci), kartica „Domestic” na proizvodu i provjera podataka. Izbornik Domestic.
  * Version: 0.1.0
- * Author: Vertikal, obrt
+ * Author: Vertikal
  * Requires Plugins: woocommerce
  * Text Domain: domestic-proizvod
  */

@@ -3,7 +3,7 @@
  * Plugin Name: Domestic Spirits – probna trgovina
  * Description: Statička probna trgovina (mapa shop/) za pregled na kopiji stranice. Adresa: /domestic-spirits/
  * Version: 0.6.0
- * Author: Vertikal, obrt
+ * Author: Vertikal
  */
 
 defined( 'ABSPATH' ) || exit;
