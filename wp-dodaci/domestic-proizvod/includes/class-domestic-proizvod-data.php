@@ -128,15 +128,105 @@ final class Domestic_Proizvod_Data {
 		return null;
 	}
 
-	/** Vrijednost atributa po ključu (marka, zapremnina…). */
+	/** Vrijednost atributa po ključu (marka, zapremnina…); bez atributa – iz opisa („Vrsta: …”). */
 	public static function attr( WC_Product $p, string $key ): string {
 		foreach ( self::attributes( $p ) as $a ) {
 			if ( $a[2] === $key ) {
 				return $a[1];
 			}
 		}
+		foreach ( self::opis( $p )['podaci'] as $r ) {
+			if ( self::key_for( $r[0] ) === $key ) {
+				return $r[1];
+			}
+		}
 		return '';
 	}
+
+	/** Oznake u opisu koje su tekst, a ne podatak. */
+	const OPIS_TEKST = array( 'opis', 'dodatni info', 'dodatne informacije', 'o proizvodu' );
+
+	private static $opis = array();
+
+	/**
+	 * Kratki + dugi opis rastavljeni za prikaz (podaci u bazi se ne mijenjaju):
+	 * 'podaci' = [ [oznaka, vrijednost], … ] iz redaka „Oznaka: vrijednost”, 'tekst' = HTML priče bez tih redaka i bez slika.
+	 */
+	public static function opis( WC_Product $p ): array {
+		$id = $p->get_id();
+		if ( isset( self::$opis[ $id ] ) ) {
+			return self::$opis[ $id ];
+		}
+		$podaci = array();
+		$tekst  = '';
+		// sirovo iz baze (klasični uređivač sprema retke kao prijelome) + wpautop kao kod prikaza u WooCommerceu
+		$html   = wpautop( (string) $p->get_short_description( 'edit' ) ) . "\n" . wpautop( (string) $p->get_description( 'edit' ) );
+		// bez slika, spanova i atributa – opisi iz uređivača često imaju nezatvorene <span> oznake
+		$html = preg_replace( '#<img[^>]*>|</?(span|font|o:p)[^>]*>#i', '', $html );
+		$html = preg_replace( '#<(p|div|li|ul|ol|b|strong|em|i|h[1-6])\s[^>]*>#i', '<$1>', $html );
+		$dijelovi = preg_split( '#(</?(?:p|div|ul|ol|li|h[1-6]|table|tr|td|th|tbody)>|<br\s*/?>)#i', $html, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
+		$dozvoljeno = array( 'strong' => array(), 'b' => array(), 'em' => array(), 'i' => array(), 'a' => array( 'href' => true ) );
+		$lista      = null; // stavke otvorene liste
+		$li         = null; // tekst stavke koja se slaže
+		foreach ( $dijelovi as $d ) {
+			$tag = strtolower( trim( $d ) );
+			if ( in_array( $tag, array( '<ul>', '<ol>' ), true ) ) {
+				$lista = array();
+				continue;
+			}
+			if ( in_array( $tag, array( '</ul>', '</ol>' ), true ) ) {
+				if ( null !== $li && '' !== trim( wp_strip_all_tags( $li ) ) ) {
+					$lista[] = $li;
+				}
+				$tekst .= $lista ? '<ul><li>' . implode( '</li><li>', array_map( function ( $x ) use ( $dozvoljeno ) { return force_balance_tags( trim( wp_kses( $x, $dozvoljeno ) ) ); }, $lista ) ) . '</li></ul>' : '';
+				$lista  = null;
+				$li     = null;
+				continue;
+			}
+			if ( '<li>' === $tag ) {
+				$li = '';
+				continue;
+			}
+			if ( '</li>' === $tag ) {
+				if ( null !== $li && null !== $lista && '' !== trim( wp_strip_all_tags( $li ) ) ) {
+					$lista[] = $li;
+				}
+				$li = null;
+				continue;
+			}
+			if ( preg_match( '#^</?[a-z0-9]+>$|^<br\s*/?>$#i', $tag ) ) {
+				continue; // granica odlomka ili retka
+			}
+			if ( null !== $li ) {
+				$li .= $d;
+				continue;
+			}
+			$red = force_balance_tags( trim( wp_kses( $d, $dozvoljeno ) ) );
+			$txt = trim( preg_replace( '/\s+/u', ' ', html_entity_decode( wp_strip_all_tags( $red ), ENT_QUOTES, 'UTF-8' ) ), " \t\xC2\xA0" );
+			if ( '' === $txt ) {
+				continue;
+			}
+			if ( preg_match( '/^([^.:!?]{2,40}):\s*(.*)$/u', $txt, $m ) ) {
+				$oznaka = trim( $m[1] );
+				$vr     = trim( $m[2] );
+				if ( in_array( self::norm( $oznaka ), self::OPIS_TEKST, true ) ) {
+					$tekst .= '' !== $vr ? '<p>' . esc_html( $vr ) . '</p>' : '';
+					continue;
+				}
+				if ( '' !== $vr ) {
+					$podaci[] = array( $oznaka, $vr );
+					continue;
+				}
+			}
+			if ( preg_match( '/[?:]$/u', $txt ) && mb_strlen( $txt ) < 90 && preg_match( '#^<(strong|b)>.*</\1>$#s', $red ) ) {
+				$tekst .= '<h3>' . esc_html( $txt ) . '</h3>'; // podebljani kratki red s upitnikom = podnaslov
+			} else {
+				$tekst .= '<p>' . $red . '</p>';
+			}
+		}
+		return self::$opis[ $id ] = array( 'podaci' => $podaci, 'tekst' => $tekst );
+	}
+
 
 	/** Zapremnina u litrama iz teksta („0,7 l”, „0,70L”, „700 ml”). */
 	public static function litres( string $s ): float {

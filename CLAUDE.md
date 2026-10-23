@@ -100,6 +100,12 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     ikonom, dostava (+ `dostava_url`); uvodna rečenica (preskače „Naziv: vrijednost”), red nagrada, poveznice na sekcije, <details> harmonika
     (O proizvodu otvoreno, Podaci, Kako poslužiti, Nagrade + godine, Recenzije); traka na dnu (≤720 px) kad gumb nije vidljiv.
     Računalo: galerija lijevo (sticky), naslov i kupnja desno. Zapremnina i iz naziva („0,70L”). Flatsome „Filtriraj” skriven.
+  - **domestic-proizvod 0.3.0** (23.10., Igorov HTML prijedlog `index.html`): računalo 3 stupca (galerija | naslov + sažetak: uvod,
+    Vrsta/Podrijetlo, nagrade, „Kako poslužiti ↓” | okvir kupnje), ≤1150 px 2 stupca, ≤760 px: naslov, galerija 240 px, kupnja, uvod.
+    Georgia + Arial, boje #f7f3eb/#f0e9de/#702833/#96703c. „Na ovoj stranici” + sekcije u 2 stupca (Opis, Podaci | Kako poslužiti
+    s 3. slikom kao uputama, Nagrade, Dostava i plaćanje); na mobitelu otvoren samo Opis. Povezani: 3 kartice „Još domaćih priča.”
+    **Podaci iz opisa samo za prikaz** (Data::opis: kratki+dugi opis iz baze 'edit' + wpautop – klasični uređivač sprema retke bez <br>;
+    retci „Oznaka: vrijednost” → tablica Podaci i attr() kad nema atributa; „Opis:” → tekst; slike i spanovi izbačeni iz priče).
   - **domestic-kartica 0.1.1**: + `stranica` = pozadina cijele stranice (body, #wrapper, #main, .header-main).
   - **domestic-kartica 0.1.0** (23.10.2026.): kartica proizvoda u petlji (trgovina, kategorije, povezani, Flatsome blokovi) – filter
     `wc_get_template_part` (content/product) → `templates/content-product.php`; u Flatsomeu omot `div.product-small.col > .col-inner`

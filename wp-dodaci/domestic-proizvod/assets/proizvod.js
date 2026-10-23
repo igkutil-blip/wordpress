@@ -78,6 +78,9 @@
   }
   $$('[data-dsp-open]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); open(a.getAttribute('data-dsp-open')); }); });
   if (/^#(tab-reviews|reviews|comment-\d+|dsp-recenzije)$/.test(location.hash)) open('recenzije');
+  /* na mobitelu otvoren samo opis */
+  if (window.matchMedia && matchMedia('(max-width: 760px)').matches) $$('.dsp-sec').forEach(function (d) { d.open = d.id === 'dsp-opis'; });
+  if (/^#dsp-[a-z]+$/.test(location.hash)) open(location.hash.slice(5));
 
   /* traka na dnu kad glavni gumb nije vidljiv */
   var st = $('.dsp-sticky'), btn = $('.dsp-cart .single_add_to_cart_button');

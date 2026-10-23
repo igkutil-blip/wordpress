@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Domestic – stranica proizvoda
  * Description: Novi izgled stranice proizvoda (galerija, kupnja, posluživanje, nagrade, podaci), kartica „Domestic” na proizvodu i provjera podataka. Izbornik Domestic.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Author: Vertikal
  * Requires Plugins: woocommerce
  * Text Domain: domestic-proizvod
@@ -10,7 +10,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DSP_VER', '0.2.0' );
+define( 'DSP_VER', '0.3.0' );
 define( 'DSP_FILE', __FILE__ );
 define( 'DSP_DIR', __DIR__ );
 define( 'DSP_URL', plugin_dir_url( __FILE__ ) );
