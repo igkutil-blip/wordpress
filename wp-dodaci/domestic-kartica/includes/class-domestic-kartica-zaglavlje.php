@@ -40,7 +40,7 @@ final class Domestic_Kartica_Zaglavlje {
 		$kratki = (string) Domestic_Kartica::postavke()['traka_kratka'];
 		wp_add_inline_script(
 			'domestic-zaglavlje',
-			'window.dskZaglavlje=' . wp_json_encode( array( 'dostava' => $kratki, 'pocetna' => home_url( '/' ) ) ) . ';' . self::JS
+			'window.dskZaglavlje=' . wp_json_encode( array( 'dostava' => $kratki, 'pocetna' => home_url( '/' ), 'trgovina' => function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : '' ) ) . ';' . self::JS
 		);
 	}
 
@@ -67,7 +67,27 @@ final class Domestic_Kartica_Zaglavlje {
   function traka(){
     var n=document.querySelector('#wide-nav .header-bottom-nav.nav-left'); if(!n) return;
     var put=location.pathname, on=null;
-    n.querySelectorAll('li.menu-item > a').forEach(function(a){ try{ var p=new URL(a.href).pathname; if(p!=='/' && put.indexOf(p)===0){ a.parentNode.classList.add('dsk-sad'); on=a.parentNode; } }catch(e){} });
+    /* ikone za mrežu na mobitelu (prema adresi kategorije) */
+    var IK={
+      vin:'<path d="M8 3h8l-.6 5.2a3.5 3.5 0 0 1-6.8 0L8 3Z"/><path d="M8.3 6h7.4M12 11.6V20m-3.5 0h7"/>',
+      vinar:'<circle cx="9" cy="10" r="2"/><circle cx="13" cy="10" r="2"/><circle cx="11" cy="13.4" r="2"/><circle cx="15" cy="13.4" r="2"/><circle cx="13" cy="16.8" r="2"/><path d="M11 8c0-2 1-3.5 3-4.5M12.5 5.5c1.5-.8 3-.5 4 .5"/>',
+      liker:'<path d="M10 2.5h4v3l1.2 2.3c.5 1 .8 2 .8 3.1V20a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 8 20v-9.1c0-1.1.3-2.1.8-3.1L10 5.5v-3Z"/><path d="M8 12.5h8v5H8z"/>',
+      pivo:'<path d="M6 7h9v12.5a1.5 1.5 0 0 1-1.5 1.5h-6A1.5 1.5 0 0 1 6 19.5V7Z"/><path d="M15 9.5h2.2a1.8 1.8 0 0 1 1.8 1.8v3.4a1.8 1.8 0 0 1-1.8 1.8H15M6 7a2.5 2.5 0 0 1 2.5-3.2A3 3 0 0 1 13 3.6 2.4 2.4 0 0 1 15 7M9 11v6.5m3-6.5v6.5"/>',
+      horeca:'<path d="M3.5 17h17M5 17a7 7 0 0 1 14 0M12 8V6.5m-1.5 0h3M2.5 20h19"/>',
+      sok:'<path d="M7 7h10l-1.3 13.2a1 1 0 0 1-1 .8H9.3a1 1 0 0 1-1-.8L7 7Z"/><path d="M7.6 12.5h8.8M13 7l2-4.5h2"/>',
+      poklon:'<path d="M4 10h16v3H4zM5.5 13h13v7.5h-13zM12 10v10.5"/><path d="M12 10c-2-3.5-5.5-3.5-5.5-1.5S9.5 10 12 10Zm0 0c2-3.5 5.5-3.5 5.5-1.5S14.5 10 12 10Z"/>',
+      sve:'<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>'
+    };
+    function kljuc(p){ return /vinarij/.test(p)?'vinar':/vin/.test(p)?'vin':/pivo|pive/.test(p)?'pivo':/horeca/.test(p)?'horeca':/sok/.test(p)?'sok':/poklon/.test(p)?'poklon':/likeri|rakij|alkohol|liker/.test(p)?'liker':'sve'; }
+    function ikona(a){ if(a.querySelector('.dsk-kat-ik')) return; var p=''; try{ p=new URL(a.href).pathname; }catch(e){} a.insertAdjacentHTML('afterbegin','<svg class="dsk-kat-ik" viewBox="0 0 24 24" aria-hidden="true">'+IK[kljuc(p)]+'</svg>'); }
+    n.querySelectorAll('li.menu-item > a').forEach(function(a){ ikona(a); try{ var p=new URL(a.href).pathname; if(p!=='/' && put.indexOf(p)===0){ a.parentNode.classList.add('dsk-sad'); on=a.parentNode; } }catch(e){} });
+    /* „Sve” – samo na mobitelu, da mreža 4 × 2 bude puna */
+    if(d.trgovina && !n.querySelector('.dsk-kat-sve')){
+      var li=document.createElement('li'); li.className='menu-item dsk-kat-sve';
+      li.innerHTML='<a href="'+d.trgovina+'" class="nav-top-link"><svg class="dsk-kat-ik" viewBox="0 0 24 24" aria-hidden="true">'+IK.sve+'</svg>Sve</a>';
+      try{ if(put.indexOf(new URL(d.trgovina).pathname)===0) li.classList.add('dsk-sad'); }catch(e){}
+      n.appendChild(li);
+    }
   }
   if(document.readyState!=='loading'){slozi();traka();} else document.addEventListener('DOMContentLoaded',function(){slozi();traka();});
 })();

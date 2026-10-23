@@ -210,6 +210,8 @@ a.dsk-opcija:hover{background:#f0e9de}
 .dsk-zaglavlje #wide-nav .header-bottom-nav.nav-left{flex-wrap:nowrap}
 .dsk-zaglavlje .header-main .top-divider{display:none}
 .dsk-zaglavlje #wide-nav .header-bottom-nav>li{margin:0}
+.dsk-kat-ik,.dsk-kat-sve{display:none!important}
+@media (max-width:849px){.dsk-zaglavlje .dsk-kat-sve{display:block!important}}
 .dsk-zaglavlje #wide-nav .header-bottom-nav>li>a{position:relative;padding:15px 14px!important;color:#29231f!important;font:500 13px/1 var(--ds-sans,inherit)!important;letter-spacing:.12em}
 .dsk-zaglavlje #wide-nav .header-bottom-nav>li>a:after{content:'';position:absolute;left:14px;right:14px;bottom:8px;height:2px;background:#ad8d53;transform:scaleX(0);transition:transform .2s}
 .dsk-zaglavlje #wide-nav .header-bottom-nav>li>a:hover,.dsk-zaglavlje #wide-nav .header-bottom-nav>li.dsk-sad>a,.dsk-zaglavlje #wide-nav .header-bottom-nav>li.active>a{color:#702833!important}
@@ -221,12 +223,15 @@ a.dsk-opcija:hover{background:#f0e9de}
   .dsk-zaglavlje #wide-nav .flex-row{min-height:0;padding:0!important}
   .dsk-zaglavlje #wide-nav .flex-col.hide-for-medium.flex-left{display:block!important;width:100%;max-width:100%}
   .dsk-zaglavlje #wide-nav .flex-col.flex-right{display:none!important}
-  .dsk-zaglavlje #wide-nav .header-bottom-nav.nav-left{display:flex;flex-wrap:wrap!important;justify-content:center;gap:6px;overflow:visible;padding:8px 10px 10px!important}
-  .dsk-zaglavlje #wide-nav .header-bottom-nav.nav-left::-webkit-scrollbar{display:none}
-  .dsk-zaglavlje #wide-nav .header-bottom-nav>li{flex:0 0 auto}
-  .dsk-zaglavlje #wide-nav .header-bottom-nav>li>a{padding:7px 11px!important;border:1px solid #d9cebc;border-radius:15px;background:#fbf8f3;font-size:11px!important;letter-spacing:.06em;white-space:nowrap}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav.nav-left{display:grid!important;grid-template-columns:repeat(4,1fr);gap:0;overflow:visible;padding:0!important;margin:0}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav>li{margin:0!important;border-right:1px solid #e2d6c3;border-bottom:1px solid #e2d6c3}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav>li:nth-child(4n){border-right:0}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav>li:nth-last-child(-n+4){border-bottom:0}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav>li>a{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:62px;padding:6px 4px!important;border:0;border-radius:0;background:none;font:500 11.5px/1.15 var(--ds-sans,inherit)!important;letter-spacing:.01em;text-transform:none!important;text-align:center;white-space:normal;color:#29231f!important}
   .dsk-zaglavlje #wide-nav .header-bottom-nav>li>a:after{display:none}
-  .dsk-zaglavlje #wide-nav .header-bottom-nav>li.dsk-sad>a{background:#702833;border-color:#702833;color:#fff!important}
+  .dsk-zaglavlje #wide-nav .dsk-kat-ik{display:block!important;width:24px;height:24px;fill:none;stroke:#ad8d53;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav>li.dsk-sad>a{background:#f0e9de;color:#702833!important;box-shadow:inset 0 -2px 0 #702833}
+  .dsk-zaglavlje #wide-nav .header-bottom-nav>li.dsk-sad .dsk-kat-ik{stroke:#702833}
 }
 
 /* ---------- izbornik na mobitelu ---------- */

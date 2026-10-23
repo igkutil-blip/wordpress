@@ -162,6 +162,9 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     na 1600 px, isječak 392 px, krem pozadina #F7F3EB → prozirna, PNG 280 px, naziv `posluzivanje-ikona-<…>.png`) i upisati tekst s kartice
     u `_dsp_posluzivanje`. Klasične Avellane (0,20/0,70/1 l): 4888 čašica, 4889 kava, 4890 slastica; Premium: 4891 led, 4892 espresso koktel,
     4893 sladoled s kavom.
+  - **domestic-kartica 0.5.2** (Igor: tablete kategorija na mobitelu ružne): mobitel = mreža 4 × 2 (62 px), zlatna linijska ikona (JS po adresi:
+    vin/vinarij/likeri-alkohol/pivo/horeca/sok/poklon) + naziv normalnim slovima, tanke crte između, trenutna krem + bordo crta dolje;
+    8. polje „Sve” (trgovina, samo mobitel). Računalo nepromijenjeno (ikone skrivene).
   - **domestic-kartica 0.5.1** (Igor: sve kategorije na prvom ekranu mobitela): traka kategorija na mobitelu u 2 retka (flex-wrap, sredina,
     tablete 11 px), bez listanja. **domestic-proizvod 0.6.4**: „Još domaćih priča” = 6 malih kartica u redu (kvadratna slika woocommerce_single,
     kategorija · zapremnina, naziv 2 retka, cijena + Pogledaj), ≤1000 px 3 u redu, mobitel vodoravno 2,4 vidljive.
