@@ -45,6 +45,11 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   meta `_dsp_posluzivanje` (kartica „Domestic”, ikone casa/koktel/kolac) → sekcija „Kako poslužiti” na stranici. Količine = autorski prijedlozi
   (napomena iz paketa: recepti prilagođeni prema Frangelico) – Mladen treba potvrditi.
 
+- BOGATI Medica 0,20 l (3005, 23.10.): 4203 ambijent (`2022/02/medica-bogati-02L.png`, PNG 256 boja + paleta=1), 4967 studio, 4968 posluživanje;
+  ikone s kartice 4969 aperitiv, 4970 slastica, 4971 digestiv (puni krug r 176 oko (322|799|1277, 628), izvan kruga prozirno) → `_dsp_posluzivanje`
+  (Kao aperitiv / Uz slasticu / Kao digestiv, 0,03 l). Paket: količine 0,03 l i medenjaci = autorski prijedlozi – Mladen da potvrdi. Medalje nema u paketu
+  (opis spominje srebro CROSPIRIT 2026.).
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,
