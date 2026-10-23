@@ -68,15 +68,15 @@ final class Domestic_Kartica {
 		add_action( 'wp_head', array( __CLASS__, 'preload' ), 2 );
 	}
 
-	/* ---------- fontovi: Cormorant Garamond (naslovi, cijene) + Inter (tekst), lokalno, s hrvatskim slovima ---------- */
+	/* ---------- fontovi: Libre Caslon Text (naslovi, cijene) + Inter (tekst), lokalno, s hrvatskim slovima ---------- */
 
 	const LATIN     = 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD';
 	const LATIN_EXT = 'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF';
 	const FONTOVI   = array(
-		array( 'DS Serif', 600, 'cormorant-garamond' ),
-		array( 'DS Serif', 700, 'cormorant-garamond' ),
-		array( 'DS Sans', 400, 'inter' ),
-		array( 'DS Sans', 600, 'inter' ),
+		array( 'DS Serif', '400 500', 'libre-caslon-text', 400 ),
+		array( 'DS Serif', '600 700', 'libre-caslon-text', 700 ),
+		array( 'DS Sans', 400, 'inter', 400 ),
+		array( 'DS Sans', 600, 'inter', 600 ),
 	);
 
 	public static function font_face(): string {
@@ -84,7 +84,7 @@ final class Domestic_Kartica {
 		foreach ( self::FONTOVI as $f ) {
 			foreach ( array( 'latin-ext' => self::LATIN_EXT, 'latin' => self::LATIN ) as $skup => $raspon ) {
 				// puna adresa – predmemorija (SpeedyCache i sl.) premješta CSS pa relativni put ne bi vrijedio
-				$css .= "@font-face{font-family:'{$f[0]}';font-style:normal;font-weight:{$f[1]};font-display:swap;src:url(" . esc_url( DSK_URL . "assets/fonts/{$f[2]}-{$skup}-{$f[1]}-normal.woff2" ) . ") format('woff2');unicode-range:{$raspon}}";
+				$css .= "@font-face{font-family:'{$f[0]}';font-style:normal;font-weight:{$f[1]};font-display:swap;src:url(" . esc_url( DSK_URL . "assets/fonts/{$f[2]}-{$skup}-{$f[3]}-normal.woff2" ) . ") format('woff2');unicode-range:{$raspon}}";
 			}
 		}
 		return $css;
@@ -94,7 +94,7 @@ final class Domestic_Kartica {
 		if ( 'ne' === self::postavke()['fontovi'] ) {
 			return;
 		}
-		foreach ( array( 'cormorant-garamond-latin-600', 'inter-latin-400' ) as $f ) {
+		foreach ( array( 'libre-caslon-text-latin-700', 'inter-latin-400' ) as $f ) {
 			echo '<link rel="preload" href="' . esc_url( DSK_URL . "assets/fonts/{$f}-normal.woff2" ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
 		}
 	}
@@ -110,7 +110,7 @@ final class Domestic_Kartica {
 		if ( 'cijela' === $nacin ) {
 			// cijela stranica (Flatsome): tekst Inter, naslovi Cormorant
 			$css .= 'body,p,li,td,th,input,select,textarea,button,.button,.nav>li>a,.nav-dropdown li a,.breadcrumbs,.woocommerce-breadcrumb,.price,.product-title,.widget,.footer-widgets,.absolute-footer{font-family:var(--ds-sans)!important}'
-				. 'h1,h2,h3,h4,.heading-font,.section-title,.page-title,.entry-title,.product_title,.widget-title,.box-text .name,.product-title a{font-family:var(--ds-serif)!important;font-weight:600;letter-spacing:0}';
+				. 'h1,h2,h3,h4,.heading-font,.section-title,.page-title,.entry-title,.product_title,.widget-title,.box-text .name,.product-title a{font-family:var(--ds-serif)!important;font-weight:400;letter-spacing:0}';
 		}
 		wp_add_inline_style( 'domestic-fontovi', $css );
 	}
