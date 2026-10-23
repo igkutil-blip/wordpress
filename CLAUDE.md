@@ -38,7 +38,7 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   stara firma) maknuta iz galerije – ne vraćati** (prilog ostaje). Avellana 1 l (748): 3891 ambijent, 4883 studio, 4884 posluživanje,
   2047 + 3311 medalje (Igor: dodati stare medalje).
 - Avellana Premium 0,70 l (3697): 3828 ambijent (PNG + paleta), 4886 studio, 4887 posluživanje, zatim 3700 2.jpg, 3701 3.jpg, 3702 2x.jpg
-  (detalji etikete, zamijenjeni na istim adresama) i 4532 Best in Class 2025 (zamijenjena; koriste je i Premium box 3727 i „Gospodski” 4527).
+  (detalji etikete, zamijenjeni na istim adresama; Igor: 3700 i 3701 maknuti iz galerije Premiuma – ostaje samo 3702 na mahovini) i 4532 Best in Class 2025 (zamijenjena; koriste je i Premium box 3727 i „Gospodski” 4527).
   Prazni altovi popunjeni (alt.txt; medalja: „Zlatna medalja Best in Class – CroSpirit Best Spirit Awards 2025.”). Količine posluživanja
   za Premium preuzete od klasične Avellane – Igor/Mladen trebaju potvrditi.
 
