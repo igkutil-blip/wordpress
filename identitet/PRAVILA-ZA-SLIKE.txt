@@ -1,0 +1,107 @@
+PRAVILA ZA SLIKE PROIZVODA – DOMESTIC SPIRITS
+(OVO PRAVILO ZAMJENJUJE SVA PRETHODNA PRAVILA I DOPUNE)
+
+=== 1. FORMAT ===
+- Kvadrat 1:1, točno 1600 × 1600 px.
+- Sve slike isporuči kao JPG, kvaliteta 85 %, sRGB, oko 100–400 KB po slici.
+- PNG samo kad slika stvarno mora imati prozirnu pozadinu (izrezana boca ili
+  medalja bez podloge), najviše oko 500 KB.
+- NE izrađuj velike PNG datoteke od nekoliko MB.
+
+=== 2. TRI SLIKE ZA SVAKI PROIZVOD, TIM REDOM ===
+1. AMBIJENTALNA (glavna slika)
+2. STUDIJSKA
+3. KAKO POSLUŽITI (ilustrirana kartica s ikonama – vidi točku 5)
+Dodatne slike (medalje, detalji) dolaze tek iza ove tri.
+Na slikama NE piši „U ambijentu”, „Studijska” ni „Kako poslužiti” kao oznaku slike.
+
+=== 3. BOCA: VELIKA I UVIJEK NA ISTOM MJESTU (najvažnije) ===
+Boca mora biti velika i jednako postavljena na svim slikama i svim proizvodima,
+da se u trgovini ništa ne „skače” kad se listaju proizvodi.
+- Boca je okomita, u sredini slike vodoravno.
+- STUDIJSKA: boca zauzima 85 % visine slike.
+    vrh čepa  ≈ 6 % od gornjeg ruba (oko 100 px)
+    dno boce  ≈ 91 % visine (oko 1455 px od vrha)
+- AMBIJENTALNA: boca zauzima 75–80 % visine slike.
+    vrh čepa  ≈ 10 % od gornjeg ruba (oko 160 px)
+    dno boce  ≈ 88 % visine (oko 1410 px od vrha)
+- Dno boce je na svim slikama na istoj visini (ista „linija stola”).
+- Veličina se odnosi na bocu 0,70 l. Manje boce (0,20 l, 0,50 l) i veće
+  (1 l) u istoj su seriji: isto dno, isto mjesto, a visina boce smije biti
+  ista kao kod 0,70 l (boca se prikazuje što veća, ne u stvarnom omjeru).
+- Boca se nigdje ne smije dodirivati rub slike niti biti odrezana.
+- Kamera u visini etikete, gleda ravno, bez nagiba i perspektive.
+- Na svim proizvodima isti kut, ista udaljenost, isto svjetlo.
+
+=== 4. BOCA I ETIKETA – BEZ IZMJENA ===
+- Etiketa, logotip, oblik boce, čep i boja pića TOČNO kao na stvarnom proizvodu.
+- NE zatamnjuj i ne mijenjaj boje, kontrast ni svjetlinu boce i pića.
+  Boca je svijetla, jasna i topla, kao na dobroj studijskoj fotografiji.
+- Ne dodaji odsjaje ni sjene koje mijenjaju izgled etikete.
+- Etiketa mora biti čitljiva i kad je slika smanjena na 250 px.
+- Medalje na slici samo ako su fizički na boci.
+
+=== 5. SLIKE PO VRSTI ===
+AMBIJENTALNA
+- Boca u prirodnom okruženju koje odgovara proizvodu (kamen, drvo, priroda,
+  stol, sastojci poput lješnjaka, grožđa ili limuna). Topla dnevna svjetlost.
+- Rekviziti su mali i uz dno boce, ne zaklanjaju bocu ni etiketu.
+- Pozadina mekano zamućena, boca je oštra i najsvjetliji dio slike.
+
+STUDIJSKA
+- Samo boca na jednoličnoj krem podlozi #F7F3EB, s mekom sjenom ispod.
+- Bez rekvizita, bez čaše.
+
+KAKO POSLUŽITI – ilustrirana kartica, NE fotografija čaše s pićem
+- Krem podloga #F7F3EB, bez boce.
+- Gore manji natpis: „<MARKA> · <VRSTA>” (npr. „AVELLANA · LIKER OD LJEŠNJAKA”).
+- Naslov: „Kako poslužiti?”, ispod: „Tri načina za uživanje.”
+- Tri okrugle ikone u nizu (tanke linije, topli tonovi), svaka s nazivom,
+  količinom i kratkim opisom, npr.:
+    čašica  – „U čašici”  – 0,05 l – Samostalno posluživanje
+    šalica  – „U kavici”  – 0,03 l – Kao dodatak kavi
+    kolač   – „U slastici” – 0,1 l – Kao sastojak slastice
+  (količine i načini prema podacima o proizvodu; za vina: čaša, hrana, temperatura)
+- Ispod: ikona termometra i „Temperatura serviranja: <vrijednost>”.
+- Na dnu malim slovima: „DOMESTIC SPIRITS”.
+- Tekst samo na hrvatskom, ispravan pravopis, slova č ć đ š ž.
+- Svi tekstovi i brojevi prepisani TOČNO iz podataka koje dobiješ; ništa ne izmišljaj.
+
+=== 6. ZABRANJENO ===
+- Tekst, natpis, cijena ili logotip koji nije na stvarnoj etiketi
+  (osim teksta na kartici „Kako poslužiti”).
+- Vodeni žig, potpis ili bilo kakva oznaka alata ili izvora slike:
+  ni na slici, ni u nazivu datoteke, ni u metapodacima.
+- Ljudi, lica i ruke (osim ako se posebno traži).
+- Hladni i plavi tonovi, neonsko svjetlo, pretjerano izoštravanje,
+  „plastičan” izgled, zatamnjivanje proizvoda.
+
+=== 7. BOJE IDENTITETA (za ugođaj, ne kao natpis) ===
+Tamna #29231F · zlatna #AD8D53 · krem #F7F3EB · bordo #702833
+Dominiraju topli, prirodni, smirujući tonovi.
+
+=== 8. NAZIVI DATOTEKA – STROGO (adrese na webu se ne mijenjaju) ===
+- Za svaki proizvod dobit ćeš STARI NAZIV glavne slike
+  (npr. liker-od-ljesnjaka-07L.png).
+- AMBIJENTALNA: stari naziv, ali s nastavkom .jpg
+  (npr. liker-od-ljesnjaka-07L.png → liker-od-ljesnjaka-07L.jpg).
+  Pretvorba u PNG i sažimanje za staru adresu radi se pri uvozu.
+- STUDIJSKA:      studio-<stari naziv bez nastavka>.jpg
+- KAKO POSLUŽITI: posluzivanje-<stari naziv bez nastavka>.jpg
+- Veličina slova u starom nazivu ostaje ista (07L ostaje 07L).
+- Popravak postojeće slike (npr. medalje): točno stari naziv i isti format.
+- Ako stari naziv nije zadan: 1-ambijent.jpg, 2-studio.jpg, 3-posluzivanje.jpg.
+
+=== 9. ALT TEKST ===
+- Stare slike zadržavaju svoj stari alt tekst.
+- Za nove: „<Naziv proizvoda> <zapremnina> – <što se vidi>”, npr.
+  „Avellana liker od lješnjaka 0,7L – boca na krem podlozi”
+  „Avellana liker od lješnjaka – kako poslužiti: 0,05 l u čašici, 0,03 l u kavici, 0,1 l u slastici”
+- Hrvatski, bez navođenja alata ili izvora.
+
+=== 10. PREDAJA ===
+- Jedna mapa po proizvodu, nazvana po proizvodu i zapremnini („Avellana 0,70 l”).
+- U mapi samo slike (nazvane po točki 8) i alt.txt
+  (jedan redak po slici: naziv datoteke = alt tekst).
+- NIŠTA DRUGO: bez uputa, opisa postupka, promptova i bilješki.
+- Medalje i slike koje se ne mijenjaju NE šalji ponovno.

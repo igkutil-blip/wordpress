@@ -48,7 +48,7 @@ final class Domestic_Proizvod_Data {
 			'besplatno_od' => '60',
 			'podrucje'     => 'Zagrebačke županije',
 			'novo_dana'    => '60',
-			'slike'        => 'U ambijentu|Studijska|Kako poslužiti',
+			'slike'        => '', // npr. „U ambijentu|Studijska|Kako poslužiti” – Igor: bez oznaka ispod slika
 			'dostava_url'  => '',
 		);
 		$o = get_option( self::OPT, array() );

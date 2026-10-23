@@ -30,6 +30,10 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   medalje iste (nisu dirane). Ambijent PNG: PIL quantize MEDIANCUT 256 + Floyd-Steinberg (2,5 MB → 0,83 MB), izvedenice `paleta=1`
   (510 px 380 → 160 KB). **Postupak za sve PNG fotografije na starim adresama.** Pravila za izradu slika dana Igoru (format 1:1 1600, JPG 85 %,
   redoslijed, kompozicija, nazivi studio-/posluzivanje-, alt.txt, bez izvora).
+  Igor: druga verzija loša (boca 68 % visine, zatamnjeno, posluživanje = foto s čašom) → vraćena prva verzija (avellana-cisto, ambijent
+  kvantiziran). Važeća pravila: `identitet/PRAVILA-ZA-SLIKE.txt` (zamjenjuju sva prethodna): studijska boca 85 % visine (vrh 6 %, dno 91 %),
+  ambijent 75–80 % (vrh 10 %, dno 88 %), sve isto postavljeno, bez zatamnjivanja, posluživanje = ilustrirana kartica s ikonama, sve JPG.
+  domestic-proizvod 0.6.2: oznake ispod sličica isključene (`slike` = '').
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
