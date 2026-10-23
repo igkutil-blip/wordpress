@@ -315,3 +315,8 @@ upis `prosiri.py`; redoslijed `redoslijed.py` (vinarije noviji datum → prve na
     proizvodi”, Još priča (3 iz iste kategorije). SAMO PRIKAZ za stare objave: [ux_slider]/nizovi <img> → galerija (oznaka DSBGALERIJAnX dok prođe
     wpautop), [ux_products] → [products] široko, prvi naslov VELIKIM SLOVIMA maknut, style/align/span izbačeni, tablica dobiva data-l za mobitel.
     gettext za Flatsome (Continue reading → Pročitaj više …). Domestic → Blog (postavke).
+  - **domestic-blog 0.2.0** (Igor: izbornik regija kao izbor proizvoda, ljepši gumb): tablete → spojena traka polja (`.dsb-regije`, kao filteri/
+    kategorije proizvoda): zlatna linijska ikona po vrsti (const IKONE: sve, dalmacija = sunce i more, istra = maslina, slavonija = klas,
+    kontinent = brijeg s grožđem, rakije = boca), naziv, „N priča”; trenutna krem #f0e9de + bordo crta dolje. Redoslijed: Dalmacija, Istra i
+    Kvarner, Slavonija, Kontinentalna, Rakije. Mobitel mreža 3 × 2. Na probi skrivene 228 Blog i 15 Savjeti. „Pročitaj priču” = bordo obrubljena
+    tableta velikim slovima + strelica u bordo krugu (pri prelasku ispunjena); lijevo ikona boce + „N proizvoda u ponudi”.

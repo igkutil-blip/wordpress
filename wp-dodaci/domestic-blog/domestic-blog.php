@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Domestic – blog
  * Description: Blog (vinarije i proizvođači) u izgledu shopa: popis priča s filtrom po regiji, kartice, uređena objava s tablicom „Za stolom” i proizvodima u ponudi, natpisi na hrvatskom. Samo prikaz – sadržaj u bazi i adrese ostaju isti. Izbornik Domestic.
- * Version: 0.1.0
+ * Version: 0.2.0
  * Author: Vertikal
  * Requires at least: 6.0
  * Requires PHP: 7.4
@@ -11,7 +11,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DSB_VER', '0.1.0' );
+define( 'DSB_VER', '0.2.0' );
 define( 'DSB_DIR', __DIR__ );
 define( 'DSB_URL', plugin_dir_url( __FILE__ ) );
 

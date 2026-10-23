@@ -31,7 +31,20 @@
 .dsb-vrh{text-align:center;max-width:760px;margin:0 auto 24px}
 .dsb-vrh h1{margin:0;font-size:clamp(28px,4vw,44px);line-height:1.12;letter-spacing:.05em;text-transform:uppercase}
 .dsb-uvod{margin:14px auto 0;max-width:640px;font-size:16px;line-height:1.65;color:var(--dsb-siva)}
-.dsb-filtri{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 0 34px}
+/* izbornik regija: spojena polja kao izbor kategorija proizvoda */
+.dsb-regije{display:grid;grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;margin:0 0 34px;border:1px solid #d9cebc;border-radius:12px;background:var(--dsb-kartica);overflow:hidden;box-shadow:0 1px 2px rgba(41,35,31,.04)}
+.dsb-regija{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:96px;padding:14px 8px 13px;text-align:center;color:var(--dsb-tamna)!important}
+.dsb-regija+.dsb-regija{border-left:1px solid var(--dsb-crta)}
+.dsb-regija::after{content:"";position:absolute;left:18%;right:18%;bottom:0;height:2px;background:transparent}
+.dsb .dsb-r-ik{width:28px;height:28px;stroke:var(--dsb-zlatna);stroke-width:1.4;margin-bottom:2px}
+.dsb-r-ime{font:500 13.5px/1.25 var(--ds-sans,sans-serif)}
+.dsb-r-broj{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#8a7f73}
+.dsb-regija:hover{background:#f3ede3}
+.dsb-regija:hover::after{background:var(--dsb-zlatna)}
+.dsb-regija.dsb-sad{background:#f0e9de}
+.dsb-regija.dsb-sad::after{background:var(--dsb-bordo)}
+.dsb-regija.dsb-sad .dsb-r-ime{color:var(--dsb-bordo)}
+.dsb-regija.dsb-sad .dsb-r-ik{stroke:var(--dsb-bordo)}
 .dsb-mreza{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px}
 
 .dsb-kartica{display:flex;flex-direction:column;min-width:0;background:var(--dsb-kartica);border:1px solid #e8dfd1;border-radius:14px;overflow:hidden}
@@ -44,9 +57,14 @@
 .dsb-k-naslov a{color:var(--dsb-tamna)!important}
 .dsb-kartica:hover .dsb-k-naslov a{color:var(--dsb-bordo)!important}
 .dsb-k-uvod{margin:0 0 16px;font-size:14px;line-height:1.6;color:var(--dsb-siva);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.dsb-k-dno{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding:13px 0 15px;border-top:1px solid #ece3d6;font-size:12.5px}
-.dsb-k-broj{color:#746a5f}
-.dsb-k-vise{display:inline-flex;align-items:center;gap:6px;color:var(--dsb-bordo);font-weight:500;letter-spacing:.02em}
+.dsb-k-dno{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding:14px 0 16px;border-top:1px solid #ece3d6;font-size:12.5px}
+.dsb-k-broj{display:inline-flex;align-items:center;gap:6px;color:#746a5f}
+.dsb .dsb-k-broj svg{width:15px;height:15px;stroke:var(--dsb-zlatna);stroke-width:1.5}
+.dsb-k-vise{display:inline-flex;align-items:center;gap:10px;height:36px;padding:0 4px 0 15px;border:1px solid var(--dsb-bordo);border-radius:18px;color:var(--dsb-bordo);font:500 12.5px/1 var(--ds-sans,sans-serif);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.dsb-k-vise i{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--dsb-bordo);color:#fff;font-style:normal}
+.dsb .dsb-k-vise svg{width:14px;height:14px;stroke-width:2}
+.dsb-kartica:hover .dsb-k-vise,.dsb-k-dno:focus-visible .dsb-k-vise{background:var(--dsb-bordo);color:#fff}
+.dsb-kartica:hover .dsb-k-vise i{background:var(--dsb-krem);color:var(--dsb-bordo)}
 
 .dsb-istaknuta{grid-column:1/-1;display:grid;grid-template-columns:1.25fr 1fr}
 .dsb-istaknuta .dsb-k-slika{aspect-ratio:16/10;height:100%}
@@ -146,8 +164,13 @@
 	.dsb-arhiva,.dsb-objava{padding-top:22px}
 	.dsb-vrh{margin-bottom:18px}
 	.dsb-uvod{font-size:15px}
-	.dsb-filtri{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;margin:0 -16px 24px;padding:0 16px 4px;scroll-padding:0 16px;scrollbar-width:none}
-	.dsb-filtri::-webkit-scrollbar{display:none}
+	.dsb-regije{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-flow:row;gap:1px;margin:0 0 22px;background:var(--dsb-crta)}
+	.dsb-r-4,.dsb-r-8{grid-template-columns:repeat(4,minmax(0,1fr))}
+	.dsb-regija{min-height:82px;padding:11px 4px 10px;gap:3px;background:var(--dsb-kartica)}
+	.dsb-regija+.dsb-regija{border-left:0}
+	.dsb-r-ime{font-size:12.5px}
+	.dsb-r-broj{font-size:10px}
+	.dsb .dsb-r-ik{width:24px;height:24px}
 	.dsb-mreza{grid-template-columns:1fr;gap:16px}
 	.dsb-k-naslov{font-size:20px!important}
 	.dsb-istaknuta .dsb-k-naslov{font-size:23px!important}

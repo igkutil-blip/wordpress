@@ -58,24 +58,49 @@ final class Domestic_Blog_Prikaz {
 	}
 
 	/** Tablete kategorija s brojem priča (regije pa ostalo). */
+	/** Linijske ikone regija (zlatne, kao ikone kategorija proizvoda u zaglavlju). */
+	const IKONE = array(
+		'sve'        => '<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>',
+		'dalmacija'  => '<circle cx="15.5" cy="7.5" r="3"/><path d="M15.5 2v1.2M20.8 7.5H22M19.3 3.7l-.8.8M11.7 3.7l.8.8"/><path d="M2.5 15c1.5 0 1.5-1.2 3-1.2s1.5 1.2 3 1.2 1.5-1.2 3-1.2 1.5 1.2 3 1.2 1.5-1.2 3-1.2 1.5 1.2 3 1.2M2.5 19c1.5 0 1.5-1.2 3-1.2s1.5 1.2 3 1.2 1.5-1.2 3-1.2 1.5 1.2 3 1.2 1.5-1.2 3-1.2 1.5 1.2 3 1.2"/>',
+		'istra'      => '<path d="M12 21V8"/><path d="M12 12c-3.5 0-6-2-6.5-5 3.5 0 6 1.8 6.5 5ZM12 9c3-.3 5.3-2.4 5.5-5.5-3 .4-5.2 2.4-5.5 5.5ZM12 16c3 0 5.5-1.8 6-4.6-3.1 0-5.4 1.7-6 4.6Z"/><ellipse cx="7.5" cy="16.5" rx="1.4" ry="2" transform="rotate(-25 7.5 16.5)"/>',
+		'slavonija'  => '<path d="M12 21V5"/><path d="M12 8c-2.2-.3-3.4-1.8-3.4-3.8 2.2.2 3.4 1.7 3.4 3.8Zm0 0c2.2-.3 3.4-1.8 3.4-3.8-2.2.2-3.4 1.7-3.4 3.8ZM12 12.5c-2.2-.3-3.4-1.8-3.4-3.8 2.2.2 3.4 1.7 3.4 3.8Zm0 0c2.2-.3 3.4-1.8 3.4-3.8-2.2.2-3.4 1.7-3.4 3.8ZM12 17c-2.2-.3-3.4-1.8-3.4-3.8 2.2.2 3.4 1.7 3.4 3.8Zm0 0c2.2-.3 3.4-1.8 3.4-3.8-2.2.2-3.4 1.7-3.4 3.8Z"/>',
+		'kontinent'  => '<path d="M2.5 19.5 8.5 11l4 5 3-3.5 6 7"/><path d="M2.5 19.5h19"/><circle cx="17" cy="5.5" r="1.4"/><circle cx="19.2" cy="7.6" r="1.4"/><circle cx="16.6" cy="8.6" r="1.4"/><path d="M17 4.1c.3-1 1-1.6 2-1.8"/>',
+		'rakije'     => '<path d="M10 2.5h4v3l1.2 2.3c.5 1 .8 2 .8 3.1V20a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 8 20v-9.1c0-1.1.3-2.1.8-3.1L10 5.5v-3Z"/><path d="M8 12.5h8v5H8z"/>',
+		'ostalo'     => '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z"/><path d="M5 17a3 3 0 0 1 3-3h11M9 8h6"/>',
+	);
+
+	private static function vrsta( string $ime ): string {
+		$n = remove_accents( mb_strtolower( $ime ) );
+		foreach ( array( 'dalmacij' => 'dalmacija', 'istr' => 'istra', 'kvarner' => 'istra', 'slavonij' => 'slavonija', 'kontinent' => 'kontinent', 'rakij' => 'rakije', 'liker' => 'rakije', 'piv' => 'rakije' ) as $k => $v ) {
+			if ( false !== strpos( $n, $k ) ) {
+				return $v;
+			}
+		}
+		return 'ostalo';
+	}
+
+	/** Izbornik regija: spojena polja s ikonom, nazivom i brojem priča (kao izbor kategorija proizvoda). */
 	private static function filtri( int $sad ): string {
 		$skrivene = array_map( 'intval', (array) Domestic_Blog::postavke()['skrivene'] );
 		$kat      = get_categories( array( 'hide_empty' => true, 'exclude' => array_merge( array( (int) get_option( 'default_category' ) ), $skrivene ) ) );
+		$red      = array_flip( array( 'dalmacija', 'istra', 'slavonija', 'kontinent', 'rakije', 'ostalo' ) );
 		usort(
 			$kat,
-			static function ( $a, $b ) {
-				$va = 0 === stripos( $a->name, 'Vinarije' ) ? 0 : 1;
-				$vb = 0 === stripos( $b->name, 'Vinarije' ) ? 0 : 1;
-				return $va <=> $vb ?: strcmp( $a->name, $b->name );
+			static function ( $a, $b ) use ( $red ) {
+				return $red[ self::vrsta( $a->name ) ] <=> $red[ self::vrsta( $b->name ) ] ?: strcmp( $a->name, $b->name );
 			}
 		);
-		$ukupno = (int) wp_count_posts( 'post' )->publish;
-		$h      = '<a class="dsb-tableta' . ( $sad ? '' : ' dsb-sad' ) . '" href="' . esc_url( self::blog_url() ) . '"' . ( $sad ? '' : ' aria-current="page"' ) . '>Sve <span>' . $ukupno . '</span></a>';
+		$polje = static function ( string $url, string $ikona, string $ime, int $n, bool $on ): string {
+			return '<a class="dsb-regija' . ( $on ? ' dsb-sad' : '' ) . '" href="' . esc_url( $url ) . '"' . ( $on ? ' aria-current="page"' : '' ) . '>'
+				. '<svg class="dsb-r-ik" viewBox="0 0 24 24" aria-hidden="true">' . self::IKONE[ $ikona ] . '</svg>'
+				. '<span class="dsb-r-ime">' . esc_html( $ime ) . '</span>'
+				. '<span class="dsb-r-broj">' . esc_html( $n . ' ' . self::mn( $n, 'priča', 'priče', 'priča' ) ) . '</span></a>';
+		};
+		$h = $polje( self::blog_url(), 'sve', 'Sve priče', (int) wp_count_posts( 'post' )->publish, ! $sad );
 		foreach ( $kat as $k ) {
-			$on = $sad === (int) $k->term_id;
-			$h .= '<a class="dsb-tableta' . ( $on ? ' dsb-sad' : '' ) . '" href="' . esc_url( get_category_link( $k ) ) . '"' . ( $on ? ' aria-current="page"' : '' ) . '>' . esc_html( self::kratko( $k->name ) ) . ' <span>' . (int) $k->count . '</span></a>';
+			$h .= $polje( get_category_link( $k ), self::vrsta( $k->name ), self::kratko( $k->name ), (int) $k->count, $sad === (int) $k->term_id );
 		}
-		return '<nav class="dsb-filtri" aria-label="Regije i vrste">' . $h . '</nav>';
+		return '<nav class="dsb-regije dsb-r-' . ( count( $kat ) + 1 ) . '" aria-label="Regije i vrste">' . $h . '</nav>';
 	}
 
 	/** Kartica priče (istaknuta = prva na stranici objava, vodoravno). */
@@ -84,8 +109,8 @@ final class Domestic_Blog_Prikaz {
 		$slik = self::slika( $p, $istaknuta ? 'full' : 'large', $istaknuta ? '(max-width: 900px) 100vw, 680px' : '(max-width: 600px) 100vw, (max-width: 900px) 50vw, 400px' );
 		$kat  = self::kategorija( $p );
 		$n    = count( self::ponuda( $p->post_content )['ids'] );
-		$dno  = ( $n ? '<span class="dsb-k-broj">' . esc_html( $n . ' ' . self::mn( $n, 'proizvod', 'proizvoda', 'proizvoda' ) ) . ' u ponudi</span>' : '<span></span>' )
-			. '<span class="dsb-k-vise">Pročitaj priču' . self::STRELICA . '</span>';
+		$dno  = ( $n ? '<span class="dsb-k-broj"><svg viewBox="0 0 24 24" aria-hidden="true">' . self::IKONE['rakije'] . '</svg>' . esc_html( $n . ' ' . self::mn( $n, 'proizvod', 'proizvoda', 'proizvoda' ) ) . ' u ponudi</span>' : '<span></span>' )
+			. '<span class="dsb-k-vise"><span>Pročitaj priču</span><i>' . self::STRELICA . '</i></span>';
 		return '<article class="dsb-kartica' . ( $istaknuta ? ' dsb-istaknuta' : '' ) . '">'
 			. '<a class="dsb-k-slika" href="' . esc_url( $url ) . '" tabindex="-1" aria-hidden="true">' . $slik . '</a>'
 			. '<div class="dsb-k-tijelo">'
