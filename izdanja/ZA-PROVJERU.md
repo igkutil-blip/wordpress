@@ -25,6 +25,13 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 - Driver's Holiday: u opisu visi redak „Primjeri koktela s ginom” bez sadržaja (i kod Patrik ginova) – dopisati koktele ili maknuti?
 - Gavran: adresa proizvoda je `/proizvod/gin-gavran-ravens-23-050l/`, a naziv kaže 0,70 l (adresa se NE mijenja – samo za znanje).
 
+### Gothic Vodka Premium (2732), Good Spirit Kova (1519) i Golfer (1524) – 23.10.2026.
+- **Posluživanje** (kartice iz paketa): Gothic – Samostalno 0,03 l, S ledom 0,03 l, Moscow Mule 0,045 l (prilagodba IBA recepta); Kova –
+  Samostalno, Uz slasticu, U koktelu (Espresso Martini – prilagodba IBA, ne receptura proizvođača); Golfer – Kao aperitiv, Uz slasticu, S ledom.
+  Porcije 0,03 l su urednički prijedlozi.
+- **Golfer liker** je privatan (kupci ga ne vide) – slike postavljene, ostaje skriven kao Driver's Holiday (Igor 23.10.: samo slike).
+- Gothic: opis je popis („Proizvođač: …, Alkohol: …”) s oznakama u listi – tablica „Podaci” se zato ne slaže; urediti opis?
+
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
   temperatura „Po želji” su sa stranice proizvoda.

@@ -74,6 +74,11 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   `studio-IMG-20221018-WA0010.jpg`, 5023 (paket imao 1-ambijent/2-studio/3-posluzivanje), ikone Gavrana; **Višnjevac 1 l** (1354): 4077, 5024, 5025;
   **Višnjevac 0,70 l** (1595): 4066, 5026, 5027; oba ikone Višnjevca 0,20 (5004–5006). Nove slike idu u mapu datuma proizvoda (media_handle_sideload).
 
+- (23.10.) **Gothic Vodka Premium** (2732): 3130 `2021/05/IMG-20221018-WA0009.jpg`, 5028, 5029, ikone 5030–5032 (samostalno, led, Moscow Mule);
+  **Good Spirit Kova** (1519): 3129 `Kova.jpg`, 5033, 5034, ikone 5035–5037 (samostalno, slastica, Espresso Martini); **Golfer liker** (1524,
+  **privatan – ostaje skriven**, paket 1-ambijent…): 3128 `Golfer.jpg`, 5038 `studio-Golfer.jpg`, 5039, ikone 5040–5042.
+  Pravilo (Igor 23.10.): skriveni proizvodi dobivaju nove slike, ali status se NE mijenja (Driver's Holiday 3132 i Golfer 1524 ostaju privatni).
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,
