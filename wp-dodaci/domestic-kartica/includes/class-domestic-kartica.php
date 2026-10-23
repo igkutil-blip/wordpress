@@ -42,8 +42,8 @@ final class Domestic_Kartica {
 			'brzi'       => 'yes',
 			'poravnanje' => 'lijevo',
 			'naglasak'   => '#702833',
-			'pozadina'   => '#ffffff',
-			'slika_poz'  => '#efe7dc',
+			'pozadina'   => '#f2ebe0',
+			'slika_poz'  => '#ebe2d4',
 			'tekst'      => '#29231f',
 			'zaobljenje' => 8,
 			'okvir'      => 'yes',
@@ -51,6 +51,9 @@ final class Domestic_Kartica {
 			'stranica'   => '',
 			'fontovi'    => 'cijela', // cijela | shop | ne
 			'css'        => '',
+			'raspored'   => 'gore', // gore = filteri iznad artikala, bez bočne trake | tema = kako je u Flatsomeu
+			'stupci'     => 4,
+			'nedavno'    => 'yes',
 		);
 	}
 
@@ -67,6 +70,7 @@ final class Domestic_Kartica {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'css' ), 20 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'fontovi' ), 25 );
 		add_action( 'wp_head', array( __CLASS__, 'preload' ), 2 );
+		Domestic_Kartica_Trgovina::init();
 	}
 
 	/* ---------- fontovi: Marcellus (naslovi, cijene) + Jost (tekst), lokalno, s hrvatskim slovima ---------- */
@@ -187,6 +191,9 @@ final class Domestic_Kartica {
 		if ( '' === $m && taxonomy_exists( 'product_brand' ) ) {
 			$t = get_the_terms( $p->get_id(), 'product_brand' );
 			$m = is_array( $t ) && $t ? $t[0]->name : '';
+		}
+		if ( '' === $m && preg_match( '/^((?:[\p{Lu}][\p{Lu}\d&’\'.-]+\s+)+)/u', $p->get_name() . ' ', $r ) ) {
+			$m = trim( $r[1] ); // „AVELLANA Premium 0,70 l” → AVELLANA
 		}
 		return $m;
 	}

@@ -11,7 +11,8 @@
 .dsk-oznaka-akcija{background:var(--dsk-naglasak);color:#fff}
 .dsk-oznaka-rasprodano{background:#555;color:#fff}
 .dsk-oznaka-nagradeno{background:#c9a24a;color:#fff}
-.dsk-brzi{position:absolute;right:10px;bottom:10px;z-index:2;padding:4px 10px;border-radius:4px;background:rgba(255,255,255,.92);color:var(--dsk-tekst)!important;font-size:12px;opacity:0}
+.dsk-brzi{position:absolute;right:10px;bottom:10px;z-index:2;padding:5px 12px;border-radius:20px;background:color-mix(in srgb,var(--dsk-pozadina) 92%,transparent);border:1px solid rgba(41,35,31,.14);color:var(--dsk-tekst)!important;font-size:12px;letter-spacing:.02em;opacity:0}
+.dsk-brzi:hover{background:var(--dsk-naglasak);border-color:var(--dsk-naglasak);color:#fff!important}
 .dsk-slika:hover .dsk-brzi,.dsk-brzi:focus{opacity:1}
 .dsk-tekst{display:flex;flex-direction:column;flex:1;gap:4px;padding:12px 14px 14px}
 .dsk-tekst p{margin:0!important}
@@ -40,3 +41,63 @@
 .dsk-kartica .dsk-cijena .price,.dsk-kartica .dsk-cijena .price .amount{font-family:var(--ds-serif,inherit)!important;font-weight:400;font-size:21px}
 .dsk-kartica .dsk-cijena .sidrena-cijena,.dsk-kartica .dsk-cijena .sidrena-cijena .amount{font-family:var(--ds-sans,inherit)!important;font-size:11px;font-weight:400}
 @media (max-width:549px){.dsk-kartica .dsk-naziv,.dsk-kartica .dsk-naziv a{font-size:16px!important}}
+
+/* Flatsome sjena kartica (has-shadow) boji karticu bijelo – naša pozadina ima prednost */
+.products .dsk-kartica>.dsk-unutra.col-inner{background:var(--dsk-pozadina)!important}
+.dsk-marka:empty{display:none}
+
+/* ---------- trgovina: filteri iznad artikala ---------- */
+.dsk-trgovina .shop-page-title,.dsk-trgovina .category-filtering{display:none!important}
+.dsk-trgovina .category-page-row{padding-top:26px}
+.dsk-naslov{margin:0 0 16px}
+.dsk-put{display:flex;flex-wrap:wrap;gap:8px;font:12px var(--ds-sans,inherit);color:#746a5f;margin-bottom:6px}
+.dsk-put a{color:#746a5f!important}.dsk-put a:hover{color:#702833!important}
+.dsk-naslov h1{margin:0;font:400 clamp(26px,3vw,36px)/1.15 var(--ds-serif,inherit);letter-spacing:.05em;text-transform:uppercase;color:#29231f}
+.dsk-filteri{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 22px;padding:12px 0;border-top:1px solid #e2d6c3;border-bottom:1px solid #e2d6c3;font-family:var(--ds-sans,inherit);color:#29231f;position:relative;z-index:20}
+.dsk-filteri-lijevo,.dsk-filteri-desno{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.dsk-ukupno{font-size:13px;color:#746a5f;margin-right:4px}
+.dsk-filter{position:relative}
+.dsk-filter>summary{list-style:none;display:flex;align-items:center;gap:8px;min-height:42px;padding:0 14px;border:1px solid #d9cebc;border-radius:21px;background:#f7f3eb;cursor:pointer;font-size:14px;user-select:none}
+.dsk-filter>summary::-webkit-details-marker{display:none}
+.dsk-filter>summary:hover{border-color:#702833}
+.dsk-filter>summary svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .15s}
+.dsk-filter[open]>summary{border-color:#702833;background:#f0e9de}
+.dsk-filter[open]>summary svg{transform:rotate(180deg)}
+.dsk-filter-on>summary{border-color:#702833}
+.dsk-filter-naziv{font-weight:500}
+.dsk-filter-on .dsk-filter-naziv:after{content:':'}
+.dsk-filter-vrijednost{color:#702833}
+.dsk-panel{position:absolute;top:calc(100% + 6px);left:0;display:grid;grid-template-columns:repeat(2,minmax(170px,1fr));gap:4px;min-width:360px;max-width:min(640px,calc(100vw - 32px));padding:10px;background:#fbf8f3;border:1px solid #d9cebc;border-radius:8px;box-shadow:0 10px 30px rgba(41,35,31,.14)}
+.dsk-filter-kategorija .dsk-panel{grid-template-columns:repeat(3,minmax(160px,1fr));min-width:520px}
+.dsk-filter-desno .dsk-panel{left:auto;right:0;grid-template-columns:1fr;min-width:220px}
+.dsk-opcija{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:8px 12px;border-radius:6px;color:#29231f!important;font-size:14px;line-height:1.25;text-decoration:none!important}
+.dsk-opcija small{font-size:12px;color:#746a5f}
+a.dsk-opcija:hover{background:#f0e9de}
+.dsk-opcija.on{background:#702833;color:#fff!important}
+.dsk-opcija.on small{color:#f0e2e4}
+.dsk-opcija-prazno{opacity:.4;cursor:default}
+.dsk-aktivni{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 12px;border-radius:17px;background:#702833;color:#fff!important;font-size:13px;text-decoration:none!important}
+.dsk-aktivni span{font-size:16px;line-height:1}
+@media (max-width:760px){
+  .dsk-filteri{gap:10px;padding:10px 0}
+  .dsk-filteri-lijevo,.dsk-filteri-desno{width:100%}
+  .dsk-filteri-desno{justify-content:space-between}
+  .dsk-filter{position:static}
+  .dsk-filteri-lijevo .dsk-filter,.dsk-filteri-lijevo .dsk-filter>summary{flex:1}
+  .dsk-filter>summary{justify-content:space-between}
+  .dsk-panel,.dsk-filter-kategorija .dsk-panel,.dsk-filter-desno .dsk-panel{left:0;right:0;min-width:0;max-width:none;grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* ---------- stranice 1, 2, 3 ---------- */
+.dsk-trgovina .woocommerce-pagination{margin:30px 0 10px}
+.dsk-trgovina .woocommerce-pagination ul.page-numbers{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0;padding:0;border:0}
+.dsk-trgovina .woocommerce-pagination ul.page-numbers li{margin:0;border:0;list-style:none}
+.dsk-trgovina .woocommerce-pagination .page-number{display:grid;place-items:center;min-width:44px;height:44px;padding:0 10px;margin:0;border:1px solid #d9cebc!important;border-radius:22px;background:#f7f3eb;color:#29231f!important;font:400 17px/1 var(--ds-serif,inherit);line-height:1!important;box-shadow:none}
+.dsk-trgovina .woocommerce-pagination a.page-number:hover{border-color:#702833!important;color:#702833!important;background:#f0e9de}
+.dsk-trgovina .woocommerce-pagination .page-number.current{background:#702833;border-color:#702833!important;color:#fff!important}
+.dsk-trgovina .woocommerce-pagination .page-number.dots{border-color:transparent!important;background:none}
+.dsk-trgovina .woocommerce-pagination .page-number i{font-size:14px}
+
+/* ---------- nedavno pregledano ---------- */
+.dsk-nedavno{margin:44px 0 10px;padding-top:28px;border-top:1px solid #e2d6c3}
+.dsk-nedavno>h2{margin:0 0 16px;font:400 22px/1.2 var(--ds-serif,inherit);letter-spacing:.06em;text-transform:uppercase;color:#29231f}

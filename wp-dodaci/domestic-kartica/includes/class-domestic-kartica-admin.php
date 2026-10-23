@@ -92,6 +92,10 @@ final class Domestic_Kartica_Admin {
 		echo '<tr><th>Gumb</th><td><input name="gumb_tekst" class="regular-text" value="' . esc_attr( $s['gumb_tekst'] ) . '"><p class="description">Tekst za obične proizvode na stanju (ostali zadržavaju „Odaberi opcije”, „Pročitaj više”…).</p>';
 		echo '<label><input type="checkbox" name="brzi" value="yes" ' . checked( $s['brzi'], 'yes', false ) . '> poveznica „Brzi pregled” na slici (Flatsome)</label></td></tr>';
 
+		echo '<tr><th>Raspored trgovine</th><td><select name="raspored"><option value="gore" ' . selected( $s['raspored'], 'gore', false ) . '>filteri iznad artikala, bez bočne trake</option><option value="tema" ' . selected( $s['raspored'], 'tema', false ) . '>kako je postavljeno u Flatsomeu</option></select>'
+			. ' &nbsp; artikala u redu <select name="stupci">' . implode( '', array_map( static function ( $n ) use ( $s ) { return '<option value="' . $n . '" ' . selected( (int) $s['stupci'], $n, false ) . '>' . $n . '</option>'; }, array( 3, 4, 5 ) ) ) . '</select>'
+			. ' &nbsp; <label><input type="checkbox" name="nedavno" value="yes" ' . checked( $s['nedavno'], 'yes', false ) . '> „Nedavno pregledano” ispod artikala</label>'
+			. '<p class="description">Trgovina, kategorije i pretraga: naslov kategorije, filteri Kategorija / Cijena / Poredaj (padajući izbornici), uređene stranice 1, 2, 3. Adrese kategorija ostaju iste.</p></td></tr>';
 		echo '<tr><th>Pozadina cijele stranice</th><td><input class="dsk-boja" name="stranica" value="' . esc_attr( $s['stranica'] ) . '"><p class="description">Npr. krem #f6f1e9 za cijelu stranicu i zaglavlje. Prazno = boja iz teme. Vrijedi i kad je nova kartica isključena.</p></td></tr>';
 		echo '<tr><th>Fontovi</th><td><select name="fontovi"><option value="cijela" ' . selected( $s['fontovi'], 'cijela', false ) . '>Marcellus + Jost na cijeloj stranici</option><option value="shop" ' . selected( $s['fontovi'], 'shop', false ) . '>samo kartice i stranica proizvoda</option><option value="ne" ' . selected( $s['fontovi'], 'ne', false ) . '>fontovi teme</option></select><p class="description">Učitavaju se s ove stranice (bez Googlea), samo latinica i hrvatska slova, ~40 KB za prvi prikaz.</p></td></tr>';
 		echo '<tr><th>Boje</th><td><p>naglasak (gumb, akcija, marka) <input class="dsk-boja" name="naglasak" value="' . esc_attr( $s['naglasak'] ) . '"></p><p>pozadina kartice <input class="dsk-boja" name="pozadina" value="' . esc_attr( $s['pozadina'] ) . '"></p><p>tekst <input class="dsk-boja" name="tekst" value="' . esc_attr( $s['tekst'] ) . '"></p></td></tr>';
@@ -140,6 +144,9 @@ final class Domestic_Kartica_Admin {
 				'fontovi'    => in_array( $p['fontovi'] ?? '', array( 'cijela', 'shop', 'ne' ), true ) ? $p['fontovi'] : 'cijela',
 				'stranica'   => (string) sanitize_hex_color( (string) ( $p['stranica'] ?? '' ) ),
 				'css'        => wp_strip_all_tags( (string) ( $p['css'] ?? '' ) ),
+				'raspored'   => 'tema' === ( $p['raspored'] ?? '' ) ? 'tema' : 'gore',
+				'stupci'     => min( 5, max( 3, absint( $p['stupci'] ?? 4 ) ) ),
+				'nedavno'    => 'yes' === ( $p['nedavno'] ?? '' ) ? 'yes' : 'no',
 			),
 			false
 		);

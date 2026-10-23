@@ -143,6 +143,15 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     vrunsko, dugačije, đem, bariq, Ganitno→Granatno…), „sa”→„s” osim ispred s/z/š/ž/ps/ks/mn, „biti će”→„bit će”, °C, „% vol.”, razmaci.
     Podaci: oznake ujednačene (Naziv vina/likera→Naziv, NAPOMENA→Napomena, Temperatura posluživanja→serviranja), vrijednost velikim
     početnim slovom bez točke. Domestic → Tekstovi: uključi/isključi, vlastiti rječnik „pogrešno => ispravno”, pregled naziva prije/poslije.
+  - **domestic-kartica 0.3.0** (Igor: bijelo ispod artikala, filteri gore kao Plan A, nedavno dolje, 4 u redu, ljepše stranice):
+    klasa `Domestic_Kartica_Trgovina` (trgovina, kategorije, pretraga proizvoda; postavka `raspored` gore|tema, `stupci` 4, `nedavno`):
+    filtri theme_mod_category_sidebar → none, category_row_count → 4, tablet 3, category_shadow → 0 (has-shadow bojao karticu bijelo);
+    Flatsomeova traka naslova skrivena → vlastita putanja + **H1 kategorije** (prije nije bilo H1); traka filtera = <details> izbornici
+    Kategorija (podkategorije ili iste razine, broj), Cijena (do 10, 10–20, 20–30, 30–50, iznad 50 € → ?min_price/?max_price, WC filtrira sam;
+    prazni rasponi zasivljeni, brojevi iz wc_product_meta_lookup, transient 1 h), Poredaj (?orderby), broj proizvoda, oznaka odabranog filtra ×;
+    jedan izbornik otvoren, klik izvan/Escape zatvara; mobitel 2 izbornika u redu, panel preko cijele širine. Stranice = krugovi 44 px, aktivna bordo.
+    „Nedavno pregledano” ispod stranica (kolačić woocommerce_recently_viewed; puni ga i dodatak kad widget nije aktivan). Kartica: pozadina
+    #f2ebe0, slika #ebe2d4; marka iz VELIKIH slova na početku naziva kad nema marke (AVELLANA Premium); „Brzi pregled” krem tableta.
   - **domestic-kartica 0.2.3** (Igor: ambijentalna od ruba do ruba): slika kartice = `woocommerce_single` (kvadrat 510, + srcset do izvornika)
     umjesto Flatsomeova `woocommerce_thumbnail` 247×296 (uspravno rezan → bijeli rubovi u okviru 1:1). Nova postavka `ispuna`:
     cijela (contain, zadano) | ispuni (cover, reže rubove). Kvadratne fotografije 1600×1600 dovoljne – veći format ne treba.
