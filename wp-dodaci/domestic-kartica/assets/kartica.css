@@ -5,7 +5,7 @@
 .dsk-kartica.dsk-sa-sjenom .dsk-unutra{box-shadow:0 2px 10px rgba(0,0,0,.07)}
 .dsk-slika{position:relative;background:var(--dsk-slika-poz)}
 .dsk-slika-link{display:block;aspect-ratio:var(--dsk-omjer)}
-.dsk-slika .dsk-img{display:block;width:100%!important;height:100%!important;object-fit:contain;margin:0!important}
+.dsk-slika .dsk-img{display:block;width:100%!important;height:100%!important;object-fit:var(--dsk-ispuna,contain);margin:0!important}
 .dsk-oznake{position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:5px;align-items:flex-start;z-index:2}
 .dsk-oznaka{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;line-height:1.3;letter-spacing:.03em;text-transform:uppercase;background:#fff;color:var(--dsk-tekst);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .dsk-oznaka-akcija{background:var(--dsk-naglasak);color:#fff}

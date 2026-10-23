@@ -86,7 +86,8 @@ final class Domestic_Kartica_Admin {
 		foreach ( array( '1:1' => 'kvadrat 1:1', '4:5' => 'uspravno 4:5', '3:4' => 'uspravno 3:4', '2:3' => 'visoko 2:3', 'izvorni' => 'izvorni omjer slike' ) as $k => $l ) {
 			echo '<option value="' . esc_attr( $k ) . '" ' . selected( $s['omjer'], $k, false ) . '>' . esc_html( $l ) . '</option>';
 		}
-		echo '</select> &nbsp; pozadina iza boce <input class="dsk-boja" name="slika_poz" value="' . esc_attr( $s['slika_poz'] ) . '"></td></tr>';
+		echo '</select> &nbsp; <select name="ispuna"><option value="cijela" ' . selected( $s['ispuna'], 'cijela', false ) . '>cijela slika (bez rezanja)</option><option value="ispuni" ' . selected( $s['ispuna'], 'ispuni', false ) . '>ispuni okvir (reže rubove)</option></select>';
+		echo ' &nbsp; pozadina iza boce <input class="dsk-boja" name="slika_poz" value="' . esc_attr( $s['slika_poz'] ) . '"></td></tr>';
 
 		echo '<tr><th>Gumb</th><td><input name="gumb_tekst" class="regular-text" value="' . esc_attr( $s['gumb_tekst'] ) . '"><p class="description">Tekst za obične proizvode na stanju (ostali zadržavaju „Odaberi opcije”, „Pročitaj više”…).</p>';
 		echo '<label><input type="checkbox" name="brzi" value="yes" ' . checked( $s['brzi'], 'yes', false ) . '> poveznica „Brzi pregled” na slici (Flatsome)</label></td></tr>';
@@ -130,6 +131,7 @@ final class Domestic_Kartica_Admin {
 				'poravnanje' => 'sredina' === ( $p['poravnanje'] ?? '' ) ? 'sredina' : 'lijevo',
 				'naglasak'   => $boja( $p['naglasak'] ?? '', $z['naglasak'] ),
 				'pozadina'   => $boja( $p['pozadina'] ?? '', $z['pozadina'] ),
+				'ispuna'     => 'ispuni' === ( $p['ispuna'] ?? '' ) ? 'ispuni' : 'cijela',
 				'slika_poz'  => $boja( $p['slika_poz'] ?? '', $z['slika_poz'] ),
 				'tekst'      => $boja( $p['tekst'] ?? '', $z['tekst'] ),
 				'zaobljenje' => min( 30, absint( $p['zaobljenje'] ?? 8 ) ),

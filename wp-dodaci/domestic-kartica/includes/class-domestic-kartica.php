@@ -37,6 +37,7 @@ final class Domestic_Kartica {
 			'oznake'     => array( 'akcija', 'novo', 'nagradeno', 'rasprodano' ),
 			'novo_dana'  => 30,
 			'omjer'      => '1:1',
+			'ispuna'     => 'cijela', // cijela (contain) | ispuni (cover)
 			'gumb_tekst' => 'U košaricu',
 			'brzi'       => 'yes',
 			'poravnanje' => 'lijevo',
@@ -152,6 +153,7 @@ final class Domestic_Kartica {
 			. '--dsk-slika-poz:' . $hex( $s['slika_poz'], '#f6f3ee' ) . ';'
 			. '--dsk-tekst:' . $hex( $s['tekst'], '#2b2b2b' ) . ';'
 			. '--dsk-r:' . max( 0, min( 30, (int) $s['zaobljenje'] ) ) . 'px;'
+			. '--dsk-ispuna:' . ( 'ispuni' === $s['ispuna'] ? 'cover' : 'contain' ) . ';'
 			. '--dsk-omjer:' . ( $omjer[ $s['omjer'] ] ?? 'auto' ) . ';'
 			. '--dsk-poravnanje:' . ( 'sredina' === $s['poravnanje'] ? 'center' : 'left' ) . ';}';
 		return $css . "\n" . wp_strip_all_tags( (string) $s['css'] );

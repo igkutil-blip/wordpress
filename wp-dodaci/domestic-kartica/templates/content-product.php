@@ -26,7 +26,7 @@ echo '>';
 	<div class="dsk-unutra<?php echo $flatsome ? ' col-inner' : ''; ?>">
 		<div class="dsk-slika">
 			<a href="<?php echo esc_url( $url ); ?>" class="dsk-slika-link" tabindex="-1" aria-hidden="true">
-				<?php echo $product->get_image( 'woocommerce_thumbnail', array( 'class' => 'dsk-img' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+				<?php echo $product->get_image( 'woocommerce_single', array( 'class' => 'dsk-img', 'sizes' => '(max-width: 549px) 50vw, (max-width: 849px) 34vw, 320px' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 			</a>
 			<?php if ( $oznake ) : ?>
 				<div class="dsk-oznake">
