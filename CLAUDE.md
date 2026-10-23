@@ -99,6 +99,9 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   (tri niske čaše); **STRAVA 1 l** (754): 4712, 5109, 5110, 4713 zamijenjena, ikone 0,10 l (`ikone_izvor` 815); **STRAVA glava 0,75 l** (4751): 4124 PNG
   (lubanja – zajednička i 1647 glava 0,75 „primores”, privatnima 1929 0,38 l i 1928 0,10 l; ista boca → zamjena na istoj adresi), 5111, 5112, ikone 815.
   **1647 = duplikat 4751** (oba objavljena): dobio istu galeriju i `_dsp_posluzivanje` preko WC REST.
+- (23.10.) **Promex Medica 1 l** (1115): 1116 PNG, 5113, 5114, ikone 5115–5117; **Promex Pelin 1 l** (1113): 1114 PNG, 5118, 5119, ikone 5120–5122
+  (S tonikom = čaša s limunom); **San MONTANO Biska** (739): 740 PNG, 5123, 5124, ikone 5125–5127 (S ledom); **Smokva** (718): 729 PNG, 5128, 5129,
+  ikone 5130–5132; **Teranino 0,70 l** (717): 732 PNG, 5133, 5134, ikone Teranina Limited 5096–5098 (ista kartica). Glavne slike nisu dijeljene.
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 

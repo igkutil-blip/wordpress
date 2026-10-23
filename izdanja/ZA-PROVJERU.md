@@ -70,6 +70,12 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
   dvaput; oba sada imaju iste slike. Odlučiti koji ostaje (drugi sakriti; adresa se ne briše bez dogovora).
 - Skriveni STRAVA glava 0,38 l i 0,10 l dijele glavnu sliku s 0,75 l (ista boca-lubanja) – sada pokazuju novu ambijentalnu.
 
+### Promex Medica i Pelin 1 l (1115, 1113); San MONTANO Biska, Smokva, Teranino 0,70 l (739, 718, 717) – 23.10.2026.
+- **Posluživanje** (kartice iz paketa) – sve količine urednički prijedlozi. Pelin „S tonikom”: 0,03 l + 0,09 l tonika (prijedlog, nije Promexov recept).
+- **Biska**: na kartici posluživanja temperatura **8–10 °C** (uobičajeno za bisku, nije podatak San Montana) – potvrditi.
+- **Biska i Smokva**: opisi spominju **srebrnu medalju na 8. CROSPIRIT-u** – slika medalje nema, godina?
+- **Teranino 0,70 l**: temperatura „5 C” (kao Limited) – potvrditi 5 °C.
+
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
   temperatura „Po želji” su sa stranice proizvoda.
