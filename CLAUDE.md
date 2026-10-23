@@ -69,6 +69,11 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   na istim adresama** (dodatne slike iz paketa istog naziva), ikone 5004–5006; **Vanilija 1 l** (1358): 4076, 5007, 5008, ikone 5009–5011;
   **Ruža 1 l** (1359): 4075, 5012, 5013, ikone 5014–5016. Opisi stavki upisani prema karticama (`--postavke`; prijedlog dodatka bi uzeo Medicine).
 
+- domestic-slike 0.3.x (23.10.): **Gavran Raven's 23** (3405): 3406 `gavran-3-scaled.jpg` ambijent, 5017 `studio-gavran-3-scaled-1.jpg` (WP dodao -1),
+  5018, ikone 5019 aperitiv, 5020 tonik, 5021 gin fizz; **Driver's Holiday Gin** (3132, privatan): 3134 `2022/10/IMG-20221018-WA0010.jpg`, 5022
+  `studio-IMG-20221018-WA0010.jpg`, 5023 (paket imao 1-ambijent/2-studio/3-posluzivanje), ikone Gavrana; **Višnjevac 1 l** (1354): 4077, 5024, 5025;
+  **Višnjevac 0,70 l** (1595): 4066, 5026, 5027; oba ikone Višnjevca 0,20 (5004–5006). Nove slike idu u mapu datuma proizvoda (media_handle_sideload).
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,
@@ -212,7 +217,9 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     analiza 1,4 s, uvoz ~9 s, PNG 1600 s paletom GD 1,27 MB (PIL 0,87), vizualno jednako. Na probi u Za provjeru prenesene natuknice za
     3005, 1600, 1352, 1589, 1345, 1348, 4272, 1353, 3697 (blog ostaje u ZA-PROVJERU.md).
     **0.2.0**: dodatna slika iz paketa istog naziva kao slika proizvoda (glavna/galerija) → zamjena na istoj adresi (ostaje u galeriji iza
-    novih); „Kako poslužiti” i u zapisu „0,03 l kao aperitiv, …” (količina ispred naziva).
+    novih); „Kako poslužiti” i u zapisu „0,03 l kao aperitiv, …” (količina ispred naziva). **0.3.0**: uloge i po ključnoj riječi
+    (`1-ambijent`, `2-studio`, `3-posluzivanje`) – tada nove dobivaju naziv `studio-/posluzivanje-<naziv stare glavne>`; opisi stavki SAMO s iste
+    marke i vrste (prve 2 riječi); traženje proizvoda po najduljoj riječi mape (oblí apostrof). **0.3.1**: bez „-scaled” u nazivu novih slika.
   - **domestic-kartica 0.6.0** (Igor: krem traka na dnu mobitela iz probnog shopa 0.5.0): postavka `donja_traka` (yes), ≤849 px, wp_footer
     `nav.dsk-dno`: Početna · Ponuda · Pokloni (prva kategorija proizvoda „poklon”) · Traži · Košarica (broj = WC fragment `span.dsk-dno-broj`);
     trenutna bordo + crta gore; nije na blagajni. Traži = vlastiti panel na vrhu (`#dsk-dno-panel`, form.searchform → prijedlozi iz trazilica.js),

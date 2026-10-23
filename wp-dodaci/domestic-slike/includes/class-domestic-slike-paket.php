@@ -126,13 +126,18 @@ final class Domestic_Slike_Paket {
 		$studio = null;
 		$posl   = null;
 		$dodatne = array();
+		$oznaka = null; // „…ambijent…” u nazivu (paket bez starog naziva datoteke)
 		foreach ( $slike as $k => $s ) {
-			if ( 0 === stripos( $s['naziv'], 'studio-' ) ) {
+			$n = strtolower( $s['naziv'] );
+			if ( 0 === strpos( $n, 'studio-' ) || preg_match( '/(^|[-_\s\d])studio([-_.\s]|$)/', $n ) ) {
 				$studio = $studio ?? $k;
-			} elseif ( 0 === stripos( $s['naziv'], 'posluzivanje-' ) ) {
+			} elseif ( 0 === strpos( $n, 'posluzivanje-' ) || false !== strpos( $n, 'posluzivanje' ) || false !== strpos( $n, 'posluživanje' ) ) {
 				$posl = $posl ?? $k;
 			} else {
 				$dodatne[] = $k;
+				if ( null === $oznaka && false !== strpos( $n, 'ambijent' ) ) {
+					$oznaka = $k;
+				}
 			}
 		}
 		$kandidati = self::kandidati( $slike, $dodatne, $mapa );
@@ -144,7 +149,7 @@ final class Domestic_Slike_Paket {
 			}
 		}
 		if ( null === $amb && $dodatne ) {
-			$amb = $dodatne[0];
+			$amb = $oznaka ?? $dodatne[0];
 		}
 		$dodatne = array_values( array_diff( $dodatne, array( $amb ) ) );
 
@@ -155,7 +160,7 @@ final class Domestic_Slike_Paket {
 			$stavke = self::stavke( (string) ( $alt[ $slike[ $posl ]['naziv'] ] ?? '' ) );
 			$ikone  = self::izrezi_ikone( $slike[ $posl ]['put'], $rad );
 		}
-		$opisi = self::postojeci_opisi();
+		$opisi = self::postojeci_opisi( (int) ( $kandidati[0]['id'] ?? 0 ) );
 		foreach ( $stavke as $i => $s ) {
 			$stavke[ $i ]['opis'] = $opisi[ self::kljuc( $s['naziv'], $s['kolicina'] ) ] ?? '';
 		}
@@ -229,7 +234,7 @@ final class Domestic_Slike_Paket {
 		}
 		$nm = self::norm( $mapa );
 		if ( strlen( $nm ) > 4 ) {
-			foreach ( get_posts( array( 'post_type' => 'product', 'post_status' => 'any', 's' => trim( preg_replace( '/\s+[\d,]+\s*l$/iu', '', $mapa ) ), 'fields' => 'ids', 'numberposts' => 30 ) ) as $p ) {
+			foreach ( get_posts( array( 'post_type' => 'product', 'post_status' => 'any', 's' => self::rijec_za_trazenje( $mapa ), 'fields' => 'ids', 'numberposts' => 30 ) ) as $p ) {
 				if ( self::norm( self::naslov( $p ) ) === $nm ) {
 					$bod[ $p ] = ( $bod[ $p ] ?? 0 ) + 3;
 				}
@@ -241,6 +246,13 @@ final class Domestic_Slike_Paket {
 			$r[] = array( 'id' => (int) $p, 'naziv' => self::naslov( $p ), 'bodovi' => $b, 'glavna' => (int) get_post_thumbnail_id( $p ), 'status' => get_post_status( $p ) );
 		}
 		return $r;
+	}
+
+	/** Najdulja riječ iz naziva mape (bez zapremnine i interpunkcije – „Driver’s” s oblim apostrofom ne bi našao „Driver's”). */
+	private static function rijec_za_trazenje( string $mapa ): string {
+		$r = preg_split( '/[^\p{L}\p{N}]+/u', preg_replace( '/\s+[\d,]+\s*l$/iu', '', $mapa ), -1, PREG_SPLIT_NO_EMPTY );
+		usort( $r, static function ( $a, $b ) { return mb_strlen( $b ) <=> mb_strlen( $a ); } );
+		return (string) ( $r[0] ?? $mapa );
 	}
 
 	/** Drugi proizvodi koji imaju istu sliku kao glavnu. */
@@ -292,10 +304,25 @@ final class Domestic_Slike_Paket {
 		return mb_strtolower( trim( $naziv ) ) . '|' . trim( $kol );
 	}
 
-	/** Opisi stavki posluživanja s drugih proizvoda (isti naziv + količina) – da se ne prepisuju ručno. */
-	private static function postojeci_opisi(): array {
+	/** Prve dvije riječi izvornog naslova = marka i vrsta („bogati visnjevac”). */
+	private static function marka( int $p ): string {
+		return implode( ' ', array_slice( preg_split( '/\s+/', mb_strtolower( remove_accents( self::naslov( $p ) ) ) ), 0, 2 ) );
+	}
+
+	/**
+	 * Opisi stavki posluživanja s proizvoda ISTE marke i vrste (isti naziv + količina), npr. Višnjevac 1 l ← 0,20 l.
+	 * Druge marke se ne gledaju – iste stavke („Kao aperitiv”) na drugoj kartici imaju drugi opis.
+	 */
+	private static function postojeci_opisi( int $proizvod ): array {
 		$r = array();
+		if ( ! $proizvod ) {
+			return $r;
+		}
+		$marka = self::marka( $proizvod );
 		foreach ( self::proizvodi_s_posluzivanjem() as $pid => $st ) {
+			if ( $pid === $proizvod || self::marka( $pid ) !== $marka ) {
+				continue;
+			}
 			foreach ( $st as $s ) {
 				$k = self::kljuc( (string) ( $s['naziv'] ?? '' ), (string) ( $s['kolicina'] ?? '' ) );
 				if ( ! isset( $r[ $k ] ) && ! empty( $s['opis'] ) ) {
@@ -325,13 +352,10 @@ final class Domestic_Slike_Paket {
 		if ( ! $stavke || ! $proizvod ) {
 			return 0;
 		}
-		$rijeci = static function ( $n ) {
-			return implode( ' ', array_slice( preg_split( '/\s+/', mb_strtolower( remove_accents( (string) $n ) ) ), 0, 2 ) );
-		};
-		$marka  = $rijeci( self::naslov( $proizvod ) );
+		$marka  = self::marka( $proizvod );
 		$nazivi = array_map( static function ( $s ) { return mb_strtolower( $s['naziv'] ); }, $stavke );
 		foreach ( self::proizvodi_s_posluzivanjem() as $pid => $st ) {
-			if ( $pid === $proizvod || $rijeci( self::naslov( $pid ) ) !== $marka ) {
+			if ( $pid === $proizvod || self::marka( $pid ) !== $marka ) {
 				continue;
 			}
 			$n2 = array_map( static function ( $s ) { return mb_strtolower( (string) ( $s['naziv'] ?? '' ) ); }, $st );
@@ -507,7 +531,9 @@ final class Domestic_Slike_Paket {
 			if ( null === $a[ $u ] ) {
 				continue;
 			}
-			$id = self::nova_iz( $a, $a[ $u ], $a['alt'][ $s[ $a[ $u ] ]['naziv'] ] ?? ( $p->get_name() . $dod ), $p->get_name() . $dod, $pid, 'jpg' );
+			$pref = 'studio' === $u ? 'studio-' : 'posluzivanje-';
+			$ime  = 0 === stripos( $s[ $a[ $u ] ]['naziv'], $pref ) ? '' : $pref . preg_replace( '/\.[a-z0-9]+$/i', '', wp_basename( (string) get_attached_file( $cilj ) ) ); // pravilo: prefiks + naziv stare glavne slike
+			$id   = self::nova_iz( $a, $a[ $u ], $a['alt'][ $s[ $a[ $u ] ]['naziv'] ] ?? ( $p->get_name() . $dod ), $p->get_name() . $dod, $pid, 'jpg', $ime );
 			if ( is_wp_error( $id ) ) {
 				return $id;
 			}
@@ -596,7 +622,7 @@ final class Domestic_Slike_Paket {
 	}
 
 	/** Nova slika iz pripremljene datoteke (naziv iz paketa, nastavak prema formatu). */
-	private static function nova_iz( array $a, int $k, string $alt, string $naslov, int $pid, string $format ) {
+	private static function nova_iz( array $a, int $k, string $alt, string $naslov, int $pid, string $format, string $ime = '' ) {
 		$s   = $a['slike'][ $k ];
 		$im  = Domestic_Slike::ucitaj( $s['put'] );
 		$tmp = $s['put'] . '.' . $format;
@@ -604,7 +630,8 @@ final class Domestic_Slike_Paket {
 			return new WP_Error( 'dss', 'Slika ' . $s['naziv'] . ' se ne može spremiti.' );
 		}
 		imagedestroy( $im );
-		$naziv = preg_replace( '/\.[a-z0-9]+$/i', '', $s['naziv'] ) . '.' . $format;
+		// „-scaled” je WordPressov nastavak za smanjeni izvornik – u nazivu nove slike daje „…-scaled-1.jpg”
+		$naziv = preg_replace( '/-scaled$/i', '', '' !== $ime ? $ime : preg_replace( '/\.[a-z0-9]+$/i', '', $s['naziv'] ) ) . '.' . $format;
 		$id    = Domestic_Slike::nova( $tmp, $naziv, $alt, $naslov, $pid );
 		wp_delete_file( $tmp );
 		return $id;
