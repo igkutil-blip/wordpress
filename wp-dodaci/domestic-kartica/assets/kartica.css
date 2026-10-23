@@ -69,12 +69,6 @@
 .dsk-put{display:flex;flex-wrap:wrap;gap:8px;font:12px var(--ds-sans,inherit);color:#746a5f;margin-bottom:6px}
 .dsk-put a{color:#746a5f!important}.dsk-put a:hover{color:#702833!important}
 .dsk-naslov h1{margin:0;font:400 clamp(26px,3vw,36px)/1.15 var(--ds-serif,inherit);letter-spacing:.05em;text-transform:uppercase;color:#29231f}
-.dsk-naslov-slika{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:center;gap:32px;background:#efe7dc;border:1px solid #e2d6c3;border-radius:14px;overflow:hidden;margin-bottom:20px}
-.dsk-naslov-tekst{padding:28px 0 28px 32px}
-.dsk-naslov-opis{margin:12px 0 0;font:15px/1.6 var(--ds-sans,inherit);color:#5c534b;max-width:46ch}
-.dsk-naslov-img{height:100%;min-height:240px;max-height:300px}
-.dsk-naslov-img img{display:block;width:100%;height:100%;min-height:240px;max-height:300px;object-fit:cover;object-position:50% 58%}
-@media (max-width:720px){.dsk-naslov-slika{grid-template-columns:1fr;gap:0;border-radius:12px}.dsk-naslov-img{order:-1;min-height:0}.dsk-naslov-img img{min-height:0;height:150px}.dsk-naslov-tekst{padding:14px 16px 16px}}
 .dsk-filteri{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 18px;margin:0 0 22px;font-family:var(--ds-sans,inherit);color:#29231f;position:relative;z-index:20}
 .dsk-filteri-traka{display:flex;align-items:stretch;border:1px solid #d9cebc;border-radius:12px;background:#fbf8f3;box-shadow:0 1px 2px rgba(41,35,31,.04)}
 .dsk-filteri-info{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
