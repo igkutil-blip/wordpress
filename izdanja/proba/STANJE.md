@@ -7,6 +7,7 @@ Softaculous klon žive stranice (22.10.2026.), isti hosting (MyDataKnox cp064). 
 | Dodatak | Verzija | Stanje | Napomena |
 |---|---|---|---|
 | domestic-pomocnik | 0.1.0 | aktivan | učitao Igor 23.10.2026.; mailovi preusmjereni na Igorovu adresu |
+| domestic-kartica | 0.1.0 | aktivan, nova kartica **uključena** | 23.10.2026.; zadane postavke, čeka Igorovu fotografiju željenog izgleda |
 | domestic-provjera-dobi | 0.1.0 | aktivan, provjera **isključena** | 23.10.2026.; test okruženje, kategorije: vina, jaka alkoholna pića, pivo, horeca, poklon paketi (bez aloe vere i suvenira); čeka client_id i redirect URI za probu kod ministarstva |
 
 ## Promjene u odnosu na živu (samo na probi)

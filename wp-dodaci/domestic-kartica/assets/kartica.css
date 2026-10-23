@@ -1,0 +1,35 @@
+/* Domestic – kartica proizvoda. Boje i omjer slike dolaze iz postavki (CSS varijable na .dsk-kartica). Bez animacija pomicanja. */
+.dsk-kartica{list-style:none}
+.dsk-kartica .dsk-unutra{display:flex;flex-direction:column;height:100%;background:var(--dsk-pozadina);color:var(--dsk-tekst);border-radius:var(--dsk-r);overflow:hidden;text-align:var(--dsk-poravnanje)}
+.dsk-kartica.dsk-s-okvirom .dsk-unutra{border:1px solid rgba(0,0,0,.09)}
+.dsk-kartica.dsk-sa-sjenom .dsk-unutra{box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.dsk-slika{position:relative;background:var(--dsk-slika-poz)}
+.dsk-slika-link{display:block;aspect-ratio:var(--dsk-omjer)}
+.dsk-slika .dsk-img{display:block;width:100%!important;height:100%!important;object-fit:contain;margin:0!important}
+.dsk-oznake{position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:5px;align-items:flex-start;z-index:2}
+.dsk-oznaka{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;line-height:1.3;letter-spacing:.03em;text-transform:uppercase;background:#fff;color:var(--dsk-tekst);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.dsk-oznaka-akcija{background:var(--dsk-naglasak);color:#fff}
+.dsk-oznaka-rasprodano{background:#555;color:#fff}
+.dsk-oznaka-nagradeno{background:#c9a24a;color:#fff}
+.dsk-brzi{position:absolute;right:10px;bottom:10px;z-index:2;padding:4px 10px;border-radius:4px;background:rgba(255,255,255,.92);color:var(--dsk-tekst)!important;font-size:12px;opacity:0}
+.dsk-slika:hover .dsk-brzi,.dsk-brzi:focus{opacity:1}
+.dsk-tekst{display:flex;flex-direction:column;flex:1;gap:4px;padding:12px 14px 14px}
+.dsk-tekst p{margin:0!important}
+.dsk-kategorija,.dsk-marka{font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+.dsk-marka{color:var(--dsk-naglasak);opacity:1;font-weight:600}
+.dsk-kartica .dsk-naziv{margin:0!important;padding:0;font-size:15px!important;line-height:1.3!important;font-weight:600}
+.dsk-kartica .dsk-naziv a{color:inherit!important}
+.dsk-podaci,.dsk-kratki{font-size:13px;opacity:.75}
+.dsk-kratki{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dsk-cijena{margin-top:auto;padding-top:4px}
+.dsk-kartica .dsk-cijena .price{display:block;margin:0;color:var(--dsk-tekst);font-size:16px;font-weight:700}
+.dsk-kartica .dsk-cijena del{opacity:.55;font-weight:400;font-size:.85em}
+.dsk-kartica .dsk-cijena ins{text-decoration:none;color:var(--dsk-naglasak)}
+.dsk-kartica .sidrena-cijena{display:block;font-size:11px;font-weight:400;opacity:.7}
+.dsk-jedinicna{font-size:12px;opacity:.65}
+.dsk-gumb{margin-top:8px}
+.dsk-kartica .dsk-gumb .button{display:block;width:100%;margin:0!important;padding:.65em 1em!important;border-radius:calc(var(--dsk-r) * .75)!important;background:var(--dsk-naglasak)!important;border-color:var(--dsk-naglasak)!important;color:#fff!important;font-size:13px!important;line-height:1.3!important;text-align:center;text-transform:none!important;letter-spacing:0}
+.dsk-kartica .dsk-gumb .button:hover{filter:brightness(1.1)}
+.dsk-kartica .dsk-gumb .added_to_cart{display:block;margin-top:6px;font-size:12px;text-align:center}
+.dsk-kartica.product-small .dsk-unutra{padding:0}
+@media (max-width:549px){.dsk-tekst{padding:10px 10px 12px}.dsk-kartica .dsk-naziv{font-size:14px!important}}
