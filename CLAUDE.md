@@ -162,6 +162,8 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     na 1600 px, isječak 392 px, krem pozadina #F7F3EB → prozirna, PNG 280 px, naziv `posluzivanje-ikona-<…>.png`) i upisati tekst s kartice
     u `_dsp_posluzivanje`. Klasične Avellane (0,20/0,70/1 l): 4888 čašica, 4889 kava, 4890 slastica; Premium: 4891 led, 4892 espresso koktel,
     4893 sladoled s kavom.
+  - **domestic-kartica 0.5.5** (Igor: traka kategorija pri listanju na mobitelu prevelika): kad Flatsome zalijepi zaglavlje (`.header-wrapper.stuck`)
+    mreža 4 × 2 bez ikona, polja 34 px (126 → 70 px); na vrhu stranice nepromijenjeno.
   - **domestic-kartica 0.5.4**: otvoreno/označeno polje trake filtera ispunjava cijelu kućicu (summary bez zaobljenja, samo krajnja polja
     zaobljena uz rub trake). **domestic-proizvod 0.7.2**: „Na ovoj stranici” + „Dostava i plaćanje” (#dsp-dostava).
   - **domestic-kartica 0.5.3** (Igor: kućice filtera prije otvaranja ljepše): jedna spojena traka (krem #fbf8f3, obrub #d9cebc, r 12 px) s 3 polja
