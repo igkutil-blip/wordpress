@@ -91,7 +91,8 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
 - (23.10.) **Patrik Šljivovica 0,20 l** (3084): stara glavna 1943 `2020/02/patrik-piramide-1.jpg` = grupna slika (Travarica, Medovača, Višnja,
   Borovnica – bez Šljivovice) i glavna je **Travarici 1942** → NE zamijenjena; Šljivovica dobila NOVU glavnu 5082 `2022/07/patrik-sljivovica-020l.jpg`
   (paket preimenovan, uvoz s `cilj: 0`), 5083 studio, 5084 posluživanje, ikone 5085–5087 (čaše); 1943 maknuta iz njezine galerije (prilog ostaje).
-  Paket Travarice: ambijentalnu kao NOVU sliku (ne na 1943).
+  **Patrik Travarica 0,20 l** (1942): 1943 tada samo njezina (nije ni u objavama) → ambijentalna zamijenjena na ISTOJ adresi (prazan alt popunjen),
+  5088 `studio-patrik-piramide-1.jpg`, 5089 `posluzivanje-…`, ikone 5090–5092 (dvije niske čaše + čaša za destilate; Šljivovičine su druge).
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 

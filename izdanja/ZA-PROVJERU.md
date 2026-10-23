@@ -46,7 +46,13 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 ### Patrik Šljivovica 0,20 l (3084) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao digestiv 0,03 l, Kao aperitiv 0,03 l, Za kušanje 0,02 l (čaša za destilate) – urednički prijedlozi;
   „idealno kao digestiv” i „Dobro ohlađeno” su sa stranice proizvoda.
-- Stara slika „patrik-piramide-1.jpg” (grupna, bez Šljivovice) ostaje glavna slika **Travarice 0,20 l** – Travarici treba vlastita slika.
+- Stara grupna slika „patrik-piramide-1.jpg” (bez Šljivovice) bila je glavna i Šljivovici i Travarici → Šljivovica dobila svoju novu sliku.
+
+### Patrik Travarica 0,20 l (1942) – 23.10.2026.
+- **Posluživanje** (kartica iz paketa): Kao digestiv 0,03 l, Kao aperitiv 0,03 l, Za kušanje 0,02 l – urednički prijedlozi; „idealno kao
+  digestiv” i „Dobro ohlađeno” su sa stranice proizvoda.
+- U opisu piše **„Vrsta: Liker”**, a etiketa kaže „specijalna rakija travarica” – ispraviti u opisu.
+- Grupna slika četiriju Patrik boca (Travarica, Medovača, Višnja, Borovnica) zamijenjena je ambijentalnom Travarice na istoj adresi.
 
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
