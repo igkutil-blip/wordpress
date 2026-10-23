@@ -79,6 +79,11 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   **privatan – ostaje skriven**, paket 1-ambijent…): 3128 `Golfer.jpg`, 5038 `studio-Golfer.jpg`, 5039, ikone 5040–5042.
   Pravilo (Igor 23.10.): skriveni proizvodi dobivaju nove slike, ali status se NE mijenja (Driver's Holiday 3132 i Golfer 1524 ostaju privatni).
 
+- (23.10.) **Patrik Hawk's Gin** (2565): 3744 `HAWKS-1.jpg`, 5043, 5044, **ikone Gavrana** 5019–5021 (ista kartica); **Borovnica 1 l** (1537):
+  3412, 5045, 5046, 3413 (stražnja, zamijenjena), ikone 5047–5049; **Viljamovka sa zlatom 0,70 l** (3776): 3780, 5050, 5051, 3781 (zamijenjena),
+  ikone 5052–5054; **Viljamovka 0,20 l** (1533): 1534 `patrik-voljamovka.png`, 5055, 5056, ikone 5052–5054; **Limoncello 0,50 l** (3525): 3526,
+  5057, 5058, 3527 stražnja (zamijenjena; hover stražnje etikete iz probnog shopa), ikone 5059–5061.
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,

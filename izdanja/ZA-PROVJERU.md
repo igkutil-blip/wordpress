@@ -32,6 +32,12 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 - **Golfer liker** je privatan (kupci ga ne vide) – slike postavljene, ostaje skriven kao Driver's Holiday (Igor 23.10.: samo slike).
 - Gothic: opis je popis („Proizvođač: …, Alkohol: …”) s oznakama u listi – tablica „Podaci” se zato ne slaže; urediti opis?
 
+### Patrik: Hawk's Gin 0,50 l (2565), Borovnica 1 l (1537), Viljamovka sa zlatom 0,70 l (3776), Viljamovka 0,20 l (1533), Limoncello 0,50 l (3525) – 23.10.2026.
+- **Posluživanje** (kartice iz paketa): Hawk's kao Gavran (aperitiv, tonik, Gin Fizz); Borovnica – aperitiv, slastica, led; Viljamovke – aperitiv,
+  digestiv, za kušanje 0,02 l; Limoncello – samostalno, uz slastice, Limoncello Spritz 0,04 l (60 ml rosé pjenušca – prilagodba recepta Prosecco DOC).
+  Porcije su urednički prijedlozi.
+- Hawk's Gin: u opisu vise „Alk. % Vol.: 42.0”, „Primjeri koktela s ginom” i prazan „EAN kod:” – urediti opis (EAN nedostaje).
+
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
   temperatura „Po želji” su sa stranice proizvoda.
