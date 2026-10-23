@@ -70,6 +70,7 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
   skriven iz kataloga – stara adresa). Oba imaju iste nove slike. Treba li 1647 ostati (npr. zbog starih poveznica)?
 - **STRAVA glava 0,38 l i 0,10 l** su skrivene (od 5.12.2025.), a na stanju su i imaju cijenu (13 €, 6 €). Na stranici 0,75 l prikazane su u izboru
   zapremnine kao **„Rasprodano”** (Igor 23.10.). Prodaju li se još? Ako da – objaviti ih i izbor se sam poveže.
+- Skrivene glave 0,38 l i 0,10 l dobile su vlastite ambijentalne fotografije (poluprofil i profil) – spremne ako se objave.
 - **BOGATI Čokolada 1 l** (skrivena) – na stranici Čokolade 0,70 l u izboru zapremnine također piše „Rasprodano”.
 - Skriveni STRAVA glava 0,38 l i 0,10 l dijele glavnu sliku s 0,75 l (ista boca-lubanja) – sada pokazuju novu ambijentalnu.
 

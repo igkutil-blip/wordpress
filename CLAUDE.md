@@ -99,6 +99,11 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   (tri niske čaše); **STRAVA 1 l** (754): 4712, 5109, 5110, 4713 zamijenjena, ikone 0,10 l (`ikone_izvor` 815); **STRAVA glava 0,75 l** (4751): 4124 PNG
   (lubanja – zajednička i 1647 glava 0,75 „primores”, privatnima 1929 0,38 l i 1928 0,10 l; ista boca → zamjena na istoj adresi), 5111, 5112, ikone 815.
   **1647 = stara adresa iste glave 0,75 l** (objavljen, `catalog_visibility` hidden): dobio istu galeriju i `_dsp_posluzivanje` preko WC REST.
+  **Usklađena boja** (paketi „Strava-Uskladene-Fotografije” i „…Glava-Fotografije-Za-Potvrdu”, Igor: zamijeni): na istim adresama 4124 (PNG paleta),
+  5111, STRAVA 1 l 4712, 5109, 4713; glava kut 2 → **4125** `strava-glava-domestic-spirits-2.png`, kut 3 → **4126** `-3.png` (PNG paleta); nove studijske
+  5152 `studio-strava-glava-domestic-spirits-2.jpg`, 5153 `-3.jpg`. Svaka zapremnina svoja ambijentalna: 0,75 l (4751, 1647) [4124, 5111, 5112, 4125, 4126],
+  0,38 l (1929, privatan) [4125, 5152, 5112, 4124, 4126], 0,10 l (1928, privatan) [4126, 5153, 5112, 4124, 4125]; obje dobile `_dsp_posluzivanje`.
+  Paket „Strava-Glava-075” ponovno poslan = isti kao prvi (preskočen). curl `-F datoteka=@…` ne podnosi zarez u putanji („0,75 l”) → kopirati.
 - (23.10.) **Promex Medica 1 l** (1115): 1116 PNG, 5113, 5114, ikone 5115–5117; **Promex Pelin 1 l** (1113): 1114 PNG, 5118, 5119, ikone 5120–5122
   (S tonikom = čaša s limunom); **San MONTANO Biska** (739): 740 PNG, 5123, 5124, ikone 5125–5127 (S ledom); **Smokva** (718): 729 PNG, 5128, 5129,
   ikone 5130–5132; **Teranino 0,70 l** (717): 732 PNG, 5133, 5134, ikone Teranina Limited 5096–5098 (ista kartica). Glavne slike nisu dijeljene.
