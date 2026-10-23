@@ -96,9 +96,13 @@ final class Domestic_Pomocnik {
 		};
 		register_rest_route( self::NS, '/status', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'status' ), 'permission_callback' => $perm ) );
 		register_rest_route( self::NS, '/plugin', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'plugin' ), 'permission_callback' => $perm ) );
-		register_rest_route( self::NS, '/opcija/(?P<ime>domestic_[a-z0-9_]+)', array(
+		register_rest_route( self::NS, '/opcija/(?P<ime>domestic_[a-z0-9_]+|rank-math-options-titles|rank-math-options-general|woocommerce_email_header_image)', array(
 			array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'opcija_citaj' ), 'permission_callback' => $perm ),
 			array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'opcija_pisi' ), 'permission_callback' => $perm ),
+		) );
+		register_rest_route( self::NS, '/tema', array(
+			array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'tema_citaj' ), 'permission_callback' => $perm ),
+			array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'tema_pisi' ), 'permission_callback' => $perm ),
 		) );
 		register_rest_route( self::NS, '/mailovi', array( 'methods' => 'GET', 'callback' => array( __CLASS__, 'mailovi' ), 'permission_callback' => $perm ) );
 	}
@@ -197,6 +201,38 @@ final class Domestic_Pomocnik {
 		}
 		update_option( $ime, $nova, false );
 		return array( 'ime' => $ime, 'vrijednost' => get_option( $ime ) );
+	}
+
+	/** Postavke teme (Flatsome: logotipi, širine, boje…) – samo skalarne vrijednosti. */
+	public static function tema_citaj(): array {
+		$mods = get_theme_mods();
+		$out  = array();
+		foreach ( (array) $mods as $k => $v ) {
+			if ( is_scalar( $v ) || null === $v ) {
+				$out[ $k ] = $v;
+			}
+		}
+		ksort( $out );
+		return array( 'tema' => get_stylesheet(), 'mods' => $out );
+	}
+
+	/** Tijelo: {"mods": {"site_logo": "https://…", "logo_width": 300}} */
+	public static function tema_pisi( WP_REST_Request $req ) {
+		$mods = $req->get_json_params()['mods'] ?? null;
+		if ( ! is_array( $mods ) || ! $mods ) {
+			return new WP_Error( 'dspm_tema', 'Pošalji {"mods": {…}}.', array( 'status' => 400 ) );
+		}
+		foreach ( $mods as $k => $v ) {
+			if ( ! preg_match( '/^[a-z0-9_\-]+$/i', (string) $k ) || ! ( is_scalar( $v ) || null === $v ) ) {
+				return new WP_Error( 'dspm_tema', 'Neispravan ključ ili vrijednost: ' . $k, array( 'status' => 400 ) );
+			}
+			if ( null === $v ) {
+				remove_theme_mod( $k );
+			} else {
+				set_theme_mod( $k, $v );
+			}
+		}
+		return self::tema_citaj();
 	}
 
 	public static function mailovi(): array {

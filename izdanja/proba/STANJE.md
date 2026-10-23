@@ -6,13 +6,14 @@ Softaculous klon žive stranice (22.10.2026.), isti hosting (MyDataKnox cp064). 
 
 | Dodatak | Verzija | Stanje | Napomena |
 |---|---|---|---|
-| domestic-pomocnik | 0.1.0 | aktivan | učitao Igor 23.10.2026.; mailovi preusmjereni na Igorovu adresu |
+| domestic-pomocnik | 0.2.0 | aktivan | učitao Igor 23.10.2026.; mailovi preusmjereni na Igorovu adresu; 0.2.0 = postavke teme (/tema) |
 | domestic-kartica | 0.1.1 | aktivan, nova kartica **uključena** | 23.10.2026.; krem pozadina cijele stranice #f6f1e9, kartice na kremi, bordo #6b2b35 |
 | domestic-proizvod | 0.2.0 | aktivan, novi izgled za **sve** proizvode | 23.10.2026.; prema Igorovu mobilnom dizajnu (galerija 3 slike s oznakama, zapremnine, harmonika) |
 | domestic-provjera-dobi | 0.1.0 | aktivan, provjera **isključena** | 23.10.2026.; test okruženje, kategorije: vina, jaka alkoholna pića, pivo, horeca, poklon paketi (bez aloe vere i suvenira); čeka client_id i redirect URI za probu kod ministarstva |
 
 ## Promjene u odnosu na živu (samo na probi)
 
+- Novi logotipi (identitet/): zaglavlje 300 px, tamni logo, ikona stranice, logo u mailovima, slika za dijeljenje i logo organizacije (Rank Math); zaglavlje krem #F7F3EB.
 - WooCommerce: decimalni separator „,” i tisuće „.” (12,60 €) – na živoj je još „.”.
 - Isključeni: KEKS Pay (pravo plaćanje), Google Site Kit, CTX Feed, IT-podrška Age Gate (NIAS) – zamijenjen našim dodatkom.
 

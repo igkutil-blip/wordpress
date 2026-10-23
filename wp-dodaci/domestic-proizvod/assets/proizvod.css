@@ -1,8 +1,8 @@
 /* Domestic – stranica proizvoda 0.2 (prema Igorovu dizajnu: krem podloga, bordo, serif naslovi). Sve pod .dsp / .dsp-crumb. */
 
-body.dsp-page,body.dsp-page #wrapper,body.dsp-page #main{background:#f6f1e9!important}
+body.dsp-page,body.dsp-page #wrapper,body.dsp-page #main{background:#f7f3eb!important}
 .dsp-wrap{max-width:1240px;margin:0 auto;padding:0 32px 48px;box-sizing:border-box}
-.dsp,.dsp-crumb{--c:#f6f1e9;--box:#efe7dc;--l:#e2d6c3;--l2:#d6c7b1;--b:#6b2b35;--bd:#55212a;--g:#9b7b45;--i:#26201c;--m:#6f665d;--s:'DSP Serif',Georgia,'Times New Roman',serif;--n:'DSP Sans',system-ui,-apple-system,'Segoe UI',Arial,sans-serif}
+.dsp,.dsp-crumb{--c:#f7f3eb;--box:#efe7dc;--l:#e2d6c3;--l2:#d6c7b1;--b:#702833;--bd:#55212a;--g:#ad8d53;--i:#29231f;--m:#6f665d;--s:'DSP Serif',Georgia,'Times New Roman',serif;--n:'DSP Sans',system-ui,-apple-system,'Segoe UI',Arial,sans-serif}
 .dsp{color:var(--i);font:17px/1.65 var(--n);-webkit-font-smoothing:antialiased}
 .dsp *,.dsp *:before,.dsp *:after{box-sizing:border-box}
 .dsp img{max-width:100%;height:auto;display:block}
@@ -159,7 +159,7 @@ body.dsp-page,body.dsp-page #wrapper,body.dsp-page #main{background:#f6f1e9!impo
 .dsp .dsp-btn-sm{flex:0 0 auto;min-height:42px!important;padding:8px 14px!important;font-size:15px!important}
 
 /* povećanje */
-.dsp-lightbox{border:1px solid var(--l2);background:#f6f1e9;padding:24px;border-radius:8px;max-width:min(94vw,1000px);max-height:92vh}
+.dsp-lightbox{border:1px solid var(--l2);background:#f7f3eb;padding:24px;border-radius:8px;max-width:min(94vw,1000px);max-height:92vh}
 .dsp-lightbox::backdrop{background:#251a18b3}
 .dsp-lightbox img{max-height:80vh;width:auto;margin:auto;display:block}
 .dsp-x{position:absolute;top:10px;right:10px;width:40px;height:40px;border-radius:50%;border:0;background:#fffdf6;font-size:24px;line-height:1;cursor:pointer}
@@ -234,7 +234,7 @@ body.dsp-page,body.dsp-page #wrapper,body.dsp-page #main{background:#f6f1e9!impo
   .dsp-card{padding:8px 8px 10px}
   .dsp-card h3{font-size:16px}
   .dsp-card-row{flex-direction:column;align-items:stretch;gap:6px}
-  .dsp-sticky{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:99;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#f6f1e9;border-top:1px solid var(--l2);transform:translateY(110%);transition:transform .25s}
+  .dsp-sticky{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:99;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#f7f3eb;border-top:1px solid var(--l2);transform:translateY(110%);transition:transform .25s}
   .dsp-sticky.on{transform:none}
   .dsp-sticky-p{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
   .dsp-sticky-p small{font-size:13px;color:var(--m)}
