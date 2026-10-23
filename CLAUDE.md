@@ -123,6 +123,10 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     povjerenje (na stanju + rok, besplatna dostava, sigurno pakiranje), zatim uvod, nagrade, „Kako poslužiti ↓”). Sličice = vodoravna traka
     (3 vidljive, strelice listaju po 3, ostale lazy). Mobitel: slika preko cijele širine min(46vh,360px), traka 3,6 sličice, naslov, cijena,
     gumb; traka „Dodaj u košaricu” na dnu kad gumb nije vidljiv (prvi ekran uvijek ima cijenu i gumb). Sekcije i povezani kao 0.3.
+  - **domestic-proizvod 0.6.0** (Igor: brzi pregled imao stari izgled): Flatsome „Brzi pregled” (AJAX `flatsome_quickview` →
+    `content-single-product-lightbox`) preuzet filtrima wc_get_template_part/wc_get_template → `templates/quickview.php` =
+    `Front::quickview()`: galerija + naslov (h2, poveznica), cijena, zapremnine, količina + gumb, povjerenje, uvod, „Sve o proizvodu →”.
+    CSS dolazi kao <link> u odgovoru; JS (proizvod.js) na Flatsome stranicama, init(root) + MutationObserver za ubačeni sadržaj.
   - **domestic-proizvod 0.5.0** (23.10., Igor: jednobrazni tekstovi, „neka unose kako hoće”): klasa `Domestic_Proizvod_Tekst` –
     SAMO PRIKAZ (front; baza, admin i slugovi netaknuti). Filtri: the_title (product), woocommerce_product_get_name, short_description,
     the_content (product), get_term/get_terms (product_cat/tag). Naziv: razmaci, zvjezdica na kraju van, „0,75” bez jedinice → 0,75 l,

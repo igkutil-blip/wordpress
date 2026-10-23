@@ -45,6 +45,37 @@ final class Domestic_Proizvod_Front {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ) );
 		add_shortcode( 'domestic_proizvod', array( __CLASS__, 'shortcode' ) );
 		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
+		// Flatsome „Brzi pregled”: isti izgled kao stranica proizvoda, sažeto
+		add_filter( 'wc_get_template_part', array( __CLASS__, 'quickview_part' ), 20, 3 );
+		add_filter( 'wc_get_template', array( __CLASS__, 'quickview_tpl' ), 20, 2 );
+	}
+
+	public static function quickview_part( $tpl, $slug, $name ) {
+		return 'content' === $slug && 'single-product-lightbox' === $name ? self::quickview_file( $tpl ) : $tpl;
+	}
+
+	public static function quickview_tpl( $tpl, $name ) {
+		return 'content-single-product-lightbox.php' === $name ? self::quickview_file( $tpl ) : $tpl;
+	}
+
+	private static function quickview_file( $tpl ) {
+		global $product;
+		$p = $product instanceof WC_Product ? $product : wc_get_product( get_the_ID() );
+		return $p && Domestic_Proizvod_Data::is_on( $p ) ? DSP_DIR . '/templates/quickview.php' : $tpl;
+	}
+
+	/** Sadržaj brzog pregleda: galerija | naslov, cijena, zapremnine, kupnja, uvod, poveznica na proizvod. */
+	public static function quickview( WC_Product $p ): string {
+		$head = preg_replace( '#<h1 class="dsp-title">(.*?)</h1>#s', '<h2 class="dsp-title"><a href="' . esc_url( $p->get_permalink() ) . '">$1</a></h2>', self::head( $p ) );
+		$buy  = str_replace( 'href="#dsp-dostava" data-dsp-open="dostava"', 'href="' . esc_url( $p->get_permalink() . '#dsp-dostava' ) . '"', self::buy( $p ) );
+		$lead = self::lead_text( $p );
+		$v    = DSP_VER . '.' . filemtime( DSP_DIR . '/assets/proizvod.css' );
+		return '<link rel="stylesheet" href="' . esc_url( DSP_URL . 'assets/proizvod.css?ver=' . $v ) . '">'
+			. '<div class="dsp dsp-qv"><section class="dsp-product">' . self::gallery( $p )
+			. '<div class="dsp-info-col">' . $head . $buy
+			. ( '' !== $lead ? '<p class="dsp-intro">' . esc_html( $lead ) . '</p>' : '' )
+			. '<a class="dsp-qv-more" href="' . esc_url( $p->get_permalink() ) . '">Sve o proizvodu: opis, posluživanje, nagrade ' . self::svg( 'desno' ) . '</a>'
+			. '</div></section></div>';
 	}
 
 	private static function current(): ?WC_Product {
@@ -68,6 +99,10 @@ final class Domestic_Proizvod_Front {
 
 	public static function assets(): void {
 		if ( ! self::current() && ! self::has_shortcode() ) {
+			// ostale stranice: samo skripta za brzi pregled (CSS dolazi s njegovim sadržajem)
+			if ( 'flatsome' === get_template() ) {
+				wp_enqueue_script( 'domestic-proizvod', DSP_URL . 'assets/proizvod.js', array(), DSP_VER . '.' . filemtime( DSP_DIR . '/assets/proizvod.js' ), true );
+			}
 			return;
 		}
 		$v = DSP_VER . '.' . filemtime( DSP_DIR . '/assets/proizvod.css' );

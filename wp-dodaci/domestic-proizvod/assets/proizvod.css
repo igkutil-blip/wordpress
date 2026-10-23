@@ -239,3 +239,23 @@ body.dsp-page,body.dsp-page #wrapper,body.dsp-page #main{background:#f7f3eb!impo
 }
 @media(prefers-reduced-motion:reduce){.dsp-sticky{transition:none}}
 .dsp .dsp-strip-btn[hidden]{display:none!important}
+
+/* brzi pregled (Flatsome lightbox): galerija | naslov, cijena, kupnja – sažeto */
+.product-lightbox:has(.dsp-qv){max-width:980px!important;width:calc(100% - 32px);padding:0!important;background:#f7f3eb!important;border-radius:6px;overflow:hidden}
+.dsp-qv{padding:28px}
+.dsp-qv .dsp-product{grid-template-columns:minmax(0,1fr) minmax(300px,.9fr);gap:32px}
+.dsp-qv .dsp-gallery{position:static}
+.dsp-qv .dsp-track{height:min(480px,calc(100vh - 260px))}
+.dsp-qv .dsp-title{font-size:clamp(21px,2vw,27px)!important;margin:6px 0 10px!important}
+.dsp-qv .dsp-title a:hover{color:var(--b)}
+.dsp-qv .dsp-chips{margin-bottom:14px!important}
+.dsp-qv .dsp-intro{font-size:14px;margin:16px 0 10px!important;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.dsp .dsp-qv-more{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--b)!important;border-bottom:1px solid currentColor;padding-bottom:2px}
+.dsp-qv-more .dsp-i{width:16px;height:16px}
+@media (max-width:760px){
+  .product-lightbox:has(.dsp-qv){width:100%}
+  .mfp-container:has(.dsp-qv){padding-left:8px!important;padding-right:8px!important}
+  .dsp-qv{padding:0 16px 20px}
+  .dsp-qv .dsp-product{grid-template-columns:1fr;gap:18px}
+  .dsp-qv .dsp-track{height:260px}
+}
