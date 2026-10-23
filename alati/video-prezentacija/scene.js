@@ -132,6 +132,14 @@ const kraj = stranica(`
   <div class="opis" style="margin-top:20px">Sve izmjene su na probnoj stranici – objava nakon vaše potvrde</div>
 </div>`);
 
+const galerija = stranica(`
+<div class="okvir">
+  <div class="nad">Galerija proizvoda · TERROAR Dunja</div><h2>Tri fotografije za svaki proizvod</h2>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:40px">
+  ${[['1976-nova.jpg', 'U ambijentu'], ['5148-nova.jpg', 'Studijska'], ['5149-nova.jpg', 'Kako poslužiti']].map(([s, z]) => `<div><div class="ekran" style="aspect-ratio:1"><img src="${f('par/' + s)}" style="width:100%;height:100%;object-fit:cover"></div><div style="font:400 30px Marcellus;margin-top:16px;text-align:center">${z}</div></div>`).join('')}
+  </div>
+</div>`);
+
 const scene = {
   '01-naslov': naslov,
   '02-kategorija': split('Kategorija', 'Likeri i rakije', 'snimke/kat-stara.png', 'snimke/kat-nova.png',
@@ -140,8 +148,13 @@ const scene = {
   '03-proizvod': split('Stranica proizvoda', 'San MONTANO Teranino', 'snimke/ter-stara.png', 'snimke/ter-nova.png',
     ['Podaci kao dugi tekst', 'Jedna fotografija'],
     ['Cijena i košarica odmah na prvom ekranu', 'Galerija: ambijent · studio · kako poslužiti']),
+  '04b-glava': split('Stranica proizvoda', 'STRAVA glava', 'snimke/glava-stara.png', 'snimke/glava-nova.png',
+    ['Podaci i opis u crvenom tekstu', 'Bez izbora zapremnine'],
+    ['Zapremnine 0,10 · 0,38 · 0,75 l na jednom mjestu', 'Pet fotografija, usklađene boje']),
+  '04c-galerija': galerija,
   '05-foto1': parovi(['732', '4276', '4712', '1976'], ['San MONTANO Teranino', 'AVELLANA', 'STRAVA 1 l', 'TERROAR Dunja']),
   '06-foto2': parovi(['1114', '4063', '4124', '1981'], ['Promex Pelin', 'BOGATI Medica', 'STRAVA glava', 'TERROAR Viljamovka']),
+  '06b-foto3': parovi(['740', '729', '1116', '1106'], ['San MONTANO Biska', 'San MONTANO Smokva', 'Promex Medica', 'Promex Brusnica']),
   '07-posluzivanje': posluzivanje,
   '08-zapremnine': zapremnine,
   '09-glava': glava,
