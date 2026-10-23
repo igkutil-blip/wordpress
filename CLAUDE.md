@@ -36,7 +36,7 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   domestic-proizvod 0.6.2: oznake ispod sličica isključene (`slike` = '').
 - Avellana 0,20 l (2734): 3829 ambijent (PNG 256 boja + paleta), 4881 studio, 4882 posluživanje, 3311 medalja; **2815 (zadnja strana boce,
   stara firma) maknuta iz galerije – ne vraćati** (prilog ostaje). Avellana 1 l (748): 3891 ambijent, 4883 studio, 4884 posluživanje,
-  2047 + 3311 medalje (Igor: dodati stare medalje).
+  2047 + 3311 medalje (Igor: dodati stare medalje). Ispravak (veća boca): 3829, 3891, 4881, 4883 zamijenjeni na istim adresama.
 - Avellana Premium 0,70 l (3697): 3828 ambijent (PNG + paleta), 4886 studio, 4887 posluživanje, zatim 3700 2.jpg, 3701 3.jpg, 3702 2x.jpg
   (detalji etikete, zamijenjeni na istim adresama; Igor: 3700 i 3701 maknuti iz galerije Premiuma – ostaje samo 3702 na mahovini) i 4532 Best in Class 2025 (zamijenjena; koriste je i Premium box 3727 i „Gospodski” 4527).
   Prazni altovi popunjeni (alt.txt; medalja: „Zlatna medalja Best in Class – CroSpirit Best Spirit Awards 2025.”). Količine posluživanja
