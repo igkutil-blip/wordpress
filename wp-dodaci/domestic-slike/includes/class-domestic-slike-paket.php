@@ -194,7 +194,7 @@ final class Domestic_Slike_Paket {
 	}
 
 	/** Prilozi čija datoteka (bez -scaled i nastavka) ima isti naziv kao slika iz paketa. */
-	private static function prilozi_po_nazivu( string $naziv ): array {
+	public static function prilozi_po_nazivu( string $naziv ): array {
 		global $wpdb;
 		$osnova = preg_replace( '/\.[a-z0-9]+$/i', '', $naziv );
 		$ids    = $wpdb->get_col(
@@ -257,14 +257,18 @@ final class Domestic_Slike_Paket {
 			return array();
 		}
 		$r = array();
-		// stavke završavaju količinom („… 0,03 l”) – dijeli se samo iza „l”, da zarez u „0,03” ne razbije stavku
-		foreach ( preg_split( '/(?<=\bl),\s*|(?<=\bl)\s+i\s+/u', rtrim( $m[1], '. ' ) ) as $dio ) {
+		// dva zapisa: „kao aperitiv 0,03 l, …” i „0,03 l kao aperitiv, …” – dijeli se iza „l” ili ispred broja,
+		// da zarez u „0,03” ne razbije stavku
+		foreach ( preg_split( '/(?<=\bl),\s*|(?<=\bl)\s+i\s+|,\s+(?=\d)|\s+i\s+(?=\d+,\d)/u', rtrim( $m[1], '. ' ) ) as $dio ) {
 			$dio = trim( $dio );
 			if ( '' === $dio ) {
 				continue;
 			}
 			$kol = '';
-			if ( preg_match( '/^(.*?)\s+(\d[\d,\s+×x.]*\s*l(?:\s*\+.*)?)$/u', $dio, $x ) ) {
+			if ( preg_match( '/^(\d[\d,]*\s*l)\s+(\D.*)$/u', $dio, $x ) ) {
+				$kol = trim( $x[1] );
+				$dio = $x[2];
+			} elseif ( preg_match( '/^(.*?)\s+(\d[\d,\s+×x.]*\s*l(?:\s*\+.*)?)$/u', $dio, $x ) ) {
 				$dio = $x[1];
 				$kol = trim( $x[2] );
 			}
@@ -510,15 +514,32 @@ final class Domestic_Slike_Paket {
 			$nove[]      = $id;
 			$rez[ $u ]   = $id;
 		}
-		// dodatne slike iz paketa (npr. medalja) iza
+		// dodatne slike iz paketa (npr. medalje, detalji) iza: ako već postoji slika proizvoda istog naziva → zamjena na istoj adresi
+		$zamijenjene = array();
 		if ( ! isset( $o['dodatne'] ) || $o['dodatne'] ) {
+			$svoje = array_merge( array( $cilj ), array_map( 'intval', $p->get_gallery_image_ids() ) );
 			foreach ( $a['dodatne'] as $k ) {
-				$id = self::nova_iz( $a, $k, $a['alt'][ $s[ $k ]['naziv'] ] ?? $p->get_name(), $p->get_name(), $pid, 'jpg' );
+				$alt_k = $a['alt'][ $s[ $k ]['naziv'] ] ?? $p->get_name();
+				$ista  = array_values( array_intersect( self::prilozi_po_nazivu( $s[ $k ]['naziv'] ), $svoje ) );
+				if ( $ista ) {
+					$z = Domestic_Slike::zamijeni( $ista[0], $s[ $k ]['put'] );
+					if ( is_wp_error( $z ) ) {
+						continue;
+					}
+					if ( '' === trim( (string) get_post_meta( $ista[0], '_wp_attachment_image_alt', true ) ) ) {
+						update_post_meta( $ista[0], '_wp_attachment_image_alt', $alt_k );
+					}
+					$nove[]        = $ista[0];
+					$zamijenjene[] = $ista[0];
+					continue;
+				}
+				$id = self::nova_iz( $a, $k, $alt_k, $p->get_name(), $pid, 'jpg' );
 				if ( ! is_wp_error( $id ) ) {
 					$nove[] = $id;
 				}
 			}
 		}
+		$rez['zamijenjene'] = $zamijenjene;
 
 		// 3. posluživanje: tekst + ilustracije
 		$stavke = isset( $o['posluzivanje'] ) && is_array( $o['posluzivanje'] ) ? $o['posluzivanje'] : $a['stavke'];
@@ -551,7 +572,7 @@ final class Domestic_Slike_Paket {
 		// 4. galerija i meta
 		$stara  = array_map( 'intval', $p->get_gallery_image_ids() );
 		$zadrzi = isset( $o['zadrzi'] ) ? array_map( 'intval', (array) $o['zadrzi'] ) : $stara;
-		$zadrzi = array_values( array_diff( array_intersect( $stara, $zadrzi ), array( $cilj ) ) );
+		$zadrzi = array_values( array_diff( array_intersect( $stara, $zadrzi ), array( $cilj ), $nove ) );
 		$p->set_image_id( $cilj );
 		$p->set_gallery_image_ids( array_merge( $nove, $zadrzi ) );
 		if ( $pos ) {

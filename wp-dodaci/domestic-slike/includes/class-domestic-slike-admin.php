@@ -214,8 +214,11 @@ final class Domestic_Slike_Admin {
 				echo '<figure class="dss-upoz">' . esc_html( $n ) . ': nema u paketu</figure>';
 			}
 		}
+		$svoje = $p ? array_merge( array( (int) $p->get_image_id() ), array_map( 'intval', $p->get_gallery_image_ids() ) ) : array();
 		foreach ( $a['dodatne'] as $k ) {
-			echo '<figure>' . self::sl( $s[ $k ]['put'] ) . 'Dodatna (nova, iza)<br><code>' . esc_html( $s[ $k ]['naziv'] ) . '</code></figure>'; // phpcs:ignore
+			$ista = array_intersect( Domestic_Slike_Paket::prilozi_po_nazivu( $s[ $k ]['naziv'] ), $svoje );
+			$opis = $ista ? 'Dodatna → zamjena slike ' . (int) reset( $ista ) . ' na istoj adresi' : 'Dodatna (nova, iza)';
+			echo '<figure>' . self::sl( $s[ $k ]['put'] ) . esc_html( $opis ) . '<br><code>' . esc_html( $s[ $k ]['naziv'] ) . '</code></figure>'; // phpcs:ignore
 		}
 		echo '</div>';
 		if ( $a['ostalo'] ) {

@@ -64,6 +64,11 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   za sve tri zapremnine. **Čokolada 1 l** (1345, **privatan** proizvod): 3545 `cokolada-scaled.jpg` (izvornik cokolada.jpg ostaje star), 4993, 4994,
   ikone 4974–4976. uvoz.py: `ikone[].id` = već učitana ista ikona (ne reže se ni ne učitava).
 
+- Dodatkom domestic-slike 0.2.0 (23.10.): **Teranino 0,70 l** (1952): 4217 ambijent, 4995 studio, 4996 posluživanje, ikone 4997–4999;
+  **Teranino 0,20 l** (2594): 4205, 5000, 5001, iste ikone; **Višnjevac 0,20 l** (2999): 3000 ambijent, 5002, 5003, **3003 i 3004 zamijenjene
+  na istim adresama** (dodatne slike iz paketa istog naziva), ikone 5004–5006; **Vanilija 1 l** (1358): 4076, 5007, 5008, ikone 5009–5011;
+  **Ruža 1 l** (1359): 4075, 5012, 5013, ikone 5014–5016. Opisi stavki upisani prema karticama (`--postavke`; prijedlog dodatka bi uzeo Medicine).
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,
@@ -206,6 +211,8 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     Klijent `alati/uvoz-slika/uvoz.py paket.zip [--samo-analiza] [--postavke izmjene.json] [--ziva]`. Lokalni test (scratchpad lokal + dss-test):
     analiza 1,4 s, uvoz ~9 s, PNG 1600 s paletom GD 1,27 MB (PIL 0,87), vizualno jednako. Na probi u Za provjeru prenesene natuknice za
     3005, 1600, 1352, 1589, 1345, 1348, 4272, 1353, 3697 (blog ostaje u ZA-PROVJERU.md).
+    **0.2.0**: dodatna slika iz paketa istog naziva kao slika proizvoda (glavna/galerija) → zamjena na istoj adresi (ostaje u galeriji iza
+    novih); „Kako poslužiti” i u zapisu „0,03 l kao aperitiv, …” (količina ispred naziva).
   - **domestic-kartica 0.6.0** (Igor: krem traka na dnu mobitela iz probnog shopa 0.5.0): postavka `donja_traka` (yes), ≤849 px, wp_footer
     `nav.dsk-dno`: Početna · Ponuda · Pokloni (prva kategorija proizvoda „poklon”) · Traži · Košarica (broj = WC fragment `span.dsk-dno-broj`);
     trenutna bordo + crta gore; nije na blagajni. Traži = vlastiti panel na vrhu (`#dsk-dno-panel`, form.searchform → prijedlozi iz trazilica.js),

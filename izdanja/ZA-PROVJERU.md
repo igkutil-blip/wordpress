@@ -13,6 +13,11 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 - **Posluživanje** (kartica iz paketa, ista za 0,20 / 0,70 / 1 l): Kao aperitiv / Uz slasticu (medenjaci, suhi kolači) / Kao digestiv, po **0,03 l** –
   autorski prijedlozi, ne proizvođača.
 
+### BOGATI Teranino 0,20 l i 0,70 l (2594, 1952), Višnjevac 0,20 l (2999), Vanilija 1 l (1358), Ruža 1 l (1359) – 23.10.2026.
+- **Teranino – zlatna medalja**: opis kaže „Na 8. … CROSPIRIT … 2026., … osvojio je ZLATNU MEDALJU”. Neiskorištena značka „CroSpirit Gold 2023.”
+  (prilog 4255) vjerojatno je Teraninova – potvrditi godinu i dodati u galeriju obje zapremnine.
+- **Posluživanje** (kartice iz paketa): Kao aperitiv / Uz slasticu / S ledom po 0,03 l (Ruža: Uz pjenušac 0,02 l) – urednički prijedlozi; temperatura sa stranice.
+
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
   temperatura „Po želji” su sa stranice proizvoda.
