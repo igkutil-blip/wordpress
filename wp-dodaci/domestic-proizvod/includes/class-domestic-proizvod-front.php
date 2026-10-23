@@ -194,7 +194,7 @@ final class Domestic_Proizvod_Front {
 		$pod = Domestic_Proizvod_Data::attr( $p, 'podrijetlo' );
 		$chips = array_filter(
 			array(
-				$lit ? Domestic_Proizvod_Data::litres_label( $lit ) : '',
+				Domestic_Proizvod_Data::volume_label( $p ),
 				$alk ? ( preg_match( '/(\d+(?:[.,]\d+)?)/', $alk, $am ) ? str_replace( '.', ',', $am[1] ) . ' % vol.' : $alk ) : '',
 				$pod ? self::short_origin( $pod ) : '',
 			)
@@ -266,7 +266,7 @@ final class Domestic_Proizvod_Front {
 			$h .= '<div class="dsp-vol"><div class="dsp-label">Odaberi zapremninu</div><div class="dsp-vol-list' . ( count( $sib ) > 2 ? ' dsp-vol-vise' : '' ) . '">';
 			foreach ( $sib as list( $x, $l ) ) {
 				$on = $x->get_id() === $p->get_id();
-				$h .= '<a class="dsp-vol-opt' . ( $on ? ' on' : '' ) . '" href="' . esc_url( $x->get_permalink() ) . '"' . ( $on ? ' aria-current="true"' : '' ) . '><b>' . esc_html( Domestic_Proizvod_Data::litres_label( $l ) ) . '</b><span>' . esc_html( self::eur( (float) wc_get_price_to_display( $x ) ) ) . '</span></a>';
+				$h .= '<a class="dsp-vol-opt' . ( $on ? ' on' : '' ) . '" href="' . esc_url( $x->get_permalink() ) . '"' . ( $on ? ' aria-current="true"' : '' ) . '><b>' . esc_html( Domestic_Proizvod_Data::volume_label( $x ) ) . '</b><span>' . esc_html( self::eur( (float) wc_get_price_to_display( $x ) ) ) . '</span></a>';
 			}
 			$h .= '</div></div>';
 		}
@@ -596,7 +596,7 @@ final class Domestic_Proizvod_Front {
 			$x   = wc_get_product( $id );
 			$l   = Domestic_Proizvod_Data::litres_of( $x );
 			$cat = self::primary_cat( $x );
-			$meta = array_filter( array( $cat ? $cat->name : '', $l ? Domestic_Proizvod_Data::litres_label( $l ) : '' ) );
+			$meta = array_filter( array( $cat ? $cat->name : '', Domestic_Proizvod_Data::volume_label( $x ) ) );
 			$h  .= '<a class="dsp-card" href="' . esc_url( $x->get_permalink() ) . '"><span class="dsp-card-img">' . $x->get_image( 'woocommerce_single', array( 'loading' => 'lazy', 'sizes' => '(max-width: 760px) 45vw, 220px' ) ) . '</span>'
 				. ( $meta ? '<span class="dsp-card-cat">' . esc_html( implode( ' · ', $meta ) ) . '</span>' : '' )
 				. '<h3>' . esc_html( Domestic_Proizvod_Data::name_without_volume( $x->get_name() ) ) . '</h3>'
@@ -625,7 +625,7 @@ final class Domestic_Proizvod_Front {
 			return '';
 		}
 		$lit = Domestic_Proizvod_Data::litres_of( $p );
-		return '<div class="dsp-sticky" aria-hidden="true"><div class="dsp-sticky-p">' . ( $lit ? '<small>' . esc_html( Domestic_Proizvod_Data::litres_label( $lit ) ) . '</small>' : '' )
+		return '<div class="dsp-sticky" aria-hidden="true"><div class="dsp-sticky-p">' . ( $lit ? '<small>' . esc_html( Domestic_Proizvod_Data::volume_label( $p ) ) . '</small>' : '' )
 			. '<b>' . esc_html( self::eur( (float) wc_get_price_to_display( $p ) ) ) . '</b></div>'
 			. '<button type="button" class="dsp-btn" tabindex="-1">' . self::svg( 'bag' ) . 'Dodaj u košaricu</button></div>';
 	}

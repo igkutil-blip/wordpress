@@ -141,8 +141,16 @@ final class Domestic_Slike_Paket {
 			}
 		}
 		$kandidati = self::kandidati( $slike, $dodatne, $mapa );
-		// ambijentalna = ona čiji naziv odgovara staroj glavnoj slici, inače prva bez prefiksa
+		// ambijentalna = ona čiji naziv odgovara GLAVNOJ slici prepoznatog proizvoda (druge istog naziva su npr. stražnja strana),
+		// zatim bilo kojoj postojećoj slici, inače „…ambijent…” ili prva bez prefiksa
+		$glavna = (int) ( $kandidati[0]['glavna'] ?? 0 );
 		foreach ( $dodatne as $k ) {
+			if ( $glavna && in_array( $glavna, self::prilozi_po_nazivu( $slike[ $k ]['naziv'] ), true ) ) {
+				$amb = $k;
+				break;
+			}
+		}
+		foreach ( null === $amb ? $dodatne : array() as $k ) {
 			if ( self::prilozi_po_nazivu( $slike[ $k ]['naziv'] ) ) {
 				$amb = $k;
 				break;

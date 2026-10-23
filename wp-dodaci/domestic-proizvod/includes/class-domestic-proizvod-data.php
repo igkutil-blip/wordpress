@@ -234,8 +234,22 @@ final class Domestic_Proizvod_Data {
 	}
 
 
-	/** Zapremnina u litrama iz teksta („0,7 l”, „0,70L”, „700 ml”). */
+	/** Pakiranje „4 × 0,05 l” / „4x0,05L” → [4, 0.05]; inače null. */
+	public static function pack( string $s ): ?array {
+		if ( preg_match( '/(\d+)\s*[xX×]\s*(\d+(?:[.,]\d+)?)\s*(ml|cl|dl|l)\b/iu', $s, $m ) ) {
+			$f = array( 'ml' => 0.001, 'cl' => 0.01, 'dl' => 0.1, 'l' => 1 );
+			$v = (float) str_replace( ',', '.', $m[2] ) * $f[ strtolower( $m[3] ) ];
+			return (int) $m[1] > 0 && $v > 0 ? array( (int) $m[1], $v ) : null;
+		}
+		return null;
+	}
+
+	/** Zapremnina u litrama iz teksta („0,7 l”, „0,70L”, „700 ml”; pakiranje „4 × 0,05 l” = ukupno 0,20 l). */
 	public static function litres( string $s ): float {
+		$pk = self::pack( $s );
+		if ( $pk ) {
+			return $pk[0] * $pk[1];
+		}
 		if ( ! preg_match( '/(\d+(?:[.,]\d+)?)\s*(ml|cl|l)?/i', $s, $m ) ) {
 			return 0.0;
 		}
@@ -256,11 +270,25 @@ final class Domestic_Proizvod_Data {
 
 	/** Zapremnina iz naziva proizvoda („… 0,70L”, „… 1 l”, „… 700 ml”) – zadnja pojava. */
 	public static function litres_from_name( string $name ): float {
+		$pk = self::pack( $name );
+		if ( $pk ) {
+			return $pk[0] * $pk[1];
+		}
 		if ( ! preg_match_all( '/(\d+(?:[.,]\d+)?)\s*(ml|cl|l)\b/iu', $name, $m, PREG_SET_ORDER ) ) {
 			return 0.0;
 		}
 		$z = end( $m );
 		return self::litres( $z[1] . ' ' . $z[2] );
+	}
+
+	/** Oznaka zapremnine proizvoda: „4 × 0,05 l” za pakiranja, inače „0,70 l”. */
+	public static function volume_label( WC_Product $p ): string {
+		$pk = self::pack( (string) self::attr( $p, 'zapremnina' ) ) ?? self::pack( $p->get_name() );
+		if ( $pk ) {
+			return $pk[0] . ' × ' . rtrim( self::litres_label( $pk[1] ), ' l' ) . ' l';
+		}
+		$l = self::litres_of( $p );
+		return $l ? self::litres_label( $l ) : '';
 	}
 
 	/** Zapremnina proizvoda u litrama: atribut, inače naziv. */

@@ -38,6 +38,11 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
   Porcije su urednički prijedlozi.
 - Hawk's Gin: u opisu vise „Alk. % Vol.: 42.0”, „Primjeri koktela s ginom” i prazan „EAN kod:” – urediti opis (EAN nedostaje).
 
+### Patrik Navy Strength Gin (3745), Mix rakija i Mix likeri 4 × 0,05 l (1630, 1641), Loza Muškatna (2758); Promex Borovnica 1 l (1107) – 23.10.2026.
+- **Posluživanje** (kartice iz paketa): Navy – S tonikom 0,03 l, Gimlet 0,04 l, Ginger Mule 0,03 l (prema Four Pillars Navy Strength, ne Patrik);
+  Mix – kušanje 0,01 l po okusu; Loza – kao Viljamovka; Promex Borovnica – kao Patrik Borovnica. Porcije su urednički prijedlozi.
+- Navy Strength: u opisu vise „Alk. % Vol.: 59.0”, „Primjeri koktela s ginom” i prazan „EAN kod:” (kao Hawk's) – urediti.
+
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
   temperatura „Po želji” su sa stranice proizvoda.

@@ -84,6 +84,11 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   ikone 5052–5054; **Viljamovka 0,20 l** (1533): 1534 `patrik-voljamovka.png`, 5055, 5056, ikone 5052–5054; **Limoncello 0,50 l** (3525): 3526,
   5057, 5058, 3527 stražnja (zamijenjena; hover stražnje etikete iz probnog shopa), ikone 5059–5061.
 
+- (23.10.) **Promex Borovnica 1 l** (1107): 1108 `promex-borovnica.png`, 5062, 5063, ikone Patrik Borovnice 5047–5049; **Navy Strength Gin** (3745):
+  3746, 5064, 5065, ikone 5066–5068 (tonik, Gimlet, Ginger Mule); **Mix rakija** (1630): 1631 (glavna), 5069, 5070, 1632 stražnja zamijenjena (PNG),
+  ikone 5071–5073; **Mix likeri** (1641): 1639, 5074, 5075, 1640 zamijenjena, ikone 5076–5078; **Loza Muškatna** (2758): 2759, 5079, 5080, 2760
+  zamijenjena, ikone Viljamovke 5052–5054. domestic-slike **0.3.2**: ambijentalna = slika istog naziva kao GLAVNA slika proizvoda (ne prva po zipu).
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,
@@ -230,6 +235,9 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     novih); „Kako poslužiti” i u zapisu „0,03 l kao aperitiv, …” (količina ispred naziva). **0.3.0**: uloge i po ključnoj riječi
     (`1-ambijent`, `2-studio`, `3-posluzivanje`) – tada nove dobivaju naziv `studio-/posluzivanje-<naziv stare glavne>`; opisi stavki SAMO s iste
     marke i vrste (prve 2 riječi); traženje proizvoda po najduljoj riječi mape (oblí apostrof). **0.3.1**: bez „-scaled” u nazivu novih slika.
+  - **domestic-proizvod 0.7.3 / domestic-kartica 0.6.1** (greška: Mix paketi „4 l” i 3,88 €/l): pakiranje „4 × 0,05 l” / „4x0,05L” = ukupno 0,20 l
+    (Data::pack, litres, litres_from_name; Kartica::litre) → cijena po litri 77,50 €; oznaka `Data::volume_label()` „4 × 0,05 l” (čipovi, izbor
+    zapremnine, povezani, traka na dnu).
   - **domestic-kartica 0.6.0** (Igor: krem traka na dnu mobitela iz probnog shopa 0.5.0): postavka `donja_traka` (yes), ≤849 px, wp_footer
     `nav.dsk-dno`: Početna · Ponuda · Pokloni (prva kategorija proizvoda „poklon”) · Traži · Košarica (broj = WC fragment `span.dsk-dno-broj`);
     trenutna bordo + crta gore; nije na blagajni. Traži = vlastiti panel na vrhu (`#dsk-dno-panel`, form.searchform → prijedlozi iz trazilica.js),

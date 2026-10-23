@@ -226,6 +226,11 @@ final class Domestic_Kartica {
 
 	/** Zapremnina u litrama iz „0,7 l”, „700 ml”, „0.75L”. */
 	public static function litre( string $z ): float {
+		// pakiranje „4 × 0,05 l” = ukupno 0,20 l (cijena po litri inače ispadne 4 puta veća)
+		if ( preg_match( '/(\d+)\s*[xX×]\s*(\d+(?:[.,]\d+)?)\s*(ml|cl|dl|l)\b/iu', $z, $k ) ) {
+			$f = array( 'ml' => 0.001, 'cl' => 0.01, 'dl' => 0.1, 'l' => 1 );
+			return (int) $k[1] * (float) str_replace( ',', '.', $k[2] ) * $f[ strtolower( $k[3] ) ];
+		}
 		if ( ! preg_match( '/(\d+(?:[.,]\d+)?)\s*(ml|cl|dl|l)\b/i', $z, $m ) ) {
 			return 0.0;
 		}
