@@ -131,7 +131,7 @@ final class Domestic_Kartica_Trgovina {
 			foreach ( $djeca as $t ) {
 				$o .= self::opcija( get_term_link( $t ), $t->name, (int) $t->count, $kat && $kat->term_id === $t->term_id );
 			}
-			$f[] = self::izbornik( 'kategorija', 'Kategorija', $kat && $roditelj ? $kat->name : '', $o );
+			$f[] = self::izbornik( 'kategorija', 'Kategorija', $kat && $roditelj ? $kat->name : '', $o, false, $kat ? 'Sve' : 'Sve kategorije' );
 		}
 
 		// Cijena: rasponi (WooCommerce ih filtrira sam preko ?min_price i ?max_price)
@@ -148,7 +148,7 @@ final class Domestic_Kartica_Trgovina {
 			}
 			$o .= self::opcija( self::url( array( 'min_price' => $od ? $od : null, 'max_price' => $do ? $do : null ) ), $t, $broj[ $i ] ?? -1, $on );
 		}
-		$f[] = self::izbornik( 'cijena', 'Cijena', $odabrano, $o );
+		$f[] = self::izbornik( 'cijena', 'Cijena', $odabrano, $o, false, 'Sve cijene' );
 
 		// Poredak
 		$poredci = apply_filters(
@@ -172,7 +172,7 @@ final class Domestic_Kartica_Trgovina {
 			$t  = self::hr_poredak( $k, $t );
 			$o .= self::opcija( self::url( array( 'orderby' => $k === $zadano ? null : $k ) ), $t, -1, $k === $sad );
 		}
-		$poredak = self::izbornik( 'poredak', 'Poredaj', $sad !== $zadano && isset( $poredci[ $sad ] ) ? self::hr_poredak( $sad, $poredci[ $sad ] ) : '', $o, true );
+		$poredak = self::izbornik( 'poredak', 'Poredaj', $sad !== $zadano && isset( $poredci[ $sad ] ) ? self::hr_poredak( $sad, $poredci[ $sad ] ) : '', $o, true, self::hr_poredak( $zadano, $poredci[ $zadano ] ?? 'Preporučeno' ) );
 
 		// odabrani filteri
 		$aktivni = '';
@@ -182,8 +182,8 @@ final class Domestic_Kartica_Trgovina {
 
 		$ukupno = (int) wc_get_loop_prop( 'total' );
 		echo self::naslov(); // phpcs:ignore WordPress.Security.EscapeOutput
-		echo '<div class="dsk-filteri" role="region" aria-label="Filteri proizvoda"><div class="dsk-filteri-lijevo">' . implode( '', $f ) . $aktivni // phpcs:ignore WordPress.Security.EscapeOutput
-			. '</div><div class="dsk-filteri-desno"><span class="dsk-ukupno">' . esc_html( $ukupno . ' ' . self::proizvoda( $ukupno ) ) . '</span>' . $poredak . '</div></div>'; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo '<div class="dsk-filteri" role="region" aria-label="Filteri proizvoda"><div class="dsk-filteri-traka dsk-f-' . ( count( $f ) + 1 ) . '">' . implode( '', $f ) . $poredak // phpcs:ignore WordPress.Security.EscapeOutput
+			. '</div><div class="dsk-filteri-info"><span class="dsk-ukupno">' . esc_html( $ukupno . ' ' . self::proizvoda( $ukupno ) ) . '</span>' . $aktivni . '</div></div>'; // phpcs:ignore WordPress.Security.EscapeOutput
 	}
 
 	/** Putanja i naslov stranice (Flatsomeova traka naslova je prazna, kategorije nemaju H1). */
@@ -222,10 +222,19 @@ final class Domestic_Kartica_Trgovina {
 		return $do ? $od . '–' . $do . ' €' : 'iznad ' . $od . ' €';
 	}
 
-	private static function izbornik( string $id, string $naziv, string $odabrano, string $opcije, bool $desno = false ): string {
-		return '<details class="dsk-filter dsk-filter-' . esc_attr( $id ) . ( $odabrano ? ' dsk-filter-on' : '' ) . ( $desno ? ' dsk-filter-desno' : '' ) . '"><summary><span class="dsk-filter-naziv">' . esc_html( $naziv ) . '</span>'
-			. ( $odabrano ? '<span class="dsk-filter-vrijednost">' . esc_html( $odabrano ) . '</span>' : '' )
-			. '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div class="dsk-panel">' . $opcije . '</div></details>';
+	const FIKONE = array(
+		'kategorija' => '<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>',
+		'cijena'     => '<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3-9 9-8-8.6Z"/><circle cx="8" cy="8" r="1.4"/>',
+		'poredak'    => '<path d="M7 4v16m0 0-3-3m3 3 3-3M17 20V4m0 0-3 3m3-3 3 3"/>',
+	);
+
+	/** Polje trake filtera: ikona, malo ime filtra, ispod trenutni izbor (ili $prikaz kad ništa nije izabrano). */
+	private static function izbornik( string $id, string $naziv, string $odabrano, string $opcije, bool $desno = false, string $prikaz = '' ): string {
+		$v = '' !== $odabrano ? $odabrano : $prikaz;
+		return '<details class="dsk-filter dsk-filter-' . esc_attr( $id ) . ( $odabrano ? ' dsk-filter-on' : '' ) . ( $desno ? ' dsk-filter-desno' : '' ) . '"><summary>'
+			. ( isset( self::FIKONE[ $id ] ) ? '<svg class="dsk-f-ik" viewBox="0 0 24 24" aria-hidden="true">' . self::FIKONE[ $id ] . '</svg>' : '' )
+			. '<span class="dsk-f-tekst"><span class="dsk-filter-naziv">' . esc_html( $naziv ) . '</span><span class="dsk-filter-vrijednost">' . esc_html( $v ) . '</span></span>'
+			. '<svg class="dsk-f-str" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div class="dsk-panel">' . $opcije . '</div></details>';
 	}
 
 	private static function opcija( $url, string $tekst, int $broj, bool $on ): string {

@@ -162,6 +162,10 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     na 1600 px, isječak 392 px, krem pozadina #F7F3EB → prozirna, PNG 280 px, naziv `posluzivanje-ikona-<…>.png`) i upisati tekst s kartice
     u `_dsp_posluzivanje`. Klasične Avellane (0,20/0,70/1 l): 4888 čašica, 4889 kava, 4890 slastica; Premium: 4891 led, 4892 espresso koktel,
     4893 sladoled s kavom.
+  - **domestic-kartica 0.5.3** (Igor: kućice filtera prije otvaranja ljepše): jedna spojena traka (krem #fbf8f3, obrub #d9cebc, r 12 px) s 3 polja
+    Kategorija | Cijena | Poredaj (crte između), u polju zlatna ikona (const FIKONE), malo ime velikim slovima (zlatno-smeđe) i ispod
+    trenutni izbor („Sve”, „Sve cijene”, „Preporučeno”; odabrano bordo). Broj proizvoda + oznaka filtra × desno (mobitel ispod trake).
+    Mobitel: 3 polja preko cijele širine, ≤420 px bez ikona. Paneli nepromijenjeni.
   - **domestic-kartica 0.5.2** (Igor: tablete kategorija na mobitelu ružne): mobitel = mreža 4 × 2 (62 px), zlatna linijska ikona (JS po adresi:
     vin/vinarij/likeri-alkohol/pivo/horeca/sok/poklon) + naziv normalnim slovima, tanke crte između, trenutna krem + bordo crta dolje;
     8. polje „Sve” (trgovina, samo mobitel). Računalo nepromijenjeno (ikone skrivene).
