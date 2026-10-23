@@ -304,4 +304,14 @@ Slavonica. Tekst iz opisa proizvoda + javnih izvora (oprezno). Naslovne slike 49
 proizvoda (bijela pozadina → krem multiply, crna → tamna #29231F lighten, mješovito → kvadratne pločice). Skripte: `alati/blog-partneri/`.
 Preskočeni: Kosovo Vranac (nije hrvatski), Aloe Vera sokovi. Fotografije sa stranica vinarija NE mogu se skinuti (mreža sesije blokira
 vanjske domene) – Igor treba dodati domene u Allowed domains. Stranica /vinarije/ = stranica objava (sve objave, i rakije).
-Flatsome blog ima engleske natpise (Posted on, Continue reading, Category Archives) – ispraviti prijevod (otvoreno).
+Proširenja (dodaci.py: regija, tablica „Za stolom”/„Kako poslužiti” class dsb-stol, savjet class dsb-savjet; stare 4 dobile „Za stolom”),
+upis `prosiri.py`; redoslijed `redoslijed.py` (vinarije noviji datum → prve na popisu). Opisi kategorija = uvod na stranici regije; Style → „Savjeti”.
+  - **domestic-blog 0.1.0** (Igor: blog po standardima novog weba, hrvatski, gumbi): template_include za is_home/kategorije/oznake/objave →
+    `Domestic_Blog_Prikaz::arhiva()/objava()`. Popis: putanja, nadnaslov, H1 (postavka „Vinarije i proizvođači”), uvod, tablete kategorija s brojem
+    („Vinarije …” bez prefiksa, regije prve; skrivene u postavci, na probi 228 Blog), 1. priča istaknuta (vodoravno), kartice 3 u redu (16:9, kategorija,
+    naslov, sažetak 3 retka, „N proizvoda u ponudi · Pročitaj priču →”), krugovi stranica, tamni poziv u trgovinu; 13 po stranici (1 + 12).
+    Objava: tableta kategorije, H1, „N min čitanja · N proizvoda u ponudi · Pogledaj ponudu ↓”, slika 16:9, tekst 760 px (h2 sa zlatnom crtom,
+    citat krem, zlatne točke), „U našoj ponudi” izvučen iz sadržaja ([products] iza `<h2>U našoj ponudi</h2>`) u traku preko cijele širine + „Svi
+    proizvodi”, Još priča (3 iz iste kategorije). SAMO PRIKAZ za stare objave: [ux_slider]/nizovi <img> → galerija (oznaka DSBGALERIJAnX dok prođe
+    wpautop), [ux_products] → [products] široko, prvi naslov VELIKIM SLOVIMA maknut, style/align/span izbačeni, tablica dobiva data-l za mobitel.
+    gettext za Flatsome (Continue reading → Pročitaj više …). Domestic → Blog (postavke).
