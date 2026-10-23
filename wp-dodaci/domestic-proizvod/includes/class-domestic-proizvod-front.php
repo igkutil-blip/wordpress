@@ -23,6 +23,7 @@ final class Domestic_Proizvod_Front {
 		'bag'   => '<path d="M5 7.5h14l-1 13H6l-1-13Z"/><path d="M9 7.5V6a3 3 0 0 1 6 0v1.5"/>',
 		'zoom'  => '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5M11 8v6M8 11h6"/>',
 		'lijevo' => '<path d="m14.5 6-6 6 6 6"/>',
+		'stit'    => '<path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.8 12 2.2 2.2 4.3-4.4"/>',
 		'nagrada' => '<circle cx="12" cy="9" r="6"/><path d="m8 14-2 8 6-3 6 3-2-8"/>',
 		'desno'  => '<path d="m9.5 6 6 6-6 6"/>',
 		'kamion' => '<path d="M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3.2v2.8h-7"/><circle cx="6.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/>',
@@ -111,7 +112,8 @@ final class Domestic_Proizvod_Front {
 
 	public static function render( WC_Product $p ): string {
 		return '<div class="dsp">'
-			. '<section class="dsp-product">' . self::gallery( $p ) . '<div class="dsp-summary">' . self::head( $p ) . self::extra( $p ) . '</div>' . self::buy( $p ) . '</section>'
+			. '<section class="dsp-product">' . self::gallery( $p )
+			. '<div class="dsp-info-col">' . self::head( $p ) . self::buy( $p ) . self::extra( $p ) . '</div></section>'
 			. self::tabs( $p )
 			. self::related( $p )
 			. self::sticky( $p )
@@ -142,18 +144,20 @@ final class Domestic_Proizvod_Front {
 
 	/* ---------- naslov ---------- */
 
+	/** Naslov: marka/vrsta iznad, puni naziv (bez zapremnine) jednim naslovom, ključne činjenice kao oznake. */
 	public static function head( WC_Product $p ): string {
-		$m   = Domestic_Proizvod_Data::meta( $p );
-		list( $big, $small ) = Domestic_Proizvod_Data::title_parts( $p );
-		$eb  = $m['eyebrow'] ? $m['eyebrow'] : Domestic_Proizvod_Data::attr( $p, 'vrsta' );
-		if ( ! $eb ) {
-			$cat = self::primary_cat( $p );
-			$eb  = $cat ? $cat->name : '';
+		$m     = Domestic_Proizvod_Data::meta( $p );
+		$marka = Domestic_Proizvod_Data::attr( $p, 'marka' );
+		if ( ! $marka ) {
+			list( $big, $small ) = Domestic_Proizvod_Data::title_parts( $p );
+			$marka = $small ? $big : '';
 		}
-		$lit  = Domestic_Proizvod_Data::litres_of( $p );
-		$alk  = Domestic_Proizvod_Data::attr( $p, 'alkohol' );
-		$pod  = Domestic_Proizvod_Data::attr( $p, 'podrijetlo' );
-		$meta = array_filter(
+		$cat = self::primary_cat( $p );
+		$eb  = $m['eyebrow'] ? $m['eyebrow'] : implode( ' · ', array_filter( array( $marka, $cat ? $cat->name : '' ) ) );
+		$lit = Domestic_Proizvod_Data::litres_of( $p );
+		$alk = Domestic_Proizvod_Data::attr( $p, 'alkohol' );
+		$pod = Domestic_Proizvod_Data::attr( $p, 'podrijetlo' );
+		$chips = array_filter(
 			array(
 				$lit ? Domestic_Proizvod_Data::litres_label( $lit ) : '',
 				$alk ? ( preg_match( '/(\d+(?:[.,]\d+)?)/', $alk, $am ) ? str_replace( '.', ',', $am[1] ) . ' % vol.' : $alk ) : '',
@@ -161,9 +165,13 @@ final class Domestic_Proizvod_Front {
 			)
 		);
 		$h = '<header class="dsp-head">' . ( $eb ? '<div class="dsp-eyebrow">' . esc_html( $eb ) . '</div>' : '' )
-			. '<h1 class="dsp-title">' . esc_html( $big ) . ( $small ? '<span>' . esc_html( $small ) . '</span>' : '' ) . '</h1>';
-		if ( $meta ) {
-			$h .= '<p class="dsp-meta-line">' . implode( '<i aria-hidden="true">·</i>', array_map( 'esc_html', $meta ) ) . '</p>';
+			. '<h1 class="dsp-title">' . esc_html( Domestic_Proizvod_Data::name_without_volume( $p->get_name() ) ) . '</h1>';
+		if ( $chips ) {
+			$h .= '<ul class="dsp-chips">';
+			foreach ( $chips as $c ) {
+				$h .= '<li>' . esc_html( $c ) . '</li>';
+			}
+			$h .= '</ul>';
 		}
 		return $h . '</header>';
 	}
@@ -173,37 +181,39 @@ final class Domestic_Proizvod_Front {
 	public static function gallery( WC_Product $p ): string {
 		$ids    = array_values( array_unique( array_filter( array_merge( array( $p->get_image_id() ), $p->get_gallery_image_ids() ) ) ) );
 		$labels = array_map( 'trim', explode( '|', (string) Domestic_Proizvod_Data::settings()['slike'] ) );
+		$naziv  = $p->get_name();
 		$b      = '';
 		foreach ( Domestic_Proizvod_Data::badges( $p ) as $k => $t ) {
 			$b .= '<span class="dsp-tag dsp-tag-' . esc_attr( $k ) . '">' . esc_html( $t ) . '</span>';
 		}
 		if ( ! $ids ) {
-			return '<div class="dsp-gallery"><div class="dsp-stage"><div class="dsp-slide">' . wc_placeholder_img( 'woocommerce_single' ) . '</div></div></div>';
+			return '<div class="dsp-gallery"><div class="dsp-stage"><div class="dsp-track"><div class="dsp-slide">' . wc_placeholder_img( 'woocommerce_single' ) . '</div></div></div></div>';
 		}
 		$n   = count( $ids );
 		$lab = function ( $i ) use ( $labels ) {
-			return ! empty( $labels[ $i ] ) ? $labels[ $i ] : 'Slika ' . ( $i + 1 );
+			return ! empty( $labels[ $i ] ) ? $labels[ $i ] : '';
 		};
-		$h = '<div class="dsp-gallery" data-n="' . $n . '"><div class="dsp-stage">'
-			. '<div class="dsp-track" tabindex="0" aria-label="Slike proizvoda">';
+		$h = '<div class="dsp-gallery" data-n="' . $n . '"><div class="dsp-stage"><div class="dsp-track" tabindex="0" aria-label="Slike proizvoda, ' . $n . '">';
 		foreach ( $ids as $i => $id ) {
-			$h .= '<figure class="dsp-slide" data-label="' . esc_attr( $lab( $i ) ) . '">'
-				. wp_get_attachment_image( $id, 'woocommerce_single', false, array( 'class' => 'dsp-img', 'data-full' => wp_get_attachment_image_url( $id, 'full' ), 'loading' => $i ? 'lazy' : 'eager', 'fetchpriority' => $i ? 'auto' : 'high' ) )
+			$alt = get_post_meta( $id, '_wp_attachment_image_alt', true );
+			$h  .= '<figure class="dsp-slide" data-label="' . esc_attr( $lab( $i ) ) . '">'
+				. wp_get_attachment_image( $id, 'woocommerce_single', false, array( 'class' => 'dsp-img', 'alt' => $alt ? $alt : $naziv, 'data-full' => wp_get_attachment_image_url( $id, 'full' ), 'loading' => $i ? 'lazy' : 'eager', 'fetchpriority' => $i ? 'low' : 'high', 'sizes' => '(max-width: 760px) 100vw, 640px' ) )
 				. '</figure>';
 		}
 		$h .= '</div>'
-			. ( $n > 1 ? '<span class="dsp-chip"><span class="dsp-chip-t">' . esc_html( $lab( 0 ) ) . '</span> · <span class="dsp-chip-n">1</span> / ' . $n . '</span>' : '' )
 			. ( $b ? '<div class="dsp-tags">' . $b . '</div>' : '' )
-			. ( $n > 1 ? '<button type="button" class="dsp-arrow dsp-prev" aria-label="Prethodna slika">' . self::svg( 'lijevo' ) . '</button><button type="button" class="dsp-arrow dsp-next" aria-label="Sljedeća slika">' . self::svg( 'desno' ) . '</button>' : '' )
+			. ( $n > 1 ? '<span class="dsp-count"><span class="dsp-count-n">1</span> / ' . $n . '</span>'
+				. '<button type="button" class="dsp-arrow dsp-prev" aria-label="Prethodna slika">' . self::svg( 'lijevo' ) . '</button><button type="button" class="dsp-arrow dsp-next" aria-label="Sljedeća slika">' . self::svg( 'desno' ) . '</button>' : '' )
 			. '<button type="button" class="dsp-zoom" aria-label="Povećaj sliku">' . self::svg( 'zoom' ) . '</button>'
 			. '</div>';
 		if ( $n > 1 ) {
-			$h .= '<div class="dsp-thumbs" style="--n:' . $n . '">';
+			$h .= '<div class="dsp-strip' . ( $n > 3 ? ' dsp-strip-vise' : '' ) . '"><div class="dsp-thumbs" role="list">';
 			foreach ( $ids as $i => $id ) {
-				$h .= '<button type="button" class="dsp-thumb' . ( $i ? '' : ' on' ) . '" data-i="' . $i . '" aria-label="' . esc_attr( $lab( $i ) ) . '">'
-					. wp_get_attachment_image( $id, 'woocommerce_gallery_thumbnail' ) . '<span>' . esc_html( $lab( $i ) ) . '</span></button>';
+				$h .= '<button type="button" role="listitem" class="dsp-thumb' . ( $i ? '' : ' on' ) . '" data-i="' . $i . '" aria-label="' . esc_attr( 'Slika ' . ( $i + 1 ) . ( $lab( $i ) ? ': ' . $lab( $i ) : '' ) ) . '">'
+					. wp_get_attachment_image( $id, 'woocommerce_gallery_thumbnail', false, array( 'loading' => $i < 3 ? 'eager' : 'lazy', 'alt' => '' ) )
+					. ( $lab( $i ) ? '<span>' . esc_html( $lab( $i ) ) . '</span>' : '' ) . '</button>';
 			}
-			$h .= '</div>';
+			$h .= '</div>' . ( $n > 3 ? '<button type="button" class="dsp-strip-btn dsp-strip-prev" aria-label="Prethodne sličice" hidden>' . self::svg( 'lijevo' ) . '</button><button type="button" class="dsp-strip-btn dsp-strip-next" aria-label="Sljedeće sličice">' . self::svg( 'desno' ) . '</button>' : '' ) . '</div>';
 		}
 		return $h . '</div>';
 	}
@@ -216,8 +226,7 @@ final class Domestic_Proizvod_Front {
 		$lit   = Domestic_Proizvod_Data::litres_of( $p );
 		$price = (float) wc_get_price_to_display( $p );
 		$h     = '<div class="dsp-buybox">';
-
-		$sib = Domestic_Proizvod_Data::siblings( $p );
+		$sib   = Domestic_Proizvod_Data::siblings( $p );
 		if ( $sib ) {
 			$h .= '<div class="dsp-vol"><div class="dsp-label">Odaberi zapremninu</div><div class="dsp-vol-list' . ( count( $sib ) > 2 ? ' dsp-vol-vise' : '' ) . '">';
 			foreach ( $sib as list( $x, $l ) ) {
@@ -227,6 +236,8 @@ final class Domestic_Proizvod_Front {
 			$h .= '</div></div>';
 		}
 
+		$vol     = $h;
+		$h       = '';
 		$ph      = $p->get_price_html();
 		$sidrena = '';
 		if ( preg_match( '#<span class="sidrena-cijena">.*?</span></span>#s', $ph, $sm ) || preg_match( '#<span class="sidrena-cijena">.*?</span>#s', $ph, $sm ) ) {
@@ -256,39 +267,28 @@ final class Domestic_Proizvod_Front {
 			$h .= '<p class="dsp-anchor">Sidrena cijena 02.05.2025.: ' . esc_html( self::eur( (float) str_replace( ',', '.', $m['sidrena'] ) ) ) . '</p>';
 		}
 
-		// WooCommerceov obrazac (zaliha, količina, varijacije); koraci −/+ dodaje proizvod.js
-		if ( $p->is_purchasable() && $p->is_in_stock() ) {
-			$h .= '<div class="dsp-label dsp-qty-label">Količina' . ( $lit ? ' boca' : '' ) . '</div>';
-		}
+		// cijena na vrhu okvira, pa zapremnine
+		$h = '<div class="dsp-buybox">' . $h . substr( $vol, strlen( '<div class="dsp-buybox">' ) );
 		ob_start();
 		woocommerce_template_single_add_to_cart();
 		$h .= '<div class="dsp-cart">' . ob_get_clean() . '</div>';
-		if ( $p->is_in_stock() ) {
-			$h .= '<p class="dsp-note">' . ( $lit ? 'Cijena za 1 bocu. ' : '' ) . ( $p->is_on_backorder() ? 'Po narudžbi' : 'Na stanju' ) . ', šaljemo u ' . esc_html( $s['rok'] ) . '.</p>';
-		} else {
-			$h .= '<p class="dsp-note dsp-out">Trenutno nema na zalihi.</p>';
-		}
-
+		// povjerenje: zaliha i rok, dostava, sigurna kupnja
+		$h .= '<ul class="dsp-trust">';
+		$h .= $p->is_in_stock()
+			? '<li class="dsp-ok">' . self::svg( 'check' ) . '<span><b>' . ( $p->is_on_backorder() ? 'Po narudžbi' : 'Na stanju' ) . '</b> · šaljemo u ' . esc_html( $s['rok'] ) . '</span></li>'
+			: '<li class="dsp-out">Trenutno nema na zalihi</li>';
 		if ( (float) $s['besplatno_od'] > 0 ) {
-			$h .= '<div class="dsp-ship">' . self::svg( 'kamion', 'dsp-i dsp-i-ship' ) . '<div><h2>Dostava</h2><p>Besplatno za narudžbe iznad ' . esc_html( self::eur( (float) $s['besplatno_od'] ) ) . ( $s['podrucje'] ? ' na području ' . esc_html( $s['podrucje'] ) : '' ) . '.</p>'
-				. '<a class="dsp-link" href="#dsp-dostava" data-dsp-open="dostava">Uvjeti dostave ↓</a></div></div>';
+			$h .= '<li>' . self::svg( 'kamion' ) . '<span>Besplatna dostava iznad ' . esc_html( self::eur( (float) $s['besplatno_od'] ) ) . ( $s['podrucje'] ? ' (' . esc_html( $s['podrucje'] ) . ')' : '' ) . ' · <a class="dsp-link" href="#dsp-dostava" data-dsp-open="dostava">uvjeti</a></span></li>';
 		}
+		$h .= '<li>' . self::svg( 'stit' ) . '<span>Sigurno pakiranje' . ( $lit ? ' boca' : '' ) . ' i plaćanje</span></li></ul>';
 		return $h . '</div>';
 	}
 
-	/** Sažetak uz naslov: uvod, vrsta i podrijetlo, red s nagradama, poveznica na posluživanje. */
+	/** Ispod kupnje: uvodna rečenica, red s nagradama, poveznica na posluživanje. */
 	public static function extra( WC_Product $p ): string {
 		$m     = Domestic_Proizvod_Data::meta( $p );
 		$short = self::lead_text( $p );
 		$h     = '' !== $short ? '<p class="dsp-intro">' . esc_html( $short ) . '</p>' : '';
-		$dl    = '';
-		foreach ( array( 'vrsta' => 'Vrsta', 'podrijetlo' => 'Podrijetlo' ) as $k => $l ) {
-			$v = Domestic_Proizvod_Data::attr( $p, $k );
-			if ( $v ) {
-				$dl .= '<div><dt>' . esc_html( $l ) . '</dt><dd>' . esc_html( mb_strtoupper( mb_substr( $v, 0, 1 ) ) . mb_substr( $v, 1 ) ) . '</dd></div>';
-			}
-		}
-		$h .= $dl ? '<dl class="dsp-facts">' . $dl . '</dl>' : '';
 		if ( $m['nagrade'] ) {
 			$t  = implode( ' · ', array_map( function ( $n ) { return rtrim( $n['naslov'], '.' ) . '.'; }, array_slice( $m['nagrade'], 0, 3 ) ) );
 			$h .= '<a class="dsp-awardline" href="#dsp-nagrade" data-dsp-open="nagrade">' . self::svg( 'nagrada' ) . '<span>' . esc_html( $t ) . '</span><i aria-hidden="true">↓</i></a>';

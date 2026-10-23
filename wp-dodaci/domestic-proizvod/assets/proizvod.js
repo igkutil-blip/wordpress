@@ -13,12 +13,30 @@
     i = (i + slides.length) % slides.length;
     track.scrollTo({ left: i * track.clientWidth, behavior: reduce ? 'auto' : 'smooth' });
   }
+  var strip = $('.dsp-thumbs');
   function mark(i) {
     cur = i;
-    var c = $('.dsp-chip-t'), n = $('.dsp-chip-n');
-    if (c) c.textContent = slides[i].getAttribute('data-label');
+    var n = $('.dsp-count-n');
     if (n) n.textContent = String(i + 1);
-    $$('.dsp-thumb').forEach(function (t, k) { t.classList.toggle('on', k === i); t.setAttribute('aria-current', k === i ? 'true' : 'false'); });
+    $$('.dsp-thumb').forEach(function (t, k) {
+      t.classList.toggle('on', k === i); t.setAttribute('aria-current', k === i ? 'true' : 'false');
+      if (k === i && strip) {
+        var l = t.offsetLeft - strip.offsetLeft, r = l + t.offsetWidth;
+        if (l < strip.scrollLeft || r > strip.scrollLeft + strip.clientWidth) strip.scrollTo({ left: l - 4, behavior: reduce ? 'auto' : 'smooth' });
+      }
+    });
+  }
+  /* traka sličica: strelice listaju po tri */
+  var sp = $('.dsp-strip-prev'), sn = $('.dsp-strip-next');
+  function stripBtns() {
+    if (!strip || !sp) return;
+    sp.hidden = strip.scrollLeft < 4;
+    sn.hidden = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 4;
+  }
+  if (strip && sp) {
+    sp.addEventListener('click', function () { strip.scrollBy({ left: -strip.clientWidth, behavior: reduce ? 'auto' : 'smooth' }); });
+    sn.addEventListener('click', function () { strip.scrollBy({ left: strip.clientWidth, behavior: reduce ? 'auto' : 'smooth' }); });
+    strip.addEventListener('scroll', stripBtns, { passive: true }); window.addEventListener('resize', stripBtns); stripBtns();
   }
   if (track) {
     var tm;
