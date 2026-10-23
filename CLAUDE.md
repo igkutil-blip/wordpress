@@ -55,6 +55,9 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   (primjer postavki u zaglavlju skripte; `--bez-ucitavanja` = samo pripremi i pregledaj ikone): sama nađe krugove ikona na kartici
   (x iz najšireg reda, y = gornji rub kruga od 420 px + r), PNG/JPG prema staroj glavnoj slici, galerija glavna → studio → posluživanje → `ostale`.
 
+- BOGATI Karamela 1 l (1348, 23.10.): 4072 ambijent (`2018/03/liker-karamela-bogati-domestic-spirits.png`; alt bio prazan → popunjen, `alt_glavna`),
+  4977 studio, 4978 posluživanje, ikone 4979 led, 4980 espresso, 4981 sladoled.
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,

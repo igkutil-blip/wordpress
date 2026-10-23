@@ -15,6 +15,10 @@ Natuknice za kraj obrade proizvoda – Igor pita, Mladen potvrdi ili ispravi. Ka
 - **Posluživanje** (kartica iz paketa): U čašici 0,03 l (aperitiv), Na ledu 0,03 l, Uz sladoled od vanilije 0,02 l – autorski prijedlozi
   (prema uobičajenom posluživanju čokoladnih likera, Mozart), nisu od proizvođača.
 
+### BOGATI Karamela 1 l (1348) – 23.10.2026.
+- **Posluživanje** (kartica iz paketa): Na ledu 0,03 l, Uz espresso 0,02 l, Uz sladoled od vanilije 0,02 l – autorski prijedlozi (prema Baileys Salted Caramel),
+  nisu od proizvođača.
+
 ### AVELLANA Premium 0,70 l (3697)
 - **Posluživanje**: Na ledu 0,03 l; Espresso koktel 0,015 l + 0,045 l votke + 0,045 l espressa + 0,0075 l šećernog sirupa; Sladoled s kavom 0,02 l –
   autorski prijedlozi (prilagođeno prema Frangelico).

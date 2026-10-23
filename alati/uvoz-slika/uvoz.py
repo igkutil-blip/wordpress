@@ -1,7 +1,7 @@
 # Uvoz paketa slika za jedan proizvod na probu (pravila: CLAUDE.md „Slike proizvoda – uvoz” i identitet/PRAVILA-ZA-SLIKE.txt).
 #   python3 -I alati/uvoz-slika/uvoz.py <postavke.json>
 # Postavke (JSON): proizvod, glavna (ID stare glavne slike), mapa (raspakirani paket), ambijent, studio, posluzivanje (nazivi datoteka),
-#   alt {datoteka: alt}, naziv (kratki naziv za naslove slika), oznaka (za nazive ikona), ostale (ID-ovi koji ostaju iza u galeriji),
+#   alt {datoteka: alt}, alt_glavna (samo ako je stari alt prazan), naziv (kratki naziv za naslove slika), oznaka (za nazive ikona), ostale (ID-ovi koji ostaju iza u galeriji),
 #   ikone [{ime, ikona, naziv, kolicina, opis, alt}] – redom s kartice posluživanja, izlaz (mapa za obrađene slike).
 # Ambijentalna ide u staru glavnu sliku na istoj adresi i u istom formatu (PNG → 256 boja + paleta=1), studio/posluživanje/ikone su nove.
 # Sve slike se ponovno spremaju (bez metapodataka); tekstovi iz paketa se ne učitavaju.
@@ -112,6 +112,10 @@ if '--bez-ucitavanja' in sys.argv:
 
 t, ct = multipart({'paleta': '1'} if ext == 'png' else {}, os.path.join(OUT, osnova), 'image/png' if ext == 'png' else 'image/jpeg')
 print(P['glavna'], str(req(f"domestic-pomocnik/v1/medij/{P['glavna']}", t, ct))[:160])
+# stari alt glavne slike ostaje; samo prazan se popunjava (alt_glavna)
+if P.get('alt_glavna') and not req(f"wp/v2/media/{P['glavna']}?context=edit&_fields=alt_text")['alt_text'].strip():
+    req(f"wp/v2/media/{P['glavna']}", json.dumps({'alt_text': P['alt_glavna']}).encode())
+    print('alt glavne popunjen')
 st = nova(os.path.join(OUT, P['studio']), P['alt'][P['studio']], P['naziv'] + ' – studijska', 'image/jpeg')
 po = nova(os.path.join(OUT, P['posluzivanje']), P['alt'][P['posluzivanje']], P['naziv'] + ' – kako poslužiti', 'image/jpeg')
 pos = []
