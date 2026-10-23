@@ -31,11 +31,44 @@ final class Domestic_Pomocnik {
 		add_filter( 'wp_robots', array( __CLASS__, 'robots' ), 999 );
 		add_filter( 'pre_option_blog_public', '__return_zero' );
 		add_action( 'rest_api_init', array( __CLASS__, 'rute' ) );
+		add_filter( 'wp_get_attachment_url', array( __CLASS__, 'verzija_url' ), 99, 2 );
+		add_filter( 'wp_get_attachment_image_src', array( __CLASS__, 'verzija_src' ), 99, 2 );
+		add_filter( 'wp_calculate_image_srcset', array( __CLASS__, 'verzija_srcset' ), 99, 5 );
 		add_action( 'admin_bar_menu', array( __CLASS__, 'traka' ), 5 );
 		if ( is_admin() ) {
 			Domestic_Menu::add( 'domestic-pomocnik', 'Pomoćnik (proba)', array( __CLASS__, 'stranica' ), 90 );
 			add_action( 'admin_post_dspm_spremi', array( __CLASS__, 'spremi' ) );
 		}
+	}
+
+	/* ---------- zamijenjene slike: ?v= da nginx i preglednik ne daju staru kopiju (samo proba) ---------- */
+
+	private static function verzija( int $id ): int {
+		$v = get_option( 'domestic_pomocnik_verzije', array() );
+		return is_array( $v ) ? (int) ( $v[ $id ] ?? 0 ) : 0;
+	}
+
+	private static function dodaj_v( string $url, int $v ): string {
+		return $v && false === strpos( $url, 'v=' ) ? add_query_arg( 'v', $v, $url ) : $url;
+	}
+
+	public static function verzija_url( $url, $id ) {
+		return is_string( $url ) ? self::dodaj_v( $url, self::verzija( (int) $id ) ) : $url;
+	}
+
+	public static function verzija_src( $img, $id ) {
+		if ( is_array( $img ) && ! empty( $img[0] ) ) {
+			$img[0] = self::dodaj_v( $img[0], self::verzija( (int) $id ) );
+		}
+		return $img;
+	}
+
+	public static function verzija_srcset( $sources, $size, $src, $meta, $id ) {
+		$v = self::verzija( (int) $id );
+		foreach ( (array) $sources as $k => $s ) {
+			$sources[ $k ]['url'] = self::dodaj_v( $s['url'], $v );
+		}
+		return $sources;
 	}
 
 	public static function obavijest_ziva(): void {
@@ -276,6 +309,10 @@ final class Domestic_Pomocnik {
 		$nm = wp_generate_attachment_metadata( $id, $put );
 		wp_update_attachment_metadata( $id, $nm );
 		clean_post_cache( $id );
+		$ver        = get_option( 'domestic_pomocnik_verzije', array() );
+		$ver        = is_array( $ver ) ? $ver : array();
+		$ver[ $id ] = time();
+		update_option( 'domestic_pomocnik_verzije', $ver, false );
 		return array( 'id' => $id, 'url' => wp_get_attachment_url( $id ), 'sirina' => $nm['width'] ?? null, 'visina' => $nm['height'] ?? null, 'velicine' => array_keys( (array) ( $nm['sizes'] ?? array() ) ) );
 	}
 
