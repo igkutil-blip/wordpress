@@ -7,8 +7,8 @@ Softaculous klon žive stranice (22.10.2026.), isti hosting (MyDataKnox cp064). 
 | Dodatak | Verzija | Stanje | Napomena |
 |---|---|---|---|
 | domestic-pomocnik | 0.3.2 | aktivan | učitao Igor 23.10.2026.; mailovi preusmjereni na Igorovu adresu; 0.2.0 postavke teme, 0.3.0 zamjena slike na istoj adresi, 0.3.1 ?v= za zamijenjene slike (nginx cache) ; 0.3.2 `paleta=1` (PNG izvedenice na 256 boja) |
-| domestic-kartica | 0.3.2 | aktivan, nova kartica **uključena** | 23.10.2026.; krem pozadina cijele stranice #f6f1e9, kartice na kremi, bordo #702833; 0.2.2 fontovi Marcellus + Jost na cijeloj stranici; 0.2.3 kvadratna slika (woocommerce_single + srcset) – ambijentalne od ruba do ruba ; 0.3.0 raspored trgovine (filteri gore, 4 u redu, nedavno dolje, stranice), krem kartice; 0.3.1 novi gumb Brzi pregled; 0.3.2 zbijeni izbornik kategorija, sitnije nedavno pregledano |
-| domestic-proizvod | 0.6.2 | aktivan, novi izgled za **sve** proizvode | 23.10.2026.; UX prvi ekran: 2 stupca, cijena i gumb odmah, traka sličica, puni naziv ; 0.6.0 brzi pregled u novom izgledu; 0.6.2 bez oznaka ispod sličica |
+| domestic-kartica | 0.3.3 | aktivan, nova kartica **uključena** | 23.10.2026.; krem pozadina cijele stranice #f6f1e9, kartice na kremi, bordo #702833; 0.2.2 fontovi Marcellus + Jost na cijeloj stranici; 0.2.3 kvadratna slika (woocommerce_single + srcset) – ambijentalne od ruba do ruba ; 0.3.0 raspored trgovine (filteri gore, 4 u redu, nedavno dolje, stranice), krem kartice; 0.3.1 novi gumb Brzi pregled; 0.3.2 zbijeni izbornik kategorija, sitnije nedavno pregledano; 0.3.3 jednobrazne oznake |
+| domestic-proizvod | 0.6.3 | aktivan, novi izgled za **sve** proizvode | 23.10.2026.; UX prvi ekran: 2 stupca, cijena i gumb odmah, traka sličica, puni naziv ; 0.6.0 brzi pregled u novom izgledu; 0.6.2 bez oznaka ispod sličica; 0.6.3 oznake iz domestic-kartica |
 | domestic-provjera-dobi | 0.1.0 | aktivan, provjera **isključena** | 23.10.2026.; test okruženje, kategorije: vina, jaka alkoholna pića, pivo, horeca, poklon paketi (bez aloe vere i suvenira); čeka client_id i redirect URI za probu kod ministarstva |
 
 ## Promjene u odnosu na živu (samo na probi)

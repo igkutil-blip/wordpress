@@ -80,7 +80,7 @@ final class Domestic_Kartica_Admin {
 		foreach ( Domestic_Kartica::OZNAKE as $k => $naziv ) {
 			echo '<label style="display:block"><input type="checkbox" name="oznake[]" value="' . esc_attr( $k ) . '" ' . checked( in_array( $k, $s['oznake'], true ), true, false ) . '> ' . esc_html( $naziv ) . '</label>';
 		}
-		echo '<p>„Novo” vrijedi <input type="number" min="0" max="365" class="small-text" name="novo_dana" value="' . (int) $s['novo_dana'] . '"> dana od dodavanja proizvoda.</p></td></tr>';
+		echo '<p>„Novo” vrijedi <input type="number" min="0" max="365" class="small-text" name="novo_dana" value="' . (int) $s['novo_dana'] . '"> dana od dodavanja proizvoda. „Još samo N” kad je na zalihi <input type="number" min="1" max="50" class="small-text" name="malo_do" value="' . (int) $s['malo_do'] . '"> ili manje komada.</p><p class="description">Na kartici najviše 3 oznake, po važnosti: rasprodano, akcija, malo na zalihi, novo, ograničeno izdanje, nagrađeno, omiljeno, izdvajamo, po narudžbi.</p></td></tr>';
 
 		echo '<tr><th>Slika</th><td><select name="omjer">';
 		foreach ( array( '1:1' => 'kvadrat 1:1', '4:5' => 'uspravno 4:5', '3:4' => 'uspravno 3:4', '2:3' => 'visoko 2:3', 'izvorni' => 'izvorni omjer slike' ) as $k => $l ) {
@@ -128,6 +128,7 @@ final class Domestic_Kartica_Admin {
 				'ukljuceno'  => 'yes' === ( $p['ukljuceno'] ?? '' ) ? 'yes' : 'no',
 				'redoslijed' => $red,
 				'oznake'     => array_values( array_intersect( (array) ( $p['oznake'] ?? array() ), array_keys( Domestic_Kartica::OZNAKE ) ) ),
+				'malo_do'    => min( 50, max( 1, absint( $p['malo_do'] ?? 5 ) ) ),
 				'novo_dana'  => min( 365, absint( $p['novo_dana'] ?? 30 ) ),
 				'omjer'      => in_array( $p['omjer'] ?? '', array( '1:1', '4:5', '3:4', '2:3', 'izvorni' ), true ) ? $p['omjer'] : '1:1',
 				'gumb_tekst' => sanitize_text_field( $p['gumb_tekst'] ?? '' ),

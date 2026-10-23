@@ -143,6 +143,12 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     vrunsko, dugačije, đem, bariq, Ganitno→Granatno…), „sa”→„s” osim ispred s/z/š/ž/ps/ks/mn, „biti će”→„bit će”, °C, „% vol.”, razmaci.
     Podaci: oznake ujednačene (Naziv vina/likera→Naziv, NAPOMENA→Napomena, Temperatura posluživanja→serviranja), vrijednost velikim
     početnim slovom bez točke. Domestic → Tekstovi: uključi/isključi, vlastiti rječnik „pogrešno => ispravno”, pregled naziva prije/poslije.
+  - **domestic-kartica 0.3.3** (Igor: oznake jednobrazne u stilu shopa): `Domestic_Kartica::oznake_html( $p, 3, klasa )` – tablete 24 px,
+    Jost 500 10,5 px velikim slovima, ikona 13 px (const IKONE), najviše 3 po važnosti (const VAZNOST: rasprodano, akcija, malo, novo,
+    ograničeno, nagrađeno, omiljeno, izdvajamo, po narudžbi). Boje: akcija bordo, novo tamna, nagrađeno zlatna, rasprodano siva #6f6760
+    (+ slika izblijeđena); krem s obrubom: ograničeno (zlatna), omiljeno (bordo), izdvajamo (tamna), malo „Još samo N” (terakota, `malo_do` 5),
+    po narudžbi (maslinasta). Ograničeno = oznaka proizvoda (product_tag) `ograniceno-izdanje`. domestic-proizvod 0.6.3 koristi iste oznake
+    na galeriji i u brzom pregledu.
   - **domestic-kartica 0.3.2** (Igor: izbornik razveden, nedavno manje): Kategorija = „Sve: …” cijelim redom gore, zatim 2 stupca abecedno,
     redak 40 px, broj u maloj tableti desno, odabrano = krem + bordo točka (ne puni bordo blok). Nedavno pregledano = vlastiti mali niz
     (slika thumbnail 280 kvadrat, naziv 2 retka, cijena), 6 u redu, mobitel vodoravno listanje 3,4 vidljiva.

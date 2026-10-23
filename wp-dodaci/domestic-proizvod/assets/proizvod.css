@@ -36,6 +36,8 @@ body.dsp-page,body.dsp-page #wrapper,body.dsp-page #main{background:#f7f3eb!impo
 .dsp-tag{font:700 10px var(--n);letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:3px;background:var(--b);color:#fff}
 .dsp-tag-nagradeno{background:#ad8d53}
 .dsp-tag-novo{background:#3f5e52}
+.dsp .dsp-oznake{top:12px;left:12px;right:auto}
+.dsp .dsp-oznake .dsk-oznaka{height:26px;font-size:11px}
 .dsp .dsp-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:38px;height:38px;display:grid;place-items:center;padding:0;margin:0;border:1px solid #e1d7c8!important;border-radius:50%;background:#f7f3ebe6!important;color:var(--i)!important;cursor:pointer;box-shadow:none;min-height:0}
 .dsp-arrow .dsp-i{width:20px;height:20px}
 .dsp-prev{left:10px}.dsp-next{right:10px}

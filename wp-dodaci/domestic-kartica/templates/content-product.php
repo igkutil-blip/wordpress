@@ -16,7 +16,6 @@ $flatsome   = 'flatsome' === get_template();
 $url        = $product->get_permalink();
 $zapremnina = Domestic_Kartica::atribut( $product, array( 'zapremnina', 'volumen', 'kolicina' ) );
 $alkohol    = Domestic_Kartica::atribut( $product, array( 'alkohol', 'alkohol vol', 'udio alkohola' ) );
-$oznake     = Domestic_Kartica::oznake( $product );
 $klase      = array( 'dsk-kartica', $flatsome ? 'product-small col' : '', 'yes' === $s['okvir'] ? 'dsk-s-okvirom' : '', 'yes' === $s['sjena'] ? 'dsk-sa-sjenom' : '' );
 
 echo $flatsome ? '<div ' : '<li ';
@@ -28,13 +27,7 @@ echo '>';
 			<a href="<?php echo esc_url( $url ); ?>" class="dsk-slika-link" tabindex="-1" aria-hidden="true">
 				<?php echo $product->get_image( 'woocommerce_single', array( 'class' => 'dsk-img', 'sizes' => '(max-width: 549px) 50vw, (max-width: 849px) 34vw, 320px' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 			</a>
-			<?php if ( $oznake ) : ?>
-				<div class="dsk-oznake">
-					<?php foreach ( $oznake as $k => $t ) : ?>
-						<span class="dsk-oznaka dsk-oznaka-<?php echo esc_attr( $k ); ?>"><?php echo esc_html( $t ); ?></span>
-					<?php endforeach; ?>
-				</div>
-			<?php endif; ?>
+			<?php echo Domestic_Kartica::oznake_html( $product ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 			<?php if ( $flatsome && 'yes' === $s['brzi'] ) : ?>
 				<a href="#quick-view" class="quick-view dsk-brzi" role="button" data-prod="<?php echo (int) $product->get_id(); ?>" aria-haspopup="dialog" aria-expanded="false" aria-label="Brzi pregled: <?php echo esc_attr( $product->get_name() ); ?>" data-flatsome-role-button><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg><span>Brzi pregled</span></a>
 			<?php endif; ?>

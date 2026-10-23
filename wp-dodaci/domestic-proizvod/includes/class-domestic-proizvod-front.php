@@ -236,7 +236,7 @@ final class Domestic_Proizvod_Front {
 				. '</figure>';
 		}
 		$h .= '</div>'
-			. ( $b ? '<div class="dsp-tags">' . $b . '</div>' : '' )
+			. ( class_exists( 'Domestic_Kartica' ) && 'yes' === Domestic_Kartica::postavke()['ukljuceno'] ? Domestic_Kartica::oznake_html( $p, 3, 'dsk-oznake dsp-oznake' ) : ( $b ? '<div class="dsp-tags">' . $b . '</div>' : '' ) )
 			. ( $n > 1 ? '<span class="dsp-count"><span class="dsp-count-n">1</span> / ' . $n . '</span>'
 				. '<button type="button" class="dsp-arrow dsp-prev" aria-label="Prethodna slika">' . self::svg( 'lijevo' ) . '</button><button type="button" class="dsp-arrow dsp-next" aria-label="Sljedeća slika">' . self::svg( 'desno' ) . '</button>' : '' )
 			. '<button type="button" class="dsp-zoom" aria-label="Povećaj sliku">' . self::svg( 'zoom' ) . '</button>'

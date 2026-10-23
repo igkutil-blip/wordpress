@@ -26,15 +26,35 @@ final class Domestic_Kartica {
 		'novo'       => 'Novo',
 		'nagradeno'  => 'Nagrađeno (nagrade s kartice „Domestic”)',
 		'omiljeno'   => 'Omiljeno (oznaka s kartice „Domestic”)',
-		'istaknuto'  => 'Istaknuto (zvjezdica u WooCommerceu)',
+		'istaknuto'  => 'Izdvajamo (zvjezdica u WooCommerceu)',
+		'ograniceno' => 'Ograničeno izdanje (oznaka proizvoda „ograniceno-izdanje”)',
+		'malo'       => 'Malo na zalihi („Još samo N”, kad se prati zaliha)',
+		'narudzba'   => 'Po narudžbi (dopuštena narudžba bez zalihe)',
 		'rasprodano' => 'Rasprodano',
+	);
+
+	/** Redoslijed važnosti: na kartici se prikazuju najviše 3 prve. */
+	const VAZNOST = array( 'rasprodano', 'akcija', 'malo', 'novo', 'ograniceno', 'nagradeno', 'omiljeno', 'istaknuto', 'narudzba' );
+
+	/** Ikone oznaka (24×24, linija). */
+	const IKONE = array(
+		'akcija'     => '<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3-9 9-8-8.6Z"/><circle cx="8" cy="8" r="1.4"/>',
+		'novo'       => '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.5 2.5M15.2 15.2l2.5 2.5M6.3 17.7l2.5-2.5M15.2 8.8l2.5-2.5"/>',
+		'nagradeno'  => '<circle cx="12" cy="9" r="5.5"/><path d="m8.5 13.5-1.5 7 5-2.5 5 2.5-1.5-7"/>',
+		'omiljeno'   => '<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10C19.5 15.4 12 20 12 20Z"/>',
+		'istaknuto'  => '<path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9L12 3.5Z"/>',
+		'ograniceno' => '<path d="M7 3.5h10M7 20.5h10M8 3.5c0 4.5 8 4.5 8 8.5s-8 4-8 8.5M16 3.5c0 4.5-8 4.5-8 8.5"/>',
+		'malo'       => '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5l3 2"/>',
+		'narudzba'   => '<path d="M4 7.5h11v9H4zM15 10.5h3.5l2 2.5v3.5H15"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/>',
+		'rasprodano' => '<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>',
 	);
 
 	public static function zadano(): array {
 		return array(
 			'ukljuceno'  => 'no',
 			'redoslijed' => array( 'marka', 'naziv', 'podaci', 'cijena', 'jedinicna', 'gumb' ),
-			'oznake'     => array( 'akcija', 'novo', 'nagradeno', 'rasprodano' ),
+			'oznake'     => array( 'akcija', 'novo', 'nagradeno', 'omiljeno', 'ograniceno', 'malo', 'narudzba', 'rasprodano' ),
+			'malo_do'    => 5,
 			'novo_dana'  => 30,
 			'omjer'      => '1:1',
 			'ispuna'     => 'cijela', // cijela (contain) | ispuni (cover)
@@ -246,9 +266,48 @@ final class Domestic_Kartica {
 						$out['rasprodano'] = 'Rasprodano';
 					}
 					break;
+				case 'ograniceno':
+					if ( has_term( 'ograniceno-izdanje', 'product_tag', $p->get_id() ) ) {
+						$out['ograniceno'] = 'Ograničeno izdanje';
+					}
+					break;
+				case 'malo':
+					$n = $p->managing_stock() ? (int) $p->get_stock_quantity() : 0;
+					if ( $p->is_in_stock() && $n > 0 && $n <= max( 1, (int) $s['malo_do'] ) ) {
+						$out['malo'] = 'Još samo ' . $n;
+					}
+					break;
+				case 'narudzba':
+					if ( $p->is_on_backorder() ) {
+						$out['narudzba'] = 'Po narudžbi';
+					}
+					break;
 			}
 		}
-		return (array) apply_filters( 'domestic_kartica_oznake', $out, $p );
+		$out = (array) apply_filters( 'domestic_kartica_oznake', $out, $p );
+		uksort(
+			$out,
+			static function ( $a, $b ) {
+				$i = array_search( $a, self::VAZNOST, true );
+				$j = array_search( $b, self::VAZNOST, true );
+				return ( false === $i ? 99 : $i ) <=> ( false === $j ? 99 : $j );
+			}
+		);
+		return $out;
+	}
+
+	/** Jednobrazne oznake (kartica, stranica proizvoda, brzi pregled). */
+	public static function oznake_html( WC_Product $p, int $max = 3, string $klasa = 'dsk-oznake' ): string {
+		$o = array_slice( self::oznake( $p ), 0, $max, true );
+		if ( ! $o ) {
+			return '';
+		}
+		$h = '<div class="' . esc_attr( $klasa ) . '">';
+		foreach ( $o as $k => $t ) {
+			$ik = isset( self::IKONE[ $k ] ) ? '<svg viewBox="0 0 24 24" aria-hidden="true">' . self::IKONE[ $k ] . '</svg>' : '';
+			$h .= '<span class="dsk-oznaka dsk-oznaka-' . esc_attr( $k ) . '">' . $ik . esc_html( $t ) . '</span>';
+		}
+		return $h . '</div>';
 	}
 
 	private static function posto( WC_Product $p ): int {
