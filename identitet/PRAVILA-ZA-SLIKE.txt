@@ -42,9 +42,29 @@ da se u trgovini ništa ne „skače” kad se listaju proizvodi.
 - Medalje na slici samo ako su fizički na boci.
 
 === 5. SLIKE PO VRSTI ===
-AMBIJENTALNA
-- Boca u prirodnom okruženju koje odgovara proizvodu (kamen, drvo, priroda,
-  stol, sastojci poput lješnjaka, grožđa ili limuna). Topla dnevna svjetlost.
+AMBIJENTALNA – okružje prema kraju iz kojeg proizvod dolazi
+- Prije izrade istraži proizvod na internetu (proizvođač, vinarija,
+  destilerija, sorta, sastojci) i odredi iz kojeg je kraja Hrvatske.
+- Okružje mora odgovarati tom kraju – NE stavljaj svaki proizvod u Dalmaciju:
+    Istra        – kamene kuće i zidići, crvena zemlja, vinogradi, maslinici,
+                   tartufi, brežuljci s gradićima
+    Kvarner i otoci – kamen, more u daljini, kadulja, smilje, borovi
+    Dalmacija    – svijetli kamen, masline, smokve, more, suhozidi
+    Južna Dalmacija (Pelješac, Konavle, Korčula) – strmi vinogradi uz more,
+                   rogač, naranče i limuni, stari kameni podrumi
+    Dalmatinska zagora – suhozidi, krš, smilje, bunari
+    Lika i Gorski kotar – šuma, livade, planine, drvo, šljive, borovnice,
+                   bijeli kamen, hladnije jutarnje svjetlo (ali i dalje toplo)
+    Zagorje i Prigorje – zeleni brežuljci, klijeti, drvene bačve, kurije,
+                   vinogradi na bregovima
+    Slavonija i Baranja – ravnica, žitna polja, šljivici, hrastovina, drvene
+                   ograde, podrumi, sunčano poslijepodne
+    Međimurje i Podravina – brežuljci, vinogradi, voćnjaci, seoska drvena gradnja
+- Rekviziti iz istog kraja i povezani sa sastojcima (lješnjaci, šljive,
+  višnje, limun, med, bilje, grožđe). Topla dnevna svjetlost.
+- Ako se kraj ne može pouzdano utvrditi: neutralno hrvatsko okružje
+  (drveni stol, kamen, priroda) bez prepoznatljivog krajolika.
+- Nemoj prikazivati prepoznatljive građevine, natpise ni stvarna mjesta s imenom.
 - Rekviziti su mali i uz dno boce, ne zaklanjaju bocu ni etiketu.
 - Pozadina mekano zamućena, boca je oštra i najsvjetliji dio slike.
 
@@ -62,10 +82,22 @@ KAKO POSLUŽITI – ilustrirana kartica, NE fotografija čaše s pićem
     šalica  – „U kavici”  – 0,03 l – Kao dodatak kavi
     kolač   – „U slastici” – 0,1 l – Kao sastojak slastice
   (količine i načini prema podacima o proizvodu; za vina: čaša, hrana, temperatura)
+- AKO PROIZVOD NEMA PODATKE KAKO SE POSLUŽUJE: istraži na internetu
+  (stranica proizvođača, vrsta pića, sorta, uobičajeni način posluživanja u
+  tom kraju Hrvatske) i sam odredi:
+    • tri načina posluživanja (npr. za vino: uz koje jelo, uz koju priliku,
+      u kojoj čaši; za rakiju: kao aperitiv, digestiv, uz što)
+    • količinu za svaki način
+    • temperaturu serviranja
+  Koristi samo uobičajene i provjerene preporuke, ništa neobično.
+  U alt.txt na kraju dodaj redak:
+    NAPOMENA-POSLUZIVANJE = ukratko odakle su podaci (npr. „stranica proizvođača”
+    ili „uobičajeno za ovu vrstu pića”)
+  da se podaci mogu provjeriti prije objave.
 - Ispod: ikona termometra i „Temperatura serviranja: <vrijednost>”.
 - Na dnu malim slovima: „DOMESTIC SPIRITS”.
 - Tekst samo na hrvatskom, ispravan pravopis, slova č ć đ š ž.
-- Svi tekstovi i brojevi prepisani TOČNO iz podataka koje dobiješ; ništa ne izmišljaj.
+- Kad podaci postoje, svi tekstovi i brojevi prepisani su TOČNO iz njih.
 
 === 6. ZABRANJENO ===
 - Tekst, natpis, cijena ili logotip koji nije na stvarnoj etiketi
