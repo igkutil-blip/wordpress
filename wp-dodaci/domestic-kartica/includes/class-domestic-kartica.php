@@ -74,6 +74,8 @@ final class Domestic_Kartica {
 			'raspored'   => 'gore', // gore = filteri iznad artikala, bez bočne trake | tema = kako je u Flatsomeu
 			'stupci'     => 4,
 			'nedavno'    => 'yes',
+			'trazilica'  => 'yes', // prijedlozi pretrage i novo polje u zaglavlju
+			'zaglavlje'  => 'yes', // novi izgled pretrage i ikone košarice
 		);
 	}
 
@@ -91,6 +93,7 @@ final class Domestic_Kartica {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'fontovi' ), 25 );
 		add_action( 'wp_head', array( __CLASS__, 'preload' ), 2 );
 		Domestic_Kartica_Trgovina::init();
+		Domestic_Kartica_Trazilica::init();
 	}
 
 	/* ---------- fontovi: Marcellus (naslovi, cijene) + Jost (tekst), lokalno, s hrvatskim slovima ---------- */

@@ -95,6 +95,7 @@ final class Domestic_Kartica_Admin {
 		echo '<tr><th>Raspored trgovine</th><td><select name="raspored"><option value="gore" ' . selected( $s['raspored'], 'gore', false ) . '>filteri iznad artikala, bez bočne trake</option><option value="tema" ' . selected( $s['raspored'], 'tema', false ) . '>kako je postavljeno u Flatsomeu</option></select>'
 			. ' &nbsp; artikala u redu <select name="stupci">' . implode( '', array_map( static function ( $n ) use ( $s ) { return '<option value="' . $n . '" ' . selected( (int) $s['stupci'], $n, false ) . '>' . $n . '</option>'; }, array( 3, 4, 5 ) ) ) . '</select>'
 			. ' &nbsp; <label><input type="checkbox" name="nedavno" value="yes" ' . checked( $s['nedavno'], 'yes', false ) . '> „Nedavno pregledano” ispod artikala</label>'
+			. '<p><label><input type="checkbox" name="trazilica" value="yes" ' . checked( $s['trazilica'], 'yes', false ) . '> pretraga s prijedlozima dok se tipka (sličice; bez obzira na kvačice; marka, kategorija, šifra)</label><br><label><input type="checkbox" name="zaglavlje" value="yes" ' . checked( $s['zaglavlje'], 'yes', false ) . '> novi izgled polja za pretragu i ikone košarice u zaglavlju</label></p>'
 			. '<p class="description">Trgovina, kategorije i pretraga: naslov kategorije, filteri Kategorija / Cijena / Poredaj (padajući izbornici), uređene stranice 1, 2, 3. Adrese kategorija ostaju iste.</p></td></tr>';
 		echo '<tr><th>Pozadina cijele stranice</th><td><input class="dsk-boja" name="stranica" value="' . esc_attr( $s['stranica'] ) . '"><p class="description">Npr. krem #f6f1e9 za cijelu stranicu i zaglavlje. Prazno = boja iz teme. Vrijedi i kad je nova kartica isključena.</p></td></tr>';
 		echo '<tr><th>Fontovi</th><td><select name="fontovi"><option value="cijela" ' . selected( $s['fontovi'], 'cijela', false ) . '>Marcellus + Jost na cijeloj stranici</option><option value="shop" ' . selected( $s['fontovi'], 'shop', false ) . '>samo kartice i stranica proizvoda</option><option value="ne" ' . selected( $s['fontovi'], 'ne', false ) . '>fontovi teme</option></select><p class="description">Učitavaju se s ove stranice (bez Googlea), samo latinica i hrvatska slova, ~40 KB za prvi prikaz.</p></td></tr>';
@@ -148,6 +149,8 @@ final class Domestic_Kartica_Admin {
 				'raspored'   => 'tema' === ( $p['raspored'] ?? '' ) ? 'tema' : 'gore',
 				'stupci'     => min( 5, max( 3, absint( $p['stupci'] ?? 4 ) ) ),
 				'nedavno'    => 'yes' === ( $p['nedavno'] ?? '' ) ? 'yes' : 'no',
+				'trazilica'  => 'yes' === ( $p['trazilica'] ?? '' ) ? 'yes' : 'no',
+				'zaglavlje'  => 'yes' === ( $p['zaglavlje'] ?? '' ) ? 'yes' : 'no',
 			),
 			false
 		);

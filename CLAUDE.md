@@ -143,6 +143,13 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     vrunsko, dugačije, đem, bariq, Ganitno→Granatno…), „sa”→„s” osim ispred s/z/š/ž/ps/ks/mn, „biti će”→„bit će”, °C, „% vol.”, razmaci.
     Podaci: oznake ujednačene (Naziv vina/likera→Naziv, NAPOMENA→Napomena, Temperatura posluživanja→serviranja), vrijednost velikim
     početnim slovom bez točke. Domestic → Tekstovi: uključi/isključi, vlastiti rječnik „pogrešno => ispravno”, pregled naziva prije/poslije.
+  - **domestic-kartica 0.4.0** (Igor: pretraga i košarica u zaglavlju, prijedlozi sa sličicama dok se tipka): klasa `Domestic_Kartica_Trazilica`
+    (postavke `trazilica`, `zaglavlje`): REST GET `domestic-kartica/v1/trazi?q=` (javno, 6 proizvoda: sličica thumbnail, marka, naziv, cijena,
+    rasprodano + ukupno + poveznica „Prikaži sve”); traži bez kvačica (remove_accents, đ→d) po nazivu (početak riječi više), marki, kategoriji, SKU;
+    popis proizvoda u transientu `dsk_trazilica_popis` (briše se pri spremanju). Ista pretraga za stranicu rezultata (posts_search → ID IN,
+    poredak po važnosti osim ?orderby). Flatsome live_search isključen filtrom, placeholder „Pretraži likere, vina, rakije…”. assets/trazilica.js:
+    od 2 slova, 180 ms, strelice/Enter/Escape, combobox ARIA. Zaglavlje (body.dsk-zaglavlje): polje = krem tableta 44 px s bordo povećalom,
+    košarica = SVG torba (mask) s bordo brojem u krugu. Mobitel: prijedlozi s cijenom ispod naziva.
   - **domestic-kartica 0.3.3** (Igor: oznake jednobrazne u stilu shopa): `Domestic_Kartica::oznake_html( $p, 3, klasa )` – tablete 24 px,
     Jost 500 10,5 px velikim slovima, ikona 13 px (const IKONE), najviše 3 po važnosti (const VAZNOST: rasprodano, akcija, malo, novo,
     ograničeno, nagrađeno, omiljeno, izdvajamo, po narudžbi). Boje: akcija bordo, novo tamna, nagrađeno zlatna, rasprodano siva #6f6760
