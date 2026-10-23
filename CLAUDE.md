@@ -40,7 +40,10 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
 - Avellana Premium 0,70 l (3697): 3828 ambijent (PNG + paleta), 4886 studio, 4887 posluživanje, zatim 3700 2.jpg, 3701 3.jpg, 3702 2x.jpg
   (detalji etikete, zamijenjeni na istim adresama; Igor: 3700 i 3701 maknuti iz galerije Premiuma – ostaje samo 3702 na mahovini) i 4532 Best in Class 2025 (zamijenjena; koriste je i Premium box 3727 i „Gospodski” 4527).
   Prazni altovi popunjeni (alt.txt; medalja: „Zlatna medalja Best in Class – CroSpirit Best Spirit Awards 2025.”). Količine posluživanja
-  za Premium preuzete od klasične Avellane – Igor/Mladen trebaju potvrditi.
+  Ispravak (paket „ispravak”): 3828 ambijent (unutrašnjost, luk), 4886 studio, 4887 nova kartica posluživanja (Na ledu 0,03 l, Espresso koktel
+  0,015 l + 0,045 l votke + 0,045 l espressa + 0,0075 l šeć. sirupa, Sladoled s kavom 0,02 l) zamijenjeni na istim adresama; isti tekst upisan u
+  meta `_dsp_posluzivanje` (kartica „Domestic”, ikone casa/koktel/kolac) → sekcija „Kako poslužiti” na stranici. Količine = autorski prijedlozi
+  (napomena iz paketa: recepti prilagođeni prema Frangelico) – Mladen treba potvrditi.
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
