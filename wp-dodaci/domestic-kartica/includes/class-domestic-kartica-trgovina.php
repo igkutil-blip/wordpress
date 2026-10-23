@@ -125,8 +125,9 @@ final class Domestic_Kartica_Trgovina {
 			$o   = '';
 			$sve = $roditelj ? get_term( $roditelj, 'product_cat' ) : $kat;
 			if ( $sve instanceof WP_Term ) {
-				$o .= self::opcija( get_term_link( $sve ), 'Sve: ' . $sve->name, -1, $kat && $kat->term_id === $sve->term_id );
+				$o .= str_replace( 'class="dsk-opcija', 'class="dsk-opcija dsk-opcija-sve', self::opcija( get_term_link( $sve ), 'Sve: ' . $sve->name, -1, $kat && $kat->term_id === $sve->term_id ) );
 			}
+			usort( $djeca, static function ( $a, $b ) { return strcoll( remove_accents( $a->name ), remove_accents( $b->name ) ); } );
 			foreach ( $djeca as $t ) {
 				$o .= self::opcija( get_term_link( $t ), $t->name, (int) $t->count, $kat && $kat->term_id === $t->term_id );
 			}
@@ -277,7 +278,7 @@ final class Domestic_Kartica_Trgovina {
 			return;
 		}
 		$ids = array_reverse( wp_parse_id_list( (array) explode( '|', wp_unslash( $_COOKIE['woocommerce_recently_viewed'] ) ) ) ); // phpcs:ignore
-		$st  = max( 2, min( 5, (int) Domestic_Kartica::postavke()['stupci'] ) );
+		$st  = 6;
 		$out = array();
 		foreach ( $ids as $id ) {
 			$p = wc_get_product( $id );
@@ -291,20 +292,12 @@ final class Domestic_Kartica_Trgovina {
 		if ( ! $out ) {
 			return;
 		}
-		global $product, $post;
-		$stari_p = $product;
-		$stari   = $post;
-		echo '<section class="dsk-nedavno" aria-labelledby="dsk-nedavno-naslov"><h2 id="dsk-nedavno-naslov">Nedavno pregledano</h2>'
-			. '<div class="products row row-small large-columns-' . (int) $st . ' medium-columns-3 small-columns-2">';
+		echo '<section class="dsk-nedavno" aria-labelledby="dsk-nedavno-naslov"><h2 id="dsk-nedavno-naslov">Nedavno pregledano</h2><ul class="dsk-nedavno-niz">';
 		foreach ( $out as $p ) {
-			$post    = get_post( $p->get_id() ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride
-			$product = $p; // phpcs:ignore WordPress.WP.GlobalVariablesOverride
-			setup_postdata( $post );
-			wc_get_template_part( 'content', 'product' );
+			echo '<li><a href="' . esc_url( $p->get_permalink() ) . '"><span class="dsk-nedavno-slika">' . $p->get_image( 'thumbnail', array( 'loading' => 'lazy', 'alt' => '' ) ) . '</span>' // phpcs:ignore WordPress.Security.EscapeOutput
+				. '<span class="dsk-nedavno-naziv">' . esc_html( $p->get_name() ) . '</span>'
+				. '<span class="dsk-nedavno-cijena">' . esc_html( wp_strip_all_tags( wc_price( (float) wc_get_price_to_display( $p ) ) ) ) . '</span></a></li>';
 		}
-		echo '</div></section>';
-		$product = $stari_p; // phpcs:ignore WordPress.WP.GlobalVariablesOverride
-		$post    = $stari; // phpcs:ignore WordPress.WP.GlobalVariablesOverride
-		wp_reset_postdata();
+		echo '</ul></section>';
 	}
 }
