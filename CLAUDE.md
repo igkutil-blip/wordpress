@@ -100,4 +100,8 @@ je besplatno). DNSSEC isključen (nema DS). Poslužitelj MyDataKnox cp064, IP **
 root i www, ostalo (mail, ftp, cpanel, whm, webmail, webdisk, autoconfig, autodiscover, cpcalendars, cpcontacts, **proba**) DNS only.
 MX/SPF/DKIM/SRV uvezeni iz živog DNS-a. SSL/TLS = Full. cPanel Zone Editor se NE koristi (nije autoritativan).
 Probna kopija: proba.domesticspirits.hr (Softaculous klon) RADI od 22.10. 21 h: Let's Encrypt (AutoSSL), sve poveznice na proba (0 na živu),
-noindex/nofollow (Rank Math), REST /wp-json 200, nginx. Pristup iz sesije dopušten. Čeka: DS_PROBA_* (aplikacijska lozinka) za rad preko REST-a.
+noindex/nofollow (Rank Math), REST /wp-json 200, nginx. Pristup iz sesije dopušten. DS_PROBA_* rade (administrator, 23.10.).
+Na kopiji ISKLJUČENO (23.10.): KEKS Pay (pravo plaćanje), Google Site Kit, CTX Feed. Solo i Jetpack nisu instalirani kao dodaci.
+**VAŽNO: na živoj i kopiji već je aktivan tuđi dodatak „IT-podrška Age Gate (NIAS)” 1.2.2** (IT-podrška d.o.o., provjerapunoljetnosti.hr) –
+e-Građani/mGrađani OIDC+PKCE, REST `nias/v1/start` i `nias/v1/callback`. Registrirani redirect `/age-verification/callback` na živoj = 404,
+tj. ne poklapa se s REST callbackom → vjerojatno nije podešen/ne radi. Prije izrade domestic-provjera-dobi Igor odlučuje: podesiti njihov ili naš.
