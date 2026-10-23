@@ -37,6 +37,6 @@
 /* fontovi (varijable iz dodatka; bez njih ostaje font teme) */
 .dsk-kartica .dsk-tekst{font-family:var(--ds-sans,inherit)}
 .dsk-kartica .dsk-naziv,.dsk-kartica .dsk-naziv a{font-family:var(--ds-serif,inherit)!important;font-weight:400!important;font-size:17px!important;line-height:1.2!important;letter-spacing:0}
-.dsk-kartica .dsk-cijena .price,.dsk-kartica .dsk-cijena .price .amount{font-family:var(--ds-serif,inherit)!important;font-weight:700;font-size:20px}
+.dsk-kartica .dsk-cijena .price,.dsk-kartica .dsk-cijena .price .amount{font-family:var(--ds-serif,inherit)!important;font-weight:400;font-size:21px}
 .dsk-kartica .dsk-cijena .sidrena-cijena,.dsk-kartica .dsk-cijena .sidrena-cijena .amount{font-family:var(--ds-sans,inherit)!important;font-size:11px;font-weight:400}
 @media (max-width:549px){.dsk-kartica .dsk-naziv,.dsk-kartica .dsk-naziv a{font-size:16px!important}}

@@ -112,6 +112,10 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     povjerenje (na stanju + rok, besplatna dostava, sigurno pakiranje), zatim uvod, nagrade, „Kako poslužiti ↓”). Sličice = vodoravna traka
     (3 vidljive, strelice listaju po 3, ostale lazy). Mobitel: slika preko cijele širine min(46vh,360px), traka 3,6 sličice, naslov, cijena,
     gumb; traka „Dodaj u košaricu” na dnu kad gumb nije vidljiv (prvi ekran uvijek ima cijenu i gumb). Sekcije i povezani kao 0.3.
+  - **domestic-kartica 0.2.2** (Igor izabrao br. 3 iz usporedbe 5 parova): **Marcellus** (naslovi, nazivi, cijene; samo 400, kao slova
+    logotipa) + **Jost** 400/500 (tekst; datoteka 500 za težine 500–700). Naslov proizvoda, sekcije i „Još domaćih priča” VELIKIM slovima
+    s razmakom .05–.06em; kartice u trgovini normalna slova. Caslon/Inter/Cormorant izbačeni. Usporedba (scratchpad fontovi-usporedba.png):
+    0 Caslon+Inter, 1 Bodoni Moda+Jost (rezerva), 2 Playfair+Jost, 3 Marcellus+Jost ✔, 4 Gilda+Jost.
   - **domestic-kartica 0.2.1** (Igor: zamijeni): serif = **Libre Caslon Text** (OFL, fontsource 5.3.0): datoteka 400 za težine
     „400 500” (naslovi, nazivi), 700 za „600 700” (cijene); Cormorant izbačen. Naslovi u .dsp i „cijela” CSS na 400. Preload Caslon 700 + Inter 400.
   - **domestic-kartica 0.2.0** (23.10., fontovi): **Cormorant Garamond 600/700** (naslovi, nazivi, cijene; OFL, fontsource 5.3.0 preko
