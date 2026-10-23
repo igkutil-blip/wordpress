@@ -16,6 +16,17 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   **nginx predmemoriju (cPanel → NGINX Manager → Clear Cache; poslužitelj drži stare slike pod istom adresom)** i Cloudflare (root i www Proxied).
   Na probi pomoćnik 0.3.1 zamijenjenim slikama dodaje `?v=<vrijeme zamjene>` (opcija `domestic_pomocnik_verzije`) – datoteka i naziv isti.
 
+## Slike proizvoda – uvoz (Igor 23.10.2026.)
+
+- Redoslijed u galeriji: **1. ambijentalna (glavna slika), 2. studijska, 3. kako poslužiti**, zatim ostale (medalje i dr.).
+- Ambijentalna ide u **staru glavnu sliku na istoj adresi** (pomoćnik `medij/<id>`, isti format – npr. .png ostaje .png).
+  Nove slike dobivaju prefiks: `studio-<stari naziv>.jpg`, `posluzivanje-<stari naziv>.jpg`. Postojeće (medalje) se zamjenjuju na istim adresama.
+- Stari alt/naslov ostaju; novima se upisuje alt u istom stilu. Sve slike prije uvoza ponovno spremiti (PIL) – paketi imaju C2PA/OpenAI
+  zapise; UPUTE/PROMPTI iz paketa se nikad ne učitavaju.
+- `2025/03/liker-domesticspirits.jpg` (4233) je zajednički natpis u opisima 43 proizvoda – NE zamjenjivati slikom za jedan proizvod.
+- Napravljeno: Avellana 0,70 l (751): 4276 ambijent (staro ime liker-od-ljesnjaka-07L.png), 4879 studio, 4880 posluživanje, 2047 i 3311
+  medalje (obrađene; koriste ih i 0,20 l, 1 l, Avellana poklon paket). 4276 je i u galeriji „Avellana u pratnji” (4841).
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,

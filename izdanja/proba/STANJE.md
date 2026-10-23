@@ -14,6 +14,7 @@ Softaculous klon žive stranice (22.10.2026.), isti hosting (MyDataKnox cp064). 
 ## Promjene u odnosu na živu (samo na probi)
 
 - Novi logotipi upisani u **stare datoteke na istim adresama** (identitet/README.md): zaglavlje 300 px, ikona stranice, mailovi, Rank Math; zaglavlje krem #F7F3EB.
+- Slike: Avellana 0,70 l – nove fotografije (ambijentalna na staroj adresi glavne slike, studio-/posluzivanje- nove, medalje zamijenjene).
 - Tekstovi (domestic-proizvod 0.5.0): nazivi, kategorije i opisi jednobrazni samo pri prikazu; baza i adrese netaknute.
 - WooCommerce: decimalni separator „,” i tisuće „.” (12,60 €) – na živoj je još „.”.
 - Isključeni: KEKS Pay (pravo plaćanje), Google Site Kit, CTX Feed, IT-podrška Age Gate (NIAS) – zamijenjen našim dodatkom.
