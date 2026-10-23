@@ -92,6 +92,7 @@ final class Domestic_Kartica_Admin {
 		echo '<label><input type="checkbox" name="brzi" value="yes" ' . checked( $s['brzi'], 'yes', false ) . '> poveznica „Brzi pregled” na slici (Flatsome)</label></td></tr>';
 
 		echo '<tr><th>Pozadina cijele stranice</th><td><input class="dsk-boja" name="stranica" value="' . esc_attr( $s['stranica'] ) . '"><p class="description">Npr. krem #f6f1e9 za cijelu stranicu i zaglavlje. Prazno = boja iz teme. Vrijedi i kad je nova kartica isključena.</p></td></tr>';
+		echo '<tr><th>Fontovi</th><td><select name="fontovi"><option value="cijela" ' . selected( $s['fontovi'], 'cijela', false ) . '>Cormorant Garamond + Inter na cijeloj stranici</option><option value="shop" ' . selected( $s['fontovi'], 'shop', false ) . '>samo kartice i stranica proizvoda</option><option value="ne" ' . selected( $s['fontovi'], 'ne', false ) . '>fontovi teme</option></select><p class="description">Učitavaju se s ove stranice (bez Googlea), samo latinica i hrvatska slova, ~40 KB za prvi prikaz.</p></td></tr>';
 		echo '<tr><th>Boje</th><td><p>naglasak (gumb, akcija, marka) <input class="dsk-boja" name="naglasak" value="' . esc_attr( $s['naglasak'] ) . '"></p><p>pozadina kartice <input class="dsk-boja" name="pozadina" value="' . esc_attr( $s['pozadina'] ) . '"></p><p>tekst <input class="dsk-boja" name="tekst" value="' . esc_attr( $s['tekst'] ) . '"></p></td></tr>';
 		echo '<tr><th>Oblik</th><td>zaobljenje <input type="number" min="0" max="30" class="small-text" name="zaobljenje" value="' . (int) $s['zaobljenje'] . '"> px &nbsp; <label><input type="checkbox" name="okvir" value="yes" ' . checked( $s['okvir'], 'yes', false ) . '> tanki okvir</label> &nbsp; <label><input type="checkbox" name="sjena" value="yes" ' . checked( $s['sjena'], 'yes', false ) . '> sjena</label> &nbsp; poravnanje <select name="poravnanje"><option value="lijevo" ' . selected( $s['poravnanje'], 'lijevo', false ) . '>lijevo</option><option value="sredina" ' . selected( $s['poravnanje'], 'sredina', false ) . '>sredina</option></select></td></tr>';
 		echo '<tr><th><label for="dsk-css">Dodatni CSS</label></th><td><textarea id="dsk-css" name="css" rows="6" class="large-text code" placeholder=".dsk-kartica .dsk-naziv{font-size:16px}">' . esc_textarea( $s['css'] ) . '</textarea><p class="description">Klase: .dsk-kartica, .dsk-slika, .dsk-oznaka, .dsk-marka, .dsk-naziv, .dsk-podaci, .dsk-cijena, .dsk-jedinicna, .dsk-gumb.</p></td></tr>';
@@ -134,6 +135,7 @@ final class Domestic_Kartica_Admin {
 				'zaobljenje' => min( 30, absint( $p['zaobljenje'] ?? 8 ) ),
 				'okvir'      => 'yes' === ( $p['okvir'] ?? '' ) ? 'yes' : 'no',
 				'sjena'      => 'yes' === ( $p['sjena'] ?? '' ) ? 'yes' : 'no',
+				'fontovi'    => in_array( $p['fontovi'] ?? '', array( 'cijela', 'shop', 'ne' ), true ) ? $p['fontovi'] : 'cijela',
 				'stranica'   => (string) sanitize_hex_color( (string) ( $p['stranica'] ?? '' ) ),
 				'css'        => wp_strip_all_tags( (string) ( $p['css'] ?? '' ) ),
 			),

@@ -112,6 +112,10 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     povjerenje (na stanju + rok, besplatna dostava, sigurno pakiranje), zatim uvod, nagrade, „Kako poslužiti ↓”). Sličice = vodoravna traka
     (3 vidljive, strelice listaju po 3, ostale lazy). Mobitel: slika preko cijele širine min(46vh,360px), traka 3,6 sličice, naslov, cijena,
     gumb; traka „Dodaj u košaricu” na dnu kad gumb nije vidljiv (prvi ekran uvijek ima cijenu i gumb). Sekcije i povezani kao 0.3.
+  - **domestic-kartica 0.2.0** (23.10., fontovi): **Cormorant Garamond 600/700** (naslovi, nazivi, cijene; OFL, fontsource 5.3.0 preko
+    npm – jsDelivr blokiran) + **Inter 400/600** (tekst), lokalno u `assets/fonts`, samo latin + latin-ext (č ć đ š ž), @font-face s punom
+    adresom, font-display swap, preload 2 datoteke (~47 KB prvi prikaz). CSS varijable `--ds-serif`/`--ds-sans` (koristi i domestic-proizvod
+    0.4.1). Postavka `fontovi`: cijela (Flatsome tekst, izbornik, naslovi) | shop | ne. Na probi: cijela.
   - **domestic-kartica 0.1.1**: + `stranica` = pozadina cijele stranice (body, #wrapper, #main, .header-main).
   - **domestic-kartica 0.1.0** (23.10.2026.): kartica proizvoda u petlji (trgovina, kategorije, povezani, Flatsome blokovi) – filter
     `wc_get_template_part` (content/product) → `templates/content-product.php`; u Flatsomeu omot `div.product-small.col > .col-inner`
