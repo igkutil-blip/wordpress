@@ -19,6 +19,7 @@ Softaculous klon žive stranice (22.10.2026.), isti hosting (MyDataKnox cp064). 
 - Slike: Avellana 0,70 l – nove fotografije (ambijentalna na staroj adresi glavne slike, studio-/posluzivanje- nove, medalje zamijenjene).
 - Tekstovi (domestic-proizvod 0.5.0): nazivi, kategorije i opisi jednobrazni samo pri prikazu; baza i adrese netaknute.
 - Blog: 16 novih objava o partnerima (4895–4910) + naslovne slike 4915–4945, 4 stare dopunjene (proizvodi, „Za stolom”), kategorije 304 i 305, opisi kategorija, „Style” preimenovan u „Savjeti” (adresa /category/style/ ista). Za živu: prenijeti objave skriptama iz `alati/blog-partneri/`.
+- Driver's Holiday Gin (3132) objavljen (na živoj je privatan – Igor 23.10.: objaviti).
 - WooCommerce: decimalni separator „,” i tisuće „.” (12,60 €) – na živoj je još „.”.
 - Isključeni: KEKS Pay (pravo plaćanje), Google Site Kit, CTX Feed, IT-podrška Age Gate (NIAS) – zamijenjen našim dodatkom.
 
