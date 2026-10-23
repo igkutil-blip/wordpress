@@ -98,7 +98,7 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   1637 stražnja PNG zamijenjena, altovi popunjeni ručno (paket prazan), ikone 5101–5103; **STRAVA 0,10 l** (815): 4130 PNG, 5104, 5105, ikone 5106–5108
   (tri niske čaše); **STRAVA 1 l** (754): 4712, 5109, 5110, 4713 zamijenjena, ikone 0,10 l (`ikone_izvor` 815); **STRAVA glava 0,75 l** (4751): 4124 PNG
   (lubanja – zajednička i 1647 glava 0,75 „primores”, privatnima 1929 0,38 l i 1928 0,10 l; ista boca → zamjena na istoj adresi), 5111, 5112, ikone 815.
-  **1647 = duplikat 4751** (oba objavljena): dobio istu galeriju i `_dsp_posluzivanje` preko WC REST.
+  **1647 = stara adresa iste glave 0,75 l** (objavljen, `catalog_visibility` hidden): dobio istu galeriju i `_dsp_posluzivanje` preko WC REST.
 - (23.10.) **Promex Medica 1 l** (1115): 1116 PNG, 5113, 5114, ikone 5115–5117; **Promex Pelin 1 l** (1113): 1114 PNG, 5118, 5119, ikone 5120–5122
   (S tonikom = čaša s limunom); **San MONTANO Biska** (739): 740 PNG, 5123, 5124, ikone 5125–5127 (S ledom); **Smokva** (718): 729 PNG, 5128, 5129,
   ikone 5130–5132; **Teranino 0,70 l** (717): 732 PNG, 5133, 5134, ikone Teranina Limited 5096–5098 (ista kartica). Glavne slike nisu dijeljene.
@@ -250,6 +250,10 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     novih); „Kako poslužiti” i u zapisu „0,03 l kao aperitiv, …” (količina ispred naziva). **0.3.0**: uloge i po ključnoj riječi
     (`1-ambijent`, `2-studio`, `3-posluzivanje`) – tada nove dobivaju naziv `studio-/posluzivanje-<naziv stare glavne>`; opisi stavki SAMO s iste
     marke i vrste (prve 2 riječi); traženje proizvoda po najduljoj riječi mape (oblí apostrof). **0.3.1**: bez „-scaled” u nazivu novih slika.
+  - **domestic-proizvod 0.7.4** (Igor: STRAVA glava ima tri zapremnine – „prikaži u izboru ali stavi da su rasprodane”): Data::siblings uzima i
+    PRIVATNE proizvode istog naziva/kategorije → u izboru zapremnine `span.dsp-vol-opt.dsp-vol-nema` (crtkano, precrtana zapremnina, „RASPRODANO”,
+    bez poveznice, aria-disabled); objavljeni koji nisu na stanju = isti izgled, ali s poveznicom. Status se ne mijenja. Ista zapremnina: ostaje
+    trenutni, odnosno objavljeni ispred skrivenog; objavljeni skriveni iz kataloga se preskaču. Element niza: [proizvod, litre, ima, skriven].
   - **domestic-proizvod 0.7.3 / domestic-kartica 0.6.1** (greška: Mix paketi „4 l” i 3,88 €/l): pakiranje „4 × 0,05 l” / „4x0,05L” = ukupno 0,20 l
     (Data::pack, litres, litres_from_name; Kartica::litre) → cijena po litri 77,50 €; oznaka `Data::volume_label()` „4 × 0,05 l” (čipovi, izbor
     zapremnine, povezani, traka na dnu).

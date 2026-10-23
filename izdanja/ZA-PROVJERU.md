@@ -66,8 +66,11 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 ### STRAVA 0,10 l, 1 l i glava 0,75 l (815, 754, 4751) – 23.10.2026.
 - **Posluživanje**: Kao aperitiv 0,03 l, Kao digestiv 0,03 l, U hladnoj čašici 0,03 l – prijedlozi; „Po želji!” i „desetak minuta u škrinji” iz opisa.
 - STRAVA 1 l: opis spominje **srebro CROSPIRIT 28.10.2025.** – slike medalje nema.
-- **Dva objavljena proizvoda „STRAVA glava 0,75 l”**: 4751 (`/proizvod/strava-glava-075l/`) i 1647 (`/proizvod/strava-glava-primores/`) – isti proizvod
-  dvaput; oba sada imaju iste slike. Odlučiti koji ostaje (drugi sakriti; adresa se ne briše bez dogovora).
+- **STRAVA glava 0,75 l postoji dvaput**: 4751 (`/proizvod/strava-glava-075l/`, u katalogu) i 1647 (`/proizvod/strava-glava-primores/`, objavljen ali
+  skriven iz kataloga – stara adresa). Oba imaju iste nove slike. Treba li 1647 ostati (npr. zbog starih poveznica)?
+- **STRAVA glava 0,38 l i 0,10 l** su skrivene (od 5.12.2025.), a na stanju su i imaju cijenu (13 €, 6 €). Na stranici 0,75 l prikazane su u izboru
+  zapremnine kao **„Rasprodano”** (Igor 23.10.). Prodaju li se još? Ako da – objaviti ih i izbor se sam poveže.
+- **BOGATI Čokolada 1 l** (skrivena) – na stranici Čokolade 0,70 l u izboru zapremnine također piše „Rasprodano”.
 - Skriveni STRAVA glava 0,38 l i 0,10 l dijele glavnu sliku s 0,75 l (ista boca-lubanja) – sada pokazuju novu ambijentalnu.
 
 ### Promex Medica i Pelin 1 l (1115, 1113); San MONTANO Biska, Smokva, Teranino 0,70 l (739, 718, 717) – 23.10.2026.

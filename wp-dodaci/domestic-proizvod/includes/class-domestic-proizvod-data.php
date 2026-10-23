@@ -328,17 +328,26 @@ final class Domestic_Proizvod_Data {
 		if ( '' === $base || ! $cats || ! self::litres_of( $p ) ) {
 			return array();
 		}
-		$ids = wc_get_products( array( 'limit' => 200, 'status' => 'publish', 'return' => 'ids', 'product_category_id' => $cats, 'type' => 'simple' ) );
+		// i privatni istog naziva: u izboru zasivljeni kao rasprodani, bez poveznice (status se ne mijenja)
+		$ids = wc_get_products( array( 'limit' => 200, 'status' => array( 'publish', 'private' ), 'return' => 'ids', 'product_category_id' => $cats, 'type' => 'simple' ) );
 		$out = array();
 		foreach ( array_unique( array_merge( array( $p->get_id() ), $ids ) ) as $id ) {
-			$x = (int) $id === $p->get_id() ? $p : wc_get_product( $id );
-			if ( ! $x || ( $x->get_id() !== $p->get_id() && ! $x->is_visible() ) ) {
+			$x   = (int) $id === $p->get_id() ? $p : wc_get_product( $id );
+			$ova = $x && $x->get_id() === $p->get_id();
+			if ( ! $x || ( ! $ova && 'private' !== $x->get_status() && ! $x->is_visible() ) ) {
 				continue;
 			}
 			$l = self::litres_of( $x );
-			if ( $l > 0 && self::norm( self::name_without_volume( $x->get_name() ) ) === $base ) {
-				$out[ (string) $l ] = array( $x, $l );
+			if ( $l <= 0 || self::norm( self::name_without_volume( $x->get_name() ) ) !== $base ) {
+				continue;
 			}
+			$skriven = ! $ova && 'private' === $x->get_status();
+			$k       = (string) $l;
+			if ( isset( $out[ $k ] ) && ( $out[ $k ][0]->get_id() === $p->get_id() || ( $skriven && ! $out[ $k ][3] ) ) ) {
+				continue; // ista zapremnina: ostaje ovaj proizvod, odnosno objavljeni ispred skrivenog
+			}
+			// [ proizvod, litre, ima ga (na stanju i objavljen), skriven (bez poveznice) ]
+			$out[ $k ] = array( $x, $l, ! $skriven && $x->is_in_stock(), $skriven );
 		}
 		ksort( $out, SORT_NUMERIC );
 		$out = array_values( (array) apply_filters( 'domestic_proizvod_zapremnine', $out, $p ) );

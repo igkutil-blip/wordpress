@@ -80,6 +80,10 @@ body.dsp-page,body.dsp-page #wrapper,body.dsp-page #main{background:#f7f3eb!impo
 .dsp-vol-opt b{font-size:14px;font-weight:600}
 .dsp-vol-opt span{font-size:12px}
 .dsp .dsp-vol-opt.on{border:2px solid var(--b);color:var(--b)!important;padding:7px 5px}
+.dsp .dsp-vol-opt.dsp-vol-nema{background:transparent;border-style:dashed;color:#8a8178!important}
+.dsp-vol-opt.dsp-vol-nema b{text-decoration:line-through;text-decoration-thickness:1px}
+.dsp-vol-opt.dsp-vol-nema span{font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+span.dsp-vol-opt{cursor:default}
 .dsp-cart{margin-top:16px}
 .dsp-cart form.cart{display:flex;flex-wrap:nowrap;gap:10px;margin:0!important;align-items:stretch}
 .dsp-cart form.cart .quantity{display:flex;align-items:center;justify-content:space-between;margin:0!important;border:1px solid #cbbda7;border-radius:4px;background:var(--c);width:116px;min-width:116px;height:52px;opacity:1!important}

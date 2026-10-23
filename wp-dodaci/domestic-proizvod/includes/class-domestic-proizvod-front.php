@@ -264,9 +264,18 @@ final class Domestic_Proizvod_Front {
 		$sib   = Domestic_Proizvod_Data::siblings( $p );
 		if ( $sib ) {
 			$h .= '<div class="dsp-vol"><div class="dsp-label">Odaberi zapremninu</div><div class="dsp-vol-list' . ( count( $sib ) > 2 ? ' dsp-vol-vise' : '' ) . '">';
-			foreach ( $sib as list( $x, $l ) ) {
-				$on = $x->get_id() === $p->get_id();
-				$h .= '<a class="dsp-vol-opt' . ( $on ? ' on' : '' ) . '" href="' . esc_url( $x->get_permalink() ) . '"' . ( $on ? ' aria-current="true"' : '' ) . '><b>' . esc_html( Domestic_Proizvod_Data::volume_label( $x ) ) . '</b><span>' . esc_html( self::eur( (float) wc_get_price_to_display( $x ) ) ) . '</span></a>';
+			foreach ( $sib as $s_ ) {
+				list( $x, $l ) = $s_;
+				$on    = $x->get_id() === $p->get_id();
+				$ima   = $s_[2] ?? true;
+				$cij   = $ima || $on ? self::eur( (float) wc_get_price_to_display( $x ) ) : 'Rasprodano';
+				$sad   = '<b>' . esc_html( Domestic_Proizvod_Data::volume_label( $x ) ) . '</b><span>' . esc_html( $cij ) . '</span>';
+				$klasa = 'dsp-vol-opt' . ( $on ? ' on' : '' ) . ( $ima ? '' : ' dsp-vol-nema' );
+				if ( ! empty( $s_[3] ) ) {
+					$h .= '<span class="' . $klasa . '" aria-disabled="true">' . $sad . '</span>';
+				} else {
+					$h .= '<a class="' . $klasa . '" href="' . esc_url( $x->get_permalink() ) . '"' . ( $on ? ' aria-current="true"' : '' ) . '>' . $sad . '</a>';
+				}
 			}
 			$h .= '</div></div>';
 		}
