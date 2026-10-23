@@ -93,6 +93,12 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   (paket preimenovan, uvoz s `cilj: 0`), 5083 studio, 5084 posluživanje, ikone 5085–5087 (čaše); 1943 maknuta iz njezine galerije (prilog ostaje).
   **Patrik Travarica 0,20 l** (1942): 1943 tada samo njezina (nije ni u objavama) → ambijentalna zamijenjena na ISTOJ adresi (prazan alt popunjen),
   5088 `studio-patrik-piramide-1.jpg`, 5089 `posluzivanje-…`, ikone 5090–5092 (dvije niske čaše + čaša za destilate; Šljivovičine su druge).
+- (23.10.) **San MONTANO Teranino 1,50 l Limited** (4632): 4633 ambijent, 5094 `studio-1000300153.jpg`, 5095, 4635–4639 detalji zamijenjeni na istim
+  adresama, ikone 5096–5098 (čaša, kolač, čaša za destilate); **Šokac Divlja kruška** (1636, **privatan – ostaje**): 1638 PNG ambijent, 5099, 5100,
+  1637 stražnja PNG zamijenjena, altovi popunjeni ručno (paket prazan), ikone 5101–5103; **STRAVA 0,10 l** (815): 4130 PNG, 5104, 5105, ikone 5106–5108
+  (tri niske čaše); **STRAVA 1 l** (754): 4712, 5109, 5110, 4713 zamijenjena, ikone 0,10 l (`ikone_izvor` 815); **STRAVA glava 0,75 l** (4751): 4124 PNG
+  (lubanja – zajednička i 1647 glava 0,75 „primores”, privatnima 1929 0,38 l i 1928 0,10 l; ista boca → zamjena na istoj adresi), 5111, 5112, ikone 815.
+  **1647 = duplikat 4751** (oba objavljena): dobio istu galeriju i `_dsp_posluzivanje` preko WC REST.
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 

@@ -54,6 +54,22 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 - U opisu piše **„Vrsta: Liker”**, a etiketa kaže „specijalna rakija travarica” – ispraviti u opisu.
 - Grupna slika četiriju Patrik boca (Travarica, Medovača, Višnja, Borovnica) zamijenjena je ambijentalnom Travarice na istoj adresi.
 
+### San MONTANO Teranino 1,50 l Limited (4632) – 23.10.2026.
+- **Posluživanje**: Kao aperitiv 0,03 l, Uz slastice 0,03 l, Za kušanje 0,02 l – količine urednički prijedlozi.
+- Temperatura serviranja **„5 C”** (iz opisa) – je li 5 °C točno za liker od terana? Na kartici posluživanja piše „5 C” bez znaka °.
+
+### Šokac Divlja kruška 0,70 l (1636, skriven) – 23.10.2026.
+- **Posluživanje**: Kao aperitiv 0,03 l, Kao digestiv 0,03 l, Za kušanje 0,02 l – prijedlozi.
+- **Temperatura**: trgovina kaže „Dobro ohlađeno”, a stranica proizvođača (sokac-destilerija.hr) preporučuje **sobnu temperaturu** radi arome.
+- Proizvod je skriven – nove slike postavljene, status nije mijenjan. Prodaje li se još?
+
+### STRAVA 0,10 l, 1 l i glava 0,75 l (815, 754, 4751) – 23.10.2026.
+- **Posluživanje**: Kao aperitiv 0,03 l, Kao digestiv 0,03 l, U hladnoj čašici 0,03 l – prijedlozi; „Po želji!” i „desetak minuta u škrinji” iz opisa.
+- STRAVA 1 l: opis spominje **srebro CROSPIRIT 28.10.2025.** – slike medalje nema.
+- **Dva objavljena proizvoda „STRAVA glava 0,75 l”**: 4751 (`/proizvod/strava-glava-075l/`) i 1647 (`/proizvod/strava-glava-primores/`) – isti proizvod
+  dvaput; oba sada imaju iste slike. Odlučiti koji ostaje (drugi sakriti; adresa se ne briše bez dogovora).
+- Skriveni STRAVA glava 0,38 l i 0,10 l dijele glavnu sliku s 0,75 l (ista boca-lubanja) – sada pokazuju novu ambijentalnu.
+
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
   temperatura „Po želji” su sa stranice proizvoda.
