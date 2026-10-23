@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Domestic – pomoćnik probne kopije
  * Description: Samo za probnu kopiju stranice: zadržava sve mailove (ne idu kupcima ni Emiliji), sakriva kopiju od tražilica i omogućuje učitavanje Domestic dodataka preko REST-a. Na živoj stranici se sam isključuje. Izbornik Domestic.
- * Version: 0.3.2
+ * Version: 0.3.3
  * Author: Vertikal
  * Requires at least: 6.0
  * Requires PHP: 7.4
@@ -11,7 +11,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DSPM_VER', '0.3.2' );
+define( 'DSPM_VER', '0.3.3' );
 define( 'DSPM_FILE', __FILE__ );
 define( 'DSPM_DIR', __DIR__ );
 

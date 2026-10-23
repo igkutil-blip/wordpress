@@ -35,6 +35,17 @@ final class Domestic_Pomocnik {
 		add_filter( 'wp_get_attachment_image_src', array( __CLASS__, 'verzija_src' ), 99, 2 );
 		add_filter( 'wp_calculate_image_srcset', array( __CLASS__, 'verzija_srcset' ), 99, 5 );
 		add_action( 'admin_bar_menu', array( __CLASS__, 'traka' ), 5 );
+		// stranice probe se ne spremaju (preglednik, Cloudflare, posrednici) – svaka promjena se odmah vidi
+		add_action(
+			'send_headers',
+			static function () {
+				if ( ! is_admin() ) {
+					nocache_headers();
+					header( 'CDN-Cache-Control: no-store' );
+					header( 'Cloudflare-CDN-Cache-Control: no-store' );
+				}
+			}
+		);
 		if ( is_admin() ) {
 			Domestic_Menu::add( 'domestic-pomocnik', 'Pomoćnik (proba)', array( __CLASS__, 'stranica' ), 90 );
 			add_action( 'admin_post_dspm_spremi', array( __CLASS__, 'spremi' ) );
