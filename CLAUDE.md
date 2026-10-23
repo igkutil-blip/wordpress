@@ -51,9 +51,8 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   (opis spominje srebro CROSPIRIT 2026.).
 
 - BOGATI Čokolada 0,70 l (1589, 23.10.): 4062 ambijent (`2018/03/bogati-cokolada-07-domestic-spirits-prednja.png`, PNG 256 + paleta), 4972 studio,
-  4973 posluživanje, ikone 4974 čašica, 4975 led, 4976 sladoled. **Uvoz paketa sad skriptom `alati/uvoz-slika/uvoz.py <postavke.json>`**
-  (primjer postavki u zaglavlju skripte; `--bez-ucitavanja` = samo pripremi i pregledaj ikone): sama nađe krugove ikona na kartici
-  (x iz najšireg reda, y = gornji rub kruga od 420 px + r), PNG/JPG prema staroj glavnoj slici, galerija glavna → studio → posluživanje → `ostale`.
+  4973 posluživanje, ikone 4974 čašica, 4975 led, 4976 sladoled. **Uvoz paketa od sada dodatkom domestic-slike** (Domestic → Slike proizvoda ili
+  `alati/uvoz-slika/uvoz.py paket.zip`); stara Python obrada zamijenjena.
 
 - BOGATI Karamela 1 l (1348, 23.10.): 4072 ambijent (`2018/03/liker-karamela-bogati-domestic-spirits.png`; alt bio prazan → popunjen, `alt_glavna`),
   4977 studio, 4978 posluživanje, ikone 4979 led, 4980 espresso, 4981 sladoled.
@@ -121,6 +120,7 @@ Napomena za Igora: Rank Math „sameAs” Facebook pokazuje na facebook.com/prim
 ## Za provjeru s Mladenom (Igor 23.10.2026.)
 
 Sve nejasnoće s proizvoda (medalje bez slike, godine, autorske količine posluživanja, podaci iz bloga) upisivati u `izdanja/ZA-PROVJERU.md`
+i za proizvode u dodatak (Domestic → Slike proizvoda → Za provjeru; REST `domestic-slike/v1/provjera`; uvoz paketa sam upisuje napomene)
 – Igor na kraju obrade svih proizvoda traži popis za provjeru.
 
 ## Izdanja: proba i živa (Igor 23.10.2026.)
@@ -187,6 +187,25 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     na 1600 px, isječak 392 px, krem pozadina #F7F3EB → prozirna, PNG 280 px, naziv `posluzivanje-ikona-<…>.png`) i upisati tekst s kartice
     u `_dsp_posluzivanje`. Klasične Avellane (0,20/0,70/1 l): 4888 čašica, 4889 kava, 4890 slastica; Premium: 4891 led, 4892 espresso koktel,
     4893 sladoled s kavom.
+  - **domestic-slike 0.1.0** (Igor: skriptu za slike pretvoriti u dodatak, temelj za daljnja proširenja; radi i na ŽIVOJ – nije vezan uz probu):
+    Domestic → Slike proizvoda, kartice **Uvoz paketa** (više zipova odjednom → pregled po paketu → Uvezi/Odbaci), **Zamjena slike** (ID + nova datoteka,
+    ista adresa), **Za provjeru** (meta `_dss_za_provjeru` na proizvodu: napomene iz paketa + ručne, „Riješeno” s odgovorom), **Dnevnik** (opcija
+    `domestic_slike_dnevnik`, 100 zapisa). Jezgra `Domestic_Slike`: `spremi_cisto` (GD ponovno spremanje = bez metapodataka; jpg 85 progresivno,
+    PNG fotografija paleta 256 + dither), `zamijeni($id,$izvor)` (format stare datoteke, briše stare izvedenice i stari izvornik „-scaled”,
+    izvedenice PNG s paletom, `?v=` iz opcije `domestic_slike_verzije` + čita i `domestic_pomocnik_verzije`), `nova()` (media_handle_sideload).
+    `Domestic_Slike_Paket`: zip se čita po stavkama (samo slike + alt.txt; ostalo se ne čita i ne raspakira), radna mapa
+    `uploads/domestic-slike-rad/<token>/` (+ .htaccess deny, pregledi kao data: slike, briše se nakon uvoza ili za 2 dana – cron dss_ciscenje),
+    priprema u opciji `dss_paket_<token>`. Prepoznavanje proizvoda: glavna slika istog naziva (+2) i naziv mape = izvorni naslov (+3; **ne
+    get_the_title – skriveni dobivaju „Privatno:”**). Upozorenje kad je glavna slika zajednička s drugim proizvodima (polje „Ambijentalna ide u
+    sliku (ID)”). „Kako poslužiti” iz alt teksta kartice (dijeli se iza „… l”), opis s drugih proizvoda s istim nazivom + količinom, iste ikone
+    = ista marka i vrsta (prve 2 riječi naslova) i isti nazivi stavki → `ikone_izvor`; inače GD izrezivanje (isti algoritam kao Python: krugovi
+    322/799/1277, y≈627, r≈176 na 1600 px, razmjerno za druge veličine). Uvoz: ambijentalna na staru adresu (prazan alt popuni), studio/posluživanje/
+    dodatne nove JPG, galerija = nove + označene postojeće, `_dsp_posluzivanje`, napomene → Za provjeru; ponovni uvoz istog paketa odbijen.
+    REST `domestic-slike/v1` (manage_woocommerce + upload_files): POST `paket` (multipart zip → analiza), POST `paket/<token>` (JSON izmjene →
+    uvoz), DELETE `paket/<token>`, POST `medij/<id>` (datoteka, paleta), POST `provjera` {proizvod, tekst, izvor}, GET `dnevnik`.
+    Klijent `alati/uvoz-slika/uvoz.py paket.zip [--samo-analiza] [--postavke izmjene.json] [--ziva]`. Lokalni test (scratchpad lokal + dss-test):
+    analiza 1,4 s, uvoz ~9 s, PNG 1600 s paletom GD 1,27 MB (PIL 0,87), vizualno jednako. Na probi u Za provjeru prenesene natuknice za
+    3005, 1600, 1352, 1589, 1345, 1348, 4272, 1353, 3697 (blog ostaje u ZA-PROVJERU.md).
   - **domestic-kartica 0.6.0** (Igor: krem traka na dnu mobitela iz probnog shopa 0.5.0): postavka `donja_traka` (yes), ≤849 px, wp_footer
     `nav.dsk-dno`: Početna · Ponuda · Pokloni (prva kategorija proizvoda „poklon”) · Traži · Košarica (broj = WC fragment `span.dsk-dno-broj`);
     trenutna bordo + crta gore; nije na blagajni. Traži = vlastiti panel na vrhu (`#dsk-dno-panel`, form.searchform → prijedlozi iz trazilica.js),

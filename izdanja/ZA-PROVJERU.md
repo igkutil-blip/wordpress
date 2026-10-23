@@ -1,6 +1,7 @@
 # Za provjeru s Mladenom (skupljamo dok obrađujemo proizvode)
 
 Natuknice za kraj obrade proizvoda – Igor pita, Mladen potvrdi ili ispravi. Kad se riješi, prekriži (~~…~~) i upiši odgovor.
+Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za provjeru** (tamo se mogu označiti kao riješene s odgovorom).
 
 ## Proizvodi
 
