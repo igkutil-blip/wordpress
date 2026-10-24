@@ -305,6 +305,10 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     LinkedIn); `twitter:image` ostaje logo. Kategorija 82 „Likeri i rakije” (`jaka-alkoholna-pica`): slika **2392**
     `2020/12/strong-spirits-set-hard-alcoholic-drinks-glasses_127657-850.jpg` zamijenjena Igorovom (1600², ista adresa, alt popunjen).
     Kategorija 67 „Vina”: slika **514** `2017/09/vina-proizvodi-kategorije-1.png` zamijenjena Igorovom (1920×1080, PNG paleta, alt popunjen; 24.10.).
+    **0.6.5** (Igor: dijeljenje Vina pokazuje logo): izvornik 950 KB → WhatsApp/Viber preskaču og:image (> ~300 KB) i uzmu twitter:image (logo).
+    Klasa `Domestic_Kartica_Dijeljenje`: filtri `rank_math/opengraph/{facebook,twitter}/image_array` na kategoriji sa slikom → JPG 82 %
+    `uploads/domestic-dijeljenje/kategorija-<id>-v2-<otisak>.jpg` (široka ≥ 1,5 → 1200×630 rez, inače 1200 px cijela; ~150–220 KB), i u og:image
+    i u twitter:image; otisak = putanja+vrijeme+veličina izvornika → nova adresa nakon zamjene slike (mreže ne drže staru), starije se brišu.
     Nove slike kategorija = samo zamjena slike kategorije, ništa na stranici. Na živoj nakon zamjene: Facebook Sharing Debugger → „Scrape Again”.
   - **domestic-proizvod 0.7.4** (Igor: STRAVA glava ima tri zapremnine – „prikaži u izboru ali stavi da su rasprodane”): Data::siblings uzima i
     PRIVATNE proizvode istog naziva/kategorije → u izboru zapremnine `span.dsp-vol-opt.dsp-vol-nema` (crtkano, precrtana zapremnina, „RASPRODANO”,
