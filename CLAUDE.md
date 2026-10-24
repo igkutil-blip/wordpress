@@ -166,6 +166,8 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
 - (24.10.) **Grgurević Grand Cru 5 l** (3068), paket „Pet litara Pelješca”: 01 velicina = 3070 i 02 studio = 5190 (isti pikseli – preskočeno); nove 5304 priča,
   5305 degustacija, 5306 panorama s valom (stara panorama 5192 maknuta iz galerije, prilog ostaje); galerija 3070, 5190, 5191, 5304, 5305, 5306, 3069;
   `_dsp_degustacija` (prvo vino sa sekcijom Degustacija; opis/note samo iz teksta trgovine, koraci Zastani/Pomiriši/Kušaj s kartice).
+- (24.10.) **Lagena Coral Wine 0,75 l** (3177), Igorove 4 slike bez teksta (2 iste): nove 5307 more (kvadrat), 5308 degustacija „Iz dubine. U čašu.”, 5309 panorama;
+  galerija 3178, 5223, 5224, 5307–5309; `_dsp_degustacija` (12 mj. na 20 m, 2,7 bara, 8–10 °C – sve iz teksta trgovine).
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
