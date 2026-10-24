@@ -117,6 +117,15 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   5137–5139 (ista mjesta: čaša, tanjur, čaša za destilate). Naziv u bazi „Vinovica-prirodna-rakija-070L” → na probi opcija `domestic_tekst.rjecnik`
   „Vinovica-prirodna-rakija-070L => Vinovica prirodna rakija od vina 0,70 l” (samo prikaz; **prenijeti i na živu**).
 
+- **BRZI UVOZ (Igor 24.10.: „puno resursa troši ubacivanje slika”) – OBAVEZAN POSTUPAK od domestic-slike 0.4.0:**
+  `python3 -I alati/uvoz-slika/uvoz.py <svi zipovi odjednom>` → jedan redak po paketu (OK / STOP / GREŠKA). Slike, kartice i stranice
+  se NE gledaju i ne snimaju; gleda se samo paket sa STOP (zajednička glavna slika, dva jednaka kandidata, neprepoznat proizvod, nema
+  ambijentalne, kartica bez teksta) – za njega `--detalji` / `--postavke`. „Bez opisa ispod stavke” = info (uvozi se; opis tek ako Igor
+  traži ili paket ima retke STAVKA). Bilješke u CLAUDE.md jednim retkom po skupini, jedan commit na kraju, kratak odgovor.
+  0.4.0: `alt.txt` retci `STAVKA = naziv | količina | opis [| ikona]` (pravila za pakete dopunjena); ilustracije se uspoređuju otiskom
+  24×24 (meta `_dss_ikona_hash`, postojeće jednom izračunate, opcija `dss_ikone_hash`) – ista (≤ 3 % razlike) se ponovno koristi, ne učitava;
+  analiza vraća `upozorenja` [stop|info] (i u adminu iznad pregleda); prepoznavanje stane tek ispod 2 boda (2 = stara glavna slika istog naziva).
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,

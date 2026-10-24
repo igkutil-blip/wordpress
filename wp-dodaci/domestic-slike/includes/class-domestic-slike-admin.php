@@ -204,6 +204,9 @@ final class Domestic_Slike_Admin {
 		echo '<div class="dss-paket"><h2 style="margin-top:0">' . esc_html( $a['mapa'] ? $a['mapa'] : $a['zip'] ) . ' <small style="font-weight:400;color:#646970">' . esc_html( $a['zip'] ) . '</small></h2>';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="dss_uvezi"><input type="hidden" name="token" value="' . esc_attr( $a['token'] ) . '"><input type="hidden" name="predlozeni" value="' . (int) $pid . '">';
 		wp_nonce_field( 'dss_uvezi' );
+		foreach ( (array) ( $a['upozorenja'] ?? array() ) as $u ) {
+			echo '<div class="notice ' . ( 'stop' === $u[0] ? 'notice-warning' : 'notice-info' ) . ' inline"><p>' . ( 'stop' === $u[0] ? '<strong>Provjerite prije uvoza:</strong> ' : '' ) . esc_html( $u[1] ) . '</p></div>';
+		}
 
 		echo '<div class="dss-slike">';
 		$uloge = array( 'amb' => 'Ambijentalna → stara adresa', 'studio' => 'Studijska (nova)', 'posl' => 'Kako poslužiti (nova)' );

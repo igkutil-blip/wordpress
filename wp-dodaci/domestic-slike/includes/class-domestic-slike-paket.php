@@ -107,15 +107,26 @@ final class Domestic_Slike_Paket {
 			return new WP_Error( 'dss', 'U zipu nema slika.' );
 		}
 
-		// alt.txt: „datoteka = alt”, NAPOMENA… = napomena za provjeru
-		$alt       = array();
-		$napomene  = array();
+		// alt.txt: „datoteka = alt”, NAPOMENA… = napomena za provjeru, STAVKA… = „naziv | količina | opis [| ikona]”
+		$alt        = array();
+		$napomene   = array();
+		$stavke_alt = array();
 		foreach ( preg_split( '/\R/u', $alt_txt ) as $red ) {
 			if ( ! preg_match( '/^\s*([^=]+?)\s*=\s*(.+)$/u', $red, $m ) ) {
 				continue;
 			}
 			if ( preg_match( '/^NAPOMENA/i', $m[1] ) ) {
 				$napomene[] = trim( wp_strip_all_tags( $m[2] ) );
+			} elseif ( preg_match( '/^STAVKA/i', $m[1] ) ) {
+				$d = array_map( 'trim', explode( '|', wp_strip_all_tags( $m[2] ) ) );
+				if ( '' !== $d[0] ) {
+					$stavke_alt[] = array(
+						'naziv'    => mb_strtoupper( mb_substr( $d[0], 0, 1 ) ) . mb_substr( $d[0], 1 ),
+						'kolicina' => $d[1] ?? '',
+						'opis'     => $d[2] ?? '',
+						'ikona'    => '' !== ( $d[3] ?? '' ) ? sanitize_key( $d[3] ) : self::ikona( $d[0] ),
+					);
+				}
 			} else {
 				$alt[ sanitize_file_name( basename( $m[1] ) ) ] = trim( wp_strip_all_tags( $m[2] ) );
 			}
@@ -165,13 +176,20 @@ final class Domestic_Slike_Paket {
 		$stavke = array();
 		$ikone  = array();
 		if ( null !== $posl ) {
-			$stavke = self::stavke( (string) ( $alt[ $slike[ $posl ]['naziv'] ] ?? '' ) );
+			$stavke = $stavke_alt ? array_slice( $stavke_alt, 0, 6 ) : self::stavke( (string) ( $alt[ $slike[ $posl ]['naziv'] ] ?? '' ) );
 			$ikone  = self::izrezi_ikone( $slike[ $posl ]['put'], $rad );
+			foreach ( $ikone as $i => $ik ) {
+				$ikone[ $i ]['hash'] = self::hash_ikone( $ik['put'] );
+				$ikone[ $i ]['ista'] = self::ista_ikona( $ikone[ $i ]['hash'] ); // ista ilustracija već postoji → ne učitava se ponovno
+			}
 		}
 		$opisi = self::postojeci_opisi( (int) ( $kandidati[0]['id'] ?? 0 ) );
 		foreach ( $stavke as $i => $s ) {
-			$stavke[ $i ]['opis'] = $opisi[ self::kljuc( $s['naziv'], $s['kolicina'] ) ] ?? '';
+			if ( '' === $s['opis'] ) {
+				$stavke[ $i ]['opis'] = $opisi[ self::kljuc( $s['naziv'], $s['kolicina'] ) ] ?? '';
+			}
 		}
+		$izvor_ikona = self::isti_set_ikona( $stavke, $kandidati[0]['id'] ?? 0 );
 
 		$a = array(
 			'token'     => $token,
@@ -188,7 +206,8 @@ final class Domestic_Slike_Paket {
 			'kandidati' => $kandidati,
 			'stavke'    => $stavke,
 			'ikone'     => $ikone,
-			'izvor_ikona' => self::isti_set_ikona( $stavke, $kandidati[0]['id'] ?? 0 ),
+			'izvor_ikona' => $izvor_ikona,
+			'upozorenja'  => self::upozorenja( $kandidati, $amb, $posl, $stavke, $ikone ),
 			'uvezeno'   => false,
 		);
 		update_option( self::PREFIKS . $token, $a, false );
@@ -488,6 +507,113 @@ final class Domestic_Slike_Paket {
 		return $out;
 	}
 
+	/* ---------- iste ilustracije (prosječni otisak 24 × 24 na bijeloj podlozi) ---------- */
+
+	const HASH = '_dss_ikona_hash';
+
+	public static function hash_ikone( string $put ): string {
+		$im = Domestic_Slike::ucitaj( $put );
+		if ( ! $im ) {
+			return '';
+		}
+		$n = 24;
+		$m = imagecreatetruecolor( $n, $n );
+		imagefill( $m, 0, 0, imagecolorallocate( $m, 255, 255, 255 ) );
+		imagealphablending( $m, true );
+		imagecopyresampled( $m, $im, 0, 0, 0, 0, $n, $n, imagesx( $im ), imagesy( $im ) );
+		$v = array();
+		for ( $y = 0; $y < $n; $y++ ) {
+			for ( $x = 0; $x < $n; $x++ ) {
+				$c   = imagecolorat( $m, $x, $y );
+				$v[] = ( ( ( $c >> 16 ) & 255 ) * 299 + ( ( $c >> 8 ) & 255 ) * 587 + ( $c & 255 ) * 114 ) / 1000;
+			}
+		}
+		imagedestroy( $m );
+		imagedestroy( $im );
+		$avg = array_sum( $v ) / count( $v );
+		$b   = '';
+		foreach ( $v as $g ) {
+			$b .= $g < $avg ? '1' : '0';
+		}
+		return $b;
+	}
+
+	/** ID već učitane ilustracije s gotovo istim otiskom (≤ 3 % različitih točaka), inače 0. */
+	public static function ista_ikona( string $hash ): int {
+		if ( '' === $hash ) {
+			return 0;
+		}
+		self::hash_postojecih();
+		$naj = 0;
+		$min = PHP_INT_MAX;
+		foreach ( get_posts( array( 'post_type' => 'attachment', 'post_status' => 'inherit', 'numberposts' => -1, 'fields' => 'ids', 'meta_key' => self::HASH ) ) as $id ) { // phpcs:ignore
+			$h = (string) get_post_meta( $id, self::HASH, true );
+			if ( strlen( $h ) !== strlen( $hash ) ) {
+				continue;
+			}
+			$d = substr_count( $h ^ $hash, "\x01" );
+			if ( $d < $min ) {
+				$min = $d;
+				$naj = (int) $id;
+			}
+		}
+		return $min <= (int) ( strlen( $hash ) * 0.03 ) ? $naj : 0;
+	}
+
+	/** Jednom: otisak za ilustracije učitane prije 0.4.0 (posluzivanje-ikona-*.png). */
+	private static function hash_postojecih(): void {
+		if ( '1' === get_option( 'dss_ikone_hash' ) ) {
+			return;
+		}
+		$ids = get_posts( array( 'post_type' => 'attachment', 'post_status' => 'inherit', 'numberposts' => -1, 'fields' => 'ids', 'meta_query' => array( array( 'key' => '_wp_attached_file', 'value' => 'posluzivanje-ikona-', 'compare' => 'LIKE' ) ) ) ); // phpcs:ignore
+		foreach ( $ids as $id ) {
+			$put = get_attached_file( $id );
+			if ( $put && file_exists( $put ) && ! get_post_meta( $id, self::HASH, true ) ) {
+				update_post_meta( $id, self::HASH, self::hash_ikone( $put ) );
+			}
+		}
+		update_option( 'dss_ikone_hash', '1', false );
+	}
+
+	/* ---------- upozorenja za brzi uvoz ---------- */
+
+	/** [ [ 'stop'|'info', tekst ], … ] – „stop” = uvoz paketa traži ručnu odluku. */
+	private static function upozorenja( array $kandidati, $amb, $posl, array $stavke, array $ikone ): array {
+		$u    = array();
+		$prvi = $kandidati[0] ?? null;
+		if ( ! $prvi ) {
+			$u[] = array( 'stop', 'Proizvod nije prepoznat – odaberite ga ručno.' );
+		} else {
+			if ( (int) $prvi['bodovi'] < 2 ) { // 2 = stara glavna slika istog naziva, 3 = naziv mape = naziv proizvoda
+				$u[] = array( 'stop', 'Proizvod nije sigurno prepoznat: ' . $prvi['naziv'] . '.' );
+			}
+			if ( isset( $kandidati[1] ) && (int) $kandidati[1]['bodovi'] === (int) $prvi['bodovi'] ) {
+				$u[] = array( 'stop', 'Više proizvoda jednako odgovara: ' . $prvi['naziv'] . ', ' . $kandidati[1]['naziv'] . '.' );
+			}
+			$dij = self::dijele( (int) $prvi['glavna'], (int) $prvi['id'] );
+			if ( $dij ) {
+				$u[] = array( 'stop', 'Glavna slika je i na drugim proizvodima: ' . implode( ', ', array_map( array( __CLASS__, 'naslov' ), $dij ) ) . '.' );
+			}
+			if ( 'private' === get_post_status( (int) $prvi['id'] ) ) {
+				$u[] = array( 'info', 'Proizvod je skriven – slike se postavljaju, status se ne mijenja.' );
+			}
+		}
+		if ( null === $amb ) {
+			$u[] = array( 'stop', 'U paketu nema ambijentalne slike.' );
+		}
+		if ( null !== $posl && ! $stavke ) {
+			$u[] = array( 'stop', 'Kartica posluživanja nema teksta (alt „kako poslužiti: …” ili retke STAVKA).' );
+		}
+		$bez = array_column( array_filter( $stavke, static function ( $s ) { return '' === $s['opis']; } ), 'naziv' );
+		if ( $bez ) {
+			$u[] = array( 'info', 'Bez opisa ispod stavke: ' . implode( ', ', $bez ) . '.' );
+		}
+		if ( null !== $posl && count( $ikone ) !== count( $stavke ) ) {
+			$u[] = array( 'info', 'Izrezano ilustracija: ' . count( $ikone ) . ', stavki: ' . count( $stavke ) . '.' );
+		}
+		return $u;
+	}
+
 	/* ---------- 2. uvoz ---------- */
 
 	/**
@@ -589,9 +715,14 @@ final class Domestic_Slike_Paket {
 			$slika = 0;
 			if ( $izvor && is_array( $tude ) ) {
 				$slika = (int) ( $tude[ $i ]['slika'] ?? 0 );
+			} elseif ( ! empty( $a['ikone'][ $i ]['ista'] ) && wp_attachment_is_image( (int) $a['ikone'][ $i ]['ista'] ) ) {
+				$slika = (int) $a['ikone'][ $i ]['ista'];
 			} elseif ( ! empty( $a['ikone'][ $i ]['put'] ) && file_exists( $a['ikone'][ $i ]['put'] ) ) {
 				$slika = Domestic_Slike::nova( $a['ikone'][ $i ]['put'], 'posluzivanje-ikona-' . sanitize_title( $kratko ) . '-' . sanitize_title( $naziv ) . '.png', $naziv . ' – ' . $kratko, $kratko . ' – ' . mb_strtolower( $naziv ), $pid );
 				$slika = is_wp_error( $slika ) ? 0 : $slika;
+				if ( $slika && ! empty( $a['ikone'][ $i ]['hash'] ) ) {
+					update_post_meta( $slika, self::HASH, $a['ikone'][ $i ]['hash'] );
+				}
 			}
 			$ik    = sanitize_key( (string) ( $st['ikona'] ?? 'casa' ) );
 			$pos[] = array(

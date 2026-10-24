@@ -135,5 +135,11 @@ Dominiraju topli, prirodni, smirujući tonovi.
 - Jedna mapa po proizvodu, nazvana po proizvodu i zapremnini („Avellana 0,70 l”).
 - U mapi samo slike (nazvane po točki 8) i alt.txt
   (jedan redak po slici: naziv datoteke = alt tekst).
+- U alt.txt za svaku stavku s kartice „Kako poslužiti” jedan redak (redom kao na kartici,
+  tekst TOČNO kao na kartici; zadnje polje samo kad je ikona jelo, riba ili sir):
+    STAVKA = Kao aperitiv | 0,03 l | U maloj čašici, prije obroka.
+    STAVKA = Uz divljač | 0,03 l | Kao pratnja jelima od divljači. | tanjur
+    STAVKA = Za kušanje | 0,02 l | Čaša za destilate, pijuckajte polako.
+- Naziv mape po nazivu proizvoda u trgovini; proizvod se prepoznaje i po starom nazivu glavne slike (točka 8).
 - NIŠTA DRUGO: bez uputa, opisa postupka, promptova i bilješki.
 - Medalje i slike koje se ne mijenjaju NE šalji ponovno.
