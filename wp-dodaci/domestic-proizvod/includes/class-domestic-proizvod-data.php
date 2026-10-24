@@ -173,6 +173,9 @@ final class Domestic_Proizvod_Data {
 		$html   = wpautop( (string) $p->get_short_description( 'edit' ) ) . "\n" . wpautop( (string) $p->get_description( 'edit' ) );
 		// bez slika, spanova i atributa – opisi iz uređivača često imaju nezatvorene <span> oznake
 		$html = preg_replace( '#<img[^>]*>|</?(span|font|o:p)[^>]*>#i', '', $html );
+		if ( self::komada( $p ) > 1 ) { // stari „(Cijena jednog komada je 1,80 EUR s PDV-om.)” – cijenu boce računamo iz stvarne cijene uz cijenu
+			$html = preg_replace( '/\(?\s*Cijena\s+jednog\s+komada\s+je[^)<\n]*\)?\.?/iu', '', $html );
+		}
 		$html = preg_replace( '#<(p|div|li|ul|ol|b|strong|em|i|h[1-6])\s[^>]*>#i', '<$1>', $html );
 		$dijelovi = preg_split( '#(</?(?:p|div|ul|ol|li|h[1-6]|table|tr|td|th|tbody)>|<br\s*/?>)#i', $html, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
 		$dozvoljeno = array( 'strong' => array(), 'b' => array(), 'em' => array(), 'i' => array(), 'a' => array( 'href' => true ) );

@@ -355,6 +355,17 @@ final class Domestic_Kartica {
 		return $l > 0 ? wc_price( $c / $l ) . ' / l' : '';
 	}
 
+	/** Naziv na kartici: kod transportnog pakiranja broj boca ispred zapremnine („Aloe Vera Ananas 30 × 0,24 l”) – samo prikaz. */
+	public static function naziv( WC_Product $p ): string {
+		$ime = $p->get_name();
+		$n   = self::komada( $p );
+		if ( $n < 2 ) {
+			return $ime;
+		}
+		$novo = preg_replace( '/\s(\d+(?:[.,]\d+)?\s*l)\s*$/iu', ' ' . $n . ' × $1', $ime, 1, $broj );
+		return $broj ? $novo : $ime . ' (' . $n . ' kom)';
+	}
+
 	/** Isto pravilo kao domestic-proizvod: meta `_dsp_komada` ili „cijena transportnog pakiranja od N komada” u opisu. */
 	public static function komada( WC_Product $p ): int {
 		$n = (int) $p->get_meta( '_dsp_komada' );

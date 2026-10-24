@@ -46,6 +46,11 @@ final class Domestic_Proizvod_Front {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ) );
 		add_shortcode( 'domestic_proizvod', array( __CLASS__, 'shortcode' ) );
 		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
+		// SEO opis (Rank Math: meta, Open Graph, schema) bez stare „cijene jednog komada” kod transportnog pakiranja
+		foreach ( array( 'rank_math/frontend/description', 'rank_math/opengraph/facebook/og_description', 'rank_math/opengraph/twitter/twitter_description' ) as $f ) {
+			add_filter( $f, array( __CLASS__, 'seo_opis' ), 20 );
+		}
+		add_filter( 'rank_math/snippet/rich_snippet_product_entity', array( __CLASS__, 'seo_schema' ), 20 );
 		// Flatsome „Brzi pregled”: isti izgled kao stranica proizvoda, sažeto
 		add_filter( 'wc_get_template_part', array( __CLASS__, 'quickview_part' ), 20, 3 );
 		add_filter( 'wc_get_template', array( __CLASS__, 'quickview_tpl' ), 20, 2 );
@@ -77,6 +82,21 @@ final class Domestic_Proizvod_Front {
 			. ( '' !== $lead ? '<p class="dsp-intro">' . esc_html( $lead ) . '</p>' : '' )
 			. '<a class="dsp-qv-more" href="' . esc_url( $p->get_permalink() ) . '">Sve o proizvodu: opis, posluživanje, nagrade ' . self::svg( 'desno' ) . '</a>'
 			. '</div></section></div>';
+	}
+
+	public static function seo_opis( $s ) {
+		$p = is_singular( 'product' ) ? wc_get_product( get_queried_object_id() ) : null;
+		if ( ! $p || ! is_string( $s ) || Domestic_Proizvod_Data::komada( $p ) < 2 ) {
+			return $s;
+		}
+		return trim( preg_replace( '/\s{2,}/u', ' ', preg_replace( '/\(?\s*Cijena\s+jednog\s+komada\s+je[^)]*\)?\.?/iu', '', $s ) ) );
+	}
+
+	public static function seo_schema( $e ) {
+		if ( is_array( $e ) && isset( $e['description'] ) ) {
+			$e['description'] = self::seo_opis( $e['description'] );
+		}
+		return $e;
 	}
 
 	private static function current(): ?WC_Product {
@@ -360,6 +380,9 @@ final class Domestic_Proizvod_Front {
 			}
 		}
 		foreach ( array( $p->get_short_description(), $p->get_description() ) as $src ) {
+			if ( Domestic_Proizvod_Data::komada( $p ) > 1 ) {
+				$src = preg_replace( '/\(?\s*Cijena\s+jednog\s+komada\s+je[^)<\n]*\)?\.?/iu', '', (string) $src );
+			}
 			$t = trim( preg_replace( '/\s+/u', ' ', wp_strip_all_tags( str_replace( array( '</p>', '<br>', '<br />', '</li>' ), ' ¶ ', (string) $src ) ) ) );
 			foreach ( array_map( 'trim', explode( '¶', $t ) ) as $odlomak ) {
 				$odlomak = preg_replace( '/^(opis|o proizvodu|kratki opis)\s*:\s*/iu', '', $odlomak );
