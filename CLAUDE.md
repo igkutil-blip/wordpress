@@ -179,7 +179,7 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   `.dsp-pack` „Cijena za transportno pakiranje od 20 boca (20 × 0,50 l) · jedna boca 1,85 €”, €/l = cijena / (litre × N) (prije krivo 74 €/l);
   domestic-kartica **0.6.6**: redak jedinične cijene na kartici „Pakiranje 20 boca · 1,85 € / boca”. Napomena degustacije bez cijene.
   Igor: siva „(Cijena jednog komada je 1,80 EUR s PDV-om.)” nije točna → **0.8.3** je izbacuje iz prikaza (Data::opis, uvod, Rank Math opis/OG/schema) kad je
-  komada > 1 (baza netaknuta); **domestic-kartica 0.6.7** naziv na kartici „Aloe Vera Ananas 30 × 0,24 l” (Kartica::naziv, samo prikaz).
+  komada > 1 (baza netaknuta); domestic-kartica 0.6.7 naziv „… 30 × 0,24 l” – Igor: nepotrebno (pakiranje već piše ispod cijene) → **0.6.8** vraćen običan naziv (Kartica::naziv ostaje, ne koristi se).
   Skripta scratchpad sok-uvoz.py. Slika kategorije 1331 nije postojala (404) → nova **5319** `sokovi-aloe-vera-okusi.jpg` (7 boca 0,50 l u nizu, 1920×1080; samo dijeljenje).
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)

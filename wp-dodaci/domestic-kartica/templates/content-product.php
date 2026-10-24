@@ -50,7 +50,7 @@ echo '>';
 						}
 						break;
 					case 'naziv':
-						echo '<h2 class="dsk-naziv woocommerce-loop-product__title"><a href="' . esc_url( $url ) . '" class="woocommerce-LoopProduct-link woocommerce-loop-product__link">' . esc_html( Domestic_Kartica::naziv( $product ) ) . '</a></h2>';
+						echo '<h2 class="dsk-naziv woocommerce-loop-product__title"><a href="' . esc_url( $url ) . '" class="woocommerce-LoopProduct-link woocommerce-loop-product__link">' . esc_html( $product->get_name() ) . '</a></h2>';
 						break;
 					case 'podaci':
 						$d = array_filter( array( $zapremnina, $alkohol ) );
