@@ -319,6 +319,7 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     Klasa `Domestic_Kartica_Dijeljenje`: filtri `rank_math/opengraph/{facebook,twitter}/image_array` na kategoriji sa slikom → JPG 82 %
     `uploads/domestic-dijeljenje/kategorija-<id>-v2-<otisak>.jpg` (široka ≥ 1,5 → 1200×630 rez, inače 1200 px cijela; ~150–220 KB), i u og:image
     i u twitter:image; otisak = putanja+vrijeme+veličina izvornika → nova adresa nakon zamjene slike (mreže ne drže staru), starije se brišu.
+    Kategorija 272 „Pivo”: slika **3339** `2023/05/angelus.jpg` (nije bila nigdje drugdje) zamijenjena Igorovom 1600² Slavonica (24.10.).
     Nove slike kategorija = samo zamjena slike kategorije, ništa na stranici. Na živoj nakon zamjene: Facebook Sharing Debugger → „Scrape Again”.
   - **domestic-proizvod 0.7.4** (Igor: STRAVA glava ima tri zapremnine – „prikaži u izboru ali stavi da su rasprodane”): Data::siblings uzima i
     PRIVATNE proizvode istog naziva/kategorije → u izboru zapremnine `span.dsp-vol-opt.dsp-vol-nema` (crtkano, precrtana zapremnina, „RASPRODANO”,
@@ -480,6 +481,7 @@ vanjske domene) – Igor treba dodati domene u Allowed domains. Stranica /vinari
 Igorov paket „Blog-Vina” (24.10., 15 fotografija 1920×1080, PIL ponovno spremljene): zamijenjene na istim adresama 4915–4931 (osim Ferenca), 4943,
 stare objave Pilato 2712, Lagena 2016, Grgurević 4095, „zagrebački restorani” (1761) 4244 – altovi iz paketa. **Ferenac**: stara 2526 `gf1.jpg` je i u
 tekstu priče → ostala; nova naslovna **5294** `2026/10/blog-giulio-ferenac.jpg`.
+Slavonica (4910): naslovna 4945 zamijenjena Igorovom 1920×1080 (poklon paketi, 24.10.).
 **Naziv bloga „Iza etikete”** (Igor 24.10.; adresa `/vinarije/` ISTA): stavka izbornika 377, stranica 88 (naslov → SEO naslov „Iza etikete – Domestic spirits”),
 `domestic_blog.naslov` (H1), widget podnožja recent-posts-10. Na naslovnici odjeljak „Vinarije s kojima surađujemo” ostaje (stvarno o vinarijama).
 Proširenja (dodaci.py: regija, tablica „Za stolom”/„Kako poslužiti” class dsb-stol, savjet class dsb-savjet; stare 4 dobile „Za stolom”),
