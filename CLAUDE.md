@@ -168,6 +168,7 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   `_dsp_degustacija` (prvo vino sa sekcijom Degustacija; opis/note samo iz teksta trgovine, koraci Zastani/Pomiriši/Kušaj s kartice).
 - (24.10.) **Lagena Coral Wine 0,75 l** (3177), Igorove 4 slike bez teksta (2 iste): nove 5307 more (kvadrat), 5308 degustacija „Iz dubine. U čašu.”, 5309 panorama;
   galerija 3178, 5223, 5224, 5307–5309; `_dsp_degustacija` (12 mj. na 20 m, 2,7 bara, 8–10 °C – sve iz teksta trgovine).
+  Blog „Vinarija Lagena” (2012): ispred „Za stolom” dodan odjeljak h2 „Coral Wine – iz dubine u čašu” + panorama 5309 (figure, large) + poveznica na proizvod.
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
