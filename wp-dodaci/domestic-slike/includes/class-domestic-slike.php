@@ -86,10 +86,13 @@ final class Domestic_Slike {
 				imagetruecolortopalette( $k, true, 256 );
 				$ok = imagepng( $k, $cilj, 9 );
 				imagedestroy( $k );
+				$ok && Domestic_Slike_Meta::ocisti( $cilj );
 				return $ok;
 			}
 			imagesavealpha( $im, true );
-			return imagepng( $im, $cilj, 9 );
+			$ok = imagepng( $im, $cilj, 9 );
+			$ok && Domestic_Slike_Meta::ocisti( $cilj );
+			return $ok;
 		}
 		$k = imagecreatetruecolor( imagesx( $im ), imagesy( $im ) );
 		imagefill( $k, 0, 0, imagecolorallocate( $k, 255, 255, 255 ) );
@@ -98,6 +101,7 @@ final class Domestic_Slike {
 		imageinterlace( $k, true );
 		$ok = imagejpeg( $k, $cilj, 85 );
 		imagedestroy( $k );
+		$ok && Domestic_Slike_Meta::ocisti( $cilj ); // GD upisuje komentar „CREATOR: gd-jpeg …”
 		return $ok;
 	}
 
@@ -234,6 +238,7 @@ final class Domestic_Slike {
 				},
 			)
 		);
+		register_rest_route( self::NS, '/ocisti', array( 'methods' => 'POST', 'callback' => array( 'Domestic_Slike_Meta', 'rest_ocisti' ), 'permission_callback' => $perm ) );
 		register_rest_route( self::NS, '/medij/(?P<id>\d+)', array( 'methods' => 'POST', 'callback' => array( __CLASS__, 'rest_medij' ), 'permission_callback' => $perm ) );
 		register_rest_route(
 			self::NS,

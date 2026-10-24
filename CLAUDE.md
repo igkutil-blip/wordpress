@@ -125,6 +125,11 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   0.4.0: `alt.txt` retci `STAVKA = naziv | količina | opis [| ikona]` (pravila za pakete dopunjena); ilustracije se uspoređuju otiskom
   24×24 (meta `_dss_ikona_hash`, postojeće jednom izračunate, opcija `dss_ikone_hash`) – ista (≤ 3 % razlike) se ponovno koristi, ne učitava;
   analiza vraća `upozorenja` [stop|info] (i u adminu iznad pregleda); prepoznavanje stane tek ispod 2 boda (2 = stara glavna slika istog naziva).
+  **0.4.1** (Igor: „ukloni sve podatke sa slika koje stavlja AI”): klasa `Domestic_Slike_Meta` – čišćenje BEZ ponovnog sažimanja (pikseli i adrese isti):
+  JPEG ostaju samo APP0 JFIF, ICC (APP2) i Adobe (APP14); brišu se EXIF (osim orijentacije ≠ 1), XMP, C2PA/JUMBF, ostali APPn, komentari (GD je
+  upisivao „CREATOR: gd-jpeg”) i podaci iza kraja slike; PNG ostaju IHDR/PLTE/tRNS/IDAT/IEND. Automatski: filtar `wp_generate_attachment_metadata`
+  (svaka nova/zamijenjena slika + izvedenice, i ručno učitane u WP) i nakon `spremi_cisto`. Cijela biblioteka: REST POST `ocisti` {stranica, po}
+  → `python3 -I alati/uvoz-slika/ocisti.py [--ziva]`. **Na živoj pokrenuti nakon instalacije.**
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
