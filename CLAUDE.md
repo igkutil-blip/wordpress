@@ -154,6 +154,16 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   Vranac 0,75/1 l): 3513, 2654, 1538 (+ medalja 5274), 1550, 1544, 2652, 837, 3154, 1572, 1583, 1619, 2222; nove 5268–5292.
   **Pilato Chardonnay 0,75 l** (1551, skriven; zaseban od sur lie 3513): 4117 ambijent, 5295, 5296 (paket ravni zip → omotan u mapu za serija.py, stavke iz case.json).
 
+- (24.10.) **Pivo Slavonica – poklon paketi** (Igor oduševljen degustacijskim karticama: „napravi nešto spektakularno”): 3 × 0,33 l (3964): 3965 ambijent,
+  5297 studio, 5298 degustacija; 4 × 0,50 l (3967): 3968, 5299, 5300; 6 × 0,50 l (3970, **dvije verzije paketa**): 3971 ambijent GGC, 5301 studio, 5302
+  degustacija, 4704 `Prednja-scaled.jpg` ← ambijent Lager/Templar/NEIPA, 4705 `Dijagonalno-scaled.jpg` ← studio LTN, 5303 degustacija LTN (nove slike u 2026/10,
+  uvoz skriptom scratchpad slav-uvoz.py – paket nije format domestic-slike). **domestic-proizvod 0.8.0**: sekcija **Degustacija** (meta `_dsp_degustacija`:
+  nadnaslov, naslov, uvod, koraci[], napomena, verzije[{naziv, naslov, slika, stavke[{naziv, stil, kolicina, opis, boja}]}]) – tamna ploča ispod kupnje:
+  kartica za kušanje (povećanje) | naslov s kartice, prekidač verzija (tablist, strelice), popis piva s CSS čašom u boji piva, koraci Pomiriši/Kušaj/
+  Usporedi, napomena „Čaše … nisu dio paketa”; mobitel slika prva; u „Na ovoj stranici” i „Degustacija ↓” umjesto „Kako poslužiti ↓”; velika 3. slika
+  u Kako poslužiti se tada ne prikazuje. Opisi piva samo iz teksta trgovine (bez izmišljenih IBU/temperatura). Uređivanje zasad samo preko REST/meta
+  (nema polja u adminu). Isti obrazac kasnije za vina (Igor).
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,

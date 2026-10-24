@@ -82,9 +82,19 @@ final class Domestic_Proizvod_Data {
 			'zakljucak'       => (string) $p->get_meta( '_dsp_zakljucak' ),
 			'posluzivanje'    => array_values( array_filter( $arr( '_dsp_posluzivanje' ), function ( $r ) { return ! empty( $r['naziv'] ); } ) ),
 			'nagrade'         => array_values( array_filter( $arr( '_dsp_nagrade' ), function ( $r ) { return ! empty( $r['naslov'] ); } ) ),
+			'degustacija'     => self::degustacija( $arr( '_dsp_degustacija' ) ),
 			'omiljeno'        => 'yes' === $p->get_meta( '_dsp_omiljeno' ),
 			'sidrena'         => (string) $p->get_meta( '_dsp_sidrena' ),
 		);
+	}
+
+	/**
+	 * Degustacija (meta `_dsp_degustacija`): { nadnaslov, naslov, uvod, koraci:[{naslov,tekst}],
+	 * verzije:[{naziv, slika, naslov, stavke:[{naziv, stil, opis, boja}]}] } – samo verzije sa stavkama.
+	 */
+	private static function degustacija( array $d ): array {
+		$d['verzije'] = array_values( array_filter( (array) ( $d['verzije'] ?? array() ), static function ( $v ) { return is_array( $v ) && ! empty( $v['stavke'] ); } ) );
+		return $d['verzije'] ? $d : array();
 	}
 
 	/* ---------- atributi ---------- */

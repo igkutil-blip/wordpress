@@ -95,6 +95,26 @@
       inp.addEventListener('input', upd); upd();
     });
 
+    /* degustacija: prekidač verzija paketa (slika + popis) */
+    $$('.dsp-deg-tabs', root).forEach(function (tl) {
+      var sec = tl.closest('.dsp-deg'), tabs = $$('[role=tab]', tl);
+      function pick(n, fokus) {
+        tabs.forEach(function (b, i) {
+          var on = i === n; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
+          var pn = document.getElementById(b.getAttribute('aria-controls')); if (pn) pn.hidden = !on;
+          var im = document.getElementById(b.id.replace(/-t(\d+)$/, '-s$1')); if (im) im.hidden = !on;
+        });
+        if (fokus) tabs[n].focus();
+      }
+      tabs.forEach(function (b, i) {
+        b.addEventListener('click', function () { pick(i); });
+        b.addEventListener('keydown', function (e) {
+          var k = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+          if (k) { e.preventDefault(); pick((i + k + tabs.length) % tabs.length, true); }
+        });
+      });
+    });
+
     /* sekcije: poveznice otvaraju sekciju */
     if (qv) return;
     function open(name) {

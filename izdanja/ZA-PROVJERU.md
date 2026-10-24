@@ -116,6 +116,10 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 - **Misna vina Cabernet Sauvignon-Franc**: u trgovini se zove „Cabernet Sauvignon-Franc”, na pripremljenim slikama „Cabernet Sauvignon” – koji je točan naziv?
 - **Misna vina Graševina** je skrivena – slike postavljene, status nije mijenjan. Prodaje li se još?
 
+### Pivo Slavonica – poklon paketi (3964, 3967, 3970) – 24.10.2026.
+- **6 × 0,50 l** dolazi u dvije verzije (Grof/Grofica/Carica ili Lager/Templar/NEIPA) – kako kupac bira verziju? Ima li obje na zalihi?
+- Sekcija „Degustacija”: opisi piva iz postojećeg teksta trgovine; koraci Pomiriši/Kušaj/Usporedi su urednički; čaše i daska na slikama nisu u paketu (piše na stranici).
+
 ### Vina – serija 5 (Pilato, Primores/ZEBRICA, Škrlet 7 vinara, Trdenić, Vranac) – 24.10.2026.
 - **Kartice**: temperatura i „poslužite uz” iz opisa; **izbor čaše urednički prijedlog**.
 - **Pilato Malvazija istarska**: zlatna medalja Decanter 2020, a na boci berba 2013 – odnosi li se medalja na berbu koja se prodaje?

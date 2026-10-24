@@ -149,6 +149,7 @@ final class Domestic_Proizvod_Front {
 		return '<div class="dsp">'
 			. '<section class="dsp-product">' . self::gallery( $p )
 			. '<div class="dsp-info-col">' . self::head( $p ) . self::buy( $p ) . self::extra( $p ) . '</div></section>'
+			. self::degustacija( $p )
 			. self::tabs( $p )
 			. self::related( $p )
 			. self::sticky( $p )
@@ -337,7 +338,9 @@ final class Domestic_Proizvod_Front {
 			$t  = implode( ' · ', array_map( function ( $n ) { return rtrim( $n['naslov'], '.' ) . '.'; }, array_slice( $m['nagrade'], 0, 3 ) ) );
 			$h .= '<a class="dsp-awardline" href="#dsp-nagrade" data-dsp-open="nagrade">' . self::svg( 'nagrada' ) . '<span>' . esc_html( $t ) . '</span><i aria-hidden="true">↓</i></a>';
 		}
-		if ( $m['posluzivanje'] || Domestic_Proizvod_Data::attr( $p, 'gastro' ) || Domestic_Proizvod_Data::attr( $p, 'temperatura' ) ) {
+		if ( $m['degustacija'] ) {
+			$h .= '<a class="dsp-link dsp-serve-link" href="#dsp-degustacija" data-dsp-open="degustacija">Degustacija ↓</a>';
+		} elseif ( $m['posluzivanje'] || Domestic_Proizvod_Data::attr( $p, 'gastro' ) || Domestic_Proizvod_Data::attr( $p, 'temperatura' ) ) {
 			$h .= '<a class="dsp-link dsp-serve-link" href="#dsp-posluzivanje" data-dsp-open="posluzivanje">Kako poslužiti ↓</a>';
 		}
 		return $h ? '<div class="dsp-extra">' . $h . '</div>' : '';
@@ -387,6 +390,64 @@ final class Domestic_Proizvod_Front {
 		$last  = end( $parts );
 		$last  = preg_replace( '/^(vinogorje|podregija|regija)\s+/iu', '', $last );
 		return self::short( $last, 22 );
+	}
+
+	/* ---------- degustacija (poklon paketi: kartica za kušanje + piva/vina u paketu) ---------- */
+
+	public static function degustacija( WC_Product $p ): string {
+		$d = Domestic_Proizvod_Data::meta( $p )['degustacija'];
+		if ( ! $d ) {
+			return '';
+		}
+		$ver  = $d['verzije'];
+		$vise = count( $ver ) > 1;
+		$id   = 'dsp-deg-' . $p->get_id();
+		$h    = '<section class="dsp-deg" id="dsp-degustacija" aria-labelledby="' . $id . '-n"><div class="dsp-deg-in">';
+		$sl   = '';
+		$tx   = '';
+		foreach ( $ver as $i => $v ) {
+			$skr  = $i ? ' hidden' : '';
+			$slik = (int) ( $v['slika'] ?? 0 );
+			if ( $slik ) {
+				$sl .= '<button type="button" class="dsp-deg-img dsp-zoomable" id="' . $id . '-s' . $i . '" data-full="' . esc_url( wp_get_attachment_image_url( $slik, 'full' ) ) . '"' . $skr . '>'
+					. wp_get_attachment_image( $slik, 'large', false, array( 'loading' => 'lazy', 'sizes' => '(max-width: 760px) 100vw, 560px' ) )
+					. '<span>Povećaj ' . self::svg( 'zoom' ) . '</span></button>';
+			}
+			$tx .= '<div class="dsp-deg-ver" id="' . $id . '-p' . $i . '"' . ( $vise ? ' role="tabpanel" aria-labelledby="' . $id . '-t' . $i . '"' : '' ) . $skr . '>'
+				. ( ! empty( $v['naslov'] ) ? '<p class="dsp-deg-moto">' . esc_html( $v['naslov'] ) . '</p>' : '' ) . '<ol class="dsp-deg-list">';
+			foreach ( $v['stavke'] as $s ) {
+				$boja = preg_match( '/^#[0-9a-f]{3,8}$/i', (string) ( $s['boja'] ?? '' ) ) ? $s['boja'] : '#c98a2e';
+				$tx  .= '<li><span class="dsp-deg-glass" style="--pivo:' . esc_attr( $boja ) . '" aria-hidden="true"></span><div><h3>' . esc_html( $s['naziv'] ?? '' )
+					. ( ! empty( $s['kolicina'] ) ? ' <em>' . esc_html( $s['kolicina'] ) . '</em>' : '' ) . '</h3>'
+					. ( ! empty( $s['stil'] ) ? '<div class="dsp-deg-stil">' . esc_html( $s['stil'] ) . '</div>' : '' )
+					. ( ! empty( $s['opis'] ) ? '<p>' . esc_html( $s['opis'] ) . '</p>' : '' ) . '</div></li>';
+			}
+			$tx .= '</ol></div>';
+		}
+		$h .= '<div class="dsp-deg-media">' . $sl . '</div><div class="dsp-deg-text">'
+			. '<div class="dsp-deg-eyebrow">' . esc_html( $d['nadnaslov'] ?? 'Degustacija kod kuće' ) . '</div>'
+			. '<h2 id="' . $id . '-n">' . esc_html( $d['naslov'] ?? 'Degustacija' ) . '</h2>'
+			. ( ! empty( $d['uvod'] ) ? '<p class="dsp-deg-uvod">' . esc_html( $d['uvod'] ) . '</p>' : '' );
+		if ( $vise ) {
+			$h .= '<div class="dsp-deg-tabs" role="tablist" aria-label="Verzije paketa">';
+			foreach ( $ver as $i => $v ) {
+				$h .= '<button type="button" role="tab" id="' . $id . '-t' . $i . '" aria-controls="' . $id . '-p' . $i . '" aria-selected="' . ( $i ? 'false' : 'true' ) . '" data-dsp-deg="' . $i . '"' . ( $i ? ' tabindex="-1"' : '' ) . '>'
+					. '<small>Verzija ' . ( $i + 1 ) . '</small>' . esc_html( $v['naziv'] ?? '' ) . '</button>';
+			}
+			$h .= '</div>';
+		}
+		$h .= $tx;
+		if ( ! empty( $d['koraci'] ) ) {
+			$h .= '<ol class="dsp-deg-steps">';
+			foreach ( (array) $d['koraci'] as $k ) {
+				$h .= '<li><b>' . esc_html( $k['naslov'] ?? '' ) . '</b><span>' . esc_html( $k['tekst'] ?? '' ) . '</span></li>';
+			}
+			$h .= '</ol>';
+		}
+		if ( ! empty( $d['napomena'] ) ) {
+			$h .= '<p class="dsp-deg-nap">' . esc_html( $d['napomena'] ) . '</p>';
+		}
+		return $h . '</div></div></section>';
 	}
 
 	/* ---------- sekcije (harmonika) ---------- */
@@ -447,7 +508,7 @@ final class Domestic_Proizvod_Front {
 		$gastro = Domestic_Proizvod_Data::attr( $p, 'gastro' );
 		$temp   = Domestic_Proizvod_Data::attr( $p, 'temperatura' );
 		$ids    = array_values( array_unique( array_filter( array_merge( array( $p->get_image_id() ), $p->get_gallery_image_ids() ) ) ) );
-		$upute  = $ids[2] ?? 0;
+		$upute  = $m['degustacija'] ? 0 : ( $ids[2] ?? 0 ); // degustacijska kartica je u svojoj sekciji
 		if ( $m['posluzivanje'] || $gastro || $temp || $upute ) {
 			$k = '';
 			if ( $m['posluzivanje'] ) {
@@ -510,6 +571,9 @@ final class Domestic_Proizvod_Front {
 			$lijevo[] = self::section( 'recenzije', 'Recenzije', (int) $p->get_review_count() . ' recenzija', ob_get_clean() );
 		}
 
+		if ( $m['degustacija'] ) {
+			$nav = array( 'degustacija' => 'Degustacija' ) + $nav;
+		}
 		$h = '<nav class="dsp-secnav" aria-label="Sadržaj stranice"><span>Na ovoj stranici</span>';
 		foreach ( $nav as $k => $t ) {
 			$h .= '<a href="#dsp-' . esc_attr( $k ) . '" data-dsp-open="' . esc_attr( $k ) . '">' . esc_html( $t ) . '</a>';

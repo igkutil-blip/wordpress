@@ -289,3 +289,44 @@ span.dsp-vol-opt{cursor:default}
   .dsp-serve-sa-ilu h4{font-size:16px}
   .dsp-serve-sa-ilu p{margin:2px 0 0!important}
 }
+
+/* degustacija (0.8.0): tamna sekcija s kartom za kušanje i popisom u paketu; više verzija paketa = prekidač */
+.dsp-deg{margin:52px 0 22px;border-radius:6px;overflow:hidden;color:#f7f3eb;background:radial-gradient(120% 90% at 0% 0%,#4a382a 0%,rgba(74,56,42,0) 55%),radial-gradient(90% 80% at 100% 100%,#3b2420 0%,rgba(59,36,32,0) 60%),#29231f;box-shadow:0 24px 60px -30px rgba(41,35,31,.55)}
+.dsp-deg-in{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);gap:52px;padding:48px;align-items:center}
+.dsp .dsp-deg-img{display:block;position:relative;width:100%;padding:0;border:0;background:none;cursor:zoom-in;border-radius:4px;overflow:hidden;box-shadow:0 0 0 1px rgba(173,141,83,.55),0 0 0 7px rgba(173,141,83,.12),0 30px 60px -28px #000}
+.dsp .dsp-deg-img[hidden]{display:none}
+.dsp-deg-img img{width:100%;aspect-ratio:1;object-fit:cover}
+.dsp-deg-img span{position:absolute;right:12px;bottom:12px;display:inline-flex;gap:6px;align-items:center;padding:6px 11px;border-radius:99px;background:rgba(41,35,31,.82);color:#f7f3eb;font:500 11px var(--n);letter-spacing:.08em;text-transform:uppercase;opacity:0;transition:opacity .2s}
+.dsp-deg-img:hover span,.dsp-deg-img:focus-visible span{opacity:1}
+.dsp-deg-img span .dsp-i{width:15px;height:15px}
+.dsp-deg-eyebrow{font:500 12px var(--n);letter-spacing:.22em;text-transform:uppercase;color:#c9a86a;margin-bottom:10px}
+.dsp .dsp-deg h2{font-size:clamp(28px,3vw,42px);line-height:1.08;color:#f7f3eb;text-transform:uppercase;letter-spacing:.04em;margin-bottom:14px}
+.dsp .dsp-deg-uvod{color:#ddd3c4;font-size:15px;max-width:52ch}
+.dsp-deg-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 18px}
+.dsp .dsp-deg-tabs button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 16px;border-radius:6px;border:1px solid rgba(201,168,106,.55);background:transparent;color:#f7f3eb;font:500 13px/1.25 var(--n);cursor:pointer;text-align:left;margin:0;text-transform:none;letter-spacing:0;min-height:0}
+.dsp-deg-tabs button small{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#c9a86a}
+.dsp .dsp-deg-tabs button[aria-selected=true]{background:#f7f3eb;color:#29231f;border-color:#f7f3eb}
+.dsp-deg-tabs button[aria-selected=true] small{color:#702833}
+.dsp-deg-ver[hidden]{display:none}
+.dsp .dsp-deg-moto{font:italic 17px var(--s);color:#c9a86a;margin:0 0 10px}
+.dsp-deg-list{list-style:none;margin:0;padding:0;border-top:1px solid rgba(201,168,106,.28)}
+.dsp-deg-list li{display:grid;grid-template-columns:40px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid rgba(201,168,106,.28);margin:0}
+.dsp-deg-glass{width:28px;height:38px;margin:4px auto 0;border-radius:3px 3px 11px 11px;background:linear-gradient(100deg,rgba(255,255,255,.28) 0 18%,rgba(255,255,255,0) 30%),var(--pivo);box-shadow:inset 0 9px 0 #f3e9d6,0 0 0 1px rgba(255,255,255,.18),0 6px 14px -6px var(--pivo)}
+.dsp .dsp-deg-list h3{font-size:22px;color:#f7f3eb;line-height:1.15}
+.dsp-deg-list h3 em{font:500 12px var(--n);font-style:normal;color:#c9a86a;letter-spacing:.06em;margin-left:4px}
+.dsp-deg-stil{font:500 11px var(--n);letter-spacing:.16em;text-transform:uppercase;color:#c9a86a;margin:3px 0 5px}
+.dsp .dsp-deg-list p{font-size:14px;color:#d8cfc2;margin:0}
+.dsp-deg-steps{list-style:none;margin:22px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;counter-reset:k}
+.dsp-deg-steps li{counter-increment:k;margin:0;font-size:13px;color:#d8cfc2;line-height:1.45}
+.dsp-deg-steps li:before{content:counter(k);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;border:1px solid #c9a86a;color:#c9a86a;font:15px var(--s);margin-bottom:8px}
+.dsp-deg-steps b{display:block;font:400 17px var(--s);color:#f7f3eb;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.dsp .dsp-deg-nap{font-size:11px;color:#a89c8c;margin:18px 0 0}
+@media(max-width:1000px){.dsp-deg-in{gap:32px;padding:34px}}
+@media(max-width:760px){
+  .dsp-deg{margin:34px 0 14px;border-radius:0;margin-left:-16px;margin-right:-16px}
+  .dsp-deg-in{grid-template-columns:1fr;gap:22px;padding:26px 18px 28px}
+  .dsp-deg-steps{grid-template-columns:1fr;gap:10px}
+  .dsp-deg-steps li{display:grid;grid-template-columns:30px 1fr;column-gap:12px;align-items:start}
+  .dsp-deg-steps li:before{margin:0;grid-row:span 2}
+  .dsp-deg-img span{opacity:1}
+}
