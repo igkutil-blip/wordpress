@@ -425,6 +425,8 @@ proizvoda (bijela pozadina → krem multiply, crna → tamna #29231F lighten, mj
 Igorove fotografije 1920×1080 (23.10.) zamijenile složene bannere na istim adresama: Patrik 4933, Promex 4935, Gavran 4937, Good Spirit (Kova) 4939,
 Gothic 4941 – altovi prepisani prema novim fotografijama. Preskočeni: Kosovo Vranac (nije hrvatski), Aloe Vera sokovi. Fotografije sa stranica vinarija NE mogu se skinuti (mreža sesije blokira
 vanjske domene) – Igor treba dodati domene u Allowed domains. Stranica /vinarije/ = stranica objava (sve objave, i rakije).
+**Naziv bloga „Iza etikete”** (Igor 24.10.; adresa `/vinarije/` ISTA): stavka izbornika 377, stranica 88 (naslov → SEO naslov „Iza etikete – Domestic spirits”),
+`domestic_blog.naslov` (H1), widget podnožja recent-posts-10. Na naslovnici odjeljak „Vinarije s kojima surađujemo” ostaje (stvarno o vinarijama).
 Proširenja (dodaci.py: regija, tablica „Za stolom”/„Kako poslužiti” class dsb-stol, savjet class dsb-savjet; stare 4 dobile „Za stolom”),
 upis `prosiri.py`; redoslijed `redoslijed.py` (vinarije noviji datum → prve na popisu). Opisi kategorija = uvod na stranici regije; Style → „Savjeti”.
   - **domestic-blog 0.1.0** (Igor: blog po standardima novog weba, hrvatski, gumbi): template_include za is_home/kategorije/oznake/objave →
