@@ -122,6 +122,7 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 - **Graševina (adresa primores-grasevina)**: u trgovini se zove „ZEBRICA Graševina” i skrivena je; slike su pripremljene kao „Primores Graševina”
   (berba 2014, s fotografije). Koji je naziv točan i prodaje li se još?
 - **Škrlet 7 Moslavačkih vinara** je skriven – slike postavljene, status nije mijenjan. Prodaje li se još?
+- **Pilato Chardonnay 0,75 l** (ne sur lie) je skriven – slike postavljene prema fotografiji berbe 2016. Prodaje li se još i koja je berba?
 - **Trdenić Pinot sivi**: na fotografiji navojni čep, u tekstu trgovine pluteni – što je točno?
 
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.

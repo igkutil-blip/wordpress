@@ -152,6 +152,7 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
 
 - (24.10.) **Vina – serija 5** (Pilato 6, Primores Graševina = **ZEBRICA 837 skrivena**, slug primores-grasevina; Škrlet 7 vinara 3154 skriven, Trdenić 2,
   Vranac 0,75/1 l): 3513, 2654, 1538 (+ medalja 5274), 1550, 1544, 2652, 837, 3154, 1572, 1583, 1619, 2222; nove 5268–5292.
+  **Pilato Chardonnay 0,75 l** (1551, skriven; zaseban od sur lie 3513): 4117 ambijent, 5295, 5296 (paket ravni zip → omotan u mapu za serija.py, stavke iz case.json).
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
