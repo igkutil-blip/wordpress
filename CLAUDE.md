@@ -304,6 +304,7 @@ prvi napravljeni dodatak stvara izbornik, svaki sljedeći samo dodaje svoju pods
     VRAĆENA (0.6.3 = kod 0.6.1). Slika kategorije služi samo za dijeljenje: Rank Math je sam stavlja u `og:image` (Facebook, WhatsApp, Viber,
     LinkedIn); `twitter:image` ostaje logo. Kategorija 82 „Likeri i rakije” (`jaka-alkoholna-pica`): slika **2392**
     `2020/12/strong-spirits-set-hard-alcoholic-drinks-glasses_127657-850.jpg` zamijenjena Igorovom (1600², ista adresa, alt popunjen).
+    Kategorija 67 „Vina”: slika **514** `2017/09/vina-proizvodi-kategorije-1.png` zamijenjena Igorovom (1920×1080, PNG paleta, alt popunjen; 24.10.).
     Nove slike kategorija = samo zamjena slike kategorije, ništa na stranici. Na živoj nakon zamjene: Facebook Sharing Debugger → „Scrape Again”.
   - **domestic-proizvod 0.7.4** (Igor: STRAVA glava ima tri zapremnine – „prikaži u izboru ali stavi da su rasprodane”): Data::siblings uzima i
     PRIVATNE proizvode istog naziva/kategorije → u izboru zapremnine `span.dsp-vol-opt.dsp-vol-nema` (crtkano, precrtana zapremnina, „RASPRODANO”,
