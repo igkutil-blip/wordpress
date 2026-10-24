@@ -100,6 +100,12 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 - **Franković Stella Brut**: proizvođač navodi 6–8 °C, na kartici 8 °C.
 - **Franković Muškat Luna Blanca 0,50 l**: na fotografiji starija uska boca (kao u shopu) – proizvođač sada ima novu ambalažu. Treba li nova fotografija?
 
+### Vina – serija 2 (Grgurević, Kravata) – 24.10.2026.
+- **Kartice**: temperatura i „poslužite uz” iz opisa proizvoda; **izbor čaše urednički prijedlog**. Varenik: „Za kuhanje – brodet, pašticada, rižoto,
+  slastice, sladoled; dodajte postupno” (prema opisu).
+- **Grgurević Grand Cru 5 l**: glavna i dodatna fotografija prikazuju **dvije žene koje drže bocu** (namjerno, zbog veličine boce) – je li to u redu?
+- **KRAVATA Graševina** je skrivena – slike postavljene, status nije mijenjan. Prodaje li se još?
+
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
   temperatura „Po želji” su sa stranice proizvoda.

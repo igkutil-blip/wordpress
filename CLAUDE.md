@@ -137,6 +137,10 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   `dodatne:false, bez_ilustracija:true` – domestic-slike **0.4.2**). Uvezeno: 1594, 1062, 1507, 1092, 1827, 1828, 2795, 870 (skriven, slug ručno),
   867, 779, 3075, 2808; nove 5164–5187. **domestic-proizvod 0.7.5**: redak „Temperatura serviranja” skriven kad je temperatura već kućica.
 
+- (24.10.) **Vina – serija 2** (Grgurević 9, Kravata 3): 1606, 3068 (+ panorama 5192), 1601, 1479, 1612, 809, 1607, 3072, 1618 Varenik (kartica „uporaba” =
+  Za kuhanje + Preporuka, stavke zadane u case.json kao popis), 849 Graševina (skrivena), 821, 852 Teran (slug primores-plavac-mali-postup); nove 5188–5212.
+  serija.py: kartica i „uporaba”, case.json može biti popis stavki, `dodatne: true` (nove slike iz glavne mape u galeriju, podmape ne).
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,
