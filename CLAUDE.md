@@ -169,6 +169,12 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
 - (24.10.) **Lagena Coral Wine 0,75 l** (3177), Igorove 4 slike bez teksta (2 iste): nove 5307 more (kvadrat), 5308 degustacija „Iz dubine. U čašu.”, 5309 panorama;
   galerija 3178, 5223, 5224, 5307–5309; `_dsp_degustacija` (12 mj. na 20 m, 2,7 bara, 8–10 °C – sve iz teksta trgovine).
   Blog „Vinarija Lagena” (2012): ispred „Za stolom” dodan odjeljak h2 „Coral Wine – iz dubine u čašu” + panorama 5309 (figure, large) + poveznica na proizvod.
+- (24.10.) **Sokovi – Lotte Aloe Vera** (14 proizvoda, kategorija 116 `aloa-vera-sokovi`; Igorov zip „sokovi-sve”, po mapi ambijent + degustacija, alt.txt s URL-om):
+  ambijent na staru glavnu (PNG s paletom): 1933, 4230, 2579, 2582, 1934, 4232, 1935, 2577, 1936, 4235, 1937, 4236, 2587, 2585; nove degustacijske kartice
+  5311–5318, 5320–5325 `degustacija-<stari naziv>.jpg` (2. u galeriji). `_dsp_degustacija`: naslov s kartice (Sunce u gutljaju., Ljubičasti bijeg., Jagoda na
+  odmoru., Mango u glavnoj ulozi., Rubinska pauza., Natrag u zeleno., Zeleni predah.), koraci Protresi/Rashladi/Uživaj, napomena „cijena za transportno pakiranje
+  od 20 boca”, **birač okusa** (domestic-proizvod **0.8.1**: `okusi` {naslov, stavke[{naziv,url,boja,trenutni}]} → kružići u boji okusa, ista zapremnina).
+  Skripta scratchpad sok-uvoz.py. Slika kategorije 1331 nije postojala (404) → nova **5319** `sokovi-aloe-vera-okusi.jpg` (7 boca 0,50 l u nizu, 1920×1080; samo dijeljenje).
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 

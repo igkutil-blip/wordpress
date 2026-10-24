@@ -428,6 +428,15 @@ final class Domestic_Proizvod_Front {
 			. '<div class="dsp-deg-eyebrow">' . esc_html( $d['nadnaslov'] ?? 'Degustacija kod kuće' ) . '</div>'
 			. '<h2 id="' . $id . '-n">' . esc_html( $d['naslov'] ?? 'Degustacija' ) . '</h2>'
 			. ( ! empty( $d['uvod'] ) ? '<p class="dsp-deg-uvod">' . esc_html( $d['uvod'] ) . '</p>' : '' );
+		if ( ! empty( $d['okusi']['stavke'] ) ) { // birač okusa: druge varijante istog proizvoda (npr. sokovi iste zapremnine)
+			$h .= '<nav class="dsp-deg-okusi" aria-label="' . esc_attr( $d['okusi']['naslov'] ?? 'Okusi' ) . '"><span>' . esc_html( $d['okusi']['naslov'] ?? 'Okusi' ) . '</span><div>';
+			foreach ( (array) $d['okusi']['stavke'] as $o ) {
+				$boja = preg_match( '/^#[0-9a-f]{3,8}$/i', (string) ( $o['boja'] ?? '' ) ) ? $o['boja'] : '#c9a86a';
+				$tag  = ! empty( $o['trenutni'] ) || empty( $o['url'] ) ? 'span' : 'a';
+				$h   .= '<' . $tag . ( 'a' === $tag ? ' href="' . esc_url( $o['url'] ) . '"' : ' aria-current="true"' ) . ' style="--okus:' . esc_attr( $boja ) . '"><i aria-hidden="true"></i>' . esc_html( $o['naziv'] ?? '' ) . '</' . $tag . '>';
+			}
+			$h .= '</div></nav>';
+		}
 		if ( $vise ) {
 			$h .= '<div class="dsp-deg-tabs" role="tablist" aria-label="Verzije paketa">';
 			foreach ( $ver as $i => $v ) {
