@@ -79,6 +79,10 @@ final class Domestic_Slike {
 	 * (višestruko manje, ista adresa), ikone s prozirnošću bez palete.
 	 */
 	public static function spremi_cisto( $im, string $cilj, string $format, bool $paleta = false ): bool {
+		if ( 'webp' === $format ) { // GD ne upisuje metapodatke u WebP
+			imagesavealpha( $im, true );
+			return imagewebp( $im, $cilj, 85 );
+		}
 		if ( 'png' === $format ) {
 			if ( $paleta ) {
 				$k = imagecreatetruecolor( imagesx( $im ), imagesy( $im ) );
@@ -117,14 +121,14 @@ final class Domestic_Slike {
 			return new WP_Error( 'dss', 'Nema slike s tim ID-om.', array( 'status' => 404 ) );
 		}
 		$ext = strtolower( pathinfo( $put, PATHINFO_EXTENSION ) );
-		if ( ! in_array( $ext, array( 'jpg', 'jpeg', 'png' ), true ) ) {
-			return new WP_Error( 'dss', 'Zamjena radi za .jpg i .png (ova je .' . $ext . ').', array( 'status' => 400 ) );
+		if ( ! in_array( $ext, array( 'jpg', 'jpeg', 'png', 'webp' ), true ) || ( 'webp' === $ext && ! function_exists( 'imagewebp' ) ) ) {
+			return new WP_Error( 'dss', 'Zamjena radi za .jpg, .png i .webp (ova je .' . $ext . ').', array( 'status' => 400 ) );
 		}
 		$im = self::ucitaj( $izvor );
 		if ( ! $im ) {
 			return new WP_Error( 'dss', 'Nova datoteka nije slika.', array( 'status' => 400 ) );
 		}
-		$format = 'png' === $ext ? 'png' : 'jpg';
+		$format = in_array( $ext, array( 'png', 'webp' ), true ) ? $ext : 'jpg';
 		$paleta = null === $paleta ? ( 'png' === $format && ! self::ima_prozirnost( $im ) ) : $paleta;
 		require_once ABSPATH . 'wp-admin/includes/image.php';
 		$meta = wp_get_attachment_metadata( $id );

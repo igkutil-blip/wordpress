@@ -66,7 +66,7 @@ for mapa in mape:
         slike = [n for n in z.namelist() if n.startswith(mapa + '/') and n.count('/') == 1 and re.search(r'\.(jpe?g|png)$', n, re.I)]
         posl = next((n for n in slike if re.search(r'posluzivanje|uporaba', n, re.I)), None)
         stavke = []
-        m = re.search(r'preporuka posluživanja:\s*([^;]+);\s*(.+)$', alt.get(os.path.basename(posl or ''), ''), re.I)
+        m = re.search(r'(?:preporuka|kartica) posluživanja:\s*([^;]+);\s*(.+)$', alt.get(os.path.basename(posl or ''), ''), re.I)
         if m:
             temp, jelo = m.group(1).strip(), m.group(2).strip()
             stavke.append(f'STAVKA = Temperatura serviranja | {temp} | | casa')

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Domestic – slike proizvoda
  * Description: Uvoz paketa slika za proizvod (ambijentalna na staru adresu glavne slike, studijska, kartica posluživanja, ikone izrezane s kartice, galerija, „Kako poslužiti”), zamjena slike na istoj adresi (SEO), uklanjanje metapodataka, popis „Za provjeru”. Izbornik Domestic.
- * Version: 0.4.3
+ * Version: 0.4.4
  * Author: Vertikal
  * Requires at least: 6.0
  * Requires PHP: 7.4
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DSS_VER', '0.4.3' );
+define( 'DSS_VER', '0.4.4' );
 define( 'DSS_DIR', __DIR__ );
 define( 'DSS_URL', plugin_dir_url( __FILE__ ) );
 

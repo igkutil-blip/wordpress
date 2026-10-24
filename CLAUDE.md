@@ -146,6 +146,10 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   Ispravljeno ručno (2314 ← ambijentalna, 5233 obrisan, medalja 5240 nova u galeriji) i u **domestic-slike 0.4.3**: ambijentalna po altu
   („ambijent”), inače prva koja nije medalja/poleđina/detalj/etiketa/panorama/kutija.
 
+- (24.10.) **Vina – serija 4** (Malvasia BiB 3 l, Mikša, Misna vina 4, Pavlomir 4, Petrač 2): 2250, 3343, 1532, 818, 831 (skriven), 846, 4655, 4709, 4660,
+  4662, 3079, 1543; nove 5241–5264. Alt kartice „kartica posluživanja:” (serija.py prihvaća i to). Pavlomir Rosé glavna 4714 je **WebP**
+  (`2026/06/IMG_20260608_093941_135.webp`) → **domestic-slike 0.4.4**: zamjena i za .webp (GD imagewebp 85).
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,
