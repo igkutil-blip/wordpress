@@ -339,3 +339,8 @@ span.dsp-vol-opt{cursor:default}
 .dsp .dsp-deg-okusi a:hover{border-color:#f7f3eb}
 .dsp-deg-okusi span[aria-current]{background:#f7f3eb;color:#29231f;border-color:#f7f3eb}
 .dsp-deg-okusi i{width:16px;height:16px;border-radius:50%;background:var(--okus);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+
+/* 0.8.2 transportno pakiranje uz cijenu (sokovi: cijena za 20/30 boca) */
+.dsp .dsp-pack{display:flex;gap:9px;align-items:flex-start;margin:10px 0 2px!important;padding:9px 12px;border-radius:4px;background:#f3e6c9;border:1px solid #e0c98f;color:#4a3a1e;font-size:13px;line-height:1.4}
+.dsp-pack .dsp-i{width:20px;height:20px;color:#96703c;margin-top:-1px}
+.dsp-pack b{font-weight:600;color:#29231f}

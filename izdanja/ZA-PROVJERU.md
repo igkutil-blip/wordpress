@@ -116,6 +116,11 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 - **Misna vina Cabernet Sauvignon-Franc**: u trgovini se zove „Cabernet Sauvignon-Franc”, na pripremljenim slikama „Cabernet Sauvignon” – koji je točan naziv?
 - **Misna vina Graševina** je skrivena – slike postavljene, status nije mijenjan. Prodaje li se još?
 
+### Sokovi Lotte Aloe Vera (14) – 24.10.2026.
+- Cijena je za transportno pakiranje: 0,50 l = 20 boca za 37 € (= 1,85 € po boci), 0,24 l = 30 boca za 35 € (= 1,17 € po boci). U opisima piše
+  „cijena jednog komada 1,80 EUR” (0,50 l), a kod Sugarfree 0,24 l „1,13 EUR” – stari podaci? Na stranici se sada računa iz stvarne cijene.
+- Nazivi okusa u opisu su engleski (Pineapple, Strawberry, Pomegranate) – želite li hrvatske?
+
 ### Pivo Slavonica – poklon paketi (3964, 3967, 3970) – 24.10.2026.
 - **6 × 0,50 l** dolazi u dvije verzije (Grof/Grofica/Carica ili Lager/Templar/NEIPA) – kako kupac bira verziju? Ima li obje na zalihi?
 - Sekcija „Degustacija”: opisi piva iz postojećeg teksta trgovine; koraci Pomiriši/Kušaj/Usporedi su urednički; čaše i daska na slikama nisu u paketu (piše na stranici).

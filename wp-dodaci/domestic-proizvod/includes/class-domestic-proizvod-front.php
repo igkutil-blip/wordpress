@@ -26,6 +26,7 @@ final class Domestic_Proizvod_Front {
 		'stit'    => '<path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.8 12 2.2 2.2 4.3-4.4"/>',
 		'nagrada' => '<circle cx="12" cy="9" r="6"/><path d="m8 14-2 8 6-3 6 3-2-8"/>',
 		'desno'  => '<path d="m9.5 6 6 6-6 6"/>',
+		'paket'  => '<path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4v-9Z"/><path d="M3.5 7.5 12 11.5l8.5-4M12 11.5v9"/>',
 		'kamion' => '<path d="M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3.2v2.8h-7"/><circle cx="6.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/>',
 	);
 
@@ -291,14 +292,18 @@ final class Domestic_Proizvod_Front {
 		}
 		$h .= '<div class="dsp-price-row"><div class="dsp-price">' . $ph . '</div>';
 		$info = array();
+		$kom  = Domestic_Proizvod_Data::komada( $p );
 		if ( $lit && $price > 0 && ! $p->is_type( 'variable' ) ) {
-			$info[] = self::eur( $price / $lit ) . ' / l';
+			$info[] = self::eur( $price / ( $lit * $kom ) ) . ' / l';
 		}
 		if ( wc_tax_enabled() || 'yes' === get_option( 'woocommerce_prices_include_tax' ) ) {
 			$info[] = 'PDV uključen';
 		}
 		$h .= $info ? '<span class="dsp-unit">' . esc_html( implode( ' · ', $info ) ) . '</span>' : '';
 		$h .= '</div>';
+		if ( $kom > 1 && $price > 0 ) { // cijena je za cijelo transportno pakiranje – odmah uz cijenu, s cijenom jedne boce
+			$h .= '<p class="dsp-pack">' . self::svg( 'paket' ) . '<span>Cijena za <b>transportno pakiranje od ' . (int) $kom . ' boca</b>' . ( $lit ? ' (' . esc_html( $kom . ' × ' . Domestic_Proizvod_Data::litres_label( $lit ) ) . ')' : '' ) . ' · jedna boca <b>' . esc_html( self::eur( $price / $kom ) ) . '</b></span></p>';
+		}
 		if ( $sidrena ) {
 			$h .= '<p class="dsp-anchor">' . wp_kses_post( $sidrena ) . '</p>';
 		}

@@ -174,6 +174,10 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   5311–5318, 5320–5325 `degustacija-<stari naziv>.jpg` (2. u galeriji). `_dsp_degustacija`: naslov s kartice (Sunce u gutljaju., Ljubičasti bijeg., Jagoda na
   odmoru., Mango u glavnoj ulozi., Rubinska pauza., Natrag u zeleno., Zeleni predah.), koraci Protresi/Rashladi/Uživaj, napomena „cijena za transportno pakiranje
   od 20 boca”, **birač okusa** (domestic-proizvod **0.8.1**: `okusi` {naslov, stavke[{naziv,url,boja,trenutni}]} → kružići u boji okusa, ista zapremnina).
+  **Transportno pakiranje** (Igor: „odmah uz cijenu da je to za transportno pakiranje i jedinična cijena”): 0,50 l = 20 boca (37 €), 0,24 l = 30 boca
+  (35 €). domestic-proizvod **0.8.2**: `Data::komada()` (meta `_dsp_komada` ili opis „cijena transportnog pakiranja od N komada”) → ispod cijene žuti okvir
+  `.dsp-pack` „Cijena za transportno pakiranje od 20 boca (20 × 0,50 l) · jedna boca 1,85 €”, €/l = cijena / (litre × N) (prije krivo 74 €/l);
+  domestic-kartica **0.6.6**: redak jedinične cijene na kartici „Pakiranje 20 boca · 1,85 € / boca”. Napomena degustacije bez cijene.
   Skripta scratchpad sok-uvoz.py. Slika kategorije 1331 nije postojala (404) → nova **5319** `sokovi-aloe-vera-okusi.jpg` (7 boca 0,50 l u nizu, 1920×1080; samo dijeljenje).
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)

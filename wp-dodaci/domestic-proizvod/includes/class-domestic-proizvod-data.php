@@ -301,6 +301,19 @@ final class Domestic_Proizvod_Data {
 		return $l ? self::litres_label( $l ) : '';
 	}
 
+	/**
+	 * Broj komada kad se proizvod prodaje samo u transportnom pakiranju (cijena je za cijelo pakiranje):
+	 * meta `_dsp_komada` ili tekst opisa „cijena transportnog pakiranja od 20 komada” (sokovi). Inače 1.
+	 */
+	public static function komada( WC_Product $p ): int {
+		$n = (int) $p->get_meta( '_dsp_komada' );
+		if ( $n > 1 ) {
+			return $n;
+		}
+		$t = wp_strip_all_tags( $p->get_short_description( 'edit' ) . ' ' . $p->get_description( 'edit' ) );
+		return preg_match( '/cijena\s+transportnog\s+pakiranja\s+od\s+(\d+)\s+kom/iu', $t, $m ) && (int) $m[1] > 1 ? (int) $m[1] : 1;
+	}
+
 	/** Zapremnina proizvoda u litrama: atribut, inače naziv. */
 	public static function litres_of( WC_Product $p ): float {
 		$v = self::attr( $p, 'zapremnina' );

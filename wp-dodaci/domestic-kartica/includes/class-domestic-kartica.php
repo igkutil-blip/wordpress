@@ -345,9 +345,23 @@ final class Domestic_Kartica {
 	public static function jedinicna( WC_Product $p, string $zapremnina ): string {
 		$l = self::litre( $zapremnina );
 		$c = (float) wc_get_price_to_display( $p );
-		if ( $l <= 0 || $c <= 0 || $p->is_type( 'variable' ) ) {
+		if ( $c <= 0 || $p->is_type( 'variable' ) ) {
 			return '';
 		}
-		return wc_price( $c / $l ) . ' / l';
+		$n = self::komada( $p );
+		if ( $n > 1 ) { // cijena je za cijelo transportno pakiranje (sokovi) – kupac mora to vidjeti uz cijenu
+			return 'Pakiranje ' . $n . ' boca · ' . wc_price( $c / $n ) . ' / boca';
+		}
+		return $l > 0 ? wc_price( $c / $l ) . ' / l' : '';
+	}
+
+	/** Isto pravilo kao domestic-proizvod: meta `_dsp_komada` ili „cijena transportnog pakiranja od N komada” u opisu. */
+	public static function komada( WC_Product $p ): int {
+		$n = (int) $p->get_meta( '_dsp_komada' );
+		if ( $n > 1 ) {
+			return $n;
+		}
+		$t = wp_strip_all_tags( $p->get_short_description( 'edit' ) . ' ' . $p->get_description( 'edit' ) );
+		return preg_match( '/cijena\s+transportnog\s+pakiranja\s+od\s+(\d+)\s+kom/iu', $t, $m ) && (int) $m[1] > 1 ? (int) $m[1] : 1;
 	}
 }
