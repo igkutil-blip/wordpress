@@ -150,6 +150,9 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   4662, 3079, 1543; nove 5241–5264. Alt kartice „kartica posluživanja:” (serija.py prihvaća i to). Pavlomir Rosé glavna 4714 je **WebP**
   (`2026/06/IMG_20260608_093941_135.webp`) → **domestic-slike 0.4.4**: zamjena i za .webp (GD imagewebp 85).
 
+- (24.10.) **Vina – serija 5** (Pilato 6, Primores Graševina = **ZEBRICA 837 skrivena**, slug primores-grasevina; Škrlet 7 vinara 3154 skriven, Trdenić 2,
+  Vranac 0,75/1 l): 3513, 2654, 1538 (+ medalja 5274), 1550, 1544, 2652, 837, 3154, 1572, 1583, 1619, 2222; nove 5268–5292.
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,

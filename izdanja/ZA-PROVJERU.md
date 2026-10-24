@@ -116,6 +116,14 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 - **Misna vina Cabernet Sauvignon-Franc**: u trgovini se zove „Cabernet Sauvignon-Franc”, na pripremljenim slikama „Cabernet Sauvignon” – koji je točan naziv?
 - **Misna vina Graševina** je skrivena – slike postavljene, status nije mijenjan. Prodaje li se još?
 
+### Vina – serija 5 (Pilato, Primores/ZEBRICA, Škrlet 7 vinara, Trdenić, Vranac) – 24.10.2026.
+- **Kartice**: temperatura i „poslužite uz” iz opisa; **izbor čaše urednički prijedlog**.
+- **Pilato Malvazija istarska**: zlatna medalja Decanter 2020, a na boci berba 2013 – odnosi li se medalja na berbu koja se prodaje?
+- **Graševina (adresa primores-grasevina)**: u trgovini se zove „ZEBRICA Graševina” i skrivena je; slike su pripremljene kao „Primores Graševina”
+  (berba 2014, s fotografije). Koji je naziv točan i prodaje li se još?
+- **Škrlet 7 Moslavačkih vinara** je skriven – slike postavljene, status nije mijenjan. Prodaje li se još?
+- **Trdenić Pinot sivi**: na fotografiji navojni čep, u tekstu trgovine pluteni – što je točno?
+
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
   temperatura „Po želji” su sa stranice proizvoda.
