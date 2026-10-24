@@ -131,6 +131,12 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   (svaka nova/zamijenjena slika + izvedenice, i ručno učitane u WP) i nakon `spremi_cisto`. Cijela biblioteka: REST POST `ocisti` {stranica, po}
   → `python3 -I alati/uvoz-slika/ocisti.py [--ziva]`. **Na živoj pokrenuti nakon instalacije.**
 
+- (24.10.) **Vina – serija 1** (12 vina, jedan zip s mapama, alt.txt „datoteka / ALT:”, kartica vina = temperatura · poslužite uz · izbor čaše, bez
+  3 kruga): `alati/uvoz-slika/serija.py serija.zip --case case.json [--slug mapa=slug]` (proizvod po adresi iz „IZVOR”, prva domesticspirits.hr;
+  podmape izvorne-fotografije i napomene s nazivom alata se NE prenose; STAVKA Temperatura serviranja/Poslužite uz/Izbor čaše; uvoz
+  `dodatne:false, bez_ilustracija:true` – domestic-slike **0.4.2**). Uvezeno: 1594, 1062, 1507, 1092, 1827, 1828, 2795, 870 (skriven, slug ručno),
+  867, 779, 3075, 2808; nove 5164–5187. **domestic-proizvod 0.7.5**: redak „Temperatura serviranja” skriven kad je temperatura već kućica.
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,

@@ -618,7 +618,8 @@ final class Domestic_Slike_Paket {
 
 	/**
 	 * @param array $o proizvod, cilj (ID slike za ambijentalnu), ikone_izvor (0 = nove, ID proizvoda = njegove ikone),
-	 *                 posluzivanje [{naziv,kolicina,opis,ikona}], zadrzi [ID-ovi postojeće galerije], dodatne (bool), napomene (bool)
+	 *                 posluzivanje [{naziv,kolicina,opis,ikona}], zadrzi [ID-ovi postojeće galerije], dodatne (bool), napomene (bool),
+ *                 bez_ilustracija (bool – ne reže ni ne veže ilustracije s kartice)
 	 * @return array|WP_Error
 	 */
 	public static function uvezi( string $token, array $o ) {
@@ -713,7 +714,9 @@ final class Domestic_Slike_Paket {
 				continue;
 			}
 			$slika = 0;
-			if ( $izvor && is_array( $tude ) ) {
+			if ( ! empty( $o['bez_ilustracija'] ) ) {
+				$slika = 0; // kartica bez tri ilustracije u krugovima (npr. vina) – na stranici SVG ikone po ključu
+			} elseif ( $izvor && is_array( $tude ) ) {
 				$slika = (int) ( $tude[ $i ]['slika'] ?? 0 );
 			} elseif ( ! empty( $a['ikone'][ $i ]['ista'] ) && wp_attachment_is_image( (int) $a['ikone'][ $i ]['ista'] ) ) {
 				$slika = (int) $a['ikone'][ $i ]['ista'];

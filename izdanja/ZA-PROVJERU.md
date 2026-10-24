@@ -93,6 +93,13 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
   Bolje ispraviti i u bazi (slug ostaje). SEO naslov (Rank Math) i dalje „… 0,70L”.
 - Opis: retci prelomljeni usred rečenice (svaki redak poseban odlomak) – urediti.
 
+### Vina – serija 1 (12 vina) – 24.10.2026.
+- **Kartice posluživanja**: temperatura i „poslužite uz” sažeti iz opisa proizvoda; **izbor čaše je urednički prijedlog**.
+- **Ferenac Giulio Chardonnay** (skriven): stranica proizvoda vraćala je grešku – kartica je urednički prijedlog („Rashlađeno”, bez broja,
+  berbe i zapremnine); fotografija s bijelom kapicom i ljubičastom etiketom – je li to aktualna boca? Prodaje li se još?
+- **Franković Stella Brut**: proizvođač navodi 6–8 °C, na kartici 8 °C.
+- **Franković Muškat Luna Blanca 0,50 l**: na fotografiji starija uska boca (kao u shopu) – proizvođač sada ima novu ambalažu. Treba li nova fotografija?
+
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
   temperatura „Po želji” su sa stranice proizvoda.

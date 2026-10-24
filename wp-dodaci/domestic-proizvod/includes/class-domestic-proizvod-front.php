@@ -462,7 +462,8 @@ final class Domestic_Proizvod_Front {
 			} elseif ( $gastro ) {
 				$k .= '<p>' . esc_html( mb_strtoupper( mb_substr( $gastro, 0, 1 ) ) . mb_substr( $gastro, 1 ) ) . '</p>';
 			}
-			if ( $temp ) {
+			$temp_u_karticama = (bool) array_filter( (array) $m['posluzivanje'], static function ( $r ) { return 0 === stripos( (string) ( $r['naziv'] ?? '' ), 'Temperatura' ); } );
+			if ( $temp && ! $temp_u_karticama ) { // vina: temperatura je već kućica „Temperatura serviranja”
 				$k .= '<div class="dsp-temp"><span>Temperatura serviranja</span><strong>' . esc_html( $temp ) . '</strong></div>';
 			}
 			if ( $upute && ! $m['posluzivanje'] ) { // velika kartica samo kad nema kućica s načinima posluživanja
