@@ -168,7 +168,14 @@ final class Domestic_Slike_Paket {
 			}
 		}
 		if ( null === $amb && $dodatne ) {
-			$amb = $oznaka ?? $dodatne[0];
+			// alt „… u ambijentu …”, inače prva koja nije medalja/poleđina/detalj/panorama (ne prva po redu u zipu)
+			foreach ( $dodatne as $k ) {
+				if ( null === $amb && false !== mb_stripos( (string) ( $alt[ $slike[ $k ]['naziv'] ] ?? '' ), 'ambijent' ) ) {
+					$amb = $k;
+				}
+			}
+			$obicne = array_values( array_filter( $dodatne, static function ( $k ) use ( $slike ) { return ! preg_match( '/medal|zadnj|straz|detalj|etiket|panoram|kutij/i', $slike[ $k ]['naziv'] ); } ) );
+			$amb    = $amb ?? $oznaka ?? ( $obicne[0] ?? $dodatne[0] );
 		}
 		$dodatne = array_values( array_diff( $dodatne, array( $amb ) ) );
 

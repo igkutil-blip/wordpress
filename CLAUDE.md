@@ -141,6 +141,11 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   Za kuhanje + Preporuka, stavke zadane u case.json kao popis), 849 Graševina (skrivena), 821, 852 Teran (slug primores-plavac-mali-postup); nove 5188–5212.
   serija.py: kartica i „uporaba”, case.json može biti popis stavki, `dodatne: true` (nove slike iz glavne mape u galeriju, podmape ne).
 
+- (24.10.) **Vina – serija 3** (Kurtalj 2, Lagena 7, Linija 3): 1058, 1075, 2051, 1613, 3177, 2049 (skriven), 858, 843, 1623, 1986, 1990, 824; nove 5214–5240.
+  **Greška i popravak**: Škrlet Iconic – kad nijedna slika nema naziv stare glavne, dodatak je uzimao PRVU u zipu → medalja otišla na 2314.
+  Ispravljeno ručno (2314 ← ambijentalna, 5233 obrisan, medalja 5240 nova u galeriji) i u **domestic-slike 0.4.3**: ambijentalna po altu
+  („ambijent”), inače prva koja nije medalja/poleđina/detalj/etiketa/panorama/kutija.
+
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
 Statička trgovina (HTML/CSS/JS, bez poslužitelja): naslovnica prema Igorovu uzorku, trgovina.html (kategorije, proizvođači,

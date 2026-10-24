@@ -106,6 +106,11 @@ Natuknice za proizvode su i u adminu: **Domestic → Slike proizvoda → Za prov
 - **Grgurević Grand Cru 5 l**: glavna i dodatna fotografija prikazuju **dvije žene koje drže bocu** (namjerno, zbog veličine boce) – je li to u redu?
 - **KRAVATA Graševina** je skrivena – slike postavljene, status nije mijenjan. Prodaje li se još?
 
+### Vina – serija 3 (Kurtalj, Lagena, Linija) – 24.10.2026.
+- **Kartice**: temperatura i „poslužite uz” iz opisa; **izbor čaše urednički prijedlog**.
+- **Lagena Škrlet Iconic**: brončana medalja Decanter World Wine Awards – bez godine i bodova (koja godina?).
+- **Lagena Rosé 0,75 l** je skrivena – slike postavljene, status nije mijenjan. Prodaje li se još?
+
 ### BOGATI Orahovac 0,20 l i 1 l (4272, 1353) – 23.10.2026.
 - **Posluživanje** (kartica iz paketa): Kao aperitiv / Uz slasticu (kolač od oraha) / Kao digestiv, po 0,03 l – autorski prijedlozi; načini i
   temperatura „Po želji” su sa stranice proizvoda.
