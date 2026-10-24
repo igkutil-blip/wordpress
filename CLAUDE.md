@@ -163,6 +163,9 @@ Korisnik je Igor. Odgovaraj **na hrvatskom**.
   Usporedi, napomena „Čaše … nisu dio paketa”; mobitel slika prva; u „Na ovoj stranici” i „Degustacija ↓” umjesto „Kako poslužiti ↓”; velika 3. slika
   u Kako poslužiti se tada ne prikazuje. Opisi piva samo iz teksta trgovine (bez izmišljenih IBU/temperatura). Uređivanje zasad samo preko REST/meta
   (nema polja u adminu). Isti obrazac kasnije za vina (Igor).
+- (24.10.) **Grgurević Grand Cru 5 l** (3068), paket „Pet litara Pelješca”: 01 velicina = 3070 i 02 studio = 5190 (isti pikseli – preskočeno); nove 5304 priča,
+  5305 degustacija, 5306 panorama s valom (stara panorama 5192 maknuta iz galerije, prilog ostaje); galerija 3070, 5190, 5191, 5304, 5305, 5306, 3069;
+  `_dsp_degustacija` (prvo vino sa sekcijom Degustacija; opis/note samo iz teksta trgovine, koraci Zastani/Pomiriši/Kušaj s kartice).
 
 ## Probna trgovina (`shop/`, zip `domestic-spirits-shop-<verzija>.zip` u korijenu)
 
